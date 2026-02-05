@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Démo</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- gouv-widgets -->
+  <script type="module" src="../src/index.ts"></script>
+
+  <style>
+    body {
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: var(--background-alt-blue-france);
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+    }
+    .dashboard-header h1 {
+      color: var(--text-title-blue-france);
+      margin: 0;
+    }
+    .dashboard-header p {
+      color: var(--text-default-grey);
+      margin: 0.5rem 0 0;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    section {
+      margin-bottom: 3rem;
+    }
+    section h2 {
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+    main {
+      flex: 1;
+    }
+  </style>
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+  <!-- ============================================ -->
+  <!-- HEADER DSFR -->
+  <!-- ============================================ -->
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo">
+                <p class="fr-logo">
+                  République<br>Française
+                </p>
+              </div>
+              <div class="fr-header__navbar">
+                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
+                  Menu
+                </button>
+              </div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../index.html" title="Accueil - gouv-widgets">
+                <p class="fr-header__service-title">gouv-widgets</p>
+              </a>
+              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                <li>
+                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
+                    GitHub
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
+          Fermer
+        </button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="../index.html">Accueil</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="index.html" aria-current="page">Composants</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="../builder.html">Builder</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="../builderIA.html">Builder IA</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="../playground.html">Playground</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="../sources.html">Sources</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="fr-container">
+      <h1>Tableau de bord — Écosystème web ministériel</h1>
+      <p>Suivi de la conformité RGAA et DSFR des sites gouvernementaux</p>
+    </div>
+  </div>
+
+  <main class="fr-container fr-py-4w">
+    <!-- Sources de données (invisibles) -->
+    <gouv-source
+      id="sites"
+      url="/mock-api/data.json"
+      transform="sites"
+      refresh="0">
+    </gouv-source>
+
+    <gouv-source
+      id="meta"
+      url="/mock-api/data.json"
+      transform="metadata">
+    </gouv-source>
+
+    <!-- Section KPIs -->
+    <section>
+      <h2>Indicateurs clés</h2>
+      <div class="kpi-grid">
+        <gouv-kpi
+          source="meta"
+          valeur="total"
+          label="Sites suivis"
+          icone="ri-global-line"
+          format="nombre">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="avg:score_rgaa"
+          label="Score RGAA moyen"
+          format="pourcentage"
+          seuil-vert="80"
+          seuil-orange="50">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="count:certificat_valide:false"
+          label="Certificats expirés"
+          icone="ri-shield-cross-line"
+          couleur="rouge">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="avg:score_dsfr"
+          label="Conformité DSFR moyenne"
+          format="pourcentage"
+          seuil-vert="80"
+          seuil-orange="50">
+        </gouv-kpi>
+      </div>
+    </section>
+
+    <!-- Section Liste -->
+    <section>
+      <h2>Liste des sites</h2>
+      <gouv-datalist
+        source="sites"
+        colonnes="nom:Nom du site, ministere:Ministère, score_rgaa:RGAA (%), score_dsfr:DSFR (%), statut:Statut, certificat_valide:Certificat"
+        recherche="true"
+        filtres="ministere,statut"
+        tri="score_rgaa:desc"
+        pagination="10"
+        export="csv">
+      </gouv-datalist>
+    </section>
+
+    <!-- Section supplémentaire : Stats par ministère -->
+    <section>
+      <h2>Statistiques supplémentaires</h2>
+      <div class="kpi-grid">
+        <gouv-kpi
+          source="sites"
+          valeur="count:statut:actif"
+          label="Sites actifs"
+          icone="ri-checkbox-circle-line"
+          couleur="vert">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="count:statut:inactif"
+          label="Sites inactifs"
+          icone="ri-close-circle-line"
+          couleur="orange">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="max:score_rgaa"
+          label="Meilleur score RGAA"
+          format="pourcentage"
+          couleur="vert">
+        </gouv-kpi>
+
+        <gouv-kpi
+          source="sites"
+          valeur="min:score_rgaa"
+          label="Score RGAA le plus bas"
+          format="pourcentage"
+          couleur="rouge">
+        </gouv-kpi>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- FOOTER DSFR -->
+  <!-- ============================================ -->
+  <footer class="fr-footer" role="contentinfo" id="footer">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand fr-enlarge-link">
+          <a href="../index.html" title="Retour à l'accueil du site - République Française">
+            <p class="fr-logo">
+              République<br>Française
+            </p>
+          </a>
+        </div>
+        <div class="fr-footer__content">
+          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de créer des visualisations de données conformes au Design System de l'État (DSFR).</p>
+          <ul class="fr-footer__content-list">
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
+            </li>
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="fr-footer__bottom">
+        <ul class="fr-footer__bottom-list">
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Accessibilité : non conforme</a>
+          </li>
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Mentions légales</a>
+          </li>
+        </ul>
+        <div class="fr-footer__bottom-copy">
+          <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- DSFR JS -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

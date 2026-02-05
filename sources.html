@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Gestion des sources de données</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <style>
+    body { min-height: 100vh; background: var(--background-alt-grey); }
+
+    .page-header {
+      background: var(--background-default-grey);
+      border-bottom: 1px solid var(--border-default-grey);
+      padding: 1.5rem 0;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .page-header p { margin: 0.5rem 0 0; color: var(--text-mention-grey); }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .sidebar {
+      background: var(--background-default-grey);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .sidebar h2 {
+      font-size: 1rem;
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .main-content {
+      background: var(--background-default-grey);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .connection-card {
+      background: var(--background-alt-grey);
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .connection-card:hover { border-color: var(--border-default-grey); }
+    .connection-card.selected { border-color: var(--border-action-high-blue-france); background: var(--background-contrast-info); }
+
+    .connection-card .name { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .connection-card .url { font-size: 0.75rem; color: var(--text-mention-grey); word-break: break-all; }
+    .connection-card .status { font-size: 0.7rem; margin-top: 0.25rem; }
+    .connection-card .status.connected { color: var(--text-default-success); }
+    .connection-card .status.error { color: var(--text-default-error); }
+
+    .add-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .explorer-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-default-grey);
+      padding-bottom: 0.5rem;
+    }
+
+    .explorer-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-mention-grey);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .explorer-tab.active {
+      background: var(--background-contrast-info);
+      color: var(--text-action-high-blue-france);
+    }
+
+    .tree-view { font-size: 0.875rem; }
+
+    .tree-item {
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+      background: var(--background-alt-grey);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tree-item:hover { background: var(--background-contrast-grey); }
+    .tree-item i { color: var(--text-mention-grey); }
+    .tree-item .count { margin-left: auto; font-size: 0.75rem; color: var(--text-mention-grey); }
+
+    .tree-children { margin-left: 1.5rem; }
+
+    .table-preview {
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-mention-grey);
+    }
+
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+
+    .modal {
+      background: var(--background-default-grey);
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .modal-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-default-grey);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 { margin: 0; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-mention-grey);
+    }
+
+    .modal-body { padding: 1.5rem; }
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-default-grey);
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .badge-source-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .badge-grist { background: #16a34a; color: white; }
+    .badge-api { background: #2563eb; color: white; }
+    .badge-manual { background: #9333ea; color: white; }
+
+    .field-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-bottom: 0.5rem;
+    }
+
+    .field-row .fr-input-group { flex: 1; margin: 0; }
+
+    .columns-editor { margin-top: 1rem; }
+    .column-item {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.5rem;
+      background: var(--background-alt-grey);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .column-item input { flex: 1; }
+
+    @media (max-width: 900px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ============================================ -->
+  <!-- HEADER DSFR -->
+  <!-- ============================================ -->
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo">
+                <p class="fr-logo">
+                  République<br>Française
+                </p>
+              </div>
+              <div class="fr-header__navbar">
+                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
+                  Menu
+                </button>
+              </div>
+            </div>
+            <div class="fr-header__service">
+              <a href="index.html" title="Accueil - gouv-widgets">
+                <p class="fr-header__service-title">gouv-widgets</p>
+              </a>
+              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                <li>
+                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
+                    GitHub
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
+          Fermer
+        </button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="index.html">Accueil</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="demo/index.html">Composants</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builder.html">Builder</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="playground.html">Playground</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="sources.html" aria-current="page">Sources</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="fr-container fr-py-4w">
+    <h1><i class="ri-database-2-line"></i> Sources de données</h1>
+    <p class="fr-text--lead">Connectez vos sources Grist, API ou créez des jeux de données manuels</p>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- CONTENU PRINCIPAL -->
+  <!-- ============================================ -->
+  <div class="fr-container">
+    <div class="content-grid">
+
+      <!-- SIDEBAR : Liste des connexions -->
+      <aside class="sidebar">
+        <h2><i class="ri-link"></i> Connexions</h2>
+
+        <div id="connections-list">
+          <!-- Connexions chargées dynamiquement -->
+        </div>
+
+        <button class="fr-btn fr-btn--sm fr-btn--secondary add-btn" id="add-connection-btn">
+          <i class="ri-add-line"></i> Nouvelle connexion
+        </button>
+
+        <hr class="fr-mt-2w fr-mb-2w">
+
+        <h2><i class="ri-folder-chart-line"></i> Mes sources</h2>
+
+        <div id="sources-list">
+          <!-- Sources sauvegardées -->
+        </div>
+
+        <button class="fr-btn fr-btn--sm fr-btn--secondary add-btn" id="add-source-btn">
+          <i class="ri-add-line"></i> Créer une source manuelle
+        </button>
+      </aside>
+
+      <!-- MAIN : Explorateur -->
+      <main class="main-content">
+        <div id="explorer-empty" class="empty-state">
+          <i class="ri-database-2-line"></i>
+          <p>Sélectionnez une connexion pour explorer ses données,<br>ou créez une nouvelle source manuelle.</p>
+        </div>
+
+        <div id="explorer-content" style="display: none;">
+          <div class="action-bar">
+            <h2 id="explorer-title" style="margin: 0; flex: 1;">Explorer</h2>
+            <button class="fr-btn fr-btn--sm" id="use-in-builder-btn">
+              <i class="ri-bar-chart-box-line"></i> Utiliser dans le Builder
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary" id="refresh-btn">
+              <i class="ri-refresh-line"></i> Rafraîchir
+            </button>
+          </div>
+
+          <div class="explorer-tabs">
+            <button class="explorer-tab active" data-tab="documents">Documents</button>
+            <button class="explorer-tab" data-tab="tables">Tables</button>
+            <button class="explorer-tab" data-tab="preview">Aperçu</button>
+          </div>
+
+          <div id="tab-documents" class="tab-panel">
+            <div id="documents-tree" class="tree-view">
+              <!-- Documents Grist -->
+            </div>
+          </div>
+
+          <div id="tab-tables" class="tab-panel" style="display: none;">
+            <div class="action-bar">
+              <button class="fr-btn fr-btn--sm fr-btn--secondary" id="create-table-btn">
+                <i class="ri-add-line"></i> Créer une table dans Grist
+              </button>
+            </div>
+            <div id="tables-tree" class="tree-view">
+              <!-- Tables -->
+            </div>
+          </div>
+
+          <div id="tab-preview" class="tab-panel" style="display: none;">
+            <p class="fr-text--sm" id="preview-info">Sélectionnez une table pour voir un aperçu des données.</p>
+            <div class="table-preview">
+              <table class="fr-table" id="preview-table">
+                <thead><tr></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL : Ajouter une connexion -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="connection-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="ri-link"></i> Nouvelle connexion Grist</h3>
+        <button class="modal-close" onclick="closeModal('connection-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fr-input-group">
+          <label class="fr-label" for="conn-name">
+            Nom de la connexion
+            <span class="fr-hint-text">Un nom pour identifier cette connexion</span>
+          </label>
+          <input class="fr-input" type="text" id="conn-name" placeholder="Ex: Grist Production">
+        </div>
+
+        <div class="fr-input-group fr-mt-2w">
+          <label class="fr-label" for="conn-url">
+            URL du serveur Grist
+            <span class="fr-hint-text">Ex: https://grist.numerique.gouv.fr ou https://docs.getgrist.com</span>
+          </label>
+          <input class="fr-input" type="url" id="conn-url" placeholder="https://grist.numerique.gouv.fr" value="https://grist.numerique.gouv.fr">
+        </div>
+
+        <div class="fr-input-group fr-mt-2w">
+          <label class="fr-label" for="conn-api-key">
+            Clé API
+            <span class="fr-hint-text">Trouvable dans Grist &gt; Paramètres du compte &gt; API</span>
+          </label>
+          <input class="fr-input" type="password" id="conn-api-key" placeholder="Votre clé API Grist" autocomplete="off" data-1p-ignore data-lpignore="true">
+        </div>
+
+        <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-2w">
+          <p>La clé API est stockée uniquement dans votre navigateur (localStorage).</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--secondary" onclick="closeModal('connection-modal')">Annuler</button>
+        <button class="fr-btn" id="save-connection-btn">Tester et sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL : Créer une table Grist -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="create-table-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="ri-table-line"></i> Créer une table dans Grist</h3>
+        <button class="modal-close" onclick="closeModal('create-table-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fr-input-group">
+          <label class="fr-label" for="table-name">Nom de la table</label>
+          <input class="fr-input" type="text" id="table-name" placeholder="Ex: MesDonnees">
+        </div>
+
+        <div class="columns-editor fr-mt-2w">
+          <label class="fr-label">Colonnes</label>
+          <div id="columns-list">
+            <div class="column-item">
+              <input class="fr-input fr-input--sm" type="text" placeholder="Nom de colonne" value="Label">
+              <select class="fr-select fr-select--sm" style="width: 120px;">
+                <option value="Text">Texte</option>
+                <option value="Numeric">Nombre</option>
+                <option value="Date">Date</option>
+                <option value="Bool">Booléen</option>
+              </select>
+              <button class="fr-btn fr-btn--sm fr-btn--tertiary" onclick="this.parentElement.remove()">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+            <div class="column-item">
+              <input class="fr-input fr-input--sm" type="text" placeholder="Nom de colonne" value="Valeur">
+              <select class="fr-select fr-select--sm" style="width: 120px;">
+                <option value="Text">Texte</option>
+                <option value="Numeric" selected>Nombre</option>
+                <option value="Date">Date</option>
+                <option value="Bool">Booléen</option>
+              </select>
+              <button class="fr-btn fr-btn--sm fr-btn--tertiary" onclick="this.parentElement.remove()">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </div>
+          <button class="fr-btn fr-btn--sm fr-btn--tertiary fr-mt-1w" id="add-column-btn">
+            <i class="ri-add-line"></i> Ajouter une colonne
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--secondary" onclick="closeModal('create-table-modal')">Annuler</button>
+        <button class="fr-btn" id="create-table-confirm-btn">Créer la table</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL : Créer une source manuelle -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="manual-source-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="ri-edit-line"></i> Nouvelle source manuelle</h3>
+        <button class="modal-close" onclick="closeModal('manual-source-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fr-input-group">
+          <label class="fr-label" for="source-name">Nom de la source</label>
+          <input class="fr-input" type="text" id="source-name" placeholder="Ex: Statistiques mensuelles">
+        </div>
+
+        <div class="fr-input-group fr-mt-2w">
+          <label class="fr-label" for="source-data">
+            Données (JSON)
+            <span class="fr-hint-text">Un tableau d'objets JSON</span>
+          </label>
+          <textarea class="fr-input" id="source-data" rows="10" placeholder='[
+  { "label": "Janvier", "valeur": 100 },
+  { "label": "Février", "valeur": 150 }
+]'></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--secondary" onclick="closeModal('manual-source-modal')">Annuler</button>
+        <button class="fr-btn" id="save-source-btn">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // STOCKAGE LOCAL
+    // ============================================================
+    const STORAGE_KEYS = {
+      CONNECTIONS: 'gouv_widgets_connections',
+      SOURCES: 'gouv_widgets_sources',
+      SELECTED_SOURCE: 'gouv_widgets_selected_source'
+    };
+
+    function loadFromStorage(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveToStorage(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    // ============================================================
+    // ÉTAT DE L'APPLICATION
+    // ============================================================
+    let state = {
+      connections: loadFromStorage(STORAGE_KEYS.CONNECTIONS),
+      sources: loadFromStorage(STORAGE_KEYS.SOURCES),
+      selectedConnection: null,
+      selectedDocument: null,
+      selectedTable: null,
+      documents: [],
+      tables: [],
+      tableData: []
+    };
+
+    // ============================================================
+    // INITIALISATION
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderConnections();
+      renderSources();
+
+      // Event listeners
+      document.getElementById('add-connection-btn').addEventListener('click', () => openModal('connection-modal'));
+      document.getElementById('add-source-btn').addEventListener('click', () => openModal('manual-source-modal'));
+      document.getElementById('save-connection-btn').addEventListener('click', saveConnection);
+      document.getElementById('save-source-btn').addEventListener('click', saveManualSource);
+      document.getElementById('create-table-btn').addEventListener('click', () => openModal('create-table-modal'));
+      document.getElementById('add-column-btn').addEventListener('click', addColumnRow);
+      document.getElementById('create-table-confirm-btn').addEventListener('click', createGristTable);
+      document.getElementById('refresh-btn').addEventListener('click', refreshCurrentView);
+      document.getElementById('use-in-builder-btn').addEventListener('click', openInBuilder);
+
+      // Tabs
+      document.querySelectorAll('.explorer-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchExplorerTab(tab.dataset.tab));
+      });
+    });
+
+    // ============================================================
+    // MODALS
+    // ============================================================
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // ============================================================
+    // CONNEXIONS
+    // ============================================================
+    function renderConnections() {
+      const container = document.getElementById('connections-list');
+      container.innerHTML = '';
+
+      if (state.connections.length === 0) {
+        container.innerHTML = '<p class="fr-text--sm" style="color: var(--text-mention-grey);">Aucune connexion</p>';
+        return;
+      }
+
+      state.connections.forEach((conn, index) => {
+        const card = document.createElement('div');
+        card.className = `connection-card ${state.selectedConnection === index ? 'selected' : ''}`;
+        card.innerHTML = `
+          <div class="name">
+            <span class="badge-source-type badge-grist">Grist</span>
+            ${escapeHtml(conn.name)}
+          </div>
+          <div class="url">${escapeHtml(conn.url)}</div>
+          <div class="status ${conn.status || ''}">${conn.statusText || 'Non testé'}</div>
+        `;
+        card.addEventListener('click', () => selectConnection(index));
+
+        // Context menu (right-click to delete)
+        card.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (confirm(`Supprimer la connexion "${conn.name}" ?`)) {
+            deleteConnection(index);
+          }
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    async function saveConnection() {
+      const name = document.getElementById('conn-name').value.trim();
+      const url = document.getElementById('conn-url').value.trim().replace(/\/$/, '');
+      const apiKey = document.getElementById('conn-api-key').value.trim();
+
+      if (!name || !url || !apiKey) {
+        alert('Veuillez remplir tous les champs');
+        return;
+      }
+
+      // Test the connection
+      const btn = document.getElementById('save-connection-btn');
+      btn.disabled = true;
+      btn.textContent = 'Test en cours...';
+
+      try {
+        // Utilise le proxy pour éviter les erreurs CORS
+        let testUrl;
+        if (url.includes('docs.getgrist.com')) {
+          testUrl = '/grist-proxy/api/orgs';
+        } else if (url.includes('grist.numerique.gouv.fr')) {
+          testUrl = '/grist-gouv-proxy/api/orgs';
+        } else {
+          testUrl = `${url}/api/orgs`;
+        }
+
+        const response = await fetch(testUrl, {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const orgs = await response.json();
+
+        // Save connection
+        const connection = {
+          id: Date.now().toString(),
+          name,
+          url,
+          apiKey,
+          status: 'connected',
+          statusText: `Connecté (${orgs.length} org${orgs.length > 1 ? 's' : ''})`
+        };
+
+        state.connections.push(connection);
+        saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
+        renderConnections();
+        closeModal('connection-modal');
+
+        // Clear form
+        document.getElementById('conn-name').value = '';
+        document.getElementById('conn-api-key').value = '';
+
+        // Auto-select the new connection
+        selectConnection(state.connections.length - 1);
+
+      } catch (error) {
+        alert(`Erreur de connexion : ${error.message}\n\nVérifiez l'URL et la clé API.`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Tester et sauvegarder';
+      }
+    }
+
+    function deleteConnection(index) {
+      state.connections.splice(index, 1);
+      saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
+      if (state.selectedConnection === index) {
+        state.selectedConnection = null;
+        showExplorerEmpty();
+      }
+      renderConnections();
+    }
+
+    async function selectConnection(index) {
+      state.selectedConnection = index;
+      state.selectedDocument = null;
+      state.selectedTable = null;
+      renderConnections();
+
+      const conn = state.connections[index];
+      document.getElementById('explorer-title').textContent = conn.name;
+      document.getElementById('explorer-empty').style.display = 'none';
+      document.getElementById('explorer-content').style.display = 'block';
+
+      await loadDocuments();
+    }
+
+    // ============================================================
+    // GRIST API
+    // ============================================================
+    // Convertit une URL Grist en URL proxy locale pour éviter les erreurs CORS
+    function getProxyUrl(gristUrl, endpoint) {
+      const url = new URL(gristUrl);
+
+      // Si c'est docs.getgrist.com, utiliser le proxy dédié
+      if (url.hostname === 'docs.getgrist.com') {
+        return `/grist-proxy/api${endpoint}`;
+      }
+
+      // Si c'est grist.numerique.gouv.fr, utiliser le proxy gouv
+      if (url.hostname === 'grist.numerique.gouv.fr') {
+        return `/grist-gouv-proxy/api${endpoint}`;
+      }
+
+      // Sinon, utiliser le proxy générique (pour instances self-hosted)
+      // Note: pour les instances self-hosted, il faudra configurer CORS côté serveur
+      // ou ajouter d'autres entrées de proxy dans vite.config.ts
+      return `${gristUrl}/api${endpoint}`;
+    }
+
+    async function gristFetch(endpoint) {
+      const conn = state.connections[state.selectedConnection];
+      if (!conn) throw new Error('Aucune connexion sélectionnée');
+
+      const proxyUrl = getProxyUrl(conn.url, endpoint);
+
+      const response = await fetch(proxyUrl, {
+        headers: { 'Authorization': `Bearer ${conn.apiKey}` }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    async function loadDocuments() {
+      const tree = document.getElementById('documents-tree');
+      tree.innerHTML = '<p>Chargement...</p>';
+
+      try {
+        // Get all orgs
+        const orgs = await gristFetch('/orgs');
+        state.documents = [];
+
+        let html = '';
+
+        for (const org of orgs) {
+          // Get workspaces for each org
+          const workspaces = await gristFetch(`/orgs/${org.id}/workspaces`);
+
+          html += `<div class="tree-item" style="font-weight: 600; background: var(--background-contrast-grey);">
+            <i class="ri-building-line"></i> ${escapeHtml(org.name)}
+          </div>`;
+
+          for (const ws of workspaces) {
+            html += `<div class="tree-children">
+              <div class="tree-item" style="background: var(--background-default-grey);">
+                <i class="ri-folder-line"></i> ${escapeHtml(ws.name)}
+                <span class="count">${ws.docs?.length || 0} docs</span>
+              </div>`;
+
+            if (ws.docs) {
+              for (const doc of ws.docs) {
+                state.documents.push({ ...doc, orgId: org.id, workspaceId: ws.id });
+                html += `<div class="tree-children">
+                  <div class="tree-item" data-doc-id="${doc.id}" onclick="selectDocument('${doc.id}')">
+                    <i class="ri-file-text-line"></i> ${escapeHtml(doc.name)}
+                  </div>
+                </div>`;
+              }
+            }
+
+            html += '</div>';
+          }
+        }
+
+        tree.innerHTML = html || '<p>Aucun document trouvé</p>';
+
+      } catch (error) {
+        tree.innerHTML = `<p class="error-message">Erreur : ${error.message}</p>`;
+      }
+    }
+
+    async function selectDocument(docId) {
+      state.selectedDocument = docId;
+      state.selectedTable = null;
+
+      // Highlight selected
+      document.querySelectorAll('[data-doc-id]').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`[data-doc-id="${docId}"]`)?.classList.add('selected');
+
+      // Switch to tables tab and load
+      switchExplorerTab('tables');
+      await loadTables();
+    }
+
+    async function loadTables() {
+      if (!state.selectedDocument) {
+        document.getElementById('tables-tree').innerHTML = '<p>Sélectionnez d\'abord un document</p>';
+        return;
+      }
+
+      const tree = document.getElementById('tables-tree');
+      tree.innerHTML = '<p>Chargement des tables...</p>';
+
+      try {
+        const result = await gristFetch(`/docs/${state.selectedDocument}/tables`);
+        state.tables = result.tables || [];
+
+        let html = '';
+        for (const table of state.tables) {
+          html += `<div class="tree-item" data-table-id="${table.id}" onclick="selectTable('${table.id}')">
+            <i class="ri-table-line"></i> ${escapeHtml(table.id)}
+          </div>`;
+        }
+
+        tree.innerHTML = html || '<p>Aucune table</p>';
+
+      } catch (error) {
+        tree.innerHTML = `<p class="error-message">Erreur : ${error.message}</p>`;
+      }
+    }
+
+    async function selectTable(tableId) {
+      state.selectedTable = tableId;
+
+      // Highlight
+      document.querySelectorAll('[data-table-id]').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`[data-table-id="${tableId}"]`)?.classList.add('selected');
+
+      // Load preview
+      switchExplorerTab('preview');
+      await loadTablePreview();
+    }
+
+    async function loadTablePreview() {
+      if (!state.selectedDocument || !state.selectedTable) return;
+
+      const info = document.getElementById('preview-info');
+      const table = document.getElementById('preview-table');
+
+      info.textContent = 'Chargement...';
+      table.querySelector('thead tr').innerHTML = '';
+      table.querySelector('tbody').innerHTML = '';
+
+      try {
+        const result = await gristFetch(`/docs/${state.selectedDocument}/tables/${state.selectedTable}/records?limit=20`);
+        state.tableData = result.records || [];
+
+        if (state.tableData.length === 0) {
+          info.textContent = 'Table vide';
+          return;
+        }
+
+        // Get columns from first record
+        const columns = Object.keys(state.tableData[0].fields || {});
+
+        // Header
+        let headerHtml = '<th>#</th>';
+        columns.forEach(col => {
+          headerHtml += `<th>${escapeHtml(col)}</th>`;
+        });
+        table.querySelector('thead tr').innerHTML = headerHtml;
+
+        // Body
+        let bodyHtml = '';
+        state.tableData.forEach(record => {
+          bodyHtml += '<tr>';
+          bodyHtml += `<td>${record.id}</td>`;
+          columns.forEach(col => {
+            const val = record.fields[col];
+            bodyHtml += `<td>${escapeHtml(String(val ?? ''))}</td>`;
+          });
+          bodyHtml += '</tr>';
+        });
+        table.querySelector('tbody').innerHTML = bodyHtml;
+
+        info.textContent = `Table "${state.selectedTable}" — ${state.tableData.length} lignes affichées`;
+
+        // Save as current source for builder
+        saveCurrentAsSource();
+
+      } catch (error) {
+        info.textContent = `Erreur : ${error.message}`;
+      }
+    }
+
+    async function createGristTable() {
+      if (!state.selectedDocument) {
+        alert('Sélectionnez d\'abord un document Grist');
+        return;
+      }
+
+      const tableName = document.getElementById('table-name').value.trim();
+      if (!tableName) {
+        alert('Veuillez entrer un nom de table');
+        return;
+      }
+
+      // Collect columns
+      const columnItems = document.querySelectorAll('#columns-list .column-item');
+      const columns = [];
+
+      columnItems.forEach(item => {
+        const name = item.querySelector('input').value.trim();
+        const type = item.querySelector('select').value;
+        if (name) {
+          columns.push({ id: name, fields: { type } });
+        }
+      });
+
+      if (columns.length === 0) {
+        alert('Ajoutez au moins une colonne');
+        return;
+      }
+
+      try {
+        const conn = state.connections[state.selectedConnection];
+
+        // Utilise le proxy pour éviter CORS
+        const createUrl = getProxyUrl(conn.url, `/docs/${state.selectedDocument}/tables`);
+
+        const response = await fetch(createUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${conn.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tables: [{
+              id: tableName,
+              columns: columns
+            }]
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || `HTTP ${response.status}`);
+        }
+
+        alert(`Table "${tableName}" créée avec succès !`);
+        closeModal('create-table-modal');
+
+        // Refresh tables list
+        await loadTables();
+
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    }
+
+    function addColumnRow() {
+      const container = document.getElementById('columns-list');
+      const row = document.createElement('div');
+      row.className = 'column-item';
+      row.innerHTML = `
+        <input class="fr-input fr-input--sm" type="text" placeholder="Nom de colonne">
+        <select class="fr-select fr-select--sm" style="width: 120px;">
+          <option value="Text">Texte</option>
+          <option value="Numeric">Nombre</option>
+          <option value="Date">Date</option>
+          <option value="Bool">Booléen</option>
+        </select>
+        <button class="fr-btn fr-btn--sm fr-btn--tertiary" onclick="this.parentElement.remove()">
+          <i class="ri-delete-bin-line"></i>
+        </button>
+      `;
+      container.appendChild(row);
+    }
+
+    // ============================================================
+    // SOURCES MANUELLES
+    // ============================================================
+    function renderSources() {
+      const container = document.getElementById('sources-list');
+      container.innerHTML = '';
+
+      if (state.sources.length === 0) {
+        container.innerHTML = '<p class="fr-text--sm" style="color: var(--text-mention-grey);">Aucune source</p>';
+        return;
+      }
+
+      state.sources.forEach((source, index) => {
+        const badge = source.type === 'grist' ? 'badge-grist' : source.type === 'manual' ? 'badge-manual' : 'badge-api';
+        const badgeText = source.type === 'grist' ? 'Grist' : source.type === 'manual' ? 'Manuel' : 'API';
+
+        const card = document.createElement('div');
+        card.className = 'connection-card';
+        card.innerHTML = `
+          <div class="name">
+            <span class="badge-source-type ${badge}">${badgeText}</span>
+            ${escapeHtml(source.name)}
+          </div>
+          <div class="url">${source.recordCount || '?'} enregistrements</div>
+        `;
+
+        card.addEventListener('click', () => previewSource(index));
+        card.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (confirm(`Supprimer la source "${source.name}" ?`)) {
+            deleteSource(index);
+          }
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function saveManualSource() {
+      const name = document.getElementById('source-name').value.trim();
+      const dataStr = document.getElementById('source-data').value.trim();
+
+      if (!name) {
+        alert('Veuillez entrer un nom');
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(dataStr);
+        if (!Array.isArray(data)) {
+          throw new Error('Les données doivent être un tableau');
+        }
+      } catch (error) {
+        alert(`JSON invalide : ${error.message}`);
+        return;
+      }
+
+      const source = {
+        id: Date.now().toString(),
+        name,
+        type: 'manual',
+        data,
+        recordCount: data.length
+      };
+
+      state.sources.push(source);
+      saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+      renderSources();
+      closeModal('manual-source-modal');
+
+      // Clear form
+      document.getElementById('source-name').value = '';
+      document.getElementById('source-data').value = '';
+    }
+
+    function deleteSource(index) {
+      state.sources.splice(index, 1);
+      saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+      renderSources();
+    }
+
+    function previewSource(index) {
+      const source = state.sources[index];
+
+      document.getElementById('explorer-empty').style.display = 'none';
+      document.getElementById('explorer-content').style.display = 'block';
+      document.getElementById('explorer-title').textContent = source.name;
+
+      // Show preview tab
+      switchExplorerTab('preview');
+
+      const info = document.getElementById('preview-info');
+      const table = document.getElementById('preview-table');
+
+      if (!source.data || source.data.length === 0) {
+        info.textContent = 'Source vide';
+        return;
+      }
+
+      const columns = Object.keys(source.data[0]);
+
+      let headerHtml = '';
+      columns.forEach(col => {
+        headerHtml += `<th>${escapeHtml(col)}</th>`;
+      });
+      table.querySelector('thead tr').innerHTML = headerHtml;
+
+      let bodyHtml = '';
+      source.data.slice(0, 20).forEach(record => {
+        bodyHtml += '<tr>';
+        columns.forEach(col => {
+          bodyHtml += `<td>${escapeHtml(String(record[col] ?? ''))}</td>`;
+        });
+        bodyHtml += '</tr>';
+      });
+      table.querySelector('tbody').innerHTML = bodyHtml;
+
+      info.textContent = `${source.data.length} enregistrements`;
+
+      // Save as selected for builder
+      localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+    }
+
+    function saveCurrentAsSource() {
+      if (!state.selectedDocument || !state.selectedTable || state.tableData.length === 0) return;
+
+      const conn = state.connections[state.selectedConnection];
+      const doc = state.documents.find(d => d.id === state.selectedDocument);
+
+      const source = {
+        id: `grist_${state.selectedDocument}_${state.selectedTable}`,
+        name: `${doc?.name || 'Doc'} / ${state.selectedTable}`,
+        type: 'grist',
+        connectionId: conn.id,
+        documentId: state.selectedDocument,
+        tableId: state.selectedTable,
+        apiUrl: `${conn.url}/api/docs/${state.selectedDocument}/tables/${state.selectedTable}/records`,
+        apiKey: conn.apiKey,
+        data: state.tableData.map(r => r.fields),
+        recordCount: state.tableData.length
+      };
+
+      localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+    }
+
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
+    function switchExplorerTab(tabId) {
+      document.querySelectorAll('.explorer-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+      document.getElementById(`tab-${tabId}`).style.display = 'block';
+    }
+
+    function showExplorerEmpty() {
+      document.getElementById('explorer-empty').style.display = 'block';
+      document.getElementById('explorer-content').style.display = 'none';
+    }
+
+    function refreshCurrentView() {
+      if (state.selectedConnection !== null) {
+        loadDocuments();
+      }
+    }
+
+    function openInBuilder() {
+      // Source is already saved in localStorage
+      window.location.href = 'builder.html';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+
+  <!-- ============================================ -->
+  <!-- FOOTER DSFR -->
+  <!-- ============================================ -->
+  <footer class="fr-footer" role="contentinfo" id="footer" style="margin-top: auto;">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand fr-enlarge-link">
+          <a href="index.html" title="Retour à l'accueil du site - République Française">
+            <p class="fr-logo">
+              République<br>Française
+            </p>
+          </a>
+        </div>
+        <div class="fr-footer__content">
+          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de créer des visualisations de données conformes au Design System de l'État (DSFR).</p>
+          <ul class="fr-footer__content-list">
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
+            </li>
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="fr-footer__bottom">
+        <ul class="fr-footer__bottom-list">
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Accessibilité : non conforme</a>
+          </li>
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Mentions légales</a>
+          </li>
+        </ul>
+        <div class="fr-footer__bottom-copy">
+          <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

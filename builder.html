@@ -151,6 +151,45 @@
       font-size: 0.75rem;
     }
 
+    /* Sections collapsibles */
+    .config-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .config-section-header:hover {
+      opacity: 0.8;
+    }
+
+    .config-section-header .collapse-icon {
+      transition: transform 0.2s;
+      font-size: 1rem;
+      color: var(--text-mention-grey);
+    }
+
+    .config-section.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+
+    .config-section-content {
+      overflow: hidden;
+      max-height: 1000px;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .config-section.collapsed .config-section-content {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .config-section h3 {
+      margin: 0;
+    }
+
     .preview-chart {
       background: white;
       border-radius: 8px;
@@ -333,6 +372,40 @@
       background: var(--border-action-high-blue-france);
     }
 
+    /* KPI Cards */
+    .kpi-card {
+      background: var(--background-default-grey);
+      border-left: 4px solid var(--border-default-grey);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      border-radius: 4px;
+    }
+    .kpi-card--info { border-left-color: #0063CB; }
+    .kpi-card--success { border-left-color: #18753C; }
+    .kpi-card--warning { border-left-color: #D64D00; }
+    .kpi-card--error { border-left-color: #C9191E; }
+
+    .kpi-value {
+      display: block;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-title-grey);
+      line-height: 1.2;
+    }
+    .kpi-label {
+      font-size: 0.875rem;
+      color: var(--text-mention-grey);
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    .kpi-config {
+      display: none;
+    }
+    .kpi-config.visible {
+      display: block;
+    }
+
     @media (max-width: 900px) {
       .builder-container {
         flex-direction: column;
@@ -346,12 +419,76 @@
   </style>
 </head>
 <body>
-  <header class="builder-header">
-    <div class="fr-container" style="display: flex; align-items: center; justify-content: space-between;">
-      <h1><i class="ri-bar-chart-box-line"></i> Générateur de graphiques — No Code</h1>
-      <a href="sources.html" class="fr-btn fr-btn--sm fr-btn--secondary">
-        <i class="ri-database-2-line"></i> Gérer les sources
-      </a>
+  <!-- ============================================ -->
+  <!-- HEADER DSFR -->
+  <!-- ============================================ -->
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo">
+                <p class="fr-logo">
+                  République<br>Française
+                </p>
+              </div>
+              <div class="fr-header__navbar">
+                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
+                  Menu
+                </button>
+              </div>
+            </div>
+            <div class="fr-header__service">
+              <a href="index.html" title="Accueil - gouv-widgets">
+                <p class="fr-header__service-title">gouv-widgets</p>
+              </a>
+              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                <li>
+                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
+                    GitHub
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
+          Fermer
+        </button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="index.html">Accueil</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="demo/index.html">Composants</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builder.html" aria-current="page">Builder</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="playground.html">Playground</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="sources.html">Sources</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </header>
 
@@ -362,8 +499,12 @@
     <aside class="builder-config">
 
       <!-- ÉTAPE 1 : Source de données -->
-      <div class="config-section">
-        <h3><span class="step-number">1</span> Source de données</h3>
+      <div class="config-section" id="section-source">
+        <div class="config-section-header" onclick="toggleSection('section-source')">
+          <h3><span class="step-number">1</span> Source de données</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
 
         <!-- Onglets de type de source -->
         <div class="source-type-tabs">
@@ -415,11 +556,16 @@
         </button>
 
         <div id="fields-status" class="fr-mt-1w"></div>
+        </div>
       </div>
 
       <!-- ÉTAPE 2 : Type de graphique -->
-      <div class="config-section">
-        <h3><span class="step-number">2</span> Type de graphique</h3>
+      <div class="config-section" id="section-type">
+        <div class="config-section-header" onclick="toggleSection('section-type')">
+          <h3><span class="step-number">2</span> Type de graphique</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
 
         <div class="chart-type-grid">
           <button class="chart-type-btn selected" data-type="bar">
@@ -446,12 +592,21 @@
             <i class="ri-radar-fill"></i>
             <span>Radar</span>
           </button>
+          <button class="chart-type-btn" data-type="kpi">
+            <i class="ri-numbers-fill"></i>
+            <span>KPI</span>
+          </button>
+        </div>
         </div>
       </div>
 
       <!-- ÉTAPE 3 : Mapping des données -->
-      <div class="config-section">
-        <h3><span class="step-number">3</span> Configuration des données</h3>
+      <div class="config-section" id="section-data">
+        <div class="config-section-header" onclick="toggleSection('section-data')">
+          <h3><span class="step-number">3</span> Configuration des données</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
 
         <div class="fr-select-group fr-select-group--sm">
           <label class="fr-label" for="label-field">
@@ -499,11 +654,16 @@
             <option value="asc">Croissant (plus petit en premier)</option>
           </select>
         </div>
+        </div>
       </div>
 
       <!-- ÉTAPE 4 : Apparence -->
-      <div class="config-section">
-        <h3><span class="step-number">4</span> Apparence</h3>
+      <div class="config-section" id="section-appearance">
+        <div class="config-section-header" onclick="toggleSection('section-appearance')">
+          <h3><span class="step-number">4</span> Apparence</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
 
         <div class="fr-input-group fr-input-group--sm">
           <label class="fr-label" for="chart-title">Titre du graphique</label>
@@ -515,7 +675,7 @@
           <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
         </div>
 
-        <div class="fr-mt-1w">
+        <div class="fr-mt-1w" id="color-config">
           <label class="fr-label">Couleur principale</label>
           <div class="color-picker-row">
             <input type="color" id="main-color" value="#000091">
@@ -523,6 +683,25 @@
             <button class="preset-btn" data-color="#009081">Émeraude</button>
             <button class="preset-btn" data-color="#C9191E">Marianne</button>
           </div>
+        </div>
+
+        <!-- Options spécifiques KPI -->
+        <div class="kpi-config" id="kpi-config">
+          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+            <label class="fr-label" for="kpi-variant">Style du KPI</label>
+            <select class="fr-select" id="kpi-variant">
+              <option value="">Par défaut (gris)</option>
+              <option value="info">Information (bleu)</option>
+              <option value="success">Succès (vert)</option>
+              <option value="warning">Attention (orange)</option>
+              <option value="error">Alerte (rouge)</option>
+            </select>
+          </div>
+          <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+            <label class="fr-label" for="kpi-unit">Unité (optionnel)</label>
+            <input class="fr-input" type="text" id="kpi-unit" placeholder="€, %, unités...">
+          </div>
+        </div>
         </div>
       </div>
 
@@ -859,6 +1038,16 @@
       document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('selected'));
       document.querySelector(`[data-type="${type}"]`).classList.add('selected');
       state.chartType = type;
+
+      // Toggle KPI-specific options
+      const isKPI = type === 'kpi';
+      document.getElementById('kpi-config').classList.toggle('visible', isKPI);
+      document.getElementById('color-config').style.display = isKPI ? 'none' : 'block';
+
+      // KPIs don't need label field or limit (they show a single value)
+      document.getElementById('label-field').closest('.fr-select-group').style.display = isKPI ? 'none' : 'block';
+      document.getElementById('limit').closest('.fr-input-group').style.display = isKPI ? 'none' : 'block';
+      document.getElementById('sort-order').closest('.fr-select-group').style.display = isKPI ? 'none' : 'block';
     }
 
     // ============================================================
@@ -960,8 +1149,15 @@
       state.limit = parseInt(document.getElementById('limit').value) || 10;
       state.sortOrder = document.getElementById('sort-order').value;
 
-      if (!state.labelField || !state.valueField) {
+      const isKPI = state.chartType === 'kpi';
+
+      // Validation: KPI only needs valueField, charts need both
+      if (!isKPI && (!state.labelField || !state.valueField)) {
         alert('Veuillez sélectionner les champs pour les axes X et Y');
+        return;
+      }
+      if (isKPI && !state.valueField && state.aggregation !== 'count') {
+        alert('Veuillez sélectionner un champ pour la valeur');
         return;
       }
 
@@ -976,12 +1172,22 @@
         ? 'count(*) as value'
         : `${state.aggregation}(${state.valueField}) as value`;
 
-      const params = new URLSearchParams({
-        select: `${state.labelField}, ${valueExpression}`,
-        group_by: state.labelField,
-        order_by: `value ${state.sortOrder}`,
-        limit: state.limit.toString()
-      });
+      let params;
+      if (isKPI) {
+        // KPI: just get the single aggregated value, no group_by
+        params = new URLSearchParams({
+          select: valueExpression,
+          limit: '1'
+        });
+      } else {
+        // Chart: group by label field
+        params = new URLSearchParams({
+          select: `${state.labelField}, ${valueExpression}`,
+          group_by: state.labelField,
+          order_by: `value ${state.sortOrder}`,
+          limit: state.limit.toString()
+        });
+      }
 
       const apiUrl = `${state.apiUrl}?${params}`;
 
@@ -993,14 +1199,16 @@
         // Update raw data view
         document.getElementById('raw-data').textContent = JSON.stringify(state.data, null, 2);
 
-        // Render chart
+        // Render chart or KPI
         renderChart();
 
         // Generate code
         generateCode(apiUrl);
 
-        // Update accessible table
-        updateAccessibleTable();
+        // Update accessible table (only for charts)
+        if (!isKPI) {
+          updateAccessibleTable();
+        }
 
       } catch (error) {
         console.error(error);
@@ -1070,6 +1278,45 @@
     }
 
     function generateCodeForLocalData() {
+      // Handle KPI type
+      if (state.chartType === 'kpi') {
+        const value = state.data[0]?.value || 0;
+        const variant = document.getElementById('kpi-variant').value;
+        const unit = document.getElementById('kpi-unit').value || '';
+
+        const code = `<!-- KPI généré avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Données locales'} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<style>
+.kpi-card {
+  background: var(--background-default-grey);
+  border-left: 4px solid var(--border-default-grey);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  border-radius: 4px;
+}
+.kpi-card--info { border-left-color: #0063CB; }
+.kpi-card--success { border-left-color: #18753C; }
+.kpi-card--warning { border-left-color: #D64D00; }
+.kpi-card--error { border-left-color: #C9191E; }
+.kpi-value { display: block; font-size: 2.5rem; font-weight: 700; color: var(--text-title-grey); }
+.kpi-label { display: block; font-size: 0.875rem; color: var(--text-mention-grey); margin-top: 0.5rem; }
+</style>
+
+<div class="fr-container fr-my-4w">
+  <div class="kpi-card${variant ? ' kpi-card--' + variant : ''}">
+    <span class="kpi-value">${formatKPIValue(value, unit)}</span>
+    <span class="kpi-label">${escapeHtml(state.title)}</span>
+  </div>
+</div>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
       const code = `<!-- Graphique généré avec gouv-widgets Builder -->
 <!-- Source : ${state.savedSource?.name || 'Données locales'} -->
 
@@ -1122,14 +1369,44 @@ new Chart(document.getElementById('myChart'), {
     function renderChart() {
       const canvas = document.getElementById('preview-canvas');
       const emptyState = document.getElementById('empty-state');
+      const chartContainer = document.querySelector('.chart-container');
 
       emptyState.style.display = 'none';
-      canvas.style.display = 'block';
 
       // Destroy previous chart
       if (state.chartInstance) {
         state.chartInstance.destroy();
+        state.chartInstance = null;
       }
+
+      // Remove any existing KPI card
+      const existingKpi = chartContainer.querySelector('.kpi-card');
+      if (existingKpi) existingKpi.remove();
+
+      // Handle KPI type differently
+      if (state.chartType === 'kpi') {
+        canvas.style.display = 'none';
+
+        // Get the single aggregated value
+        const value = state.data[0]?.value || 0;
+        const variant = document.getElementById('kpi-variant').value;
+        const unit = document.getElementById('kpi-unit').value || '';
+
+        // Format the value
+        const formattedValue = formatKPIValue(value, unit);
+
+        // Create KPI card
+        const kpiCard = document.createElement('div');
+        kpiCard.className = `kpi-card${variant ? ' kpi-card--' + variant : ''}`;
+        kpiCard.innerHTML = `
+          <span class="kpi-value">${formattedValue}</span>
+          <span class="kpi-label">${state.title}</span>
+        `;
+        chartContainer.appendChild(kpiCard);
+        return;
+      }
+
+      canvas.style.display = 'block';
 
       const labels = state.data.map(d => d[state.labelField] || 'N/A');
       const values = state.data.map(d => Math.round((d.value || 0) * 100) / 100);
@@ -1178,6 +1455,19 @@ new Chart(document.getElementById('myChart'), {
       });
     }
 
+    // Format KPI value with appropriate formatting
+    function formatKPIValue(value, unit) {
+      const num = Math.round(value * 100) / 100;
+      if (unit === '€' || unit === 'EUR') {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(num);
+      } else if (unit === '%') {
+        return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(num) + ' %';
+      } else {
+        const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(num);
+        return unit ? `${formatted} ${unit}` : formatted;
+      }
+    }
+
     function updateAccessibleTable() {
       const tbody = document.querySelector('#accessible-table tbody');
       tbody.innerHTML = '';
@@ -1196,6 +1486,70 @@ new Chart(document.getElementById('myChart'), {
     // GÉNÉRATION DU CODE
     // ============================================================
     function generateCode(apiUrl) {
+      // Handle KPI type
+      if (state.chartType === 'kpi') {
+        const variant = document.getElementById('kpi-variant').value;
+        const unit = document.getElementById('kpi-unit').value || '';
+
+        const code = `<!-- KPI généré avec gouv-widgets Builder -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<style>
+.kpi-card {
+  background: var(--background-default-grey);
+  border-left: 4px solid var(--border-default-grey);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  border-radius: 4px;
+}
+.kpi-card--info { border-left-color: #0063CB; }
+.kpi-card--success { border-left-color: #18753C; }
+.kpi-card--warning { border-left-color: #D64D00; }
+.kpi-card--error { border-left-color: #C9191E; }
+.kpi-value { display: block; font-size: 2.5rem; font-weight: 700; color: var(--text-title-grey); }
+.kpi-label { display: block; font-size: 0.875rem; color: var(--text-mention-grey); margin-top: 0.5rem; }
+</style>
+
+<div class="fr-container fr-my-4w">
+  <div class="kpi-card${variant ? ' kpi-card--' + variant : ''}" id="kpi-container">
+    <span class="kpi-value" id="kpi-value">—</span>
+    <span class="kpi-label">${escapeHtml(state.title)}</span>
+  </div>
+</div>
+
+<script>
+// URL de l'API avec agrégation
+const API_URL = '${apiUrl}';
+
+function formatKPIValue(value, unit) {
+  const num = Math.round(value * 100) / 100;
+  if (unit === '€' || unit === 'EUR') {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(num);
+  } else if (unit === '%') {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(num) + ' %';
+  } else {
+    const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(num);
+    return unit ? formatted + ' ' + unit : formatted;
+  }
+}
+
+async function loadKPI() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const data = json.results || [];
+  const value = data[0]?.value || 0;
+  document.getElementById('kpi-value').textContent = formatKPIValue(value, '${unit}');
+}
+
+loadKPI();
+<\/script>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
       const code = `<!-- Graphique généré avec gouv-widgets Builder -->
 
 <!-- Dépendances CSS (DSFR) -->
@@ -1321,6 +1675,15 @@ loadChart();
         }
       });
     })();
+
+    // ============================================================
+    // SECTIONS COLLAPSIBLES
+    // ============================================================
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.classList.toggle('collapsed');
+    }
   </script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Playground</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- DSFR Chart (graphiques officiels) -->
+  <script src="https://cdn.jsdelivr.net/npm/@anthropic/dsfr-chart@1.0.0/dist/dsfr-chart.umd.js" defer></script>
+
+  <!-- CodeMirror pour l'éditeur de code -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/dracula.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/css/css.min.js"></script>
+
+  <!-- Chart.js (utilisé par dsfr-chart) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .playground-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .playground-editor {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-default-grey);
+    }
+
+    .playground-preview {
+      flex: 1;
+      overflow: auto;
+      background: var(--background-default-grey);
+    }
+
+    .editor-toolbar {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: var(--background-contrast-grey);
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .CodeMirror {
+      flex: 1;
+      font-size: 13px;
+      height: auto !important;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .example-selector {
+      padding: 0.5rem 1rem;
+      background: var(--background-alt-grey);
+      border-bottom: 1px solid var(--border-default-grey);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .example-selector label {
+      font-weight: 500;
+    }
+
+    /* Resizer */
+    .resizer {
+      width: 6px;
+      background: var(--border-default-grey);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .resizer:hover, .resizer.dragging {
+      background: var(--border-action-high-blue-france);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .playground-container {
+        flex-direction: column;
+      }
+      .playground-editor,
+      .playground-preview {
+        width: 100%;
+        height: 50vh;
+      }
+      .resizer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ============================================ -->
+  <!-- HEADER DSFR -->
+  <!-- ============================================ -->
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo">
+                <p class="fr-logo">
+                  République<br>Française
+                </p>
+              </div>
+              <div class="fr-header__navbar">
+                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
+                  Menu
+                </button>
+              </div>
+            </div>
+            <div class="fr-header__service">
+              <a href="index.html" title="Accueil - gouv-widgets">
+                <p class="fr-header__service-title">gouv-widgets</p>
+              </a>
+              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                <li>
+                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
+                    GitHub
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
+          Fermer
+        </button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="index.html">Accueil</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="demo/index.html">Composants</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builder.html">Builder</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="playground.html" aria-current="page">Playground</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="sources.html">Sources</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="example-selector">
+    <label for="example-select">Charger un exemple :</label>
+    <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
+      <option value="bar-chart">Graphique en barres — Prix moyen par région</option>
+      <option value="pie-chart">Graphique circulaire — Répartition par énergie</option>
+      <option value="line-chart">Graphique linéaire — Évolution des prix</option>
+      <option value="kpi-dashboard">Dashboard KPI</option>
+    </select>
+  </div>
+
+  <div class="playground-container">
+    <div class="playground-editor">
+      <div class="editor-toolbar">
+        <button id="run-btn" class="fr-btn fr-btn--sm fr-btn--icon-left fr-icon-play-line">
+          Exécuter
+        </button>
+        <button id="reset-btn" class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-refresh-line">
+          Réinitialiser
+        </button>
+      </div>
+      <textarea id="code-editor"></textarea>
+    </div>
+    <!-- Resizer -->
+    <div class="resizer" id="resizer"></div>
+    <div class="playground-preview">
+      <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- FOOTER DSFR -->
+  <!-- ============================================ -->
+  <footer class="fr-footer" role="contentinfo" id="footer">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand fr-enlarge-link">
+          <a href="index.html" title="Retour à l'accueil du site - République Française">
+            <p class="fr-logo">
+              République<br>Française
+            </p>
+          </a>
+        </div>
+        <div class="fr-footer__content">
+          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de créer des visualisations de données conformes au Design System de l'État (DSFR).</p>
+          <ul class="fr-footer__content-list">
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
+            </li>
+            <li class="fr-footer__content-item">
+              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="fr-footer__bottom">
+        <ul class="fr-footer__bottom-list">
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Accessibilité : non conforme</a>
+          </li>
+          <li class="fr-footer__bottom-item">
+            <a class="fr-footer__bottom-link" href="#">Mentions légales</a>
+          </li>
+        </ul>
+        <div class="fr-footer__bottom-copy">
+          <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <script>
+    // ============================================================
+    // EXEMPLES DE CODE
+    // Chaque exemple montre comment utiliser l'API OpenDataSoft
+    // avec les graphiques DSFR
+    // ============================================================
+
+    const examples = {
+
+      // ---------------------------------------------------------
+      // EXEMPLE 1 : Graphique en barres
+      // Prix moyen du contrôle technique par région
+      // ---------------------------------------------------------
+      'bar-chart': `<!--
+  EXEMPLE : Graphique en barres DSFR
+
+  Ce code récupère les prix moyens du contrôle technique
+  par région depuis l'API OpenDataSoft et les affiche
+  dans un graphique en barres conforme DSFR.
+
+  L'API utilisée : data.economie.gouv.fr
+  Dataset : prix-controle-technique
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Prix moyen du contrôle technique par région</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Prix du contrôle technique
+  </p>
+
+  <!-- Conteneur du graphique -->
+  <div id="chart-container" style="height: 400px; position: relative;">
+    <p id="loading">Chargement des données...</p>
+  </div>
+
+  <!-- Tableau alternatif pour l'accessibilité (RGAA) -->
+  <details class="fr-accordion fr-mt-2w">
+    <summary class="fr-accordion__btn">
+      Voir les données en tableau (accessibilité)
+    </summary>
+    <div class="fr-accordion__content">
+      <table class="fr-table" id="data-table">
+        <thead>
+          <tr>
+            <th>Région</th>
+            <th>Prix moyen (€)</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </details>
+</div>
+
+<script>
+// ============================================================
+// ÉTAPE 1 : Configuration de l'API
+// ============================================================
+
+// URL de base de l'API OpenDataSoft
+const API_BASE = 'https://data.economie.gouv.fr/api/explore/v2.1';
+
+// Identifiant du dataset
+const DATASET = 'prix-controle-technique';
+
+// On construit une requête avec agrégation :
+// - group_by : on groupe par région
+// - avg(prix_visite) : on calcule la moyenne des prix
+// - limit : on limite à 20 résultats
+const API_URL = \`\${API_BASE}/catalog/datasets/\${DATASET}/records?\` + new URLSearchParams({
+  select: 'nom_region, avg(prix_visite) as prix_moyen',
+  group_by: 'nom_region',
+  order_by: 'prix_moyen desc',
+  limit: '20'
+});
+
+// ============================================================
+// ÉTAPE 2 : Récupération des données
+// ============================================================
+
+async function fetchData() {
+  try {
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+      throw new Error(\`Erreur HTTP: \${response.status}\`);
+    }
+
+    const json = await response.json();
+
+    // La réponse contient un tableau "results"
+    // Chaque élément a : nom_region et prix_moyen
+    return json.results;
+
+  } catch (error) {
+    console.error('Erreur lors du chargement:', error);
+    document.getElementById('loading').textContent =
+      'Erreur de chargement. Vérifiez la console.';
+    return [];
+  }
+}
+
+// ============================================================
+// ÉTAPE 3 : Création du graphique avec Chart.js
+// (dsfr-chart utilise Chart.js en interne)
+// ============================================================
+
+async function createChart() {
+  const data = await fetchData();
+
+  if (data.length === 0) return;
+
+  // Masquer le message de chargement
+  document.getElementById('loading').style.display = 'none';
+
+  // Préparer les données pour Chart.js
+  // labels : noms des régions
+  // values : prix moyens arrondis à 2 décimales
+  const labels = data.map(d => d.nom_region || 'Non renseigné');
+  const values = data.map(d => Math.round(d.prix_moyen * 100) / 100);
+
+  // Créer le canvas pour Chart.js
+  const canvas = document.createElement('canvas');
+  canvas.id = 'myChart';
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    'Graphique en barres montrant le prix moyen du contrôle technique par région');
+  document.getElementById('chart-container').appendChild(canvas);
+
+  // Configuration du graphique
+  // On utilise les couleurs DSFR
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Prix moyen (€)',
+        data: values,
+        // Couleur DSFR : bleu france
+        backgroundColor: '#000091',
+        borderColor: '#000091',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => \`\${ctx.parsed.y.toFixed(2)} €\`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: 'Prix moyen (€)'
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
+    }
+  });
+
+  // Remplir le tableau pour l'accessibilité
+  const tbody = document.getElementById('table-body');
+  data.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = \`
+      <td>\${d.nom_region || 'Non renseigné'}</td>
+      <td>\${d.prix_moyen?.toFixed(2) || '—'} €</td>
+    \`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Lancer la création du graphique
+createChart();
+<\/script>`,
+
+      // ---------------------------------------------------------
+      // EXEMPLE 2 : Graphique circulaire (camembert)
+      // Répartition des centres par type d'énergie
+      // ---------------------------------------------------------
+      'pie-chart': `<!--
+  EXEMPLE : Graphique circulaire DSFR
+
+  Répartition des contrôles techniques par type d'énergie
+  (Essence, Diesel, Électrique, etc.)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Répartition par type d'énergie</h2>
+  <p class="fr-text--sm fr-text--light">
+    Nombre de tarifs enregistrés par catégorie d'énergie
+  </p>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <div id="chart-container" style="height: 400px; position: relative;">
+      <p id="loading">Chargement des données...</p>
+    </div>
+  </div>
+
+  <!-- Légende accessible -->
+  <div id="legend-container" class="fr-mt-2w"></div>
+</div>
+
+<script>
+// Configuration de l'API avec agrégation par type d'énergie
+const API_URL = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records?' +
+  new URLSearchParams({
+    select: 'cat_energie_libelle, count(*) as total',
+    group_by: 'cat_energie_libelle',
+    order_by: 'total desc',
+    limit: '10'
+  });
+
+// Palette de couleurs DSFR (couleurs illustratives)
+// Source : https://www.systeme-de-design.gouv.fr/fondamentaux/couleurs-palette
+const DSFR_COLORS = [
+  '#000091', // Bleu France
+  '#6A6AF4', // Bleu cumulus
+  '#009081', // Vert émeraude
+  '#C9191E', // Rouge marianne
+  '#FF9940', // Orange terre battue
+  '#A558A0', // Violet glycine
+  '#417DC4', // Bleu écume
+  '#716043', // Brun caramel
+  '#3A3A3A', // Gris
+  '#18753C', // Vert bourgeon
+];
+
+async function fetchData() {
+  try {
+    const response = await fetch(API_URL);
+    const json = await response.json();
+    return json.results;
+  } catch (error) {
+    console.error('Erreur:', error);
+    document.getElementById('loading').textContent = 'Erreur de chargement';
+    return [];
+  }
+}
+
+async function createChart() {
+  const data = await fetchData();
+  if (data.length === 0) return;
+
+  document.getElementById('loading').style.display = 'none';
+
+  const labels = data.map(d => d.cat_energie_libelle || 'Non renseigné');
+  const values = data.map(d => d.total);
+
+  const canvas = document.createElement('canvas');
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', 'Graphique circulaire de répartition par énergie');
+  document.getElementById('chart-container').appendChild(canvas);
+
+  new Chart(canvas, {
+    type: 'doughnut', // ou 'pie' pour un camembert plein
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: DSFR_COLORS.slice(0, data.length),
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        }
+      }
+    }
+  });
+
+  // Créer une légende accessible sous forme de liste
+  const legendHtml = data.map((d, i) => \`
+    <span class="fr-badge" style="background-color: \${DSFR_COLORS[i]}; color: white; margin: 0.25rem;">
+      \${d.cat_energie_libelle}: \${d.total.toLocaleString('fr-FR')}
+    </span>
+  \`).join('');
+
+  document.getElementById('legend-container').innerHTML = legendHtml;
+}
+
+createChart();
+<\/script>`,
+
+      // ---------------------------------------------------------
+      // EXEMPLE 3 : Graphique linéaire
+      // Distribution des prix
+      // ---------------------------------------------------------
+      'line-chart': `<!--
+  EXEMPLE : Graphique linéaire DSFR
+
+  Distribution des prix de contrôle technique
+  (histogramme des tranches de prix)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Distribution des prix du contrôle technique</h2>
+  <p class="fr-text--sm fr-text--light">
+    Répartition des centres par tranche de prix
+  </p>
+
+  <div id="chart-container" style="height: 350px; position: relative;">
+    <p id="loading">Chargement et analyse des données...</p>
+  </div>
+
+  <div class="fr-callout fr-mt-2w">
+    <p class="fr-callout__text">
+      <strong>Comment lire ce graphique :</strong>
+      Chaque barre représente le nombre de centres proposant
+      un prix dans cette tranche (par exemple : 60-65€).
+    </p>
+  </div>
+</div>
+
+<script>
+// On récupère un échantillon de prix pour faire une distribution
+const API_URL = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records?' +
+  new URLSearchParams({
+    select: 'prix_visite',
+    where: 'prix_visite is not null and prix_visite > 0 and prix_visite < 200',
+    limit: '1000'
+  });
+
+async function fetchData() {
+  try {
+    const response = await fetch(API_URL);
+    const json = await response.json();
+    // Extraire juste les prix
+    return json.results.map(r => r.prix_visite).filter(p => p);
+  } catch (error) {
+    console.error('Erreur:', error);
+    return [];
+  }
+}
+
+// Fonction pour créer un histogramme (grouper par tranches)
+function createHistogram(prices, binSize = 5) {
+  const min = Math.floor(Math.min(...prices) / binSize) * binSize;
+  const max = Math.ceil(Math.max(...prices) / binSize) * binSize;
+
+  const bins = {};
+  for (let i = min; i < max; i += binSize) {
+    bins[\`\${i}-\${i + binSize}€\`] = 0;
+  }
+
+  prices.forEach(price => {
+    const binStart = Math.floor(price / binSize) * binSize;
+    const key = \`\${binStart}-\${binStart + binSize}€\`;
+    if (bins[key] !== undefined) {
+      bins[key]++;
+    }
+  });
+
+  return bins;
+}
+
+async function createChart() {
+  const prices = await fetchData();
+  if (prices.length === 0) {
+    document.getElementById('loading').textContent = 'Pas de données';
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+
+  // Créer l'histogramme avec des tranches de 5€
+  const histogram = createHistogram(prices, 5);
+
+  const labels = Object.keys(histogram);
+  const values = Object.values(histogram);
+
+  const canvas = document.createElement('canvas');
+  document.getElementById('chart-container').appendChild(canvas);
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Nombre de centres',
+        data: values,
+        backgroundColor: '#6A6AF4', // Bleu cumulus DSFR
+        borderColor: '#000091',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: \`Distribution sur \${prices.length} centres\`,
+          font: { size: 14 }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Nombre de centres' }
+        },
+        x: {
+          title: { display: true, text: 'Tranche de prix' },
+          ticks: { maxRotation: 45, minRotation: 45 }
+        }
+      }
+    }
+  });
+}
+
+createChart();
+<\/script>`,
+
+      // ---------------------------------------------------------
+      // EXEMPLE 4 : Dashboard avec KPIs
+      // Statistiques générales
+      // ---------------------------------------------------------
+      'kpi-dashboard': `<!--
+  EXEMPLE : Dashboard avec KPIs
+
+  Affiche des indicateurs clés calculés depuis l'API
+  sans utiliser de graphique, juste des chiffres clés.
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Statistiques du contrôle technique en France</h2>
+
+  <!-- Grille de KPIs style DSFR -->
+  <div class="fr-grid-row fr-grid-row--gutters fr-mb-4w">
+
+    <div class="fr-col-6 fr-col-md-3">
+      <div id="kpi-total" class="kpi-card">
+        <span class="kpi-value">—</span>
+        <span class="kpi-label">Centres référencés</span>
+      </div>
+    </div>
+
+    <div class="fr-col-6 fr-col-md-3">
+      <div id="kpi-prix-moyen" class="kpi-card kpi-card--info">
+        <span class="kpi-value">—</span>
+        <span class="kpi-label">Prix moyen</span>
+      </div>
+    </div>
+
+    <div class="fr-col-6 fr-col-md-3">
+      <div id="kpi-prix-min" class="kpi-card kpi-card--success">
+        <span class="kpi-value">—</span>
+        <span class="kpi-label">Prix minimum</span>
+      </div>
+    </div>
+
+    <div class="fr-col-6 fr-col-md-3">
+      <div id="kpi-prix-max" class="kpi-card kpi-card--error">
+        <span class="kpi-value">—</span>
+        <span class="kpi-label">Prix maximum</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deuxième ligne : stats par département -->
+  <h3>Top 5 des départements les moins chers</h3>
+  <div id="top-departements" class="fr-mb-4w">
+    <p>Chargement...</p>
+  </div>
+</div>
+
+<style>
+  .kpi-card {
+    background: var(--background-default-grey);
+    border-left: 4px solid var(--border-default-grey);
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .kpi-card--info { border-left-color: #0063CB; }
+  .kpi-card--success { border-left-color: #18753C; }
+  .kpi-card--error { border-left-color: #C9191E; }
+
+  .kpi-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-title-grey);
+  }
+  .kpi-label {
+    font-size: 0.875rem;
+    color: var(--text-mention-grey);
+  }
+</style>
+
+<script>
+const API_BASE = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records?';
+
+// Fonction utilitaire pour les appels API
+async function fetchAPI(params) {
+  const url = API_BASE + new URLSearchParams(params);
+  const response = await fetch(url);
+  return response.json();
+}
+
+// Fonction pour formater les nombres en français
+function formatNumber(n) {
+  return new Intl.NumberFormat('fr-FR').format(n);
+}
+
+function formatPrice(n) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(n);
+}
+
+async function loadDashboard() {
+  try {
+    // ========================================
+    // KPI 1 : Nombre total (depuis metadata)
+    // ========================================
+    const countData = await fetchAPI({
+      select: 'count(*) as total',
+      limit: '1'
+    });
+    document.querySelector('#kpi-total .kpi-value').textContent =
+      formatNumber(countData.results[0]?.total || 0);
+
+    // ========================================
+    // KPI 2, 3, 4 : Stats sur les prix
+    // ========================================
+    const statsData = await fetchAPI({
+      select: 'avg(prix_visite) as moyenne, min(prix_visite) as minimum, max(prix_visite) as maximum',
+      where: 'prix_visite > 0 and prix_visite < 500',
+      limit: '1'
+    });
+
+    const stats = statsData.results[0];
+    if (stats) {
+      document.querySelector('#kpi-prix-moyen .kpi-value').textContent =
+        formatPrice(stats.moyenne);
+      document.querySelector('#kpi-prix-min .kpi-value').textContent =
+        formatPrice(stats.minimum);
+      document.querySelector('#kpi-prix-max .kpi-value').textContent =
+        formatPrice(stats.maximum);
+    }
+
+    // ========================================
+    // Top 5 des départements les moins chers
+    // ========================================
+    const deptData = await fetchAPI({
+      select: 'nom_departement, avg(prix_visite) as prix_moyen',
+      where: 'prix_visite > 0',
+      group_by: 'nom_departement',
+      order_by: 'prix_moyen asc',
+      limit: '5'
+    });
+
+    const topHtml = deptData.results.map((d, i) => \`
+      <div class="fr-badge fr-badge--sm" style="margin: 0.25rem;">
+        <strong>\${i + 1}.</strong> \${d.nom_departement} — \${formatPrice(d.prix_moyen)}
+      </div>
+    \`).join('');
+
+    document.getElementById('top-departements').innerHTML = topHtml || 'Aucune donnée';
+
+  } catch (error) {
+    console.error('Erreur:', error);
+  }
+}
+
+loadDashboard();
+<\/script>`
+    };
+
+    // ============================================================
+    // INITIALISATION DU PLAYGROUND
+    // ============================================================
+
+    let editor;
+
+    // Template HTML de base pour l'iframe
+    function getPreviewHTML(code) {
+      return `<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+  <style>
+    body {
+      padding: 1rem;
+      font-family: Marianne, arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+${code}
+</body>
+</html>`;
+    }
+
+    // Initialiser CodeMirror
+    document.addEventListener('DOMContentLoaded', () => {
+      editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode: 'htmlmixed',
+        theme: 'dracula',
+        lineNumbers: true,
+        lineWrapping: true,
+        tabSize: 2,
+        indentWithTabs: false
+      });
+
+      // Charger le premier exemple
+      loadExample('bar-chart');
+
+      // Événements
+      document.getElementById('run-btn').addEventListener('click', runCode);
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        const current = document.getElementById('example-select').value;
+        loadExample(current);
+      });
+      document.getElementById('example-select').addEventListener('change', (e) => {
+        loadExample(e.target.value);
+      });
+
+      // Raccourci clavier Ctrl+Enter pour exécuter
+      editor.on('keydown', (cm, event) => {
+        if (event.ctrlKey && event.key === 'Enter') {
+          runCode();
+        }
+      });
+
+      // Initialiser le resizer
+      initResizer();
+    });
+
+    function loadExample(name) {
+      if (examples[name]) {
+        editor.setValue(examples[name]);
+        runCode();
+      }
+    }
+
+    function runCode() {
+      const code = editor.getValue();
+      const iframe = document.getElementById('preview-frame');
+      const html = getPreviewHTML(code);
+
+      // Écrire dans l'iframe
+      iframe.srcdoc = html;
+    }
+
+    // ============================================================
+    // RESIZER
+    // ============================================================
+    function initResizer() {
+      const resizer = document.getElementById('resizer');
+      const leftPanel = document.querySelector('.playground-editor');
+      const container = document.querySelector('.playground-container');
+      let isResizing = false;
+
+      resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const containerRect = container.getBoundingClientRect();
+        let newWidth = e.clientX - containerRect.left;
+        newWidth = Math.max(280, Math.min(newWidth, containerRect.width - 300));
+        leftPanel.style.width = newWidth + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing) {
+          isResizing = false;
+          resizer.classList.remove('dragging');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
