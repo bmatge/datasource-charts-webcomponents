@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Générateur de graphiques</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .builder-header {
+      background: var(--background-alt-blue-france);
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .builder-header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--text-title-blue-france);
+    }
+
+    .builder-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .builder-config {
+      width: 400px;
+      min-width: 350px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border-default-grey);
+      background: var(--background-alt-grey);
+    }
+
+    .builder-preview {
+      flex: 1;
+      overflow: auto;
+      padding: 1.5rem;
+      background: var(--background-default-grey);
+    }
+
+    .config-section {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .config-section h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .config-section h3 .step-number {
+      background: var(--background-action-high-blue-france);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .field-item {
+      background: var(--background-default-grey);
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .field-item:hover {
+      border-color: var(--border-action-high-blue-france);
+    }
+
+    .field-item.selected {
+      background: var(--background-contrast-info);
+      border-color: var(--border-action-high-blue-france);
+    }
+
+    .field-item .field-name {
+      font-weight: 600;
+      display: block;
+    }
+
+    .field-item .field-type {
+      color: var(--text-mention-grey);
+      font-size: 0.7rem;
+    }
+
+    .chart-type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .chart-type-btn {
+      background: var(--background-default-grey);
+      border: 2px solid transparent;
+      padding: 1rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .chart-type-btn:hover {
+      border-color: var(--border-action-high-blue-france);
+    }
+
+    .chart-type-btn.selected {
+      background: var(--background-contrast-info);
+      border-color: var(--border-action-high-blue-france);
+    }
+
+    .chart-type-btn i {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-type-btn span {
+      font-size: 0.75rem;
+    }
+
+    .preview-chart {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+
+    .preview-chart h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+    }
+
+    .preview-chart .subtitle {
+      color: var(--text-mention-grey);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 350px;
+    }
+
+    .code-output {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-mention-grey);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .loading-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: var(--background-contrast-info);
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .error-message {
+      background: var(--background-contrast-error);
+      color: var(--text-default-error);
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .color-picker-row input[type="color"] {
+      width: 40px;
+      height: 32px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .preset-btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--border-default-grey);
+      background: var(--background-default-grey);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .preset-btn:hover {
+      background: var(--background-contrast-grey);
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-mention-grey);
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--text-action-high-blue-france);
+      border-bottom-color: var(--border-action-high-blue-france);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .aggregation-hint {
+      font-size: 0.75rem;
+      color: var(--text-mention-grey);
+      margin-top: 0.25rem;
+    }
+
+    .source-type-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .source-type-tab {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border-default-grey);
+      background: var(--background-default-grey);
+      cursor: pointer;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+    }
+
+    .source-type-tab:hover {
+      background: var(--background-contrast-grey);
+    }
+
+    .source-type-tab.active {
+      background: var(--background-contrast-info);
+      border-color: var(--border-action-high-blue-france);
+      font-weight: 600;
+    }
+
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .source-badge-grist { background: #16a34a; color: white; }
+    .source-badge-manual { background: #9333ea; color: white; }
+    .source-badge-api { background: #2563eb; color: white; }
+
+    /* Resizer */
+    .resizer {
+      width: 6px;
+      background: var(--border-default-grey);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .resizer:hover, .resizer.dragging {
+      background: var(--border-action-high-blue-france);
+    }
+
+    @media (max-width: 900px) {
+      .builder-container {
+        flex-direction: column;
+      }
+      .builder-config {
+        width: 100%;
+        max-height: 50vh;
+      }
+      .resizer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="builder-header">
+    <div class="fr-container" style="display: flex; align-items: center; justify-content: space-between;">
+      <h1><i class="ri-bar-chart-box-line"></i> Générateur de graphiques — No Code</h1>
+      <a href="sources.html" class="fr-btn fr-btn--sm fr-btn--secondary">
+        <i class="ri-database-2-line"></i> Gérer les sources
+      </a>
+    </div>
+  </header>
+
+  <div class="builder-container">
+    <!-- ============================================ -->
+    <!-- PANNEAU DE CONFIGURATION -->
+    <!-- ============================================ -->
+    <aside class="builder-config">
+
+      <!-- ÉTAPE 1 : Source de données -->
+      <div class="config-section">
+        <h3><span class="step-number">1</span> Source de données</h3>
+
+        <!-- Onglets de type de source -->
+        <div class="source-type-tabs">
+          <button class="source-type-tab active" data-source-type="api">
+            <i class="ri-cloud-line"></i> API publique
+          </button>
+          <button class="source-type-tab" data-source-type="saved">
+            <i class="ri-database-2-line"></i> Mes sources
+          </button>
+        </div>
+
+        <!-- Panel API publique -->
+        <div id="source-panel-api" class="source-panel">
+          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+            <label class="fr-label" for="preset-api">API prédéfinie</label>
+            <select class="fr-select" id="preset-api">
+              <option value="">— Choisir une API —</option>
+              <option value="controle-technique">Prix contrôle technique (economie.gouv.fr)</option>
+              <option value="resultats-elections">Résultats élections (data.gouv.fr)</option>
+              <option value="qualite-air">Qualité de l'air (geodair)</option>
+              <option value="custom">URL personnalisée...</option>
+            </select>
+          </div>
+
+          <div class="fr-input-group fr-input-group--sm fr-mt-1w" id="custom-url-group" style="display: none;">
+            <label class="fr-label" for="api-url">URL de l'API (OpenDataSoft v2.1)</label>
+            <input class="fr-input" type="url" id="api-url" placeholder="https://...">
+          </div>
+        </div>
+
+        <!-- Panel Mes sources (Grist / Manuel) -->
+        <div id="source-panel-saved" class="source-panel" style="display: none;">
+          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+            <label class="fr-label" for="saved-source">Source enregistrée</label>
+            <select class="fr-select" id="saved-source">
+              <option value="">— Choisir une source —</option>
+            </select>
+          </div>
+
+          <div id="saved-source-info" class="fr-mt-1w" style="font-size: 0.8rem; color: var(--text-mention-grey);"></div>
+
+          <a href="sources.html" class="fr-link fr-link--sm fr-mt-1w" style="display: inline-block;">
+            <i class="ri-add-line"></i> Ajouter une nouvelle source
+          </a>
+        </div>
+
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-2w" id="load-fields-btn">
+          <i class="ri-refresh-line"></i> Charger les champs
+        </button>
+
+        <div id="fields-status" class="fr-mt-1w"></div>
+      </div>
+
+      <!-- ÉTAPE 2 : Type de graphique -->
+      <div class="config-section">
+        <h3><span class="step-number">2</span> Type de graphique</h3>
+
+        <div class="chart-type-grid">
+          <button class="chart-type-btn selected" data-type="bar">
+            <i class="ri-bar-chart-fill"></i>
+            <span>Barres</span>
+          </button>
+          <button class="chart-type-btn" data-type="horizontalBar">
+            <i class="ri-bar-chart-horizontal-fill"></i>
+            <span>Barres H</span>
+          </button>
+          <button class="chart-type-btn" data-type="line">
+            <i class="ri-line-chart-fill"></i>
+            <span>Lignes</span>
+          </button>
+          <button class="chart-type-btn" data-type="pie">
+            <i class="ri-pie-chart-fill"></i>
+            <span>Camembert</span>
+          </button>
+          <button class="chart-type-btn" data-type="doughnut">
+            <i class="ri-donut-chart-fill"></i>
+            <span>Anneau</span>
+          </button>
+          <button class="chart-type-btn" data-type="radar">
+            <i class="ri-radar-fill"></i>
+            <span>Radar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 3 : Mapping des données -->
+      <div class="config-section">
+        <h3><span class="step-number">3</span> Configuration des données</h3>
+
+        <div class="fr-select-group fr-select-group--sm">
+          <label class="fr-label" for="label-field">
+            Axe X / Catégories
+            <span class="fr-hint-text">Le champ utilisé pour les labels</span>
+          </label>
+          <select class="fr-select" id="label-field">
+            <option value="">— Charger les champs d'abord —</option>
+          </select>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+          <label class="fr-label" for="value-field">
+            Axe Y / Valeurs
+            <span class="fr-hint-text">Le champ numérique à mesurer</span>
+          </label>
+          <select class="fr-select" id="value-field">
+            <option value="">— Charger les champs d'abord —</option>
+          </select>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+          <label class="fr-label" for="aggregation">
+            Agrégation
+            <span class="fr-hint-text">Comment regrouper les valeurs</span>
+          </label>
+          <select class="fr-select" id="aggregation">
+            <option value="avg">Moyenne (avg)</option>
+            <option value="sum">Somme (sum)</option>
+            <option value="count">Comptage (count)</option>
+            <option value="min">Minimum (min)</option>
+            <option value="max">Maximum (max)</option>
+          </select>
+        </div>
+
+        <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+          <label class="fr-label" for="limit">Nombre de résultats</label>
+          <input class="fr-input" type="number" id="limit" value="10" min="1" max="100">
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+          <label class="fr-label" for="sort-order">Tri</label>
+          <select class="fr-select" id="sort-order">
+            <option value="desc">Décroissant (plus grand en premier)</option>
+            <option value="asc">Croissant (plus petit en premier)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 4 : Apparence -->
+      <div class="config-section">
+        <h3><span class="step-number">4</span> Apparence</h3>
+
+        <div class="fr-input-group fr-input-group--sm">
+          <label class="fr-label" for="chart-title">Titre du graphique</label>
+          <input class="fr-input" type="text" id="chart-title" value="Mon graphique" placeholder="Titre...">
+        </div>
+
+        <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+          <label class="fr-label" for="chart-subtitle">Sous-titre / Source</label>
+          <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
+        </div>
+
+        <div class="fr-mt-1w">
+          <label class="fr-label">Couleur principale</label>
+          <div class="color-picker-row">
+            <input type="color" id="main-color" value="#000091">
+            <button class="preset-btn" data-color="#000091">Bleu France</button>
+            <button class="preset-btn" data-color="#009081">Émeraude</button>
+            <button class="preset-btn" data-color="#C9191E">Marianne</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOUTON GÉNÉRER -->
+      <div class="config-section">
+        <button class="fr-btn fr-btn--icon-left" id="generate-btn" style="width: 100%;">
+          <i class="ri-play-fill"></i> Générer le graphique
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Resizer -->
+    <div class="resizer" id="resizer"></div>
+
+    <!-- ============================================ -->
+    <!-- PANNEAU DE PRÉVISUALISATION -->
+    <!-- ============================================ -->
+    <main class="builder-preview">
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="preview">Aperçu</button>
+        <button class="tab-btn" data-tab="code">Code généré</button>
+        <button class="tab-btn" data-tab="data">Données brutes</button>
+      </div>
+
+      <!-- Onglet Aperçu -->
+      <div class="tab-content active" id="tab-preview">
+        <div class="preview-chart">
+          <h2 id="preview-title">Mon graphique</h2>
+          <p class="subtitle" id="preview-subtitle"></p>
+          <div class="chart-container">
+            <div class="empty-state" id="empty-state">
+              <i class="ri-bar-chart-box-line"></i>
+              <p>Configurez votre graphique et cliquez sur "Générer"</p>
+            </div>
+            <canvas id="preview-canvas" style="display: none;"></canvas>
+          </div>
+        </div>
+
+        <!-- Tableau accessible -->
+        <details class="fr-accordion">
+          <summary class="fr-accordion__btn">Données en tableau (accessibilité RGAA)</summary>
+          <div class="fr-accordion__content">
+            <table class="fr-table" id="accessible-table">
+              <thead><tr><th>Catégorie</th><th>Valeur</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- Onglet Code -->
+      <div class="tab-content" id="tab-code">
+        <p class="fr-text--sm">Copiez ce code pour l'intégrer dans votre page :</p>
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mb-1w" id="copy-code-btn">
+          <i class="ri-file-copy-line"></i> Copier le code
+        </button>
+        <pre class="code-output" id="generated-code">// Le code sera généré ici...</pre>
+      </div>
+
+      <!-- Onglet Données -->
+      <div class="tab-content" id="tab-data">
+        <p class="fr-text--sm">Données brutes reçues de l'API :</p>
+        <pre class="code-output" id="raw-data">// Chargez d'abord les données...</pre>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION DES APIs PRÉDÉFINIES
+    // ============================================================
+    const API_PRESETS = {
+      'controle-technique': {
+        base: 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records',
+        name: 'Prix du contrôle technique',
+        defaultTitle: 'Prix moyen du contrôle technique',
+        defaultSubtitle: 'Source : data.economie.gouv.fr'
+      },
+      'resultats-elections': {
+        base: 'https://www.data.gouv.fr/api/1/datasets/5c5c5c5c5c5c5c5c5c5c5c5c',
+        name: 'Résultats élections',
+        defaultTitle: 'Résultats électoraux',
+        defaultSubtitle: 'Source : data.gouv.fr'
+      },
+      'qualite-air': {
+        base: 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services',
+        name: 'Qualité de l\'air',
+        defaultTitle: 'Indice de qualité de l\'air',
+        defaultSubtitle: 'Source : geodair'
+      }
+    };
+
+    // Palette DSFR
+    const DSFR_COLORS = [
+      '#000091', '#6A6AF4', '#009081', '#C9191E', '#FF9940',
+      '#A558A0', '#417DC4', '#716043', '#18753C', '#3A3A3A'
+    ];
+
+    // ============================================================
+    // ÉTAT DE L'APPLICATION
+    // ============================================================
+    let state = {
+      sourceType: 'api',  // 'api' ou 'saved'
+      apiUrl: '',
+      savedSource: null,
+      localData: null,
+      fields: [],
+      chartType: 'bar',
+      labelField: '',
+      valueField: '',
+      aggregation: 'avg',
+      limit: 10,
+      sortOrder: 'desc',
+      title: 'Mon graphique',
+      subtitle: '',
+      color: '#000091',
+      data: [],
+      chartInstance: null
+    };
+
+    // ============================================================
+    // INITIALISATION
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tabs
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      // Source type tabs (API vs Saved sources)
+      document.querySelectorAll('.source-type-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchSourceType(btn.dataset.sourceType));
+      });
+
+      // Preset API
+      document.getElementById('preset-api').addEventListener('change', handlePresetChange);
+
+      // Saved sources dropdown
+      document.getElementById('saved-source').addEventListener('change', handleSavedSourceChange);
+
+      // Chart type
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectChartType(btn.dataset.type));
+      });
+
+      // Color presets
+      document.querySelectorAll('.preset-btn[data-color]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.getElementById('main-color').value = btn.dataset.color;
+          state.color = btn.dataset.color;
+        });
+      });
+
+      // Buttons
+      document.getElementById('load-fields-btn').addEventListener('click', loadFields);
+      document.getElementById('generate-btn').addEventListener('click', generateChart);
+      document.getElementById('copy-code-btn').addEventListener('click', copyCode);
+
+      // Input changes
+      document.getElementById('chart-title').addEventListener('input', (e) => {
+        state.title = e.target.value;
+        document.getElementById('preview-title').textContent = e.target.value;
+      });
+
+      document.getElementById('chart-subtitle').addEventListener('input', (e) => {
+        state.subtitle = e.target.value;
+        document.getElementById('preview-subtitle').textContent = e.target.value;
+      });
+
+      document.getElementById('main-color').addEventListener('input', (e) => {
+        state.color = e.target.value;
+      });
+
+      // Load saved sources and check for selected source from sources.html
+      loadSavedSources();
+      checkSelectedSource();
+    });
+
+    // ============================================================
+    // FONCTIONS UTILITAIRES
+    // ============================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    // ============================================================
+    // GESTION DES SOURCES SAUVEGARDÉES
+    // ============================================================
+    function switchSourceType(type) {
+      document.querySelectorAll('.source-type-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-source-type="${type}"]`).classList.add('active');
+
+      document.getElementById('source-panel-api').style.display = type === 'api' ? 'block' : 'none';
+      document.getElementById('source-panel-saved').style.display = type === 'saved' ? 'block' : 'none';
+
+      state.sourceType = type;
+    }
+
+    function loadSavedSources() {
+      const select = document.getElementById('saved-source');
+      select.innerHTML = '<option value="">— Choisir une source —</option>';
+
+      // Load from localStorage
+      const sources = JSON.parse(localStorage.getItem('gouv_widgets_sources') || '[]');
+      const selectedSource = JSON.parse(localStorage.getItem('gouv_widgets_selected_source') || 'null');
+
+      // Add saved sources
+      sources.forEach(source => {
+        const option = document.createElement('option');
+        option.value = source.id;
+        const badge = source.type === 'grist' ? '🟢 Grist' : source.type === 'manual' ? '🟣 Manuel' : '🔵 API';
+        option.textContent = `${badge} ${source.name}`;
+        option.dataset.source = JSON.stringify(source);
+        select.appendChild(option);
+      });
+
+      // If we have a selected source from sources.html, add it too if not already there
+      if (selectedSource && !sources.find(s => s.id === selectedSource.id)) {
+        const option = document.createElement('option');
+        option.value = selectedSource.id;
+        const badge = selectedSource.type === 'grist' ? '🟢 Grist' : selectedSource.type === 'manual' ? '🟣 Manuel' : '🔵 API';
+        option.textContent = `${badge} ${selectedSource.name} (récent)`;
+        option.dataset.source = JSON.stringify(selectedSource);
+        option.selected = true;
+        select.appendChild(option);
+      }
+    }
+
+    function checkSelectedSource() {
+      const selectedSource = JSON.parse(localStorage.getItem('gouv_widgets_selected_source') || 'null');
+
+      if (selectedSource && selectedSource.data && selectedSource.data.length > 0) {
+        // Switch to saved sources tab
+        switchSourceType('saved');
+
+        // Select the source
+        const select = document.getElementById('saved-source');
+        for (const option of select.options) {
+          if (option.value === selectedSource.id) {
+            option.selected = true;
+            break;
+          }
+        }
+
+        // Trigger the change
+        handleSavedSourceChange();
+
+        // Show notification
+        document.getElementById('fields-status').innerHTML = `
+          <div class="fr-badge fr-badge--success fr-badge--sm">
+            Source "${selectedSource.name}" chargée automatiquement
+          </div>
+        `;
+      }
+    }
+
+    function handleSavedSourceChange() {
+      const select = document.getElementById('saved-source');
+      const selectedOption = select.options[select.selectedIndex];
+      const infoEl = document.getElementById('saved-source-info');
+
+      if (!selectedOption || !selectedOption.dataset.source) {
+        infoEl.innerHTML = '';
+        return;
+      }
+
+      const source = JSON.parse(selectedOption.dataset.source);
+      state.savedSource = source;
+
+      // Show info
+      const badge = source.type === 'grist' ? 'source-badge-grist' : source.type === 'manual' ? 'source-badge-manual' : 'source-badge-api';
+      const badgeText = source.type === 'grist' ? 'Grist' : source.type === 'manual' ? 'Manuel' : 'API';
+
+      infoEl.innerHTML = `
+        <span class="source-badge ${badge}">${badgeText}</span>
+        ${source.recordCount || '?'} enregistrements
+      `;
+
+      // If it has local data, load fields directly
+      if (source.data && source.data.length > 0) {
+        state.localData = source.data;
+        loadFieldsFromLocalData();
+      }
+    }
+
+    function loadFieldsFromLocalData() {
+      if (!state.localData || state.localData.length === 0) return;
+
+      const record = state.localData[0];
+      state.fields = Object.keys(record).map(key => ({
+        name: key,
+        type: typeof record[key],
+        sample: record[key]
+      }));
+
+      populateFieldSelects();
+
+      document.getElementById('fields-status').innerHTML = `
+        <div class="fr-badge fr-badge--success fr-badge--sm">${state.fields.length} champs trouvés</div>
+      `;
+    }
+
+    function handlePresetChange(e) {
+      const preset = e.target.value;
+      const customGroup = document.getElementById('custom-url-group');
+
+      if (preset === 'custom') {
+        customGroup.style.display = 'block';
+        state.apiUrl = '';
+      } else if (preset && API_PRESETS[preset]) {
+        customGroup.style.display = 'none';
+        state.apiUrl = API_PRESETS[preset].base;
+        document.getElementById('chart-title').value = API_PRESETS[preset].defaultTitle;
+        document.getElementById('chart-subtitle').value = API_PRESETS[preset].defaultSubtitle;
+        state.title = API_PRESETS[preset].defaultTitle;
+        state.subtitle = API_PRESETS[preset].defaultSubtitle;
+        document.getElementById('preview-title').textContent = state.title;
+        document.getElementById('preview-subtitle').textContent = state.subtitle;
+
+        // Auto-load fields
+        loadFields();
+      } else {
+        customGroup.style.display = 'none';
+      }
+    }
+
+    function selectChartType(type) {
+      document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+      state.chartType = type;
+    }
+
+    // ============================================================
+    // CHARGEMENT DES CHAMPS DEPUIS L'API
+    // ============================================================
+    async function loadFields() {
+      const statusEl = document.getElementById('fields-status');
+
+      // Check if we're using saved source with local data
+      if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
+        loadFieldsFromLocalData();
+        return;
+      }
+
+      // Get URL for API mode
+      if (document.getElementById('preset-api').value === 'custom') {
+        state.apiUrl = document.getElementById('api-url').value;
+      }
+
+      if (!state.apiUrl) {
+        statusEl.innerHTML = '<div class="error-message">Veuillez sélectionner une API ou une source</div>';
+        return;
+      }
+
+      statusEl.innerHTML = '<div class="loading-indicator"><i class="ri-loader-4-line"></i> Chargement...</div>';
+
+      try {
+        // Fetch one record to get field names
+        const url = state.apiUrl + '?limit=1';
+        const response = await fetch(url);
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const json = await response.json();
+
+        if (!json.results || json.results.length === 0) {
+          throw new Error('Aucune donnée trouvée');
+        }
+
+        // Extract fields from first record
+        const record = json.results[0];
+        state.fields = Object.keys(record).map(key => ({
+          name: key,
+          type: typeof record[key],
+          sample: record[key]
+        }));
+
+        // Populate dropdowns
+        populateFieldSelects();
+
+        statusEl.innerHTML = `<div class="fr-badge fr-badge--success fr-badge--sm">${state.fields.length} champs trouvés</div>`;
+
+      } catch (error) {
+        console.error(error);
+        statusEl.innerHTML = `<div class="error-message">Erreur : ${error.message}</div>`;
+      }
+    }
+
+    function populateFieldSelects() {
+      const labelSelect = document.getElementById('label-field');
+      const valueSelect = document.getElementById('value-field');
+
+      // Clear
+      labelSelect.innerHTML = '<option value="">— Sélectionner —</option>';
+      valueSelect.innerHTML = '<option value="">— Sélectionner —</option>';
+
+      state.fields.forEach(field => {
+        const optionLabel = document.createElement('option');
+        optionLabel.value = field.name;
+        optionLabel.textContent = `${field.name} (${field.type})`;
+        labelSelect.appendChild(optionLabel);
+
+        const optionValue = document.createElement('option');
+        optionValue.value = field.name;
+        optionValue.textContent = `${field.name} (${field.type})`;
+        valueSelect.appendChild(optionValue);
+      });
+
+      // Auto-select good candidates
+      const stringField = state.fields.find(f =>
+        f.type === 'string' && (f.name.includes('nom') || f.name.includes('region') || f.name.includes('departement'))
+      );
+      const numberField = state.fields.find(f =>
+        f.type === 'number' && (f.name.includes('prix') || f.name.includes('score') || f.name.includes('valeur'))
+      );
+
+      if (stringField) labelSelect.value = stringField.name;
+      if (numberField) valueSelect.value = numberField.name;
+    }
+
+    // ============================================================
+    // GÉNÉRATION DU GRAPHIQUE
+    // ============================================================
+    async function generateChart() {
+      // Get current values
+      state.labelField = document.getElementById('label-field').value;
+      state.valueField = document.getElementById('value-field').value;
+      state.aggregation = document.getElementById('aggregation').value;
+      state.limit = parseInt(document.getElementById('limit').value) || 10;
+      state.sortOrder = document.getElementById('sort-order').value;
+
+      if (!state.labelField || !state.valueField) {
+        alert('Veuillez sélectionner les champs pour les axes X et Y');
+        return;
+      }
+
+      // Check if using local data
+      if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
+        generateChartFromLocalData();
+        return;
+      }
+
+      // Build API URL with aggregation
+      const valueExpression = state.aggregation === 'count'
+        ? 'count(*) as value'
+        : `${state.aggregation}(${state.valueField}) as value`;
+
+      const params = new URLSearchParams({
+        select: `${state.labelField}, ${valueExpression}`,
+        group_by: state.labelField,
+        order_by: `value ${state.sortOrder}`,
+        limit: state.limit.toString()
+      });
+
+      const apiUrl = `${state.apiUrl}?${params}`;
+
+      try {
+        const response = await fetch(apiUrl);
+        const json = await response.json();
+        state.data = json.results || [];
+
+        // Update raw data view
+        document.getElementById('raw-data').textContent = JSON.stringify(state.data, null, 2);
+
+        // Render chart
+        renderChart();
+
+        // Generate code
+        generateCode(apiUrl);
+
+        // Update accessible table
+        updateAccessibleTable();
+
+      } catch (error) {
+        console.error(error);
+        alert('Erreur lors du chargement des données : ' + error.message);
+      }
+    }
+
+    function generateChartFromLocalData() {
+      // Aggregate local data
+      const aggregated = {};
+
+      state.localData.forEach(record => {
+        const label = record[state.labelField] || 'N/A';
+        const value = parseFloat(record[state.valueField]) || 0;
+
+        if (!aggregated[label]) {
+          aggregated[label] = { values: [], count: 0 };
+        }
+        aggregated[label].values.push(value);
+        aggregated[label].count++;
+      });
+
+      // Apply aggregation function
+      let results = Object.entries(aggregated).map(([label, data]) => {
+        let value;
+        switch (state.aggregation) {
+          case 'sum':
+            value = data.values.reduce((a, b) => a + b, 0);
+            break;
+          case 'count':
+            value = data.count;
+            break;
+          case 'min':
+            value = Math.min(...data.values);
+            break;
+          case 'max':
+            value = Math.max(...data.values);
+            break;
+          case 'avg':
+          default:
+            value = data.values.reduce((a, b) => a + b, 0) / data.values.length;
+        }
+        return { [state.labelField]: label, value };
+      });
+
+      // Sort
+      results.sort((a, b) => {
+        return state.sortOrder === 'desc' ? b.value - a.value : a.value - b.value;
+      });
+
+      // Limit
+      results = results.slice(0, state.limit);
+
+      state.data = results;
+
+      // Update raw data view
+      document.getElementById('raw-data').textContent = JSON.stringify(state.data, null, 2);
+
+      // Render chart
+      renderChart();
+
+      // Generate code for local data
+      generateCodeForLocalData();
+
+      // Update accessible table
+      updateAccessibleTable();
+    }
+
+    function generateCodeForLocalData() {
+      const code = `<!-- Graphique généré avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Données locales'} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dépendances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.1.0/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <div id="chart-container" style="height: 400px; position: relative;">
+    <canvas id="myChart"></canvas>
+  </div>
+</div>
+
+<script>
+// Données intégrées (depuis ${state.savedSource?.type === 'grist' ? 'Grist' : 'source manuelle'})
+const data = ${JSON.stringify(state.data, null, 2)};
+
+const labels = data.map(d => d['${state.labelField}'] || 'N/A');
+const values = data.map(d => Math.round((d.value || 0) * 100) / 100);
+
+new Chart(document.getElementById('myChart'), {
+  type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: '${state.valueField}',
+      data: values,
+      backgroundColor: ${JSON.stringify(['pie', 'doughnut', 'radar'].includes(state.chartType) ? DSFR_COLORS.slice(0, state.limit) : state.color)},
+      borderColor: '${state.color}',
+      borderWidth: ${state.chartType === 'line' ? 2 : 1}
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''}
+  }
+});
+<\/script>`;
+
+      document.getElementById('generated-code').textContent = code;
+    }
+
+    function renderChart() {
+      const canvas = document.getElementById('preview-canvas');
+      const emptyState = document.getElementById('empty-state');
+
+      emptyState.style.display = 'none';
+      canvas.style.display = 'block';
+
+      // Destroy previous chart
+      if (state.chartInstance) {
+        state.chartInstance.destroy();
+      }
+
+      const labels = state.data.map(d => d[state.labelField] || 'N/A');
+      const values = state.data.map(d => Math.round((d.value || 0) * 100) / 100);
+
+      // Determine chart type for Chart.js
+      let chartType = state.chartType;
+      let indexAxis = 'x';
+
+      if (state.chartType === 'horizontalBar') {
+        chartType = 'bar';
+        indexAxis = 'y';
+      }
+
+      // Colors for pie/doughnut
+      const colors = state.chartType === 'pie' || state.chartType === 'doughnut' || state.chartType === 'radar'
+        ? DSFR_COLORS.slice(0, state.data.length)
+        : state.color;
+
+      state.chartInstance = new Chart(canvas, {
+        type: chartType,
+        data: {
+          labels: labels,
+          datasets: [{
+            label: state.valueField,
+            data: values,
+            backgroundColor: colors,
+            borderColor: state.chartType === 'line' ? state.color : colors,
+            borderWidth: state.chartType === 'line' ? 2 : 1,
+            fill: state.chartType === 'line' ? false : true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: indexAxis,
+          plugins: {
+            legend: {
+              display: ['pie', 'doughnut', 'radar'].includes(state.chartType)
+            }
+          },
+          scales: ['pie', 'doughnut', 'radar'].includes(state.chartType) ? {} : {
+            y: { beginAtZero: chartType !== 'bar' || indexAxis !== 'y' },
+            x: { beginAtZero: indexAxis === 'y' }
+          }
+        }
+      });
+    }
+
+    function updateAccessibleTable() {
+      const tbody = document.querySelector('#accessible-table tbody');
+      tbody.innerHTML = '';
+
+      state.data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${d[state.labelField] || 'N/A'}</td>
+          <td>${(d.value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ============================================================
+    // GÉNÉRATION DU CODE
+    // ============================================================
+    function generateCode(apiUrl) {
+      const code = `<!-- Graphique généré avec gouv-widgets Builder -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dépendances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.1.0/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <div id="chart-container" style="height: 400px; position: relative;">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <!-- Alternative accessible (RGAA) -->
+  <details class="fr-accordion fr-mt-2w">
+    <summary class="fr-accordion__btn">Voir les données en tableau</summary>
+    <div class="fr-accordion__content">
+      <table class="fr-table" id="data-table">
+        <thead><tr><th>${escapeHtml(state.labelField)}</th><th>Valeur</th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </details>
+</div>
+
+<script>
+// URL de l'API avec agrégation
+const API_URL = '${apiUrl}';
+
+async function loadChart() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const data = json.results || [];
+
+  const labels = data.map(d => d['${state.labelField}'] || 'N/A');
+  const values = data.map(d => Math.round((d.value || 0) * 100) / 100);
+
+  new Chart(document.getElementById('myChart'), {
+    type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '${state.valueField}',
+        data: values,
+        backgroundColor: ${JSON.stringify(['pie', 'doughnut', 'radar'].includes(state.chartType) ? DSFR_COLORS.slice(0, state.limit) : state.color)},
+        borderColor: '${state.color}',
+        borderWidth: ${state.chartType === 'line' ? 2 : 1}
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n      indexAxis: 'y'" : ''}
+    }
+  });
+
+  // Remplir le tableau accessible
+  const tbody = document.getElementById('table-body');
+  data.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (d['${state.labelField}'] || 'N/A') + '</td><td>' + (d.value?.toFixed(2) || '—') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+loadChart();
+<\/script>`;
+
+      document.getElementById('generated-code').textContent = code;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function copyCode() {
+      const code = document.getElementById('generated-code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copy-code-btn');
+        btn.innerHTML = '<i class="ri-check-line"></i> Copié !';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="ri-file-copy-line"></i> Copier le code';
+        }, 2000);
+      });
+    }
+
+    // ============================================================
+    // RESIZER
+    // ============================================================
+    (function initResizer() {
+      const resizer = document.getElementById('resizer');
+      const leftPanel = document.querySelector('.builder-config');
+      const container = document.querySelector('.builder-container');
+      let isResizing = false;
+
+      resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const containerRect = container.getBoundingClientRect();
+        let newWidth = e.clientX - containerRect.left;
+        newWidth = Math.max(280, Math.min(newWidth, containerRect.width - 300));
+        leftPanel.style.width = newWidth + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing) {
+          isResizing = false;
+          resizer.classList.remove('dragging');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
