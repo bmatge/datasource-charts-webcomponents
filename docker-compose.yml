@@ -1,0 +1,38 @@
+services:
+  chartsbuilder:
+    build: .
+    container_name: chartsbuilder
+    restart: unless-stopped
+
+    # Réseau Traefik (même réseau que ecosystem)
+    networks:
+      - ecosystem-network
+
+    # Labels Traefik
+    labels:
+      - "traefik.enable=true"
+
+      # Router HTTP (redirige vers HTTPS)
+      - "traefik.http.routers.chartsbuilder-http.rule=Host(`chartsbuilder.matge.com`)"
+      - "traefik.http.routers.chartsbuilder-http.entrypoints=web"
+      - "traefik.http.routers.chartsbuilder-http.middlewares=redirect-to-https"
+
+      # Router HTTPS
+      - "traefik.http.routers.chartsbuilder-https.rule=Host(`chartsbuilder.matge.com`)"
+      - "traefik.http.routers.chartsbuilder-https.entrypoints=websecure"
+      - "traefik.http.routers.chartsbuilder-https.tls=true"
+      - "traefik.http.routers.chartsbuilder-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.chartsbuilder-https.tls.options=anssi-strict@file"
+      - "traefik.http.routers.chartsbuilder-https.middlewares=security-headers@file"
+
+      # Service
+      - "traefik.http.services.chartsbuilder.loadbalancer.server.port=80"
+
+      # Middleware de redirection HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
+# Réseau externe Traefik (même que le projet ecosystem)
+networks:
+  ecosystem-network:
+    external: true
