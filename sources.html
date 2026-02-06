@@ -359,6 +359,71 @@
       max-width: 800px;
     }
 
+    /* Tabs within the modal */
+    .source-mode-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border-default-grey);
+      margin-bottom: 1rem;
+    }
+
+    .source-mode-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: var(--text-mention-grey);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+
+    .source-mode-tab:hover {
+      color: var(--text-action-high-blue-france);
+    }
+
+    .source-mode-tab.active {
+      color: var(--text-action-high-blue-france);
+      border-bottom-color: var(--border-action-high-blue-france);
+    }
+
+    .source-mode-panel { display: none; }
+    .source-mode-panel.active { display: block; }
+
+    /* JSON editor */
+    .json-editor-area {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      tab-size: 2;
+      line-height: 1.4;
+    }
+
+    .json-toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+
+    .json-status {
+      font-size: 0.75rem;
+      margin-left: auto;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .json-status.valid {
+      color: var(--text-default-success);
+      background: var(--background-contrast-success);
+    }
+
+    .json-status.invalid {
+      color: var(--text-default-error);
+      background: var(--background-contrast-error);
+    }
+
     @media (max-width: 900px) {
       .content-grid {
         grid-template-columns: 1fr;
@@ -647,60 +712,84 @@
           <input class="fr-input" type="text" id="source-name" placeholder="Ex: Statistiques mensuelles">
         </div>
 
-        <div class="fr-input-group fr-mt-2w">
-          <label class="fr-label">
-            Données
-            <span class="fr-hint-text">Renseignez les noms de colonnes puis remplissez les lignes du tableau</span>
-          </label>
-          <div class="table-editor-wrapper">
-            <table class="table-editor" id="source-table-editor">
-              <thead>
-                <tr>
-                  <th class="row-number">#</th>
-                  <th>
-                    <div class="col-header">
-                      <input type="text" value="label" placeholder="Colonne">
-                      <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
-                    </div>
-                  </th>
-                  <th>
-                    <div class="col-header">
-                      <input type="text" value="valeur" placeholder="Colonne">
-                      <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
-                    </div>
-                  </th>
-                  <th class="row-actions"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="row-number">1</td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
-                </tr>
-                <tr>
-                  <td class="row-number">2</td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
-                </tr>
-                <tr>
-                  <td class="row-number">3</td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td><input type="text" placeholder="..."></td>
-                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="fr-mt-2w">
+          <div class="source-mode-tabs">
+            <button class="source-mode-tab active" data-mode="table" onclick="switchSourceMode('table')">
+              <i class="ri-table-line"></i> Tableau
+            </button>
+            <button class="source-mode-tab" data-mode="json" onclick="switchSourceMode('json')">
+              <i class="ri-code-s-slash-line"></i> JSON
+            </button>
           </div>
-          <div class="table-editor-actions">
-            <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableRow()">
-              <i class="ri-add-line"></i> Ajouter une ligne
-            </button>
-            <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableColumn()">
-              <i class="ri-add-line"></i> Ajouter une colonne
-            </button>
+
+          <!-- Mode Tableau -->
+          <div class="source-mode-panel active" id="source-mode-table">
+            <p class="fr-hint-text fr-mb-1w">Renseignez les noms de colonnes puis remplissez les lignes du tableau</p>
+            <div class="table-editor-wrapper">
+              <table class="table-editor" id="source-table-editor">
+                <thead>
+                  <tr>
+                    <th class="row-number">#</th>
+                    <th>
+                      <div class="col-header">
+                        <input type="text" value="label" placeholder="Colonne">
+                        <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="col-header">
+                        <input type="text" value="valeur" placeholder="Colonne">
+                        <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
+                      </div>
+                    </th>
+                    <th class="row-actions"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="row-number">1</td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">2</td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">3</td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td><input type="text" placeholder="..."></td>
+                    <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-editor-actions">
+              <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableRow()">
+                <i class="ri-add-line"></i> Ajouter une ligne
+              </button>
+              <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableColumn()">
+                <i class="ri-add-line"></i> Ajouter une colonne
+              </button>
+            </div>
+          </div>
+
+          <!-- Mode JSON -->
+          <div class="source-mode-panel" id="source-mode-json">
+            <p class="fr-hint-text fr-mb-1w">Collez ou saisissez un tableau d'objets JSON</p>
+            <div class="json-toolbar">
+              <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="formatJSON()">
+                <i class="ri-magic-line"></i> Formater / Corriger
+              </button>
+              <span class="json-status" id="json-status"></span>
+            </div>
+            <textarea class="fr-input json-editor-area" id="source-data" rows="12" placeholder='[
+  { "label": "Janvier", "valeur": 100 },
+  { "label": "Février", "valeur": 150 }
+]'></textarea>
           </div>
         </div>
       </div>
@@ -769,6 +858,9 @@
       document.querySelectorAll('.explorer-tab').forEach(tab => {
         tab.addEventListener('click', () => switchExplorerTab(tab.dataset.tab));
       });
+
+      // JSON live validation
+      document.getElementById('source-data').addEventListener('input', validateJSON);
     });
 
     // ============================================================
@@ -1223,6 +1315,39 @@
       });
     }
 
+    // Track which input mode is active
+    let activeSourceMode = 'table';
+
+    function switchSourceMode(mode) {
+      activeSourceMode = mode;
+      document.querySelectorAll('.source-mode-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+      document.getElementById('source-mode-table').classList.toggle('active', mode === 'table');
+      document.getElementById('source-mode-json').classList.toggle('active', mode === 'json');
+
+      // Sync data between modes on switch
+      if (mode === 'json') {
+        // Table -> JSON: populate the textarea with current table data
+        const data = collectTableData();
+        if (data.length > 0) {
+          document.getElementById('source-data').value = JSON.stringify(data, null, 2);
+        }
+        validateJSON();
+      } else {
+        // JSON -> Table: populate the table with current JSON data
+        const dataStr = document.getElementById('source-data').value.trim();
+        if (dataStr) {
+          try {
+            const data = JSON.parse(dataStr);
+            if (Array.isArray(data) && data.length > 0) {
+              populateTableFromData(data);
+            }
+          } catch { /* ignore parse errors when switching */ }
+        }
+      }
+    }
+
     function saveManualSource() {
       const name = document.getElementById('source-name').value.trim();
 
@@ -1231,11 +1356,24 @@
         return;
       }
 
-      const data = collectTableData();
-
-      if (data.length === 0) {
-        alert('Le tableau est vide. Ajoutez au moins une ligne avec des données.');
-        return;
+      let data;
+      if (activeSourceMode === 'table') {
+        data = collectTableData();
+        if (data.length === 0) {
+          alert('Le tableau est vide. Ajoutez au moins une ligne avec des donnees.');
+          return;
+        }
+      } else {
+        const dataStr = document.getElementById('source-data').value.trim();
+        try {
+          data = JSON.parse(dataStr);
+          if (!Array.isArray(data)) {
+            throw new Error('Les donnees doivent etre un tableau');
+          }
+        } catch (error) {
+          alert(`JSON invalide : ${error.message}`);
+          return;
+        }
       }
 
       const source = {
@@ -1253,7 +1391,9 @@
 
       // Reset form
       document.getElementById('source-name').value = '';
+      document.getElementById('source-data').value = '';
       resetTableEditor();
+      switchSourceMode('table');
     }
 
     // ============================================================
@@ -1391,6 +1531,121 @@
         </tr>`;
       }
       table.querySelector('tbody').innerHTML = rows;
+    }
+
+    // ============================================================
+    // JSON FORMATTER / FIXER
+    // ============================================================
+    function tryFixJSON(str) {
+      str = str.trim();
+
+      // Fix: wrap bare objects in array brackets
+      // e.g. { "a": 1 }, { "b": 2 }  ->  [{ "a": 1 }, { "b": 2 }]
+      if (!str.startsWith('[')) {
+        // Check if it looks like object(s)
+        if (str.startsWith('{')) {
+          str = '[' + str;
+          if (!str.endsWith(']')) str += ']';
+        }
+      }
+
+      // Fix: missing closing bracket
+      if (str.startsWith('[') && !str.endsWith(']')) {
+        // Remove trailing comma if present
+        str = str.replace(/,\s*$/, '');
+        str += ']';
+      }
+
+      // Fix: trailing commas before ] or }
+      str = str.replace(/,\s*([}\]])/g, '$1');
+
+      // Fix: single quotes -> double quotes (for keys and string values)
+      // Only do this if JSON.parse would fail otherwise
+      try {
+        JSON.parse(str);
+        return str;
+      } catch {
+        // Try replacing single quotes
+        const fixed = str.replace(/'/g, '"');
+        try {
+          JSON.parse(fixed);
+          return fixed;
+        } catch {
+          // Return best-effort fix
+          return str;
+        }
+      }
+    }
+
+    function formatJSON() {
+      const textarea = document.getElementById('source-data');
+      let str = textarea.value.trim();
+
+      if (!str) return;
+
+      // Try to fix common issues
+      str = tryFixJSON(str);
+
+      try {
+        const parsed = JSON.parse(str);
+        textarea.value = JSON.stringify(parsed, null, 2);
+        validateJSON();
+      } catch (error) {
+        // Still show the partially fixed version
+        textarea.value = str;
+        validateJSON();
+      }
+    }
+
+    function validateJSON() {
+      const textarea = document.getElementById('source-data');
+      const status = document.getElementById('json-status');
+      const str = textarea.value.trim();
+
+      if (!str) {
+        status.textContent = '';
+        status.className = 'json-status';
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(str);
+        if (Array.isArray(parsed)) {
+          status.textContent = `Valide — ${parsed.length} enregistrement${parsed.length > 1 ? 's' : ''}`;
+          status.className = 'json-status valid';
+        } else {
+          status.textContent = 'Doit etre un tableau [ ]';
+          status.className = 'json-status invalid';
+        }
+      } catch (error) {
+        status.textContent = 'JSON invalide';
+        status.className = 'json-status invalid';
+      }
+    }
+
+    function populateTableFromData(data) {
+      const table = getTableEditor();
+      const columns = Object.keys(data[0]);
+
+      // Build header
+      let headerHTML = '<th class="row-number">#</th>';
+      columns.forEach(col => {
+        headerHTML += `<th><div class="col-header"><input type="text" value="${escapeHtml(col)}" placeholder="Colonne"><button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button></div></th>`;
+      });
+      headerHTML += '<th class="row-actions"></th>';
+      table.querySelector('thead tr').innerHTML = headerHTML;
+
+      // Build body
+      let bodyHTML = '';
+      data.forEach((row, i) => {
+        bodyHTML += `<tr><td class="row-number">${i + 1}</td>`;
+        columns.forEach(col => {
+          const val = row[col] != null ? String(row[col]) : '';
+          bodyHTML += `<td><input type="text" value="${escapeHtml(val)}" placeholder="..."></td>`;
+        });
+        bodyHTML += '<td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td></tr>';
+      });
+      table.querySelector('tbody').innerHTML = bodyHTML;
     }
 
     function deleteSource(index) {
