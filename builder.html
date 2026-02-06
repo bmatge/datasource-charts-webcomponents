@@ -1465,15 +1465,33 @@ new Chart(document.getElementById('myChart'), {
       const source = state.savedSource;
       if (!source || source.type !== 'grist') return;
 
-      // Build direct Grist API URL (CORS is enabled on grist.numerique.gouv.fr)
-      let apiUrl = '';
+      // Build proxy URL path (requires nginx proxy on target server)
+      let proxyPath = '';
+      let nginxConfig = '';
+      let gristHost = '';
+
       if (source.apiUrl.includes('grist.numerique.gouv.fr')) {
-        apiUrl = `https://grist.numerique.gouv.fr/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+        proxyPath = `/grist-gouv-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+        gristHost = 'grist.numerique.gouv.fr';
+        nginxConfig = `location /grist-gouv-proxy/ {
+    proxy_pass https://grist.numerique.gouv.fr/;
+    proxy_set_header Host grist.numerique.gouv.fr;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_ssl_server_name on;
+}`;
       } else if (source.apiUrl.includes('docs.getgrist.com')) {
-        apiUrl = `https://docs.getgrist.com/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+        proxyPath = `/grist-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+        gristHost = 'docs.getgrist.com';
+        nginxConfig = `location /grist-proxy/ {
+    proxy_pass https://docs.getgrist.com/;
+    proxy_set_header Host docs.getgrist.com;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_ssl_server_name on;
+}`;
       } else {
-        // Self-hosted or other - use the stored apiUrl
-        apiUrl = source.apiUrl;
+        // Self-hosted - use direct URL
+        proxyPath = source.apiUrl;
+        nginxConfig = '# URL directe - pas de proxy nécessaire';
       }
 
       // Get field info for labels
@@ -1484,11 +1502,11 @@ new Chart(document.getElementById('myChart'), {
       const labelFieldPath = labelFieldInfo?.fullPath || `fields.${state.labelField}`;
       const valueFieldPath = valueFieldInfo?.fullPath || `fields.${state.valueField}`;
 
-      const refreshAttr = state.refreshInterval > 0 ? `\n  refresh="${state.refreshInterval}"` : '';
+      const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
       // Determine chart type for gouv-chart
       const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
-      const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n  index-axis="y"' : '';
+      const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
 
       // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
       if (state.chartType === 'kpi') {
@@ -1497,7 +1515,18 @@ new Chart(document.getElementById('myChart'), {
       }
 
       const code = `<!-- Graphique dynamique généré avec gouv-widgets Builder -->
-<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis Grist) -->
+
+<!--
+  ⚠️ CONFIGURATION SERVEUR REQUISE
+
+  Ce graphique charge les données depuis Grist via un proxy.
+  Ajoutez cette configuration à votre serveur nginx :
+
+  ${nginxConfig}
+
+  Le document Grist doit être accessible publiquement.
+-->
 
 <!-- Dépendances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1511,10 +1540,10 @@ new Chart(document.getElementById('myChart'), {
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <!-- Source de données (chargement dynamique depuis Grist) -->
+  <!-- Source de données (via proxy vers ${gristHost || 'Grist'}) -->
   <gouv-source
     id="chart-data"
-    url="${apiUrl}"
+    url="${proxyPath}"
     transform="records"${refreshAttr}>
   </gouv-source>
 
