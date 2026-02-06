@@ -32,12 +32,39 @@
           <div class="fr-header__brand fr-enlarge-link">
             <div class="fr-header__brand-top">
               <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+              <div class="fr-header__navbar">
+                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">Menu</button>
+              </div>
             </div>
             <div class="fr-header__service">
-              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+              <a href="../../index.html" title="Accueil"><p class="fr-header__service-title">Charts builder</p></a>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
+            </div>
+          </div>
+          <div class="fr-header__tools">
+            <div class="fr-header__tools-links">
+              <ul class="fr-btns-group">
+                <li><a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">GitHub</a></li>
+              </ul>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
+      <div class="fr-container">
+        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">Fermer</button>
+        <div class="fr-header__menu-links"></div>
+        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
+          <ul class="fr-nav__list">
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../../index.html">Accueil</a></li>
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../index.html" aria-current="page">Composants</a></li>
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builder.html">Builder</a></li>
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builderIA.html">Builder IA</a></li>
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../../playground.html">Playground</a></li>
+            <li class="fr-nav__item"><a class="fr-nav__link" href="../../sources.html">Sources</a></li>
+          </ul>
+        </nav>
       </div>
     </div>
   </header>

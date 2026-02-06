@@ -196,6 +196,8 @@
       padding: 1.5rem;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       margin-bottom: 1rem;
+      position: sticky;
+      top: 1rem;
     }
 
     .preview-chart h2 {
@@ -254,32 +256,6 @@
       padding: 0.75rem;
       border-radius: 4px;
       font-size: 0.875rem;
-    }
-
-    .color-picker-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .color-picker-row input[type="color"] {
-      width: 40px;
-      height: 32px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .preset-btn {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      border: 1px solid var(--border-default-grey);
-      background: var(--background-default-grey);
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .preset-btn:hover {
-      background: var(--background-contrast-grey);
     }
 
     .tabs {
@@ -385,6 +361,31 @@
     .kpi-card--warning { border-left-color: #D64D00; }
     .kpi-card--error { border-left-color: #C9191E; }
 
+    /* Gauge Card */
+    .gauge-card {
+      background: var(--background-default-grey);
+      padding: 1.5rem;
+      text-align: center;
+      border-radius: 4px;
+    }
+    .gauge-container { position: relative; width: 150px; margin: 0 auto; }
+    .gauge-svg { width: 100%; height: auto; }
+    .gauge-fill { transition: stroke-dasharray 0.5s ease; }
+    .gauge-value {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-title-grey);
+    }
+    .gauge-label {
+      font-size: 0.875rem;
+      color: var(--text-mention-grey);
+      margin-top: 0.5rem;
+    }
+
     .kpi-value {
       display: block;
       font-size: 2.5rem;
@@ -441,9 +442,9 @@
             </div>
             <div class="fr-header__service">
               <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">gouv-widgets</p>
+                <p class="fr-header__service-title">Charts builder</p>
               </a>
-              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
             </div>
           </div>
           <div class="fr-header__tools">
@@ -630,6 +631,14 @@
             <i class="ri-radar-fill"></i>
             <span>Radar</span>
           </button>
+          <button class="chart-type-btn" data-type="scatter">
+            <i class="ri-bubble-chart-fill"></i>
+            <span>Nuage</span>
+          </button>
+          <button class="chart-type-btn" data-type="gauge">
+            <i class="ri-speed-fill"></i>
+            <span>Jauge</span>
+          </button>
           <button class="chart-type-btn" data-type="kpi">
             <i class="ri-numbers-fill"></i>
             <span>KPI</span>
@@ -658,11 +667,21 @@
 
         <div class="fr-select-group fr-select-group--sm fr-mt-1w">
           <label class="fr-label" for="value-field">
-            Axe Y / Valeurs
+            Axe Y / Valeurs (Série 1)
             <span class="fr-hint-text">Le champ numérique à mesurer</span>
           </label>
           <select class="fr-select" id="value-field">
             <option value="">— Charger les champs d'abord —</option>
+          </select>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="value-field-2-group" style="display: none;">
+          <label class="fr-label" for="value-field-2">
+            Série 2 (optionnel)
+            <span class="fr-hint-text">Second champ pour comparaison</span>
+          </label>
+          <select class="fr-select" id="value-field-2">
+            <option value="">— Aucune (série unique) —</option>
           </select>
         </div>
 
@@ -713,14 +732,17 @@
           <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
         </div>
 
-        <div class="fr-mt-1w" id="color-config">
-          <label class="fr-label">Couleur principale</label>
-          <div class="color-picker-row">
-            <input type="color" id="main-color" value="#000091">
-            <button class="preset-btn" data-color="#000091">Bleu France</button>
-            <button class="preset-btn" data-color="#009081">Émeraude</button>
-            <button class="preset-btn" data-color="#C9191E">Marianne</button>
-          </div>
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="palette-config">
+          <label class="fr-label" for="chart-palette">Palette de couleurs</label>
+          <select class="fr-select" id="chart-palette">
+            <option value="default">Par défaut (Bleu France)</option>
+            <option value="categorical">Catégorielle (comparaison de groupes)</option>
+            <option value="sequentialAscending">Séquentielle croissante</option>
+            <option value="sequentialDescending">Séquentielle décroissante</option>
+            <option value="divergentAscending">Divergente croissante</option>
+            <option value="divergentDescending">Divergente décroissante</option>
+            <option value="neutral">Neutre</option>
+          </select>
         </div>
 
         <!-- Options spécifiques KPI -->
@@ -835,11 +857,33 @@
       }
     };
 
-    // Palette DSFR
+    // Palettes DSFR Chart - correspondance avec les couleurs Chart.js
     const DSFR_COLORS = [
       '#000091', '#6A6AF4', '#009081', '#C9191E', '#FF9940',
       '#A558A0', '#417DC4', '#716043', '#18753C', '#3A3A3A'
     ];
+
+    // Couleur principale par palette (pour graphiques mono-couleur)
+    const PALETTE_PRIMARY_COLOR = {
+      'default': '#000091',           // Bleu France
+      'categorical': '#000091',       // Bleu France (couleurs multiples pour multi-valeurs)
+      'sequentialAscending': '#000091',
+      'sequentialDescending': '#6A6AF4',
+      'divergentAscending': '#000091',
+      'divergentDescending': '#C9191E',
+      'neutral': '#3A3A3A'
+    };
+
+    // Couleurs multiples par palette (pour pie, doughnut, radar)
+    const PALETTE_COLORS = {
+      'default': ['#000091', '#6A6AF4', '#9A9AFF', '#CACAFB', '#E5E5F4'],
+      'categorical': ['#000091', '#6A6AF4', '#009081', '#C9191E', '#FF9940', '#A558A0', '#417DC4', '#716043', '#18753C', '#3A3A3A'],
+      'sequentialAscending': ['#E5E5F4', '#CACAFB', '#9A9AFF', '#6A6AF4', '#000091'],
+      'sequentialDescending': ['#000091', '#6A6AF4', '#9A9AFF', '#CACAFB', '#E5E5F4'],
+      'divergentAscending': ['#000091', '#6A6AF4', '#F5F5F5', '#FF9940', '#C9191E'],
+      'divergentDescending': ['#C9191E', '#FF9940', '#F5F5F5', '#6A6AF4', '#000091'],
+      'neutral': ['#161616', '#3A3A3A', '#666666', '#929292', '#CECECE']
+    };
 
     // ============================================================
     // ÉTAT DE L'APPLICATION
@@ -853,13 +897,16 @@
       chartType: 'bar',
       labelField: '',
       valueField: '',
+      valueField2: '',  // Pour les séries multiples
       aggregation: 'avg',
       limit: 10,
       sortOrder: 'desc',
       title: 'Mon graphique',
       subtitle: '',
-      color: '#000091',
+      palette: 'default',  // Palette DSFR Chart
+      color2: '#E1000F',  // Couleur série 2
       data: [],
+      data2: [],  // Données série 2
       chartInstance: null,
       // Mode de génération
       generationMode: 'embedded',  // 'embedded' ou 'dynamic'
@@ -891,12 +938,9 @@
         btn.addEventListener('click', () => selectChartType(btn.dataset.type));
       });
 
-      // Color presets
-      document.querySelectorAll('.preset-btn[data-color]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.getElementById('main-color').value = btn.dataset.color;
-          state.color = btn.dataset.color;
-        });
+      // Palette selector
+      document.getElementById('chart-palette').addEventListener('change', (e) => {
+        state.palette = e.target.value;
       });
 
       // Buttons
@@ -913,10 +957,6 @@
       document.getElementById('chart-subtitle').addEventListener('input', (e) => {
         state.subtitle = e.target.value;
         document.getElementById('preview-subtitle').textContent = e.target.value;
-      });
-
-      document.getElementById('main-color').addEventListener('input', (e) => {
-        state.color = e.target.value;
       });
 
       // Generation mode radio buttons
@@ -1127,13 +1167,33 @@
 
       // Toggle KPI-specific options
       const isKPI = type === 'kpi';
+      const isGauge = type === 'gauge';
+      const isScatter = type === 'scatter';
       document.getElementById('kpi-config').classList.toggle('visible', isKPI);
-      document.getElementById('color-config').style.display = isKPI ? 'none' : 'block';
+      document.getElementById('color-config').style.display = (isKPI || isGauge) ? 'none' : 'block';
 
-      // KPIs don't need label field or limit (they show a single value)
-      document.getElementById('label-field').closest('.fr-select-group').style.display = isKPI ? 'none' : 'block';
-      document.getElementById('limit').closest('.fr-input-group').style.display = isKPI ? 'none' : 'block';
-      document.getElementById('sort-order').closest('.fr-select-group').style.display = isKPI ? 'none' : 'block';
+      // KPIs and gauges don't need label field or limit (they show a single value)
+      const hideLabels = isKPI || isGauge;
+      document.getElementById('label-field').closest('.fr-select-group').style.display = hideLabels ? 'none' : 'block';
+      document.getElementById('limit').closest('.fr-input-group').style.display = hideLabels ? 'none' : 'block';
+      document.getElementById('sort-order').closest('.fr-select-group').style.display = hideLabels ? 'none' : 'block';
+
+      // Types that support multiple series: bar, horizontalBar, line, radar
+      const supportsMultiSeries = ['bar', 'horizontalBar', 'line', 'radar'].includes(type);
+      document.getElementById('value-field-2-group').style.display = supportsMultiSeries ? 'block' : 'none';
+      if (!supportsMultiSeries) {
+        state.valueField2 = '';
+        document.getElementById('value-field-2').value = '';
+      }
+
+      // Scatter needs X and Y numeric fields (different labels)
+      if (isScatter) {
+        document.querySelector('label[for="label-field"]').innerHTML = 'Axe X (numérique)<span class="fr-hint-text">Valeurs horizontales</span>';
+        document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y (numérique)<span class="fr-hint-text">Valeurs verticales</span>';
+      } else {
+        document.querySelector('label[for="label-field"]').innerHTML = 'Axe X / Catégories<span class="fr-hint-text">Le champ utilisé pour les labels</span>';
+        document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y / Valeurs (Série 1)<span class="fr-hint-text">Le champ numérique à mesurer</span>';
+      }
     }
 
     // ============================================================
@@ -1195,10 +1255,12 @@
     function populateFieldSelects() {
       const labelSelect = document.getElementById('label-field');
       const valueSelect = document.getElementById('value-field');
+      const valueSelect2 = document.getElementById('value-field-2');
 
       // Clear
       labelSelect.innerHTML = '<option value="">— Sélectionner —</option>';
       valueSelect.innerHTML = '<option value="">— Sélectionner —</option>';
+      valueSelect2.innerHTML = '<option value="">— Aucune (série unique) —</option>';
 
       state.fields.forEach(field => {
         const displayText = field.displayName
@@ -1214,6 +1276,14 @@
         optionValue.value = field.name;
         optionValue.textContent = displayText;
         valueSelect.appendChild(optionValue);
+
+        // Only add numeric fields to serie 2
+        if (field.type === 'number') {
+          const optionValue2 = document.createElement('option');
+          optionValue2.value = field.name;
+          optionValue2.textContent = displayText;
+          valueSelect2.appendChild(optionValue2);
+        }
       });
 
       // Auto-select good candidates
@@ -1236,18 +1306,21 @@
       // Get current values
       state.labelField = document.getElementById('label-field').value;
       state.valueField = document.getElementById('value-field').value;
+      state.valueField2 = document.getElementById('value-field-2').value || '';
       state.aggregation = document.getElementById('aggregation').value;
       state.limit = parseInt(document.getElementById('limit').value) || 10;
       state.sortOrder = document.getElementById('sort-order').value;
 
       const isKPI = state.chartType === 'kpi';
+      const isGauge = state.chartType === 'gauge';
+      const isSingleValue = isKPI || isGauge;
 
-      // Validation: KPI only needs valueField, charts need both
-      if (!isKPI && (!state.labelField || !state.valueField)) {
+      // Validation: KPI/Gauge only need valueField, charts need both
+      if (!isSingleValue && (!state.labelField || !state.valueField)) {
         alert('Veuillez sélectionner les champs pour les axes X et Y');
         return;
       }
-      if (isKPI && !state.valueField && state.aggregation !== 'count') {
+      if (isSingleValue && !state.valueField && state.aggregation !== 'count') {
         alert('Veuillez sélectionner un champ pour la valeur');
         return;
       }
@@ -1263,9 +1336,15 @@
         ? 'count(*) as value'
         : `${state.aggregation}(${state.valueField}) as value`;
 
+      // Handle second series if defined
+      const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
+      const valueExpression2 = hasSecondSeries
+        ? `, ${state.aggregation}(${state.valueField2}) as value2`
+        : '';
+
       let params;
-      if (isKPI) {
-        // KPI: just get the single aggregated value, no group_by
+      if (isSingleValue) {
+        // KPI/Gauge: just get the single aggregated value, no group_by
         params = new URLSearchParams({
           select: valueExpression,
           limit: '1'
@@ -1273,7 +1352,7 @@
       } else {
         // Chart: group by label field
         params = new URLSearchParams({
-          select: `${state.labelField}, ${valueExpression}`,
+          select: `${state.labelField}, ${valueExpression}${valueExpression2}`,
           group_by: state.labelField,
           order_by: `value ${state.sortOrder}`,
           limit: state.limit.toString()
@@ -1412,6 +1491,103 @@
         return;
       }
 
+      // Handle Gauge type (local data)
+      if (state.chartType === 'gauge') {
+        const value = Math.round(state.data[0]?.value || 0);
+        const code = `<!-- Jauge générée avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Données locales'} -->
+
+<!-- Dépendances (DSFR Chart) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+  <gauge-chart percent="${value}" init="0" target="100"></gauge-chart>
+</div>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Handle Scatter type (local data)
+      if (state.chartType === 'scatter') {
+        const scatterColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+        const scatterData = state.data.map(d => ({ x: d[state.labelField] || 0, y: d.value || 0 }));
+        const code = `<!-- Nuage de points généré avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Données locales'} -->
+<!-- Palette: ${state.palette} -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  <div style="height: 400px;"><canvas id="myChart"></canvas></div>
+</div>
+
+<script>
+const data = ${JSON.stringify(scatterData, null, 2)};
+
+new Chart(document.getElementById('myChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: '${state.labelField} vs ${state.valueField}',
+      data: data,
+      backgroundColor: '${scatterColor}',
+      pointRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { title: { display: true, text: '${state.labelField}' } },
+      y: { title: { display: true, text: '${state.valueField}' } }
+    }
+  }
+});
+<\/script>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Get palette colors for code generation
+      const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+      const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
+
+      // Check for multi-series support
+      const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
+      const isMultiColor = ['pie', 'doughnut', 'radar'].includes(state.chartType);
+
+      // Build datasets code
+      let datasetsCode;
+      if (hasSecondSeries) {
+        datasetsCode = `[{
+      label: '${state.valueField}',
+      data: values,
+      backgroundColor: '${primaryColor}',
+      borderColor: '${primaryColor}',
+      borderWidth: ${state.chartType === 'line' ? 2 : 1}
+    }, {
+      label: '${state.valueField2}',
+      data: values2,
+      backgroundColor: '${state.color2}',
+      borderColor: '${state.color2}',
+      borderWidth: ${state.chartType === 'line' ? 2 : 1}
+    }]`;
+      } else {
+        datasetsCode = `[{
+      label: '${state.valueField}',
+      data: values,
+      backgroundColor: ${JSON.stringify(isMultiColor ? paletteColors.slice(0, state.limit) : primaryColor)},
+      borderColor: '${primaryColor}',
+      borderWidth: ${state.chartType === 'line' ? 2 : 1}
+    }]`;
+      }
+
       const code = `<!-- Graphique généré avec gouv-widgets Builder -->
 <!-- Source : ${state.savedSource?.name || 'Données locales'} -->
 
@@ -1421,7 +1597,6 @@
 
 <!-- Dépendances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1437,23 +1612,19 @@
 const data = ${JSON.stringify(state.data, null, 2)};
 
 const labels = data.map(d => d['${state.labelField}'] || 'N/A');
-const values = data.map(d => Math.round((d.value || 0) * 100) / 100);
+const values = data.map(d => Math.round((d.value || 0) * 100) / 100);${hasSecondSeries ? `
+const values2 = data.map(d => Math.round((d.value2 || 0) * 100) / 100);` : ''}
 
 new Chart(document.getElementById('myChart'), {
   type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
   data: {
     labels: labels,
-    datasets: [{
-      label: '${state.valueField}',
-      data: values,
-      backgroundColor: ${JSON.stringify(['pie', 'doughnut', 'radar'].includes(state.chartType) ? DSFR_COLORS.slice(0, state.limit) : state.color)},
-      borderColor: '${state.color}',
-      borderWidth: ${state.chartType === 'line' ? 2 : 1}
-    }]
+    datasets: ${datasetsCode}
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''}
+    maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''},
+    plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
   }
 });
 <\/script>`;
@@ -1538,7 +1709,7 @@ new Chart(document.getElementById('myChart'), {
     sort-order="${state.sortOrder}"
     ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
     ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
-    color="${state.color}"
+    selected-palette="${state.palette}"
     height="400">
   </gouv-chart>
 </div>`;
@@ -1559,9 +1730,9 @@ new Chart(document.getElementById('myChart'), {
         state.chartInstance = null;
       }
 
-      // Remove any existing KPI card
-      const existingKpi = chartContainer.querySelector('.kpi-card');
-      if (existingKpi) existingKpi.remove();
+      // Remove any existing KPI/Gauge card
+      const existingCard = chartContainer.querySelector('.kpi-card, .gauge-card');
+      if (existingCard) existingCard.remove();
 
       // Handle KPI type differently
       if (state.chartType === 'kpi') {
@@ -1586,10 +1757,36 @@ new Chart(document.getElementById('myChart'), {
         return;
       }
 
+      // Handle Gauge type (simple progress indicator)
+      if (state.chartType === 'gauge') {
+        canvas.style.display = 'none';
+
+        const value = Math.min(100, Math.max(0, Math.round(state.data[0]?.value || 0)));
+        const unit = document.getElementById('kpi-unit')?.value || '%';
+
+        const gaugeColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+        const gaugeCard = document.createElement('div');
+        gaugeCard.className = 'gauge-card';
+        gaugeCard.innerHTML = `
+          <div class="gauge-container">
+            <svg viewBox="0 0 100 60" class="gauge-svg">
+              <path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#e5e5e5" stroke-width="8" stroke-linecap="round"/>
+              <path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="${gaugeColor}" stroke-width="8" stroke-linecap="round"
+                stroke-dasharray="${value * 1.26} 126" class="gauge-fill"/>
+            </svg>
+            <div class="gauge-value">${value}${unit}</div>
+          </div>
+          <div class="gauge-label">${state.title}</div>
+        `;
+        chartContainer.appendChild(gaugeCard);
+        return;
+      }
+
       canvas.style.display = 'block';
 
       const labels = state.data.map(d => d[state.labelField] || 'N/A');
       const values = state.data.map(d => Math.round((d.value || 0) * 100) / 100);
+      const values2 = state.valueField2 ? state.data.map(d => Math.round((d.value2 || 0) * 100) / 100) : null;
 
       // Determine chart type for Chart.js
       let chartType = state.chartType;
@@ -1600,23 +1797,72 @@ new Chart(document.getElementById('myChart'), {
         indexAxis = 'y';
       }
 
-      // Colors for pie/doughnut
-      const colors = state.chartType === 'pie' || state.chartType === 'doughnut' || state.chartType === 'radar'
-        ? DSFR_COLORS.slice(0, state.data.length)
-        : state.color;
+      // Get palette colors
+      const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+      const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
+
+      // Handle scatter chart (needs different data format)
+      if (state.chartType === 'scatter') {
+        const scatterData = state.data.map(d => ({
+          x: d[state.labelField] || 0,
+          y: d.value || 0
+        }));
+
+        state.chartInstance = new Chart(canvas, {
+          type: 'scatter',
+          data: {
+            datasets: [{
+              label: `${state.labelField} vs ${state.valueField}`,
+              data: scatterData,
+              backgroundColor: primaryColor,
+              borderColor: primaryColor,
+              pointRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } },
+            scales: {
+              x: { title: { display: true, text: state.labelField } },
+              y: { title: { display: true, text: state.valueField } }
+            }
+          }
+        });
+        return;
+      }
+
+      // Colors for pie/doughnut/radar (use palette colors)
+      const isMultiColor = ['pie', 'doughnut', 'radar'].includes(state.chartType);
+      const colors = isMultiColor ? paletteColors.slice(0, state.data.length) : primaryColor;
+
+      // Build datasets array
+      const datasets = [{
+        label: state.valueField,
+        data: values,
+        backgroundColor: colors,
+        borderColor: state.chartType === 'line' ? primaryColor : colors,
+        borderWidth: state.chartType === 'line' ? 2 : 1,
+        fill: state.chartType === 'line' ? false : true
+      }];
+
+      // Add second series if defined
+      if (values2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType)) {
+        datasets.push({
+          label: state.valueField2,
+          data: values2,
+          backgroundColor: state.color2,
+          borderColor: state.color2,
+          borderWidth: state.chartType === 'line' ? 2 : 1,
+          fill: false
+        });
+      }
 
       state.chartInstance = new Chart(canvas, {
         type: chartType,
         data: {
           labels: labels,
-          datasets: [{
-            label: state.valueField,
-            data: values,
-            backgroundColor: colors,
-            borderColor: state.chartType === 'line' ? state.color : colors,
-            borderWidth: state.chartType === 'line' ? 2 : 1,
-            fill: state.chartType === 'line' ? false : true
-          }]
+          datasets: datasets
         },
         options: {
           responsive: true,
@@ -1624,10 +1870,10 @@ new Chart(document.getElementById('myChart'), {
           indexAxis: indexAxis,
           plugins: {
             legend: {
-              display: ['pie', 'doughnut', 'radar'].includes(state.chartType)
+              display: isMultiColor || datasets.length > 1
             }
           },
-          scales: ['pie', 'doughnut', 'radar'].includes(state.chartType) ? {} : {
+          scales: isMultiColor ? {} : {
             y: { beginAtZero: chartType !== 'bar' || indexAxis !== 'y' },
             x: { beginAtZero: indexAxis === 'y' }
           }
@@ -1730,6 +1976,131 @@ loadKPI();
         return;
       }
 
+      // Handle Gauge type
+      if (state.chartType === 'gauge') {
+        const code = `<!-- Jauge générée avec gouv-widgets Builder -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+  <div id="gauge-container"></div>
+</div>
+
+<script type="module">
+const API_URL = '${apiUrl}';
+
+async function loadGauge() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const value = Math.round(json.results?.[0]?.value || 0);
+
+  document.getElementById('gauge-container').innerHTML = \`
+    <gauge-chart percent="\${value}" init="0" target="100"></gauge-chart>
+  \`;
+}
+
+loadGauge();
+<\/script>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Handle Scatter type
+      if (state.chartType === 'scatter') {
+        const scatterColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+        const code = `<!-- Nuage de points généré avec gouv-widgets Builder -->
+<!-- Palette: ${state.palette} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dépendances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+  <div style="height: 400px;"><canvas id="myChart"></canvas></div>
+</div>
+
+<script>
+const API_URL = '${apiUrl}';
+
+async function loadChart() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const data = (json.results || []).map(d => ({
+    x: d['${state.labelField}'] || 0,
+    y: d.value || 0
+  }));
+
+  new Chart(document.getElementById('myChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: '${state.labelField} vs ${state.valueField}',
+        data: data,
+        backgroundColor: '${scatterColor}',
+        pointRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: '${state.labelField}' } },
+        y: { title: { display: true, text: '${state.valueField}' } }
+      }
+    }
+  });
+}
+
+loadChart();
+<\/script>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Get palette colors for code generation
+      const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+      const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
+
+      // Check if we have multiple series
+      const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
+      const isMultiColor = ['pie', 'doughnut', 'radar'].includes(state.chartType);
+
+      // Build datasets code
+      let datasetsCode;
+      if (hasSecondSeries) {
+        datasetsCode = `[{
+        label: '${state.valueField}',
+        data: values,
+        backgroundColor: '${primaryColor}',
+        borderColor: '${primaryColor}',
+        borderWidth: ${state.chartType === 'line' ? 2 : 1}
+      }, {
+        label: '${state.valueField2}',
+        data: values2,
+        backgroundColor: '${state.color2}',
+        borderColor: '${state.color2}',
+        borderWidth: ${state.chartType === 'line' ? 2 : 1}
+      }]`;
+      } else {
+        datasetsCode = `[{
+        label: '${state.valueField}',
+        data: values,
+        backgroundColor: ${JSON.stringify(isMultiColor ? paletteColors.slice(0, state.limit) : primaryColor)},
+        borderColor: '${primaryColor}',
+        borderWidth: ${state.chartType === 'line' ? 2 : 1}
+      }]`;
+
       const code = `<!-- Graphique généré avec gouv-widgets Builder -->
 
 <!-- Dépendances CSS (DSFR) -->
@@ -1738,7 +2109,6 @@ loadKPI();
 
 <!-- Dépendances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1753,7 +2123,7 @@ loadKPI();
     <summary class="fr-accordion__btn">Voir les données en tableau</summary>
     <div class="fr-accordion__content">
       <table class="fr-table" id="data-table">
-        <thead><tr><th>${escapeHtml(state.labelField)}</th><th>Valeur</th></tr></thead>
+        <thead><tr><th>${escapeHtml(state.labelField)}</th><th>${state.valueField}${hasSecondSeries ? `</th><th>${state.valueField2}` : ''}</th></tr></thead>
         <tbody id="table-body"></tbody>
       </table>
     </div>
@@ -1770,23 +2140,19 @@ async function loadChart() {
   const data = json.results || [];
 
   const labels = data.map(d => d['${state.labelField}'] || 'N/A');
-  const values = data.map(d => Math.round((d.value || 0) * 100) / 100);
+  const values = data.map(d => Math.round((d.value || 0) * 100) / 100);${hasSecondSeries ? `
+  const values2 = data.map(d => Math.round((d.value2 || 0) * 100) / 100);` : ''}
 
   new Chart(document.getElementById('myChart'), {
     type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
     data: {
       labels: labels,
-      datasets: [{
-        label: '${state.valueField}',
-        data: values,
-        backgroundColor: ${JSON.stringify(['pie', 'doughnut', 'radar'].includes(state.chartType) ? DSFR_COLORS.slice(0, state.limit) : state.color)},
-        borderColor: '${state.color}',
-        borderWidth: ${state.chartType === 'line' ? 2 : 1}
-      }]
+      datasets: ${datasetsCode}
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n      indexAxis: 'y'" : ''}
+      maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n      indexAxis: 'y'" : ''},
+      plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
     }
   });
 
@@ -1794,7 +2160,7 @@ async function loadChart() {
   const tbody = document.getElementById('table-body');
   data.forEach(d => {
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + (d['${state.labelField}'] || 'N/A') + '</td><td>' + (d.value?.toFixed(2) || '—') + '</td>';
+    tr.innerHTML = '<td>' + (d['${state.labelField}'] || 'N/A') + '</td><td>' + (d.value?.toFixed(2) || '—') + '</td>${hasSecondSeries ? `<td>' + (d.value2?.toFixed(2) || '—') + '</td>` : ''}';
     tbody.appendChild(tr);
   });
 }

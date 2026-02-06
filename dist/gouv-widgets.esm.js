@@ -1971,7 +1971,9 @@ let p = class extends O {
       case "gauge":
         const s = this.gaugeValue ?? (this._data.length > 0 && Number(P(this._data[0], this.valueField)) || 0);
         return this._createChartElement("gauge-chart", {
-          value: String(s),
+          percent: String(Math.round(s)),
+          init: "0",
+          target: "100",
           ...i
         });
       case "bar-line":

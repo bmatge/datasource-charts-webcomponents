@@ -42,47 +42,10 @@
       flex: 1;
       min-width: 0;
     }
-    .component-card {
-      background: var(--background-default-grey);
-      border: 1px solid var(--border-default-grey);
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .component-card h3 {
-      margin-top: 0;
+    .fr-tile__pictogram {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-    .component-card p {
-      color: var(--text-mention-grey);
-      margin-bottom: 1rem;
-    }
-    .tag-custom {
-      display: inline-block;
-      background: var(--background-action-low-blue-france);
-      color: var(--text-action-high-blue-france);
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-    .tag-dsfr {
-      background: var(--background-action-low-green-emeraude);
-      color: var(--text-action-high-green-emeraude);
-    }
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-    .kpi-grid gouv-kpi {
-      display: block;
-    }
-    .kpi-grid .gouv-kpi {
-      height: 100%;
-      min-height: 140px;
+      justify-content: center;
     }
     @media (max-width: 992px) {
       .demo-layout {
@@ -118,9 +81,9 @@
             </div>
             <div class="fr-header__service">
               <a href="../index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">gouv-widgets</p>
+                <p class="fr-header__service-title">Charts builder</p>
               </a>
-              <p class="fr-header__service-tagline">Visualisations de donnees conformes DSFR</p>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
             </div>
           </div>
           <div class="fr-header__tools">
@@ -240,286 +203,291 @@
       <div class="demo-content">
         <h1 id="overview">Bibliotheque de composants</h1>
         <p class="fr-text--lead">
-          gouv-widgets est une bibliotheque de Web Components pour creer des visualisations de donnees
-          conformes au Design System de l'Etat (DSFR).
+          gouv-widgets est une bibliotheque de Web Components pour creer des tableaux de bord
+          et visualisations de donnees conformes au Design System de l'Etat (DSFR).
         </p>
 
-        <!-- Source de donnees pour les demos -->
-        <gouv-source
-          id="sites"
-          url="/mock-api/data.json"
-          transform="sites"
-          refresh="0">
-        </gouv-source>
-
-        <gouv-source
-          id="meta"
-          url="/mock-api/data.json"
-          transform="metadata">
-        </gouv-source>
-
-        <!-- Section: Nos composants -->
-        <h2 class="fr-mt-4w">Nos composants</h2>
-        <p>Ces composants sont developpes specifiquement pour ce projet et s'integrent avec le systeme de data-bridge.</p>
-
-        <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12 fr-col-md-6">
-            <div class="component-card">
-              <h3>
-                <span class="ri-database-2-line" aria-hidden="true"></span>
-                gouv-source
-                <span class="tag-custom">Custom</span>
-              </h3>
-              <p>Connecteur de donnees invisible qui recupere des donnees depuis une API et les distribue aux autres composants.</p>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm" href="components/gouv-source.html">
-                Voir la documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6">
-            <div class="component-card">
-              <h3>
-                <span class="ri-number-1" aria-hidden="true"></span>
-                gouv-kpi
-                <span class="tag-custom">Custom</span>
-              </h3>
-              <p>Affiche une valeur cle (KPI) avec formatage, couleurs conditionnelles et icones.</p>
-              <div class="kpi-grid fr-mb-2w">
-                <gouv-kpi
-                  source="meta"
-                  valeur="total"
-                  label="Sites"
-                  icone="ri-global-line"
-                  format="nombre">
-                </gouv-kpi>
-                <gouv-kpi
-                  source="sites"
-                  valeur="avg:score_rgaa"
-                  label="RGAA moyen"
-                  format="pourcentage"
-                  seuil-vert="80"
-                  seuil-orange="50">
-                </gouv-kpi>
-              </div>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm" href="components/gouv-kpi.html">
-                Voir la documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6">
-            <div class="component-card">
-              <h3>
-                <span class="ri-table-line" aria-hidden="true"></span>
-                gouv-datalist
-                <span class="tag-custom">Custom</span>
-              </h3>
-              <p>Tableau de donnees avec recherche, filtres, tri, pagination et export CSV.</p>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm" href="components/gouv-datalist.html">
-                Voir la documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6">
-            <div class="component-card">
-              <h3>
-                <span class="ri-bar-chart-box-line" aria-hidden="true"></span>
-                gouv-dsfr-chart
-                <span class="tag-custom">Custom</span>
-                <span class="tag-dsfr">DSFR Chart</span>
-              </h3>
-              <p>Wrapper connectant les graphiques DSFR Chart au systeme gouv-source pour des donnees dynamiques.</p>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm" href="components/gouv-dsfr-chart.html">
-                Voir la documentation
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Charts DSFR -->
-        <h2 class="fr-mt-4w">Graphiques DSFR Chart</h2>
-        <p>
-          Ces graphiques proviennent de la bibliotheque officielle
-          <a href="https://gouvernementfr.github.io/dsfr-chart/" target="_blank" rel="noopener">DSFR Chart</a>.
-          Ils peuvent etre utilises directement ou via notre wrapper <code>gouv-dsfr-chart</code>.
-        </p>
-
-        <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-line-chart-line" aria-hidden="true"></span>
-                line-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Visualiser des tendances et evolutions dans le temps.</p>
-              <line-chart
-                x="[[2020, 2021, 2022, 2023, 2024]]"
-                y="[[65, 72, 78, 85, 91]]"
-                selected-palette="default"
-                unit-tooltip="%">
-              </line-chart>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="charts/line-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-bar-chart-horizontal-line" aria-hidden="true"></span>
-                bar-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Comparer des valeurs entre categories.</p>
-              <bar-chart
-                x='[["Economie", "Education", "Culture", "Sante"]]'
-                y="[[87, 91, 95, 68]]"
-                selected-palette="categorical"
-                unit-tooltip="%">
-              </bar-chart>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="charts/bar-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-pie-chart-line" aria-hidden="true"></span>
-                pie-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Representer des proportions et distributions.</p>
-              <pie-chart
-                x='[["Actifs", "Inactifs", "En maintenance"]]'
-                y="[[75, 15, 10]]"
-                selected-palette="categorical"
-                unit-tooltip="%">
-              </pie-chart>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="charts/pie-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-focus-3-line" aria-hidden="true"></span>
-                radar-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Comparer plusieurs variables simultanement.</p>
-              <radar-chart
-                x='[["RGAA", "DSFR", "Perf", "Secu", "A11y"]]'
-                y="[[85, 90, 75, 95, 88]]"
-                selected-palette="default">
-              </radar-chart>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="charts/radar-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-speed-line" aria-hidden="true"></span>
-                gauge-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Afficher une progression vers un objectif.</p>
-              <gauge-chart
-                value="82"
-                selected-palette="default">
-              </gauge-chart>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="charts/gauge-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-
-          <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
-            <div class="component-card">
-              <h3>
-                <span class="ri-map-line" aria-hidden="true"></span>
-                map-chart
-                <span class="tag-dsfr">DSFR</span>
-              </h3>
-              <p>Visualiser des donnees geographiques sur la carte de France.</p>
-              <a class="fr-btn fr-btn--secondary fr-btn--sm" href="charts/map-chart.html">
-                Documentation
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Exemple d'integration complete -->
-        <h2 class="fr-mt-4w">Exemple d'integration complete</h2>
-        <p>Voici un exemple combinant plusieurs composants pour creer un tableau de bord.</p>
-
-        <div class="fr-callout fr-my-3w">
-          <p class="fr-callout__text">
-            Les donnees ci-dessous sont chargees dynamiquement depuis <code>/mock-api/data.json</code>
-            via le composant <code>&lt;gouv-source&gt;</code>.
+        <!-- Architecture et principe -->
+        <section class="fr-mt-4w">
+          <h2>Architecture</h2>
+          <p>
+            Cette bibliotheque s'articule autour de deux types de composants complementaires :
           </p>
-        </div>
 
-        <section class="fr-mb-4w">
-          <h3>Indicateurs cles</h3>
-          <div class="kpi-grid">
-            <gouv-kpi
-              source="meta"
-              valeur="total"
-              label="Sites suivis"
-              icone="ri-global-line"
-              format="nombre">
-            </gouv-kpi>
+          <div class="fr-grid-row fr-grid-row--gutters fr-mt-2w">
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-callout fr-callout--blue-ecume">
+                <h3 class="fr-callout__title">
+                  <span class="ri-tools-line fr-mr-1w" aria-hidden="true"></span>
+                  Composants gouv-widgets
+                </h3>
+                <p class="fr-callout__text">
+                  Composants <strong>developpes specifiquement</strong> pour ce projet. Ils gerent la <strong>connexion aux donnees</strong>,
+                  les <strong>transformations</strong>, et l'<strong>affichage d'indicateurs</strong>.
+                  Ils communiquent entre eux via un systeme de <em>data-bridge</em> qui permet de partager
+                  les donnees sans ecrire de JavaScript.
+                </p>
+              </div>
+            </div>
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-callout fr-callout--green-emeraude">
+                <h3 class="fr-callout__title">
+                  <span class="ri-bar-chart-box-line fr-mr-1w" aria-hidden="true"></span>
+                  Graphiques DSFR Chart
+                </h3>
+                <p class="fr-callout__text">
+                  Graphiques provenant de la bibliotheque officielle
+                  <a href="https://gouvernementfr.github.io/dsfr-chart/" target="_blank" rel="noopener">DSFR Chart</a>.
+                  Ces composants sont <strong>conformes RGAA</strong> et respectent la charte graphique de l'Etat.
+                  Ils peuvent etre utilises directement ou via notre wrapper <code>gouv-dsfr-chart</code>
+                  pour une alimentation dynamique.
+                </p>
+              </div>
+            </div>
+          </div>
 
-            <gouv-kpi
-              source="sites"
-              valeur="avg:score_rgaa"
-              label="Score RGAA moyen"
-              format="pourcentage"
-              seuil-vert="80"
-              seuil-orange="50">
-            </gouv-kpi>
-
-            <gouv-kpi
-              source="sites"
-              valeur="count:certificat_valide:false"
-              label="Certificats expires"
-              icone="ri-shield-cross-line"
-              couleur="rouge">
-            </gouv-kpi>
-
-            <gouv-kpi
-              source="sites"
-              valeur="avg:score_dsfr"
-              label="Conformite DSFR moyenne"
-              format="pourcentage"
-              seuil-vert="80"
-              seuil-orange="50">
-            </gouv-kpi>
+          <div class="fr-highlight fr-mt-3w">
+            <p>
+              <strong>Le pont entre les deux :</strong> Le composant <code>&lt;gouv-dsfr-chart&gt;</code> fait le lien
+              entre le systeme de donnees <code>gouv-source</code> et les graphiques DSFR Chart,
+              permettant de creer des visualisations dynamiques alimentees par une API.
+            </p>
           </div>
         </section>
 
-        <section class="fr-mb-4w">
-          <h3>Graphique avec gouv-dsfr-chart</h3>
-          <gouv-dsfr-chart
-            source="sites"
-            type="bar"
-            label-field="ministere"
-            value-field="score_rgaa"
-            selected-palette="categorical"
-            unit-tooltip="%"
-            horizontal="true">
-          </gouv-dsfr-chart>
+        <!-- Section: Composants gouv-widgets -->
+        <section class="fr-mt-6w">
+          <h2>
+            <span class="ri-tools-line fr-mr-1w" aria-hidden="true"></span>
+            Composants gouv-widgets
+          </h2>
+          <p class="fr-mb-3w">
+            Ces composants gèrent la recuperation, la transformation et l'affichage des donnees.
+          </p>
+
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-3">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="components/gouv-source.html">gouv-source</a>
+                    </h3>
+                    <p class="fr-tile__detail">Connecteur de donnees</p>
+                    <p class="fr-tile__desc">Recupere les donnees depuis une API et les distribue aux autres composants.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-database-2-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-blue-france);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-3">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="components/gouv-kpi.html">gouv-kpi</a>
+                    </h3>
+                    <p class="fr-tile__detail">Indicateur chiffre</p>
+                    <p class="fr-tile__desc">Affiche une valeur cle avec formatage, couleurs conditionnelles et icones.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-funds-box-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-blue-france);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-3">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="components/gouv-datalist.html">gouv-datalist</a>
+                    </h3>
+                    <p class="fr-tile__detail">Tableau de donnees</p>
+                    <p class="fr-tile__desc">Tableau avec recherche, filtres, tri, pagination et export CSV.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-table-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-blue-france);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-3">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="components/gouv-dsfr-chart.html">gouv-dsfr-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Wrapper graphique</p>
+                    <p class="fr-tile__desc">Connecte les graphiques DSFR Chart au systeme de donnees dynamiques.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-bar-chart-grouped-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-blue-france);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Graphiques DSFR Chart -->
+        <section class="fr-mt-6w">
+          <h2>
+            <span class="ri-bar-chart-box-line fr-mr-1w" aria-hidden="true"></span>
+            Graphiques DSFR Chart
+          </h2>
+          <p class="fr-mb-3w">
+            Graphiques officiels conformes au DSFR. Utilisez-les directement ou via <code>gouv-dsfr-chart</code> pour des donnees dynamiques.
+          </p>
+
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/line-chart.html">line-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Courbes et tendances</p>
+                    <p class="fr-tile__desc">Visualiser des evolutions dans le temps.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-line-chart-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/bar-chart.html">bar-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Barres et comparaisons</p>
+                    <p class="fr-tile__desc">Comparer des valeurs entre categories.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-bar-chart-horizontal-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/pie-chart.html">pie-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Camembert et proportions</p>
+                    <p class="fr-tile__desc">Representer des distributions et parts.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-pie-chart-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/radar-chart.html">radar-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Radar multidimensionnel</p>
+                    <p class="fr-tile__desc">Comparer plusieurs variables simultanement.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-focus-3-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/gauge-chart.html">gauge-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Jauge de progression</p>
+                    <p class="fr-tile__desc">Afficher une progression vers un objectif.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-speed-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/map-chart.html">map-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Carte de France</p>
+                    <p class="fr-tile__desc">Visualiser des donnees geographiques.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-map-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+              <div class="fr-tile fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <h3 class="fr-tile__title">
+                      <a href="charts/scatter-chart.html">scatter-chart</a>
+                    </h3>
+                    <p class="fr-tile__detail">Nuage de points</p>
+                    <p class="fr-tile__desc">Analyser des correlations entre variables.</p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogram">
+                    <span class="ri-bubble-chart-line ri-3x" aria-hidden="true" style="color: var(--text-action-high-green-emeraude);"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </div>

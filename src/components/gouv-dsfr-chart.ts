@@ -320,10 +320,12 @@ export class GouvDsfrChart extends LitElement {
         return this._createChartElement('scatter-chart', { x, y, ...commonAttrs });
 
       case 'gauge':
-        // Pour gauge, on utilise la première valeur ou gaugeValue
+        // Pour gauge, on utilise percent/init/target (pas value qui ne fonctionne pas dans DSFR Chart 2.0.4)
         const gaugeVal = this.gaugeValue ?? (this._data.length > 0 ? Number(getByPath(this._data[0], this.valueField)) || 0 : 0);
         return this._createChartElement('gauge-chart', {
-          value: String(gaugeVal),
+          percent: String(Math.round(gaugeVal)),
+          init: '0',
+          target: '100',
           ...commonAttrs
         });
 

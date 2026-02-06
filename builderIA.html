@@ -54,6 +54,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-height: 0;
     }
 
     .config-section {
@@ -133,6 +134,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-height: 0;
     }
 
     .chat-header {
@@ -153,6 +155,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      min-height: 0;
     }
 
     .chat-message {
@@ -220,26 +223,29 @@
 
     /* Input zone */
     .chat-input-container {
-      padding: 0.75rem;
+      padding: 1rem;
       border-top: 1px solid var(--border-default-grey);
       background: var(--background-default-grey);
+      flex-shrink: 0;
     }
 
     .chat-input-wrapper {
       display: flex;
       gap: 0.5rem;
+      align-items: flex-end;
     }
 
     .chat-input {
       flex: 1;
       border: 1px solid var(--border-default-grey);
-      border-radius: 20px;
-      padding: 0.6rem 1rem;
-      font-size: 0.85rem;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
       resize: none;
-      min-height: 40px;
-      max-height: 120px;
+      min-height: 60px;
+      max-height: 150px;
       font-family: inherit;
+      line-height: 1.4;
     }
 
     .chat-input:focus {
@@ -248,8 +254,8 @@
     }
 
     .chat-send-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--background-action-high-blue-france);
       color: white;
@@ -258,7 +264,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      flex-shrink: 0;
     }
 
     .chat-send-btn:hover {
@@ -320,6 +327,8 @@
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
+      position: sticky;
+      top: 0;
     }
 
     .preview-title {
@@ -446,6 +455,35 @@
     .kpi-value { display: block; font-size: 2.5rem; font-weight: 700; color: var(--text-title-grey); }
     .kpi-label { display: block; font-size: 0.875rem; color: var(--text-mention-grey); margin-top: 0.5rem; }
 
+    /* Gauge Cards */
+    .gauge-card {
+      background: var(--background-default-grey);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-container { position: relative; width: 200px; }
+    .gauge-svg { width: 100%; height: auto; }
+    .gauge-value {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-title-grey);
+    }
+    .gauge-label {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-mention-grey);
+    }
+
     /* Source badges */
     .source-badge {
       display: inline-flex;
@@ -567,9 +605,9 @@
             </div>
             <div class="fr-header__service">
               <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">gouv-widgets</p>
+                <p class="fr-header__service-title">Charts builder</p>
               </a>
-              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
             </div>
           </div>
           <div class="fr-header__tools">
@@ -712,15 +750,17 @@ Pour créer un graphique, génère un bloc JSON :
 {
   "action": "createChart",
   "config": {
-    "type": "bar|line|pie|doughnut|radar|horizontalBar|kpi",
+    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi",
     "labelField": "champ_labels",
     "valueField": "champ_valeurs",
+    "valueField2": "champ_valeurs_serie2",  // Optionnel: pour bar/line/radar avec 2 séries
     "aggregation": "sum|avg|count|min|max",
     "limit": 10,
     "sortOrder": "desc|asc",
     "title": "Titre",
     "subtitle": "Sous-titre",
     "color": "#000091",
+    "color2": "#E1000F",  // Couleur série 2
     "variant": "info|success|warning|error",
     "unit": "€|%|unité"
   }
@@ -901,7 +941,7 @@ Sois concis. Utilise le français.</textarea>
         id: 'chartTypes',
         name: 'Types de graphiques',
         description: 'Quand utiliser quel type de graphique',
-        trigger: ['graphique', 'chart', 'visualisation', 'barres', 'camembert', 'ligne', 'kpi', 'indicateur', 'chiffre'],
+        trigger: ['graphique', 'chart', 'visualisation', 'barres', 'camembert', 'ligne', 'kpi', 'indicateur', 'chiffre', 'jauge', 'nuage', 'scatter'],
         content: `## Choix du type de graphique
 
 ### KPI (kpi)
@@ -910,20 +950,33 @@ Sois concis. Utilise le français.</textarea>
 - Ex: nombre total d'utilisateurs, CA annuel, taux de satisfaction
 - Options: variant (info|success|warning|error), unit (€, %, etc.)
 
+### Jauge (gauge)
+- Afficher une progression vers un objectif (0-100%)
+- Valeur unique avec représentation visuelle
+- Ex: score de conformité, progression projet
+
 ### Barres verticales (bar)
 - Comparer des catégories
 - Idéal: 5-15 catégories
+- Supporte 2 séries (valueField2)
 - Ex: ventes par région, scores par équipe
 
 ### Barres horizontales (horizontalBar)
 - Catégories avec noms longs
 - Classements (top 10)
+- Supporte 2 séries (valueField2)
 - Ex: top 10 des villes, classement produits
 
 ### Lignes (line)
 - Évolution temporelle
 - Tendances, séries chronologiques
+- Supporte 2 séries (valueField2) pour comparaisons
 - Ex: température par mois, CA par année
+
+### Nuage de points (scatter)
+- Corrélation entre deux variables numériques
+- Pas de catégories, juste X et Y numériques
+- Ex: prix vs surface, âge vs revenu
 
 ### Camembert (pie)
 - Parts d'un tout (100%)
@@ -938,7 +991,13 @@ Sois concis. Utilise le français.</textarea>
 ### Radar
 - Comparer plusieurs dimensions
 - Profils, scores multicritères
-- Ex: évaluation compétences, comparatif produits`
+- Supporte 2 séries (valueField2)
+- Ex: évaluation compétences, comparatif produits
+
+## Séries multiples (bar, line, radar)
+Pour comparer 2 métriques, utilise valueField2:
+- valueField: première série (couleur principale)
+- valueField2: seconde série (couleur secondaire)`
       },
 
       dsfrColors: {
@@ -1722,34 +1781,104 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
       const emptyState = document.getElementById('empty-state');
       const chartWrapper = document.querySelector('.chart-wrapper');
 
-      // Remove any existing KPI card
+      // Remove any existing KPI card or gauge card
       const existingKpi = chartWrapper.querySelector('.kpi-card');
       if (existingKpi) existingKpi.remove();
+      const existingGauge = chartWrapper.querySelector('.gauge-card');
+      if (existingGauge) existingGauge.remove();
+
+      if (state.chart) {
+        state.chart.destroy();
+        state.chart = null;
+      }
+
+      // Handle gauge type specially (no Chart.js canvas)
+      if (config.type === 'gauge') {
+        canvas.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        const gaugeValue = data[0]?.value || 0;
+        const gaugeCard = document.createElement('div');
+        gaugeCard.className = 'gauge-card';
+        gaugeCard.innerHTML = `
+          <div class="gauge-container">
+            <svg viewBox="0 0 200 120" class="gauge-svg">
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20" stroke-linecap="round"/>
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${config.color || '#000091'}" stroke-width="20" stroke-linecap="round"
+                    stroke-dasharray="${(gaugeValue / 100) * 251.2} 251.2"/>
+            </svg>
+            <div class="gauge-value">${Math.round(gaugeValue)}%</div>
+            <div class="gauge-label">${escapeHtml(config.title || 'Jauge')}</div>
+          </div>
+        `;
+        chartWrapper.appendChild(gaugeCard);
+        return;
+      }
 
       emptyState.style.display = 'none';
       canvas.style.display = 'block';
 
-      if (state.chart) {
-        state.chart.destroy();
-      }
-
       const labels = data.map(d => d.label);
       const values = data.map(d => Math.round(d.value * 100) / 100);
 
+      // Handle scatter type
+      if (config.type === 'scatter') {
+        const scatterData = data.map(d => ({
+          x: parseFloat(d.label) || 0,
+          y: d.value
+        }));
+
+        state.chart = new Chart(canvas, {
+          type: 'scatter',
+          data: {
+            datasets: [{
+              label: config.valueField,
+              data: scatterData,
+              backgroundColor: config.color || '#000091',
+              borderColor: config.color || '#000091',
+              pointRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+        return;
+      }
+
       const chartType = config.type === 'horizontalBar' ? 'bar' : config.type;
       const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
+
+      // Build datasets array
+      const datasets = [{
+        label: config.valueField,
+        data: values,
+        backgroundColor: isMultiColor ? DSFR_COLORS.slice(0, data.length) : (config.color || '#000091'),
+        borderColor: config.color || '#000091',
+        borderWidth: config.type === 'line' ? 2 : 1
+      }];
+
+      // Handle multi-series (valueField2)
+      if (config.valueField2 && config.data2 && config.data2.length > 0) {
+        const values2 = config.data2.map(d => Math.round(d.value * 100) / 100);
+        datasets.push({
+          label: config.valueField2,
+          data: values2,
+          backgroundColor: config.color2 || '#E1000F',
+          borderColor: config.color2 || '#E1000F',
+          borderWidth: config.type === 'line' ? 2 : 1
+        });
+      }
 
       state.chart = new Chart(canvas, {
         type: chartType,
         data: {
           labels: labels,
-          datasets: [{
-            label: config.valueField,
-            data: values,
-            backgroundColor: isMultiColor ? DSFR_COLORS.slice(0, data.length) : (config.color || '#000091'),
-            borderColor: config.color || '#000091',
-            borderWidth: config.type === 'line' ? 2 : 1
-          }]
+          datasets: datasets
         },
         options: {
           responsive: true,
@@ -1757,7 +1886,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
           indexAxis: config.type === 'horizontalBar' ? 'y' : 'x',
           plugins: {
             legend: {
-              display: isMultiColor
+              display: isMultiColor || datasets.length > 1
             }
           }
         }
@@ -1883,6 +2012,108 @@ loadKPI();
         return;
       }
 
+      // Handle gauge type
+      if (config.type === 'gauge') {
+        const gaugeValue = data[0]?.value || 0;
+        const code = `<!-- Jauge générée avec gouv-widgets Builder IA -->
+<!-- Source : ${state.source?.name || 'Données locales'} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<style>
+.gauge-card {
+  background: var(--background-default-grey);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  display: inline-block;
+}
+.gauge-container { position: relative; width: 200px; }
+.gauge-svg { width: 100%; height: auto; }
+.gauge-value {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-title-grey);
+}
+.gauge-label {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-mention-grey);
+}
+</style>
+
+<div class="fr-container fr-my-4w">
+  <div class="gauge-card">
+    <div class="gauge-container">
+      <svg viewBox="0 0 200 120" class="gauge-svg">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${config.color || '#000091'}" stroke-width="20" stroke-linecap="round"
+              stroke-dasharray="${(gaugeValue / 100) * 251.2} 251.2"/>
+      </svg>
+      <div class="gauge-value">${Math.round(gaugeValue)}%</div>
+      <div class="gauge-label">${escapeHtml(config.title || 'Jauge')}</div>
+    </div>
+  </div>
+</div>`;
+
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Handle scatter type
+      if (config.type === 'scatter') {
+        const scatterData = data.map(d => ({ x: parseFloat(d.label) || 0, y: d.value }));
+        const code = `<!-- Nuage de points généré avec gouv-widgets Builder IA -->
+<!-- Source : ${state.source?.name || 'Données locales'} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dépendances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Nuage de points')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <div id="chart-container" style="height: 400px; position: relative;">
+    <canvas id="myChart"></canvas>
+  </div>
+</div>
+
+<script>
+// Données embarquées
+const scatterData = ${JSON.stringify(scatterData, null, 2)};
+
+new Chart(document.getElementById('myChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: '${config.valueField}',
+      data: scatterData,
+      backgroundColor: '${config.color || '#000091'}',
+      borderColor: '${config.color || '#000091'}',
+      pointRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false
+  }
+});
+<\/script>`;
+
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
       // Handle chart types
       const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
       const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, config.limit || 10));
@@ -1988,9 +2219,31 @@ loadChart();
         // Pour les sources non-API (Grist, manuel), générer du code avec données embarquées
         const sourceName = state.source?.name || 'Données locales';
         const sourceType = state.source?.type === 'grist' ? 'Grist' : 'source manuelle';
+        const hasSecondSeries = config.valueField2 && config.data2 && config.data2.length > 0;
+
+        // Build datasets code
+        let datasetsCode = `[{
+      label: '${config.valueField}',
+      data: values,
+      backgroundColor: ${isMultiColor ? 'DSFR_COLORS.slice(0, data.length)' : `'${config.color || '#000091'}'`},
+      borderColor: '${config.color || '#000091'}',
+      borderWidth: ${config.type === 'line' ? 2 : 1}
+    }`;
+
+        if (hasSecondSeries) {
+          datasetsCode += `, {
+      label: '${config.valueField2}',
+      data: values2,
+      backgroundColor: '${config.color2 || '#E1000F'}',
+      borderColor: '${config.color2 || '#E1000F'}',
+      borderWidth: ${config.type === 'line' ? 2 : 1}
+    }`;
+        }
+        datasetsCode += ']';
 
         const code = `<!-- Graphique généré avec gouv-widgets Builder IA -->
 <!-- Source : ${sourceName} (${sourceType}) - données embarquées -->
+${hasSecondSeries ? '<!-- Note: Graphique multi-séries -->' : ''}
 
 <!-- Dépendances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -2011,28 +2264,24 @@ loadChart();
 <script>
 // Données embarquées (depuis ${sourceType})
 const data = ${JSON.stringify(data, null, 2)};
+${hasSecondSeries ? `const data2 = ${JSON.stringify(config.data2, null, 2)};` : ''}
 
 // Palette DSFR
 const DSFR_COLORS = ${colorsArray};
 
 const labels = data.map(d => d.label);
 const values = data.map(d => Math.round(d.value * 100) / 100);
+${hasSecondSeries ? 'const values2 = data2.map(d => Math.round(d.value * 100) / 100);' : ''}
 
 new Chart(document.getElementById('myChart'), {
   type: '${config.type === 'horizontalBar' ? 'bar' : config.type}',
   data: {
     labels: labels,
-    datasets: [{
-      label: '${config.valueField}',
-      data: values,
-      backgroundColor: ${isMultiColor ? 'DSFR_COLORS.slice(0, data.length)' : `'${config.color || '#000091'}'`},
-      borderColor: '${config.color || '#000091'}',
-      borderWidth: ${config.type === 'line' ? 2 : 1}
-    }]
+    datasets: ${datasetsCode}
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''}
+    maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''}${hasSecondSeries ? ",\n    plugins: { legend: { display: true } }" : ''}
   }
 });
 <\/script>`;

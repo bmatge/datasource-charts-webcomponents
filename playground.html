@@ -72,6 +72,8 @@
       width: 100%;
       height: 100%;
       border: none;
+      position: sticky;
+      top: 0;
     }
 
     .example-selector {
@@ -136,9 +138,9 @@
             </div>
             <div class="fr-header__service">
               <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">gouv-widgets</p>
+                <p class="fr-header__service-title">Charts builder</p>
               </a>
-              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
             </div>
           </div>
           <div class="fr-header__tools">
@@ -190,10 +192,25 @@
   <div class="example-selector">
     <label for="example-select">Charger un exemple :</label>
     <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
-      <option value="bar-chart">Graphique en barres — Prix moyen par région</option>
-      <option value="pie-chart">Graphique circulaire — Répartition par énergie</option>
-      <option value="line-chart">Graphique linéaire — Évolution des prix</option>
-      <option value="kpi-dashboard">Dashboard KPI</option>
+      <optgroup label="Chart.js (API OpenDataSoft)">
+        <option value="bar-chart">Graphique en barres — Prix moyen par région</option>
+        <option value="pie-chart">Graphique circulaire — Répartition par énergie</option>
+        <option value="line-chart">Graphique linéaire — Évolution des prix</option>
+        <option value="kpi-dashboard">Dashboard KPI</option>
+      </optgroup>
+      <optgroup label="DSFR Chart natifs">
+        <option value="dsfr-bar">DSFR Bar Chart</option>
+        <option value="dsfr-line">DSFR Line Chart</option>
+        <option value="dsfr-pie">DSFR Pie Chart</option>
+        <option value="dsfr-gauge">DSFR Gauge Chart</option>
+        <option value="dsfr-radar">DSFR Radar Chart</option>
+      </optgroup>
+      <optgroup label="Composants gouv-widgets">
+        <option value="gouv-source-chart">gouv-source + gouv-dsfr-chart</option>
+        <option value="gouv-kpi">gouv-kpi (indicateurs)</option>
+        <option value="gouv-datalist">gouv-datalist (tableau)</option>
+        <option value="gouv-dashboard">Dashboard complet gouv-widgets</option>
+      </optgroup>
     </select>
   </div>
 
@@ -851,7 +868,444 @@ async function loadDashboard() {
 }
 
 loadDashboard();
-<\/script>`
+<\/script>`,
+
+      // ---------------------------------------------------------
+      // EXEMPLES DSFR CHART NATIFS
+      // Format officiel avec x="[[...]]" et y="[[...]]"
+      // ---------------------------------------------------------
+      'dsfr-bar': `<!--
+  EXEMPLE : DSFR Bar Chart (natif)
+
+  Utilise le composant officiel bar-chart de @gouvfr/dsfr-chart
+  Les donnees sont au format JSON stringifie : x="[[...]]" y="[[...]]"
+-->
+
+<!-- Dependances DSFR Chart -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Score RGAA par ministere</h2>
+  <p class="fr-text--sm fr-text--light">Conformite accessibilite en pourcentage</p>
+
+  <!-- Bar chart vertical -->
+  <bar-chart
+    x='[["Economie", "Education", "Interieur", "Sante", "Culture"]]'
+    y="[[87, 92, 78, 85, 91]]"
+    name='["Score RGAA"]'
+    selected-palette="categorical"
+    unit-tooltip="%">
+  </bar-chart>
+
+  <h3 class="fr-mt-4w">Barres horizontales</h3>
+  <bar-chart
+    x='[["Economie", "Education", "Interieur", "Sante", "Culture"]]'
+    y="[[87, 92, 78, 85, 91]]"
+    name='["Score RGAA"]'
+    selected-palette="sequentialAscending"
+    horizontal="true"
+    unit-tooltip="%">
+  </bar-chart>
+</div>`,
+
+      'dsfr-line': `<!--
+  EXEMPLE : DSFR Line Chart (natif)
+
+  Graphique en ligne avec evolution temporelle
+-->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Evolution du score RGAA</h2>
+  <p class="fr-text--sm fr-text--light">Progression sur 4 ans</p>
+
+  <line-chart
+    x='[["2021", "2022", "2023", "2024"]]'
+    y="[[65, 72, 78, 85]]"
+    name='["Score RGAA"]'
+    selected-palette="default"
+    unit-tooltip="%">
+  </line-chart>
+
+  <h3 class="fr-mt-4w">Plusieurs series</h3>
+  <line-chart
+    x='[["2021", "2022", "2023", "2024"], ["2021", "2022", "2023", "2024"]]'
+    y="[[65, 72, 78, 85], [70, 75, 82, 91]]"
+    name='["RGAA", "DSFR"]'
+    selected-palette="categorical"
+    unit-tooltip="%">
+  </line-chart>
+</div>`,
+
+      'dsfr-pie': `<!--
+  EXEMPLE : DSFR Pie Chart (natif)
+
+  Diagramme circulaire / camembert
+-->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Repartition par statut</h2>
+
+  <div style="max-width: 400px; margin: 0 auto;">
+    <pie-chart
+      x='[["Actifs", "Inactifs", "En maintenance"]]'
+      y="[[75, 15, 10]]"
+      selected-palette="categorical"
+      unit-tooltip="%">
+    </pie-chart>
+  </div>
+
+  <h3 class="fr-mt-4w">Variante donut (fill=false par defaut)</h3>
+  <div style="max-width: 400px; margin: 0 auto;">
+    <pie-chart
+      x='[["Conformes", "Partiels", "Non conformes"]]'
+      y="[[60, 30, 10]]"
+      selected-palette="sequentialDescending"
+      unit-tooltip="%">
+    </pie-chart>
+  </div>
+</div>`,
+
+      'dsfr-gauge': `<!--
+  EXEMPLE : DSFR Gauge Chart (natif)
+
+  ATTENTION : Utiliser percent/init/target, PAS value !
+-->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Jauges de conformite</h2>
+  <p class="fr-text--sm fr-text--light">Progression vers l'objectif 100%</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+    <div>
+      <p><strong>Score RGAA</strong></p>
+      <!-- percent = valeur actuelle, init = minimum, target = maximum -->
+      <gauge-chart percent="82" init="0" target="100"></gauge-chart>
+    </div>
+    <div>
+      <p><strong>Score DSFR</strong></p>
+      <gauge-chart percent="91" init="0" target="100"></gauge-chart>
+    </div>
+    <div>
+      <p><strong>Performance</strong></p>
+      <gauge-chart percent="65" init="0" target="100"></gauge-chart>
+    </div>
+  </div>
+
+  <div class="fr-callout fr-callout--brown-caramel fr-mt-4w">
+    <p class="fr-callout__text">
+      <strong>Important :</strong> Ne pas utiliser l'attribut <code>value</code>.
+      Utiliser <code>percent</code> + <code>init</code> + <code>target</code>.
+    </p>
+  </div>
+</div>`,
+
+      'dsfr-radar': `<!--
+  EXEMPLE : DSFR Radar Chart (natif)
+
+  Graphique radar pour comparaisons multi-criteres
+-->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Profil de conformite</h2>
+  <p class="fr-text--sm fr-text--light">Evaluation multi-criteres</p>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <radar-chart
+      x='[["RGAA", "DSFR", "Performance", "SEO", "Securite"]]'
+      y="[[85, 90, 75, 80, 95]]"
+      name='["Site principal"]'
+      selected-palette="default">
+    </radar-chart>
+  </div>
+
+  <h3 class="fr-mt-4w">Comparaison de plusieurs sites</h3>
+  <div style="max-width: 500px; margin: 0 auto;">
+    <radar-chart
+      x='[["RGAA", "DSFR", "Performance", "SEO", "Securite"], ["RGAA", "DSFR", "Performance", "SEO", "Securite"]]'
+      y="[[85, 90, 75, 80, 95], [70, 85, 90, 75, 80]]"
+      name='["Site A", "Site B"]'
+      selected-palette="categorical">
+    </radar-chart>
+  </div>
+</div>`,
+
+      // ---------------------------------------------------------
+      // EXEMPLES COMPOSANTS gouv-widgets
+      // ---------------------------------------------------------
+      'gouv-source-chart': `<!--
+  EXEMPLE : gouv-source + gouv-dsfr-chart
+
+  Les composants gouv-widgets permettent de connecter
+  une source de donnees JSON a des graphiques DSFR.
+-->
+
+<!-- Composants gouv-widgets -->
+<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+
+<!-- DSFR Chart (requis par gouv-dsfr-chart) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Graphiques dynamiques avec gouv-source</h2>
+
+  <!-- Source de donnees -->
+  <gouv-source
+    id="demo-sites"
+    url="/mock-api/data.json"
+    transform="sites">
+  </gouv-source>
+
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-6">
+      <h3>Barres verticales</h3>
+      <gouv-dsfr-chart
+        source="demo-sites"
+        type="bar"
+        label-field="nom"
+        value-field="score_rgaa"
+        selected-palette="categorical"
+        unit-tooltip="%">
+      </gouv-dsfr-chart>
+    </div>
+
+    <div class="fr-col-12 fr-col-md-6">
+      <h3>Camembert</h3>
+      <gouv-dsfr-chart
+        source="demo-sites"
+        type="pie"
+        label-field="ministere"
+        value-field="score_rgaa"
+        selected-palette="categorical"
+        unit-tooltip="%">
+      </gouv-dsfr-chart>
+    </div>
+  </div>
+
+  <div class="code-block fr-mt-2w">
+    <h4>Code source</h4>
+    <pre>&lt;gouv-source
+  id="demo-sites"
+  url="/mock-api/data.json"
+  transform="sites"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart
+  source="demo-sites"
+  type="bar"
+  label-field="nom"
+  value-field="score_rgaa"
+  selected-palette="categorical"
+  unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+  </div>
+</div>
+
+<style>
+.code-block { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
+.code-block pre { margin: 0; font-size: 0.8rem; white-space: pre-wrap; }
+</style>`,
+
+      'gouv-kpi': `<!--
+  EXEMPLE : gouv-kpi
+
+  Affichage d'indicateurs cles avec calculs automatiques
+-->
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Indicateurs cles (KPI)</h2>
+
+  <!-- Sources de donnees -->
+  <gouv-source id="kpi-sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+  <gouv-source id="kpi-meta" url="/mock-api/data.json" transform="metadata"></gouv-source>
+
+  <div class="kpi-grid">
+    <!-- Valeur directe depuis metadata -->
+    <gouv-kpi
+      source="kpi-meta"
+      valeur="total"
+      label="Sites suivis"
+      icone="ri-global-line"
+      format="nombre">
+    </gouv-kpi>
+
+    <!-- Moyenne avec seuils de couleur -->
+    <gouv-kpi
+      source="kpi-sites"
+      valeur="avg:score_rgaa"
+      label="Score RGAA moyen"
+      format="pourcentage"
+      seuil-vert="80"
+      seuil-orange="50">
+    </gouv-kpi>
+
+    <!-- Comptage conditionnel -->
+    <gouv-kpi
+      source="kpi-sites"
+      valeur="count:statut:actif"
+      label="Sites actifs"
+      icone="ri-checkbox-circle-line"
+      couleur="vert">
+    </gouv-kpi>
+
+    <!-- Min/Max -->
+    <gouv-kpi
+      source="kpi-sites"
+      valeur="max:score_rgaa"
+      label="Meilleur score"
+      format="pourcentage"
+      couleur="vert">
+    </gouv-kpi>
+  </div>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__title">Expressions de calcul</p>
+    <ul>
+      <li><code>champ</code> - Valeur directe</li>
+      <li><code>avg:champ</code> - Moyenne</li>
+      <li><code>sum:champ</code> - Somme</li>
+      <li><code>min:champ</code> / <code>max:champ</code> - Min/Max</li>
+      <li><code>count:champ:valeur</code> - Comptage conditionnel</li>
+    </ul>
+  </div>
+</div>
+
+<style>
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+</style>`,
+
+      'gouv-datalist': `<!--
+  EXEMPLE : gouv-datalist
+
+  Tableau de donnees avec filtres, recherche, tri et export
+-->
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Liste des sites suivis</h2>
+
+  <!-- Source de donnees -->
+  <gouv-source
+    id="datalist-sites"
+    url="/mock-api/data.json"
+    transform="sites">
+  </gouv-source>
+
+  <!-- Tableau avec toutes les fonctionnalites -->
+  <gouv-datalist
+    source="datalist-sites"
+    colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%), score_dsfr:DSFR (%)"
+    recherche="true"
+    filtres="ministere,statut"
+    tri="score_rgaa:desc"
+    pagination="5"
+    export="csv">
+  </gouv-datalist>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__title">Attributs disponibles</p>
+    <ul>
+      <li><code>colonnes</code> - Definition : cle:Label, cle2:Label2</li>
+      <li><code>recherche</code> - Active la barre de recherche</li>
+      <li><code>filtres</code> - Colonnes filtrables : col1,col2</li>
+      <li><code>tri</code> - Tri par defaut : colonne:asc ou colonne:desc</li>
+      <li><code>pagination</code> - Nombre d'elements par page (0 = desactive)</li>
+      <li><code>export</code> - Formats d'export : csv</li>
+    </ul>
+  </div>
+</div>`,
+
+      'gouv-dashboard': `<!--
+  EXEMPLE : Dashboard complet gouv-widgets
+
+  Combine KPIs, graphiques et tableau de donnees
+-->
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>Tableau de bord - Conformite des sites</h2>
+
+  <!-- Sources de donnees partagees -->
+  <gouv-source id="dash-sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+  <gouv-source id="dash-meta" url="/mock-api/data.json" transform="metadata"></gouv-source>
+
+  <!-- KPIs -->
+  <div class="kpi-grid fr-mb-4w">
+    <gouv-kpi source="dash-meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre"></gouv-kpi>
+    <gouv-kpi source="dash-sites" valeur="avg:score_rgaa" label="RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+    <gouv-kpi source="dash-sites" valeur="avg:score_dsfr" label="DSFR moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+    <gouv-kpi source="dash-sites" valeur="count:statut:actif" label="Sites actifs" icone="ri-checkbox-circle-line" couleur="vert"></gouv-kpi>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="fr-grid-row fr-grid-row--gutters fr-mb-4w">
+    <div class="fr-col-12 fr-col-md-6">
+      <h3>Scores par site</h3>
+      <gouv-dsfr-chart
+        source="dash-sites"
+        type="bar"
+        label-field="nom"
+        value-field="score_rgaa"
+        selected-palette="categorical"
+        unit-tooltip="%">
+      </gouv-dsfr-chart>
+    </div>
+    <div class="fr-col-12 fr-col-md-6">
+      <h3>Repartition par ministere</h3>
+      <gouv-dsfr-chart
+        source="dash-sites"
+        type="pie"
+        label-field="ministere"
+        value-field="score_rgaa"
+        selected-palette="categorical"
+        unit-tooltip="%">
+      </gouv-dsfr-chart>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <h3>Detail des sites</h3>
+  <gouv-datalist
+    source="dash-sites"
+    colonnes="nom:Site, ministere:Ministere, score_rgaa:RGAA (%), statut:Statut"
+    recherche="true"
+    filtres="ministere"
+    tri="score_rgaa:desc"
+    pagination="5"
+    export="csv">
+  </gouv-datalist>
+</div>
+
+<style>
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+</style>`
     };
 
     // ============================================================

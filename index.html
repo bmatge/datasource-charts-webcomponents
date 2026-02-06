@@ -108,6 +108,11 @@
       margin-top: 2rem;
     }
 
+    .workflow--compact {
+      padding: 1.5rem 2rem;
+      margin-top: 1rem;
+    }
+
     .workflow h3 {
       margin: 0 0 1.5rem;
     }
@@ -189,9 +194,9 @@
             </div>
             <div class="fr-header__service">
               <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">gouv-widgets</p>
+                <p class="fr-header__service-title">Charts builder</p>
               </a>
-              <p class="fr-header__service-tagline">Visualisations de données conformes DSFR</p>
+              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
             </div>
           </div>
           <div class="fr-header__tools">
@@ -241,142 +246,21 @@
   </header>
 
   <!-- ============================================ -->
-  <!-- HERO -->
-  <!-- ============================================ -->
-  <div class="hero">
-    <div class="fr-container">
-      <h1>gouv-widgets</h1>
-      <p>Créez des visualisations de données conformes DSFR</p>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
   <!-- CONTENU PRINCIPAL -->
   <!-- ============================================ -->
   <main class="fr-pb-8w">
     <div class="fr-container">
-      <!-- Tuiles outils principaux -->
-      <div class="tiles-grid">
-
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="builder.html">Générateur de graphiques</a>
-              </h3>
-              <p class="fr-tile__detail">Créez des graphiques en quelques clics : barres, lignes, camemberts... Connectez vos données et personnalisez l'apparence.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-nocode">No-Code</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-bar-chart-box-line"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="builderIA.html">Builder IA (Albert)</a>
-              </h3>
-              <p class="fr-tile__detail">Décrivez en langage naturel le graphique que vous souhaitez. L'IA analyse vos données et génère la visualisation.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-ia">IA</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-robot-line"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="sources.html">Gestionnaire de sources</a>
-              </h3>
-              <p class="fr-tile__detail">Connectez vos bases Grist, créez des jeux de données manuels, ou liez des APIs pour alimenter vos graphiques.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-data">Données</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-database-2-line"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="playground.html">Playground</a>
-              </h3>
-              <p class="fr-tile__detail">Écrivez du code et voyez le résultat en temps réel. Idéal pour apprendre et expérimenter avec les APIs.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-code">Code</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-code-s-slash-line"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="demo/index.html">Démo Web Components</a>
-              </h3>
-              <p class="fr-tile__detail">Exemple complet utilisant les composants &lt;gouv-source&gt;, &lt;gouv-kpi&gt; et &lt;gouv-datalist&gt;.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-code">Composants</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-layout-grid-line"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="fr-tile fr-tile--horizontal tile-disabled">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <span>Documentation</span>
-              </h3>
-              <p class="fr-tile__detail">Guide complet d'utilisation des Web Components et de l'API.</p>
-              <p class="fr-tile__start">
-                <span class="badge badge-soon">Bientôt</span>
-              </p>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <i class="ri-book-2-line"></i>
-            </div>
-          </div>
-        </div>
-
+      <!-- Présentation du projet -->
+      <div class="fr-callout fr-my-4w">
+        <p class="fr-callout__text">
+          <strong>Charts builder</strong> est une suite d'outils pour créer des visualisations de données conformes au Design System de l'État (DSFR).
+          Générez des graphiques accessibles en quelques clics, connectez vos sources de données, et exportez du code prêt à intégrer dans vos sites.
+        </p>
       </div>
 
       <!-- Workflow -->
-      <div class="workflow">
-        <h3>Comment ça marche ?</h3>
+      <div class="workflow workflow--compact">
+        <h3 class="fr-sr-only">Comment ça marche ?</h3>
         <div class="workflow-steps">
           <div class="workflow-step">
             <div class="step-number">1</div>
@@ -396,6 +280,113 @@
             <p>Copiez le HTML/JS généré dans votre site</p>
           </div>
         </div>
+      </div>
+
+      <!-- Tuiles outils principaux -->
+      <div class="tiles-grid fr-mt-4w">
+
+        <!-- 1. Documentation -->
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="demo/index.html">Documentation</a>
+              </h3>
+              <p class="fr-tile__detail">Découvrez les composants gouv-widgets et les graphiques DSFR Chart disponibles.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-book-open-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Générateur de graphiques -->
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="builder.html">Générateur de graphiques</a>
+              </h3>
+              <p class="fr-tile__detail">Créez des graphiques en quelques clics : barres, lignes, camemberts... Connectez vos données et personnalisez l'apparence.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-bar-chart-box-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Générateur IA -->
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="builderIA.html">Générateur IA (Albert)</a>
+              </h3>
+              <p class="fr-tile__detail">Décrivez en langage naturel le graphique que vous souhaitez. L'IA analyse vos données et génère la visualisation.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-robot-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Playground -->
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="playground.html">Playground</a>
+              </h3>
+              <p class="fr-tile__detail">Écrivez du code et voyez le résultat en temps réel. Idéal pour apprendre et expérimenter avec les APIs.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-code-s-slash-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Sources -->
+        <div class="fr-tile fr-tile--horizontal fr-enlarge-link">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <a href="sources.html">Sources</a>
+              </h3>
+              <p class="fr-tile__detail">Connectez vos bases Grist, créez des jeux de données manuels, ou liez des APIs pour alimenter vos graphiques.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-database-2-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Vde -->
+        <div class="fr-tile fr-tile--horizontal tile-disabled">
+          <div class="fr-tile__body">
+            <div class="fr-tile__content">
+              <h3 class="fr-tile__title">
+                <span>Vde</span>
+              </h3>
+              <p class="fr-tile__detail">Visual Dashboard Editor : éditeur visuel de tableaux de bord.</p>
+            </div>
+          </div>
+          <div class="fr-tile__header">
+            <div class="fr-tile__pictogram">
+              <i class="ri-layout-grid-line"></i>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>

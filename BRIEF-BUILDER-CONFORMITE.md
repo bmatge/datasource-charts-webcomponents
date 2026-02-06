@@ -46,25 +46,34 @@ S'assurer que le **Builder** (normal et IA) et le **Playground** generent du cod
 
 ```html
 <gouv-kpi
-  source="ma-source"
-  valeur="score_rgaa"
-  label="Score RGAA"
-  unite="%"
+  source="sites"
+  valeur="avg:score_rgaa"
+  label="Score RGAA moyen"
+  format="pourcentage"
   icone="ri-award-line"
-  tendance="hausse"
-  description="Taux de conformite">
+  couleur="vert"
+  seuil-vert="80"
+  seuil-orange="50">
 </gouv-kpi>
 ```
 
 | Attribut | Type | Description |
 |----------|------|-------------|
-| `source` | String | ID de la gouv-source |
-| `valeur` | String | Cle du champ a afficher |
-| `label` | String | Libelle affiche |
-| `unite` | String | Unite (%, EUR, etc.) |
-| `icone` | String | Classe Remix Icon |
-| `tendance` | String | `hausse` / `baisse` / `stable` |
-| `description` | String | Description complementaire |
+| `source` | String | ID de la gouv-source (requis) |
+| `valeur` | String | Expression de calcul : `champ`, `avg:champ`, `sum:champ`, `min:champ`, `max:champ`, `count:champ:valeur` |
+| `label` | String | Libelle affiche sous la valeur |
+| `format` | String | Format : `nombre`, `pourcentage`, `euro`, `decimal` |
+| `icone` | String | Classe Remix Icon (ex: `ri-global-line`) |
+| `couleur` | String | Couleur forcee : `vert`, `orange`, `rouge`, `bleu` |
+| `seuil-vert` | Number | Seuil au-dessus duquel la couleur est verte |
+| `seuil-orange` | Number | Seuil au-dessus duquel la couleur est orange |
+
+**Expressions de calcul :**
+- `champ` : Valeur directe d'un champ (pour objet unique)
+- `avg:champ` : Moyenne des valeurs du champ
+- `sum:champ` : Somme des valeurs
+- `min:champ` / `max:champ` : Min/max
+- `count:champ:valeur` : Compte les occurrences ou champ = valeur
 
 ---
 
@@ -114,25 +123,35 @@ S'assurer que le **Builder** (normal et IA) et le **Playground** generent du cod
 
 **Reference** : `/demo/components/gouv-dsfr-chart.html`
 
+Wrapper qui connecte les graphiques officiels DSFR Chart au systeme `gouv-source` pour une alimentation dynamique des donnees.
+
 ```html
 <gouv-dsfr-chart
-  source="ma-source"
+  source="sites"
   type="bar"
-  x="ministere"
-  y="score_rgaa"
-  palette="categorical"
-  unit="%">
+  label-field="nom"
+  value-field="score_rgaa"
+  selected-palette="categorical"
+  unit-tooltip="%">
 </gouv-dsfr-chart>
 ```
 
-| Attribut | Type | Valeurs possibles |
-|----------|------|-------------------|
-| `source` | String | ID de la gouv-source |
-| `type` | String | `line`, `bar`, `pie`, `radar`, `gauge`, `scatter` |
-| `x` | String | Cle pour l'axe X / labels |
-| `y` | String | Cle pour l'axe Y / valeurs |
-| `palette` | String | `default`, `categorical`, `sequentialAscending`, `sequentialDescending`, `divergentAscending`, `divergentDescending`, `neutral` |
-| `unit` | String | Unite pour les tooltips |
+| Attribut | Type | Description |
+|----------|------|-------------|
+| `source` | String | ID de la gouv-source (requis) |
+| `type` | String | `line`, `bar`, `pie`, `radar`, `gauge`, `scatter`, `bar-line`, `map` |
+| `label-field` | String | Chemin vers le champ label dans les donnees (ex: `nom`, `fields.categorie`) |
+| `value-field` | String | Chemin vers le champ valeur dans les donnees |
+| `selected-palette` | String | `default`, `categorical`, `sequentialAscending`, `sequentialDescending`, `divergentAscending`, `divergentDescending`, `neutral` |
+| `unit-tooltip` | String | Unite affichee dans les tooltips |
+| `horizontal` | Boolean | Barres horizontales (bar chart uniquement) |
+| `stacked` | Boolean | Barres empilees (bar chart uniquement) |
+| `fill` | Boolean | Remplissage plein (pie chart) |
+| `gauge-value` | Number | Valeur pour la jauge (gauge chart uniquement) |
+
+**Difference avec les charts DSFR natifs :**
+- `gouv-dsfr-chart` prend des **chemins de champs** (`label-field`, `value-field`) et transforme les donnees JSON automatiquement
+- Les charts DSFR natifs prennent des **donnees pre-formatees** en JSON (`x="[[...]]"`, `y="[[...]]"`)
 
 ---
 
@@ -219,24 +238,36 @@ S'assurer que le **Builder** (normal et IA) et le **Playground** generent du cod
 
 ## Points de verification
 
-### Builder Normal
-- [ ] Genere les attributs corrects pour chaque composant
-- [ ] Respecte les types de donnees (String, Number, Boolean)
-- [ ] Format JSON correct pour les charts (`[[...]]` pour x/y)
-- [ ] Utilise les bonnes palettes DSFR
-- [ ] Genere `gauge-chart` avec `percent/init/target` (pas `value`)
+### Builder Normal (`builder.html`)
+Le Builder Normal genere du code **Chart.js brut** (pas de composants gouv-widgets).
+- [x] Genere des graphiques Chart.js fonctionnels
+- [x] Respecte les couleurs DSFR
+- [x] Supporte les sources API OpenDataSoft et manuelles
 
-### Builder IA
-- [ ] Comprend les specifications des composants
-- [ ] Propose des configurations valides
-- [ ] Evite les attributs deprecies ou incorrects
-- [ ] Suggere les bonnes palettes selon le contexte
+**Note** : Ne genere PAS de code utilisant gouv-source/gouv-dsfr-chart. C'est un choix de conception pour du code autonome.
 
-### Playground
-- [ ] Preview temps reel fonctionnel
-- [ ] Validation des attributs
-- [ ] Messages d'erreur clairs pour configurations invalides
-- [ ] Export du code conforme
+### Builder IA (`builderIA.html`)
+Le Builder IA genere egalement du code **Chart.js brut**.
+- [x] Comprend les requetes en langage naturel
+- [x] Genere des agregations ODSQL correctes
+- [x] Supporte les types bar, line, pie, radar, kpi
+- [x] Utilise les bonnes palettes DSFR
+
+**Note** : Comme le Builder normal, genere du code Chart.js autonome.
+
+### Playground (`playground.html`)
+Environnement de test interactif avec exemples.
+- [x] Preview temps reel fonctionnel
+- [x] Exemples Chart.js avec API OpenDataSoft
+- [x] **NOUVEAU** : Exemples DSFR Chart natifs (bar-chart, line-chart, pie-chart, gauge-chart, radar-chart)
+- [x] **NOUVEAU** : Exemples gouv-widgets (gouv-source + gouv-dsfr-chart, gouv-kpi, gouv-datalist, dashboard complet)
+
+### Composants gouv-widgets
+- [x] `gouv-source` : attributs `id`, `url`, `transform` documentes
+- [x] `gouv-kpi` : attributs `valeur` (avec expressions avg/sum/count), `format`, `seuil-*`, `couleur`
+- [x] `gouv-datalist` : attributs `colonnes`, `recherche`, `filtres`, `tri`, `pagination`, `export`
+- [x] `gouv-dsfr-chart` : attributs `label-field`, `value-field`, `selected-palette`, `unit-tooltip`
+- [x] **CORRIGE** : `gauge-chart` utilise maintenant `percent/init/target` (pas `value`)
 
 ---
 
