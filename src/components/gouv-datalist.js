@@ -245,57 +245,64 @@ let GouvDatalist = class GouvDatalist extends LitElement {
         const totalFiltered = this._getFilteredData().length;
         return html `
       <div class="gouv-datalist" role="region" aria-label="Liste de données">
-        <!-- Barre de recherche et filtres -->
-        <div class="gouv-datalist__controls">
-          ${this.recherche ? html `
-            <div class="fr-search-bar" role="search">
-              <label class="fr-label" for="search-${this.source}">Rechercher</label>
-              <input
-                class="fr-input"
-                type="search"
-                id="search-${this.source}"
-                placeholder="Rechercher..."
-                .value="${this._searchQuery}"
-                @input="${this._handleSearch}"
-              />
-              <button class="fr-btn" title="Rechercher" type="button">
-                <span class="fr-icon-search-line" aria-hidden="true"></span>
-              </button>
-            </div>
-          ` : ''}
-
-          ${filterableColumns.map(key => {
+        <!-- Filtres -->
+        ${filterableColumns.length > 0 ? html `
+          <div class="gouv-datalist__filters">
+            ${filterableColumns.map(key => {
             const column = columns.find(c => c.key === key);
             const label = column?.label || key;
             const values = this._getUniqueValues(key);
             return html `
-              <div class="fr-select-group">
-                <label class="fr-label" for="filter-${key}">${label}</label>
-                <select
-                  class="fr-select"
-                  id="filter-${key}"
-                  @change="${(e) => this._handleFilter(key, e)}"
-                >
-                  <option value="">Tous</option>
-                  ${values.map(val => html `
-                    <option value="${val}" ?selected="${this._activeFilters[key] === val}">${val}</option>
-                  `)}
-                </select>
-              </div>
-            `;
+                <div class="fr-select-group">
+                  <label class="fr-label" for="filter-${key}">${label}</label>
+                  <select
+                    class="fr-select"
+                    id="filter-${key}"
+                    @change="${(e) => this._handleFilter(key, e)}"
+                  >
+                    <option value="">Tous</option>
+                    ${values.map(val => html `
+                      <option value="${val}" ?selected="${this._activeFilters[key] === val}">${val}</option>
+                    `)}
+                  </select>
+                </div>
+              `;
         })}
+          </div>
+        ` : ''}
 
-          ${this.export?.includes('csv') ? html `
-            <button
-              class="fr-btn fr-btn--secondary fr-btn--sm"
-              @click="${this._exportCsv}"
-              type="button"
-            >
-              <span class="fr-icon-download-line fr-icon--sm" aria-hidden="true"></span>
-              Exporter CSV
-            </button>
-          ` : ''}
-        </div>
+        <!-- Barre de recherche et export -->
+        ${this.recherche || this.export?.includes('csv') ? html `
+          <div class="gouv-datalist__toolbar">
+            ${this.recherche ? html `
+              <div class="fr-search-bar" role="search">
+                <label class="fr-label fr-sr-only" for="search-${this.source}">Rechercher</label>
+                <input
+                  class="fr-input"
+                  type="search"
+                  id="search-${this.source}"
+                  placeholder="Rechercher..."
+                  .value="${this._searchQuery}"
+                  @input="${this._handleSearch}"
+                />
+                <button class="fr-btn" title="Rechercher" type="button">
+                  <span class="fr-icon-search-line" aria-hidden="true"></span>
+                </button>
+              </div>
+            ` : html `<div></div>`}
+
+            ${this.export?.includes('csv') ? html `
+              <button
+                class="fr-btn fr-btn--secondary fr-btn--sm"
+                @click="${this._exportCsv}"
+                type="button"
+              >
+                <span class="fr-icon-download-line fr-icon--sm" aria-hidden="true"></span>
+                Exporter CSV
+              </button>
+            ` : ''}
+          </div>
+        ` : ''}
 
         <!-- État de chargement -->
         ${this._loading ? html `
@@ -410,21 +417,43 @@ let GouvDatalist = class GouvDatalist extends LitElement {
       </div>
 
       <style>
-        .gouv-datalist__controls {
-          display: flex;
-          flex-wrap: wrap;
+        .gouv-datalist__filters {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
           gap: 1rem;
-          align-items: flex-end;
           margin-bottom: 1rem;
         }
 
-        .gouv-datalist__controls .fr-search-bar {
-          flex: 1;
-          min-width: 200px;
+        .gouv-datalist__filters .fr-select-group {
+          margin-bottom: 0;
         }
 
-        .gouv-datalist__controls .fr-select-group {
-          min-width: 150px;
+        .gouv-datalist__toolbar {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+        }
+
+        .gouv-datalist__toolbar .fr-search-bar {
+          flex: 1;
+          min-width: 200px;
+          max-width: 400px;
+        }
+
+        @media (max-width: 576px) {
+          .gouv-datalist__filters {
+            grid-template-columns: 1fr;
+          }
+          .gouv-datalist__toolbar {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .gouv-datalist__toolbar .fr-search-bar {
+            max-width: none;
+          }
         }
 
         .gouv-datalist__sort-btn {

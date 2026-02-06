@@ -202,11 +202,14 @@ let GouvKpi = class GouvKpi extends LitElement {
         .gouv-kpi {
           display: flex;
           flex-direction: column;
+          justify-content: center;
           padding: 1.5rem;
           background: var(--background-default-grey);
           border-radius: 0.25rem;
           border-left: 4px solid var(--border-default-grey);
-          min-height: 120px;
+          min-height: 140px;
+          height: 100%;
+          box-sizing: border-box;
         }
 
         .gouv-kpi--success {

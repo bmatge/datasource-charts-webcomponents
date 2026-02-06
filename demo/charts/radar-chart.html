@@ -13,12 +13,12 @@
     body { min-height: 100vh; display: flex; flex-direction: column; }
     main { flex: 1; }
     .demo-layout { display: flex; gap: 2rem; }
-    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .fr-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
     .demo-content { flex: 1; min-width: 0; }
     .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
     .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
     .code-block pre { margin: 0; white-space: pre-wrap; }
-    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .fr-sidemenu { position: static; } }
   </style>
 </head>
 <body>
@@ -41,17 +41,42 @@
 
   <main class="fr-container fr-py-4w">
     <div class="demo-layout">
-      <nav class="demo-sidenav fr-sidenav">
-        <div class="fr-sidenav__inner">
-          <div class="fr-collapse" id="fr-sidenav-wrapper">
-            <p class="fr-sidenav__title">Charts DSFR</p>
-            <ul class="fr-sidenav__list">
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="index.html">Vue d'ensemble</a></li>
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="line-chart.html">Ligne</a></li>
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="bar-chart.html">Barres</a></li>
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="pie-chart.html">Camembert</a></li>
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="radar-chart.html" aria-current="page">Radar</a></li>
-              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gauge-chart.html">Jauge</a></li>
+      <!-- Menu lateral DSFR -->
+      <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
+        <div class="fr-sidemenu__inner">
+          <button class="fr-sidemenu__btn" hidden aria-controls="fr-sidemenu-wrapper" aria-expanded="true">Menu</button>
+          <div class="fr-collapse" id="fr-sidemenu-wrapper">
+            <div class="fr-sidemenu__title" id="fr-sidemenu-title">Composants</div>
+            <ul class="fr-sidemenu__list">
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="../index.html">Vue d'ensemble</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="fr-sidemenu-composants">Nos composants</button>
+                <div class="fr-collapse" id="fr-sidemenu-composants">
+                  <ul class="fr-sidemenu__list">
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-source.html">gouv-source</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-kpi.html">gouv-kpi</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-datalist.html">gouv-datalist</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
+                  </ul>
+                </div>
+              </li>
+              <li class="fr-sidemenu__item">
+                <button class="fr-sidemenu__btn" aria-expanded="true" aria-controls="fr-sidemenu-charts">Charts DSFR natifs</button>
+                <div class="fr-collapse fr-collapse--expanded" id="fr-sidemenu-charts">
+                  <ul class="fr-sidemenu__list">
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="index.html">Vue d'ensemble</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="line-chart.html">Ligne</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="bar-chart.html">Barres</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="pie-chart.html">Camembert</a></li>
+                    <li class="fr-sidemenu__item fr-sidemenu__item--active"><a class="fr-sidemenu__link" href="radar-chart.html" aria-current="page">Radar</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="gauge-chart.html">Jauge</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="map-chart.html">Carte</a></li>
+                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="scatter-chart.html">Nuage de points</a></li>
+                  </ul>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
