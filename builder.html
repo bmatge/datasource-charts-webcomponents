@@ -1461,37 +1461,27 @@ new Chart(document.getElementById('myChart'), {
       document.getElementById('generated-code').textContent = code;
     }
 
+    // URL du proxy centralisé (chartsbuilder.matge.com fait proxy vers Grist)
+    const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
+
     function generateDynamicCode() {
       const source = state.savedSource;
       if (!source || source.type !== 'grist') return;
 
-      // Build proxy URL path (requires nginx proxy on target server)
-      let proxyPath = '';
-      let nginxConfig = '';
+      // Build full proxy URL via chartsbuilder.matge.com
+      // Permet aux sites tiers d'accéder à Grist sans configurer leur propre proxy
+      let proxyUrl = '';
       let gristHost = '';
 
       if (source.apiUrl.includes('grist.numerique.gouv.fr')) {
-        proxyPath = `/grist-gouv-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
-        gristHost = 'grist.numerique.gouv.fr';
-        nginxConfig = `location /grist-gouv-proxy/ {
-    proxy_pass https://grist.numerique.gouv.fr/;
-    proxy_set_header Host grist.numerique.gouv.fr;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_ssl_server_name on;
-}`;
+        proxyUrl = `${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
       } else if (source.apiUrl.includes('docs.getgrist.com')) {
-        proxyPath = `/grist-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+        proxyUrl = `${PROXY_BASE_URL}/grist-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
         gristHost = 'docs.getgrist.com';
-        nginxConfig = `location /grist-proxy/ {
-    proxy_pass https://docs.getgrist.com/;
-    proxy_set_header Host docs.getgrist.com;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_ssl_server_name on;
-}`;
       } else {
         // Self-hosted - use direct URL
-        proxyPath = source.apiUrl;
-        nginxConfig = '# URL directe - pas de proxy nécessaire';
+        proxyUrl = source.apiUrl;
+        gristHost = 'Grist';
       }
 
       // Get field info for labels
@@ -1515,18 +1505,8 @@ new Chart(document.getElementById('myChart'), {
       }
 
       const code = `<!-- Graphique dynamique généré avec gouv-widgets Builder -->
-<!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis Grist) -->
-
-<!--
-  ⚠️ CONFIGURATION SERVEUR REQUISE
-
-  Ce graphique charge les données depuis Grist via un proxy.
-  Ajoutez cette configuration à votre serveur nginx :
-
-  ${nginxConfig}
-
-  Le document Grist doit être accessible publiquement.
--->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
+<!-- Les données sont chargées via le proxy ${PROXY_BASE_URL} -->
 
 <!-- Dépendances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1540,10 +1520,10 @@ new Chart(document.getElementById('myChart'), {
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <!-- Source de données (via proxy vers ${gristHost || 'Grist'}) -->
+  <!-- Source de données (via proxy chartsbuilder.matge.com → ${gristHost}) -->
   <gouv-source
     id="chart-data"
-    url="${proxyPath}"
+    url="${proxyUrl}"
     transform="records"${refreshAttr}>
   </gouv-source>
 
