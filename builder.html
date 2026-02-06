@@ -207,34 +207,15 @@
       margin-top: 0.25rem;
     }
 
-    .source-type-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .source-type-tab {
-      flex: 1;
-      padding: 0.5rem;
-      border: 1px solid var(--border-default-grey);
-      background: var(--background-default-grey);
-      cursor: pointer;
-      font-size: 0.75rem;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-    }
-
-    .source-type-tab:hover {
+    .empty-sources-message {
+      padding: 1rem;
       background: var(--background-contrast-grey);
+      border-radius: 4px;
+      text-align: center;
     }
-
-    .source-type-tab.active {
-      background: var(--background-contrast-info);
-      border-color: var(--border-action-high-blue-france);
-      font-weight: 600;
+    .empty-sources-message p {
+      margin: 0 0 0.5rem 0;
+      color: var(--text-mention-grey);
     }
 
     .source-badge {
@@ -317,7 +298,7 @@
   <!-- Header -->
   <app-header current-page="builder" base-path=""></app-header>
 
-  <app-layout-builder left-width="400">
+  <app-layout-builder left-ratio="50">
     <!-- ============================================ -->
     <!-- PANNEAU DE CONFIGURATION -->
     <!-- ============================================ -->
@@ -331,37 +312,8 @@
         </div>
         <div class="config-section-content">
 
-        <!-- Onglets de type de source -->
-        <div class="source-type-tabs">
-          <button class="source-type-tab active" data-source-type="api">
-            <i class="ri-cloud-line"></i> API publique
-          </button>
-          <button class="source-type-tab" data-source-type="saved">
-            <i class="ri-database-2-line"></i> Mes sources
-          </button>
-        </div>
-
-        <!-- Panel API publique -->
-        <div id="source-panel-api" class="source-panel">
-          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
-            <label class="fr-label" for="preset-api">API prédéfinie</label>
-            <select class="fr-select" id="preset-api">
-              <option value="">— Choisir une API —</option>
-              <option value="controle-technique">Prix contrôle technique (economie.gouv.fr)</option>
-              <option value="resultats-elections">Résultats élections (data.gouv.fr)</option>
-              <option value="qualite-air">Qualité de l'air (geodair)</option>
-              <option value="custom">URL personnalisée...</option>
-            </select>
-          </div>
-
-          <div class="fr-input-group fr-input-group--sm fr-mt-1w" id="custom-url-group" style="display: none;">
-            <label class="fr-label" for="api-url">URL de l'API (OpenDataSoft v2.1)</label>
-            <input class="fr-input" type="url" id="api-url" placeholder="https://...">
-          </div>
-        </div>
-
-        <!-- Panel Mes sources (Grist / Manuel) -->
-        <div id="source-panel-saved" class="source-panel" style="display: none;">
+        <!-- Sélection de source -->
+        <div id="source-panel-saved" class="source-panel">
           <div class="fr-select-group fr-select-group--sm fr-mt-1w">
             <label class="fr-label" for="saved-source">Source enregistrée</label>
             <select class="fr-select" id="saved-source">
@@ -664,30 +616,6 @@
   </app-layout-builder>
 
   <script>
-    // ============================================================
-    // CONFIGURATION DES APIs PRÉDÉFINIES
-    // ============================================================
-    const API_PRESETS = {
-      'controle-technique': {
-        base: 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records',
-        name: 'Prix du contrôle technique',
-        defaultTitle: 'Prix moyen du contrôle technique',
-        defaultSubtitle: 'Source : data.economie.gouv.fr'
-      },
-      'resultats-elections': {
-        base: 'https://www.data.gouv.fr/api/1/datasets/5c5c5c5c5c5c5c5c5c5c5c5c',
-        name: 'Résultats élections',
-        defaultTitle: 'Résultats électoraux',
-        defaultSubtitle: 'Source : data.gouv.fr'
-      },
-      'qualite-air': {
-        base: 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services',
-        name: 'Qualité de l\'air',
-        defaultTitle: 'Indice de qualité de l\'air',
-        defaultSubtitle: 'Source : geodair'
-      }
-    };
-
     // Palettes DSFR Chart - correspondance avec les couleurs Chart.js
     const DSFR_COLORS = [
       '#000091', '#6A6AF4', '#009081', '#C9191E', '#FF9940',
@@ -720,7 +648,7 @@
     // ÉTAT DE L'APPLICATION
     // ============================================================
     let state = {
-      sourceType: 'api',  // 'api' ou 'saved'
+      sourceType: 'saved',  // uniquement sources sauvegardées
       apiUrl: '',
       savedSource: null,
       localData: null,
@@ -753,14 +681,6 @@
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
       });
-
-      // Source type tabs (API vs Saved sources)
-      document.querySelectorAll('.source-type-tab').forEach(btn => {
-        btn.addEventListener('click', () => switchSourceType(btn.dataset.sourceType));
-      });
-
-      // Preset API
-      document.getElementById('preset-api').addEventListener('change', handlePresetChange);
 
       // Saved sources dropdown
       document.getElementById('saved-source').addEventListener('change', handleSavedSourceChange);
@@ -822,23 +742,47 @@
     // ============================================================
     // GESTION DES SOURCES SAUVEGARDÉES
     // ============================================================
-    function switchSourceType(type) {
-      document.querySelectorAll('.source-type-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`[data-source-type="${type}"]`).classList.add('active');
-
-      document.getElementById('source-panel-api').style.display = type === 'api' ? 'block' : 'none';
-      document.getElementById('source-panel-saved').style.display = type === 'saved' ? 'block' : 'none';
-
-      state.sourceType = type;
-    }
-
     function loadSavedSources() {
-      const select = document.getElementById('saved-source');
-      select.innerHTML = '<option value="">— Choisir une source —</option>';
-
-      // Load from localStorage
+      const panel = document.getElementById('source-panel-saved');
       const sources = JSON.parse(localStorage.getItem('gouv_widgets_sources') || '[]');
       const selectedSource = JSON.parse(localStorage.getItem('gouv_widgets_selected_source') || 'null');
+
+      // Check if there are any sources
+      const hasAnySources = sources.length > 0 || (selectedSource && selectedSource.data && selectedSource.data.length > 0);
+
+      if (!hasAnySources) {
+        // Show empty state message
+        const selectGroup = panel.querySelector('.fr-select-group');
+        const infoEl = document.getElementById('saved-source-info');
+        if (selectGroup) selectGroup.style.display = 'none';
+        if (infoEl) infoEl.innerHTML = '';
+
+        // Add empty message if not already present
+        if (!panel.querySelector('.empty-sources-message')) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.className = 'empty-sources-message fr-mt-1w';
+          emptyMsg.innerHTML = `
+            <p><i class="ri-database-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i></p>
+            <p>Aucune source de données enregistrée</p>
+            <a href="sources.html" class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w">
+              <i class="ri-add-line"></i> Ajouter une source
+            </a>
+          `;
+          panel.insertBefore(emptyMsg, panel.firstChild);
+        }
+        return;
+      }
+
+      // Remove empty message if present
+      const emptyMsg = panel.querySelector('.empty-sources-message');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Show select group
+      const selectGroup = panel.querySelector('.fr-select-group');
+      if (selectGroup) selectGroup.style.display = 'block';
+
+      const select = document.getElementById('saved-source');
+      select.innerHTML = '<option value="">— Choisir une source —</option>';
 
       // Add saved sources
       sources.forEach(source => {
@@ -866,9 +810,6 @@
       const selectedSource = JSON.parse(localStorage.getItem('gouv_widgets_selected_source') || 'null');
 
       if (selectedSource && selectedSource.data && selectedSource.data.length > 0) {
-        // Switch to saved sources tab
-        switchSourceType('saved');
-
         // Select the source
         const select = document.getElementById('saved-source');
         for (const option of select.options) {
@@ -968,30 +909,6 @@
       `;
     }
 
-    function handlePresetChange(e) {
-      const preset = e.target.value;
-      const customGroup = document.getElementById('custom-url-group');
-
-      if (preset === 'custom') {
-        customGroup.style.display = 'block';
-        state.apiUrl = '';
-      } else if (preset && API_PRESETS[preset]) {
-        customGroup.style.display = 'none';
-        state.apiUrl = API_PRESETS[preset].base;
-        document.getElementById('chart-title').value = API_PRESETS[preset].defaultTitle;
-        document.getElementById('chart-subtitle').value = API_PRESETS[preset].defaultSubtitle;
-        state.title = API_PRESETS[preset].defaultTitle;
-        state.subtitle = API_PRESETS[preset].defaultSubtitle;
-        document.getElementById('preview-title').textContent = state.title;
-        document.getElementById('preview-subtitle').textContent = state.subtitle;
-
-        // Auto-load fields
-        loadFields();
-      } else {
-        customGroup.style.display = 'none';
-      }
-    }
-
     function selectChartType(type) {
       document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('selected'));
       document.querySelector(`[data-type="${type}"]`).classList.add('selected');
@@ -1081,18 +998,14 @@
       const statusEl = document.getElementById('fields-status');
 
       // Check if we're using saved source with local data
-      if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
+      if (state.localData && state.localData.length > 0) {
         loadFieldsFromLocalData();
         return;
       }
 
-      // Get URL for API mode
-      if (document.getElementById('preset-api').value === 'custom') {
-        state.apiUrl = document.getElementById('api-url').value;
-      }
-
+      // Check if we have an API URL (from a saved API source)
       if (!state.apiUrl) {
-        statusEl.innerHTML = '<div class="error-message">Veuillez sélectionner une API ou une source</div>';
+        statusEl.innerHTML = '<div class="error-message">Veuillez sélectionner une source de données</div>';
         return;
       }
 

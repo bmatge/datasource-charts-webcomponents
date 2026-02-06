@@ -47,6 +47,11 @@
     .playground-preview {
       overflow: auto;
       background: var(--background-default-grey);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      height: 100%;
     }
 
     .editor-toolbar {
@@ -65,10 +70,9 @@
 
     .preview-frame {
       width: 100%;
-      height: 100%;
+      flex: 1;
+      min-height: 400px;
       border: none;
-      position: sticky;
-      top: 0;
     }
 
     .example-selector {
@@ -116,7 +120,7 @@
     </select>
   </div>
 
-  <app-layout-builder left-width="600">
+  <app-layout-builder left-ratio="50">
     <div slot="left" class="playground-editor">
       <div class="editor-toolbar">
         <button id="run-btn" class="fr-btn fr-btn--sm fr-btn--icon-left fr-icon-play-line">

@@ -17,7 +17,7 @@ import { customElement, property, state } from 'lit/decorators.js';
  * manuellement dans les conteneurs après le rendu.
  *
  * @example
- * <app-layout-builder left-width="400">
+ * <app-layout-builder left-ratio="40">
  *   <div slot="left">Configuration panel</div>
  *   <div slot="right">Preview panel</div>
  * </app-layout-builder>
@@ -26,19 +26,19 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
     constructor() {
         super(...arguments);
         /**
-         * Largeur initiale du panneau gauche en pixels
+         * Ratio initial du panneau gauche en pourcentage (ex: 40 pour 40%)
          */
-        this.leftWidth = 400;
+        this.leftRatio = 40;
         /**
-         * Largeur minimale du panneau gauche
+         * Largeur minimale du panneau gauche en pixels
          */
         this.minLeftWidth = 280;
         /**
-         * Largeur minimale du panneau droit
+         * Largeur minimale du panneau droit en pixels
          */
         this.minRightWidth = 300;
         this._isResizing = false;
-        this._currentLeftWidth = 400;
+        this._currentLeftRatio = 40;
         // Éléments enfants à projeter (sauvegardés avant le rendu)
         this._leftContent = [];
         this._rightContent = [];
@@ -52,7 +52,7 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
     }
     connectedCallback() {
         super.connectedCallback();
-        this._currentLeftWidth = this.leftWidth;
+        this._currentLeftRatio = this.leftRatio;
         this._setupResizer();
         // Sauvegarder les éléments enfants avant le premier rendu
         this._saveSlotContent();
@@ -121,10 +121,12 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
         if (!container)
             return;
         const containerRect = container.getBoundingClientRect();
+        const containerWidth = containerRect.width;
         let newWidth = e.clientX - containerRect.left;
-        // Contraintes min/max
-        newWidth = Math.max(this.minLeftWidth, Math.min(newWidth, containerRect.width - this.minRightWidth));
-        this._currentLeftWidth = newWidth;
+        // Contraintes min/max en pixels
+        newWidth = Math.max(this.minLeftWidth, Math.min(newWidth, containerWidth - this.minRightWidth));
+        // Convertir en ratio
+        this._currentLeftRatio = (newWidth / containerWidth) * 100;
         this.requestUpdate();
     }
     _handleMouseUp() {
@@ -143,7 +145,7 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
     render() {
         return html `
       <div class="builder-layout-container">
-        <aside class="builder-layout-left" style="width: ${this._currentLeftWidth}px">
+        <aside class="builder-layout-left" style="flex: 0 0 ${this._currentLeftRatio}%">
           <!-- Contenu slot="left" sera déplacé ici -->
         </aside>
 
@@ -171,7 +173,6 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
         }
 
         .builder-layout-left {
-          flex-shrink: 0;
           overflow-y: auto;
           overflow-x: hidden;
           border-right: 1px solid var(--border-default-grey);
@@ -179,6 +180,7 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
           display: flex;
           flex-direction: column;
           min-height: 0;
+          min-width: 280px;
         }
 
         .builder-layout-resizer {
@@ -229,8 +231,8 @@ let AppLayoutBuilder = class AppLayoutBuilder extends LitElement {
     }
 };
 __decorate([
-    property({ type: Number, attribute: 'left-width' })
-], AppLayoutBuilder.prototype, "leftWidth", void 0);
+    property({ type: Number, attribute: 'left-ratio' })
+], AppLayoutBuilder.prototype, "leftRatio", void 0);
 __decorate([
     property({ type: Number, attribute: 'min-left-width' })
 ], AppLayoutBuilder.prototype, "minLeftWidth", void 0);
@@ -242,7 +244,7 @@ __decorate([
 ], AppLayoutBuilder.prototype, "_isResizing", void 0);
 __decorate([
     state()
-], AppLayoutBuilder.prototype, "_currentLeftWidth", void 0);
+], AppLayoutBuilder.prototype, "_currentLeftRatio", void 0);
 AppLayoutBuilder = __decorate([
     customElement('app-layout-builder')
 ], AppLayoutBuilder);

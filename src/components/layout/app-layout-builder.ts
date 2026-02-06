@@ -12,7 +12,7 @@ import { customElement, property, state } from 'lit/decorators.js';
  * manuellement dans les conteneurs après le rendu.
  *
  * @example
- * <app-layout-builder left-width="400">
+ * <app-layout-builder left-ratio="40">
  *   <div slot="left">Configuration panel</div>
  *   <div slot="right">Preview panel</div>
  * </app-layout-builder>
@@ -20,19 +20,19 @@ import { customElement, property, state } from 'lit/decorators.js';
 @customElement('app-layout-builder')
 export class AppLayoutBuilder extends LitElement {
   /**
-   * Largeur initiale du panneau gauche en pixels
+   * Ratio initial du panneau gauche en pourcentage (ex: 40 pour 40%)
    */
-  @property({ type: Number, attribute: 'left-width' })
-  leftWidth = 400;
+  @property({ type: Number, attribute: 'left-ratio' })
+  leftRatio = 40;
 
   /**
-   * Largeur minimale du panneau gauche
+   * Largeur minimale du panneau gauche en pixels
    */
   @property({ type: Number, attribute: 'min-left-width' })
   minLeftWidth = 280;
 
   /**
-   * Largeur minimale du panneau droit
+   * Largeur minimale du panneau droit en pixels
    */
   @property({ type: Number, attribute: 'min-right-width' })
   minRightWidth = 300;
@@ -41,7 +41,7 @@ export class AppLayoutBuilder extends LitElement {
   private _isResizing = false;
 
   @state()
-  private _currentLeftWidth = 400;
+  private _currentLeftRatio = 40;
 
   // Éléments enfants à projeter (sauvegardés avant le rendu)
   private _leftContent: Element[] = [];
@@ -55,7 +55,7 @@ export class AppLayoutBuilder extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this._currentLeftWidth = this.leftWidth;
+    this._currentLeftRatio = this.leftRatio;
     this._setupResizer();
     // Sauvegarder les éléments enfants avant le premier rendu
     this._saveSlotContent();
@@ -138,12 +138,14 @@ export class AppLayoutBuilder extends LitElement {
     if (!container) return;
 
     const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width;
     let newWidth = e.clientX - containerRect.left;
 
-    // Contraintes min/max
-    newWidth = Math.max(this.minLeftWidth, Math.min(newWidth, containerRect.width - this.minRightWidth));
+    // Contraintes min/max en pixels
+    newWidth = Math.max(this.minLeftWidth, Math.min(newWidth, containerWidth - this.minRightWidth));
 
-    this._currentLeftWidth = newWidth;
+    // Convertir en ratio
+    this._currentLeftRatio = (newWidth / containerWidth) * 100;
     this.requestUpdate();
   }
 
@@ -165,7 +167,7 @@ export class AppLayoutBuilder extends LitElement {
   render() {
     return html`
       <div class="builder-layout-container">
-        <aside class="builder-layout-left" style="width: ${this._currentLeftWidth}px">
+        <aside class="builder-layout-left" style="flex: 0 0 ${this._currentLeftRatio}%">
           <!-- Contenu slot="left" sera déplacé ici -->
         </aside>
 
@@ -193,7 +195,6 @@ export class AppLayoutBuilder extends LitElement {
         }
 
         .builder-layout-left {
-          flex-shrink: 0;
           overflow-y: auto;
           overflow-x: hidden;
           border-right: 1px solid var(--border-default-grey);
@@ -201,6 +202,7 @@ export class AppLayoutBuilder extends LitElement {
           display: flex;
           flex-direction: column;
           min-height: 0;
+          min-width: 280px;
         }
 
         .builder-layout-resizer {
