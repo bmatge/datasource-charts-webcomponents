@@ -13,6 +13,10 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- DSFR Chart (pour les cartes et jauges) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -643,6 +647,10 @@
             <i class="ri-numbers-fill"></i>
             <span>KPI</span>
           </button>
+          <button class="chart-type-btn" data-type="map">
+            <i class="ri-map-fill"></i>
+            <span>Carte</span>
+          </button>
         </div>
         </div>
       </div>
@@ -682,6 +690,16 @@
           </label>
           <select class="fr-select" id="value-field-2">
             <option value="">— Aucune (série unique) —</option>
+          </select>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="code-field-group" style="display: none;">
+          <label class="fr-label" for="code-field">
+            Code département
+            <span class="fr-hint-text">Champ contenant le code INSEE (01-95, 2A, 2B, 971-976)</span>
+          </label>
+          <select class="fr-select" id="code-field">
+            <option value="">— Charger les champs d'abord —</option>
           </select>
         </div>
 
@@ -898,6 +916,7 @@
       labelField: '',
       valueField: '',
       valueField2: '',  // Pour les séries multiples
+      codeField: '',    // Pour les cartes (code département)
       aggregation: 'avg',
       limit: 10,
       sortOrder: 'desc',
@@ -1186,10 +1205,21 @@
         document.getElementById('value-field-2').value = '';
       }
 
+      // Map chart needs code field for department codes
+      const isMap = type === 'map';
+      document.getElementById('code-field-group').style.display = isMap ? 'block' : 'none';
+      if (!isMap) {
+        state.codeField = '';
+        document.getElementById('code-field').value = '';
+      }
+
       // Scatter needs X and Y numeric fields (different labels)
       if (isScatter) {
         document.querySelector('label[for="label-field"]').innerHTML = 'Axe X (numérique)<span class="fr-hint-text">Valeurs horizontales</span>';
         document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y (numérique)<span class="fr-hint-text">Valeurs verticales</span>';
+      } else if (isMap) {
+        document.querySelector('label[for="label-field"]').innerHTML = 'Nom (optionnel)<span class="fr-hint-text">Nom du département pour l\'affichage</span>';
+        document.querySelector('label[for="value-field"]').innerHTML = 'Valeur<span class="fr-hint-text">Le champ numérique à visualiser</span>';
       } else {
         document.querySelector('label[for="label-field"]').innerHTML = 'Axe X / Catégories<span class="fr-hint-text">Le champ utilisé pour les labels</span>';
         document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y / Valeurs (Série 1)<span class="fr-hint-text">Le champ numérique à mesurer</span>';
@@ -1256,11 +1286,13 @@
       const labelSelect = document.getElementById('label-field');
       const valueSelect = document.getElementById('value-field');
       const valueSelect2 = document.getElementById('value-field-2');
+      const codeSelect = document.getElementById('code-field');
 
       // Clear
       labelSelect.innerHTML = '<option value="">— Sélectionner —</option>';
       valueSelect.innerHTML = '<option value="">— Sélectionner —</option>';
       valueSelect2.innerHTML = '<option value="">— Aucune (série unique) —</option>';
+      codeSelect.innerHTML = '<option value="">— Sélectionner —</option>';
 
       state.fields.forEach(field => {
         const displayText = field.displayName
@@ -1284,6 +1316,14 @@
           optionValue2.textContent = displayText;
           valueSelect2.appendChild(optionValue2);
         }
+
+        // Add string/number fields to code select (department codes can be strings like "2A" or numbers)
+        if (field.type === 'string' || field.type === 'number') {
+          const optionCode = document.createElement('option');
+          optionCode.value = field.name;
+          optionCode.textContent = displayText;
+          codeSelect.appendChild(optionCode);
+        }
       });
 
       // Auto-select good candidates
@@ -1294,9 +1334,15 @@
       const numberField = state.fields.find(f =>
         f.type === 'number' && (fieldNameLower(f).includes('prix') || fieldNameLower(f).includes('score') || fieldNameLower(f).includes('valeur') || fieldNameLower(f).includes('value'))
       );
+      // Auto-select code field for maps (look for code_dept, departement, code_insee, etc.)
+      const codeField = state.fields.find(f =>
+        (f.type === 'string' || f.type === 'number') &&
+        (fieldNameLower(f).includes('code') || fieldNameLower(f).includes('dept') || fieldNameLower(f).includes('departement') || fieldNameLower(f).includes('insee'))
+      );
 
       if (stringField) labelSelect.value = stringField.name;
       if (numberField) valueSelect.value = numberField.name;
+      if (codeField) codeSelect.value = codeField.name;
     }
 
     // ============================================================
@@ -1307,6 +1353,7 @@
       state.labelField = document.getElementById('label-field').value;
       state.valueField = document.getElementById('value-field').value;
       state.valueField2 = document.getElementById('value-field-2').value || '';
+      state.codeField = document.getElementById('code-field').value || '';
       state.aggregation = document.getElementById('aggregation').value;
       state.limit = parseInt(document.getElementById('limit').value) || 10;
       state.sortOrder = document.getElementById('sort-order').value;
@@ -1731,7 +1778,7 @@ new Chart(document.getElementById('myChart'), {
       }
 
       // Remove any existing KPI/Gauge card
-      const existingCard = chartContainer.querySelector('.kpi-card, .gauge-card');
+      const existingCard = chartContainer.querySelector('.kpi-card, .gauge-card, .map-card');
       if (existingCard) existingCard.remove();
 
       // Handle KPI type differently
@@ -1779,6 +1826,33 @@ new Chart(document.getElementById('myChart'), {
           <div class="gauge-label">${state.title}</div>
         `;
         chartContainer.appendChild(gaugeCard);
+        return;
+      }
+
+      // Handle Map type (uses DSFR map-chart)
+      if (state.chartType === 'map') {
+        canvas.style.display = 'none';
+
+        // Transform data to DSFR format: {"code": value, ...}
+        const mapData = {};
+        state.data.forEach(d => {
+          const code = String(d[state.codeField] || '').padStart(2, '0');
+          const value = d.value || 0;
+          if (code && code !== '00') {
+            mapData[code] = Math.round(value * 100) / 100;
+          }
+        });
+
+        const mapCard = document.createElement('div');
+        mapCard.className = 'map-card';
+        mapCard.innerHTML = `
+          <map-chart
+            data='${JSON.stringify(mapData)}'
+            name="${state.title}"
+            selected-palette="${state.palette}"
+          ></map-chart>
+        `;
+        chartContainer.appendChild(mapCard);
         return;
       }
 
@@ -2063,6 +2137,56 @@ async function loadChart() {
 }
 
 loadChart();
+<\/script>`;
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Handle Map type
+      if (state.chartType === 'map') {
+        const code = `<!-- Carte générée avec gouv-widgets Builder -->
+<!-- Palette: ${state.palette} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+  <div id="map-container"></div>
+</div>
+
+<script type="module">
+const API_URL = '${apiUrl}';
+
+async function loadMap() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const records = json.results || [];
+
+  // Transformer les données en format carte: {"code": valeur, ...}
+  const mapData = {};
+  records.forEach(d => {
+    const code = String(d['${state.codeField}'] || '').padStart(2, '0');
+    const value = d.value || 0;
+    if (code && code !== '00') {
+      mapData[code] = Math.round(value * 100) / 100;
+    }
+  });
+
+  document.getElementById('map-container').innerHTML = \`
+    <map-chart
+      data='\${JSON.stringify(mapData)}'
+      name="${escapeHtml(state.title)}"
+      selected-palette="${state.palette}"
+    ></map-chart>
+  \`;
+}
+
+loadMap();
 <\/script>`;
         document.getElementById('generated-code').textContent = code;
         return;

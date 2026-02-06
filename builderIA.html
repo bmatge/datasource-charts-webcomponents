@@ -13,6 +13,10 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- DSFR Chart (pour les cartes) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -750,10 +754,11 @@ Pour créer un graphique, génère un bloc JSON :
 {
   "action": "createChart",
   "config": {
-    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi",
+    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map",
     "labelField": "champ_labels",
     "valueField": "champ_valeurs",
     "valueField2": "champ_valeurs_serie2",  // Optionnel: pour bar/line/radar avec 2 séries
+    "codeField": "code_departement",  // Requis pour map: code INSEE (01-95, 2A, 2B, 971-976)
     "aggregation": "sum|avg|count|min|max",
     "limit": 10,
     "sortOrder": "desc|asc",
@@ -941,7 +946,7 @@ Sois concis. Utilise le français.</textarea>
         id: 'chartTypes',
         name: 'Types de graphiques',
         description: 'Quand utiliser quel type de graphique',
-        trigger: ['graphique', 'chart', 'visualisation', 'barres', 'camembert', 'ligne', 'kpi', 'indicateur', 'chiffre', 'jauge', 'nuage', 'scatter'],
+        trigger: ['graphique', 'chart', 'visualisation', 'barres', 'camembert', 'ligne', 'kpi', 'indicateur', 'chiffre', 'jauge', 'nuage', 'scatter', 'carte', 'map', 'département'],
         content: `## Choix du type de graphique
 
 ### KPI (kpi)
@@ -993,6 +998,12 @@ Sois concis. Utilise le français.</textarea>
 - Profils, scores multicritères
 - Supporte 2 séries (valueField2)
 - Ex: évaluation compétences, comparatif produits
+
+### Carte de France (map)
+- Visualiser des données par département
+- Requiert codeField: champ avec code INSEE (01-95, 2A, 2B, 971-976)
+- Ex: prix immobilier par département, taux de chômage régional
+- Utilise DSFR map-chart (pas Chart.js)
 
 ## Séries multiples (bar, line, radar)
 Pour comparer 2 métriques, utilise valueField2:
@@ -1682,12 +1693,17 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
 
       // Aggregate data for charts
       const aggregated = {};
+      const isMap = config.type === 'map';
+      const codeField = config.codeField || config.labelField;
+
       state.localData.forEach(record => {
-        const label = record[config.labelField] || 'N/A';
+        const label = isMap
+          ? (record[codeField] || 'N/A')
+          : (record[config.labelField] || 'N/A');
         const value = parseFloat(record[config.valueField]) || 0;
 
         if (!aggregated[label]) {
-          aggregated[label] = { values: [], count: 0 };
+          aggregated[label] = { values: [], count: 0, code: isMap ? record[codeField] : null };
         }
         aggregated[label].values.push(value);
         aggregated[label].count++;
@@ -1712,7 +1728,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
           default:
             value = data.values.reduce((a, b) => a + b, 0) / data.values.length;
         }
-        return { label, value };
+        return { label, value, code: data.code };
       });
 
       // Sort
@@ -1781,11 +1797,13 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
       const emptyState = document.getElementById('empty-state');
       const chartWrapper = document.querySelector('.chart-wrapper');
 
-      // Remove any existing KPI card or gauge card
+      // Remove any existing KPI card, gauge card, or map card
       const existingKpi = chartWrapper.querySelector('.kpi-card');
       if (existingKpi) existingKpi.remove();
       const existingGauge = chartWrapper.querySelector('.gauge-card');
       if (existingGauge) existingGauge.remove();
+      const existingMap = chartWrapper.querySelector('.map-card');
+      if (existingMap) existingMap.remove();
 
       if (state.chart) {
         state.chart.destroy();
@@ -1812,6 +1830,34 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
           </div>
         `;
         chartWrapper.appendChild(gaugeCard);
+        return;
+      }
+
+      // Handle map type (uses DSFR map-chart)
+      if (config.type === 'map') {
+        canvas.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        // Transform data to DSFR format: {"code": value, ...}
+        const mapData = {};
+        data.forEach(d => {
+          const code = String(d.code || d.label || '').padStart(2, '0');
+          const value = d.value || 0;
+          if (code && code !== '00') {
+            mapData[code] = Math.round(value * 100) / 100;
+          }
+        });
+
+        const mapCard = document.createElement('div');
+        mapCard.className = 'map-card';
+        mapCard.innerHTML = `
+          <map-chart
+            data='${JSON.stringify(mapData)}'
+            name="${escapeHtml(config.title || 'Carte')}"
+            selected-palette="${config.palette || 'sequentialAscending'}"
+          ></map-chart>
+        `;
+        chartWrapper.appendChild(mapCard);
         return;
       }
 
@@ -2111,6 +2157,109 @@ new Chart(document.getElementById('myChart'), {
 <\/script>`;
 
         document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      // Handle map type
+      if (config.type === 'map') {
+        // Transform data to DSFR format: {"code": value, ...}
+        const mapData = {};
+        data.forEach(d => {
+          const code = String(d.code || d.label || '').padStart(2, '0');
+          const value = d.value || 0;
+          if (code && code !== '00') {
+            mapData[code] = Math.round(value * 100) / 100;
+          }
+        });
+
+        // Si la source est une API, générer du code dynamique
+        if (state.source?.type === 'api' && state.source?.url) {
+          const valueExpr = config.aggregation === 'count'
+            ? 'count(*) as value'
+            : `${config.aggregation}(${config.valueField}) as value`;
+
+          const params = new URLSearchParams({
+            select: `${config.codeField}, ${valueExpr}`,
+            group_by: config.codeField,
+            limit: '200'  // Get all departments
+          });
+
+          const apiUrl = `${state.source.url}?${params}`;
+
+          const code = `<!-- Carte générée avec gouv-widgets Builder IA -->
+<!-- Source API dynamique : les données se mettent à jour automatiquement -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+  <div id="map-container"></div>
+</div>
+
+<script type="module">
+const API_URL = '${apiUrl}';
+
+async function loadMap() {
+  try {
+    const response = await fetch(API_URL);
+    const json = await response.json();
+    const records = json.results || [];
+
+    // Transformer les données en format carte: {"code": valeur, ...}
+    const mapData = {};
+    records.forEach(d => {
+      const code = String(d['${config.codeField}'] || '').padStart(2, '0');
+      const value = d.value || 0;
+      if (code && code !== '00') {
+        mapData[code] = Math.round(value * 100) / 100;
+      }
+    });
+
+    document.getElementById('map-container').innerHTML = \`
+      <map-chart
+        data='\${JSON.stringify(mapData)}'
+        name="${escapeHtml(config.title || 'Carte')}"
+        selected-palette="${config.palette || 'sequentialAscending'}"
+      ></map-chart>
+    \`;
+  } catch (error) {
+    console.error('Erreur chargement carte:', error);
+    document.getElementById('map-container').innerHTML = '<p class="fr-text--error">Erreur de chargement</p>';
+  }
+}
+
+loadMap();
+<\/script>`;
+
+          document.getElementById('generated-code').textContent = code;
+        } else {
+          // Pour les sources non-API, générer du code avec données embarquées
+          const code = `<!-- Carte générée avec gouv-widgets Builder IA -->
+<!-- Source : ${state.source?.name || 'Données locales'} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+  <map-chart
+    data='${JSON.stringify(mapData)}'
+    name="${escapeHtml(config.title || 'Carte')}"
+    selected-palette="${config.palette || 'sequentialAscending'}"
+  ></map-chart>
+</div>`;
+
+          document.getElementById('generated-code').textContent = code;
+        }
         return;
       }
 
