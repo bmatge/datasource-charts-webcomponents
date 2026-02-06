@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
   <!-- DSFR Chart (graphiques officiels) -->
-  <script src="https://cdn.jsdelivr.net/npm/@anthropic/dsfr-chart@1.0.0/dist/dsfr-chart.umd.js" defer></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
 
   <!-- CodeMirror pour l'éditeur de code -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
@@ -25,6 +26,9 @@
   <!-- Chart.js (utilisé par dsfr-chart) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="dist/gouv-widgets.esm.js"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -35,21 +39,12 @@
       flex-direction: column;
     }
 
-    .playground-container {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-    }
-
     .playground-editor {
-      width: 50%;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border-default-grey);
     }
 
     .playground-preview {
-      flex: 1;
       overflow: auto;
       background: var(--background-default-grey);
     }
@@ -89,105 +84,12 @@
       font-weight: 500;
     }
 
-    /* Resizer */
-    .resizer {
-      width: 6px;
-      background: var(--border-default-grey);
-      cursor: col-resize;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-    .resizer:hover, .resizer.dragging {
-      background: var(--border-action-high-blue-france);
-    }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-      .playground-container {
-        flex-direction: column;
-      }
-      .playground-editor,
-      .playground-preview {
-        width: 100%;
-        height: 50vh;
-      }
-      .resizer { display: none; }
-    }
+    /* Le resizer et responsive sont gérés par app-layout-builder */
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER DSFR -->
-  <!-- ============================================ -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo">
-                <p class="fr-logo">
-                  République<br>Française
-                </p>
-              </div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
-                  Menu
-                </button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">Charts builder</p>
-              </a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li>
-                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
-          Fermer
-        </button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="index.html">Accueil</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="demo/index.html">Composants</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builder.html">Builder</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="playground.html" aria-current="page">Playground</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="sources.html">Sources</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Header -->
+  <app-header current-page="playground" base-path=""></app-header>
 
   <div class="example-selector">
     <label for="example-select">Charger un exemple :</label>
@@ -214,8 +116,8 @@
     </select>
   </div>
 
-  <div class="playground-container">
-    <div class="playground-editor">
+  <app-layout-builder left-width="600">
+    <div slot="left" class="playground-editor">
       <div class="editor-toolbar">
         <button id="run-btn" class="fr-btn fr-btn--sm fr-btn--icon-left fr-icon-play-line">
           Exécuter
@@ -226,53 +128,13 @@
       </div>
       <textarea id="code-editor"></textarea>
     </div>
-    <!-- Resizer -->
-    <div class="resizer" id="resizer"></div>
-    <div class="playground-preview">
+    <div slot="right" class="playground-preview">
       <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
-  </div>
+  </app-layout-builder>
 
-  <!-- ============================================ -->
-  <!-- FOOTER DSFR -->
-  <!-- ============================================ -->
-  <footer class="fr-footer" role="contentinfo" id="footer">
-    <div class="fr-container">
-      <div class="fr-footer__body">
-        <div class="fr-footer__brand fr-enlarge-link">
-          <a href="index.html" title="Retour à l'accueil du site - République Française">
-            <p class="fr-logo">
-              République<br>Française
-            </p>
-          </a>
-        </div>
-        <div class="fr-footer__content">
-          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de créer des visualisations de données conformes au Design System de l'État (DSFR).</p>
-          <ul class="fr-footer__content-list">
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
-            </li>
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="fr-footer__bottom">
-        <ul class="fr-footer__bottom-list">
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Accessibilité : non conforme</a>
-          </li>
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Mentions légales</a>
-          </li>
-        </ul>
-        <div class="fr-footer__bottom-copy">
-          <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <!-- Footer -->
+  <app-footer base-path=""></app-footer>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
   <script>
@@ -1367,8 +1229,7 @@ ${code}
         }
       });
 
-      // Initialiser le resizer
-      initResizer();
+      // Le resizer est maintenant géré par app-layout-builder
     });
 
     function loadExample(name) {
@@ -1387,39 +1248,7 @@ ${code}
       iframe.srcdoc = html;
     }
 
-    // ============================================================
-    // RESIZER
-    // ============================================================
-    function initResizer() {
-      const resizer = document.getElementById('resizer');
-      const leftPanel = document.querySelector('.playground-editor');
-      const container = document.querySelector('.playground-container');
-      let isResizing = false;
-
-      resizer.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        resizer.classList.add('dragging');
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-        const containerRect = container.getBoundingClientRect();
-        let newWidth = e.clientX - containerRect.left;
-        newWidth = Math.max(280, Math.min(newWidth, containerRect.width - 300));
-        leftPanel.style.width = newWidth + 'px';
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (isResizing) {
-          isResizing = false;
-          resizer.classList.remove('dragging');
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-        }
-      });
-    }
+    // Le resizer est maintenant géré par le composant app-layout-builder
   </script>
 </body>
 </html>

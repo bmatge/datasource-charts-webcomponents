@@ -4,12 +4,15 @@
  * Point d'entrée principal - enregistre tous les composants
  */
 
-// Composants
+// Composants de données
 export { GouvSource } from './components/gouv-source.js';
 export { GouvKpi } from './components/gouv-kpi.js';
 export { GouvDatalist } from './components/gouv-datalist.js';
 export { GouvChart } from './components/gouv-chart.js';
 export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
+
+// Composants de layout
+export { AppHeader, AppFooter, AppLayoutBuilder, AppLayoutDemo } from './components/layout/index.js';
 
 // Utilitaires (pour usage avancé)
 export {

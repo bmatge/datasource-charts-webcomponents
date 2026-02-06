@@ -45,19 +45,10 @@
       gap: 0.5rem;
     }
 
-    .builder-container {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
     /* ============================================ */
     /* PANNEAU GAUCHE : CONFIG + CHAT */
     /* ============================================ */
-    .builder-config {
-      width: 420px;
-      background: var(--background-default-grey);
-      border-right: 1px solid var(--border-default-grey);
+    .builder-config-panel {
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -285,166 +276,13 @@
     }
 
     /* ============================================ */
-    /* PANNEAU DROIT : APERÇU */
+    /* PANNEAU DROIT : les styles sont dans app-preview-panel */
     /* ============================================ */
-    .builder-preview {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--background-alt-grey);
-      overflow: hidden;
-    }
 
-    .preview-tabs {
-      display: flex;
-      background: var(--background-default-grey);
-      border-bottom: 1px solid var(--border-default-grey);
-    }
-
-    .tab-btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      border-bottom: 2px solid transparent;
-      color: var(--text-mention-grey);
-    }
-
-    .tab-btn.active {
-      color: var(--text-action-high-blue-france);
-      border-bottom-color: var(--border-action-high-blue-france);
-      font-weight: 600;
-    }
-
-    .tab-content {
-      display: none;
-      flex: 1;
-      overflow: auto;
-    }
-
-    .tab-content.active {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Preview chart */
-    .preview-chart {
-      flex: 1;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      position: sticky;
-      top: 0;
-    }
-
-    .preview-title {
-      font-size: 1.25rem;
-      margin: 0 0 0.25rem;
-      color: var(--text-title-grey);
-    }
-
-    .preview-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-mention-grey);
-      margin: 0 0 1rem;
-    }
-
-    .chart-wrapper {
-      position: relative;
-      height: 350px;
-      background: var(--background-default-grey);
-      border-radius: 8px;
-      padding: 1rem;
-    }
-
-    #preview-canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .empty-state {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-mention-grey);
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    /* Code tab */
-    #tab-code {
-      padding: 1rem;
-    }
-
-    #generated-code {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.8rem;
-      white-space: pre-wrap;
-      overflow: auto;
-      flex: 1;
-    }
-
-    .copy-btn {
-      align-self: flex-end;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Data tab */
-    #tab-data {
-      padding: 1rem;
-    }
-
-    .data-summary {
-      background: var(--background-default-grey);
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-
-    .data-summary h4 {
-      margin: 0 0 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .field-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .field-tag {
-      padding: 0.25rem 0.5rem;
-      background: var(--background-contrast-info);
-      border-radius: 4px;
-      font-size: 0.75rem;
-    }
+    /* Styles spécifiques - les styles communs sont dans app-preview-panel */
 
     .field-tag.numeric {
       background: var(--background-contrast-success);
-    }
-
-    #raw-data {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.75rem;
-      white-space: pre-wrap;
-      overflow: auto;
-      max-height: 400px;
     }
 
     /* KPI Cards */
@@ -526,29 +364,8 @@
       font-weight: 600;
     }
 
-    /* Resizer */
-    .resizer {
-      width: 6px;
-      background: var(--border-default-grey);
-      cursor: col-resize;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-    .resizer:hover, .resizer.dragging {
-      background: var(--border-action-high-blue-france);
-    }
+    /* Le resizer et responsive sont gérés par app-layout-builder */
 
-    /* Responsive */
-    @media (max-width: 900px) {
-      .builder-container {
-        flex-direction: column;
-      }
-      .builder-config {
-        width: 100%;
-        max-height: 50vh;
-      }
-      .resizer { display: none; }
-    }
     /* Sections collapsibles */
     .config-section-header {
       display: flex;
@@ -593,11 +410,11 @@
   <!-- Header -->
   <app-header current-page="builder-ia" base-path=""></app-header>
 
-  <div class="builder-container">
+  <app-layout-builder left-width="420">
     <!-- ============================================ -->
     <!-- PANNEAU GAUCHE : CONFIG + CHAT -->
     <!-- ============================================ -->
-    <aside class="builder-config">
+    <aside slot="left" class="builder-config-panel">
 
       <!-- Source de données + Config IA -->
       <div class="config-section" id="section-source">
@@ -743,21 +560,15 @@ Sois concis. Utilise le français.</textarea>
 
     </aside>
 
-    <!-- Resizer -->
-    <div class="resizer" id="resizer"></div>
-
     <!-- ============================================ -->
     <!-- PANNEAU DROIT : APERÇU -->
     <!-- ============================================ -->
-    <main class="builder-preview">
-      <div class="preview-tabs">
-        <button class="tab-btn active" data-tab="preview">Aperçu</button>
-        <button class="tab-btn" data-tab="code">Code</button>
-        <button class="tab-btn" data-tab="data">Données</button>
-      </div>
+    <app-preview-panel slot="right"
+      show-data-tab
+      tab-labels="Aperçu,Code,Données">
 
       <!-- Tab Aperçu -->
-      <div class="tab-content active" id="tab-preview">
+      <div slot="preview">
         <div class="preview-chart">
           <h2 class="preview-title" id="preview-title">Mon graphique</h2>
           <p class="preview-subtitle" id="preview-subtitle"></p>
@@ -772,7 +583,7 @@ Sois concis. Utilise le français.</textarea>
       </div>
 
       <!-- Tab Code -->
-      <div class="tab-content" id="tab-code">
+      <div slot="code">
         <button class="fr-btn fr-btn--sm fr-btn--secondary copy-btn" onclick="copyCode()">
           <i class="ri-file-copy-line"></i> Copier le code
         </button>
@@ -780,7 +591,7 @@ Sois concis. Utilise le français.</textarea>
       </div>
 
       <!-- Tab Données -->
-      <div class="tab-content" id="tab-data">
+      <div slot="data">
         <div class="data-summary" id="data-summary">
           <h4>Champs disponibles</h4>
           <div class="field-list" id="field-list">
@@ -792,8 +603,9 @@ Sois concis. Utilise le français.</textarea>
         <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Données brutes</h4>
         <pre id="raw-data">// Sélectionnez une source pour voir les données</pre>
       </div>
-    </main>
-  </div>
+
+    </app-preview-panel>
+  </app-layout-builder>
 
   <script>
     // ============================================================
@@ -1103,10 +915,10 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
     // GESTION DES TABS
     // ============================================================
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
+      const previewPanel = document.querySelector('app-preview-panel');
+      if (previewPanel && previewPanel.setActiveTab) {
+        previewPanel.setActiveTab(tabId);
+      }
     }
 
     // ============================================================
@@ -2393,39 +2205,7 @@ new Chart(document.getElementById('myChart'), {
       });
     }
 
-    // ============================================================
-    // RESIZER
-    // ============================================================
-    (function initResizer() {
-      const resizer = document.getElementById('resizer');
-      const leftPanel = document.querySelector('.builder-config');
-      const container = document.querySelector('.builder-container');
-      let isResizing = false;
-
-      resizer.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        resizer.classList.add('dragging');
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-        const containerRect = container.getBoundingClientRect();
-        let newWidth = e.clientX - containerRect.left;
-        newWidth = Math.max(280, Math.min(newWidth, containerRect.width - 300));
-        leftPanel.style.width = newWidth + 'px';
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (isResizing) {
-          isResizing = false;
-          resizer.classList.remove('dragging');
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-        }
-      });
-    })();
+    // Le resizer est maintenant géré par le composant app-layout-builder
 
     // ============================================================
     // SECTIONS COLLAPSIBLES

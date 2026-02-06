@@ -42,25 +42,10 @@
       color: var(--text-title-blue-france);
     }
 
-    .builder-container {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .builder-config {
-      width: 400px;
-      min-width: 350px;
+    /* Panneau de configuration */
+    .builder-config-panel {
       overflow-y: auto;
-      border-right: 1px solid var(--border-default-grey);
       background: var(--background-alt-grey);
-    }
-
-    .builder-preview {
-      flex: 1;
-      overflow: auto;
-      padding: 1.5rem;
-      background: var(--background-default-grey);
     }
 
     .config-section {
@@ -197,56 +182,7 @@
       margin: 0;
     }
 
-    .preview-chart {
-      background: white;
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-      position: sticky;
-      top: 1rem;
-    }
-
-    .preview-chart h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.25rem;
-    }
-
-    .preview-chart .subtitle {
-      color: var(--text-mention-grey);
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-    }
-
-    .chart-container {
-      position: relative;
-      height: 350px;
-    }
-
-    .code-output {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: var(--text-mention-grey);
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
+    /* Styles spécifiques au builder - les styles communs sont dans app-preview-panel */
     .loading-indicator {
       display: flex;
       align-items: center;
@@ -263,34 +199,6 @@
       padding: 0.75rem;
       border-radius: 4px;
       font-size: 0.875rem;
-    }
-
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border-default-grey);
-    }
-
-    .tab-btn {
-      padding: 0.75rem 1rem;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-weight: 500;
-      color: var(--text-mention-grey);
-      border-bottom: 2px solid transparent;
-    }
-
-    .tab-btn.active {
-      color: var(--text-action-high-blue-france);
-      border-bottom-color: var(--border-action-high-blue-france);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
     }
 
     .aggregation-hint {
@@ -342,18 +250,6 @@
     .source-badge-grist { background: #16a34a; color: white; }
     .source-badge-manual { background: #9333ea; color: white; }
     .source-badge-api { background: #2563eb; color: white; }
-
-    /* Resizer */
-    .resizer {
-      width: 6px;
-      background: var(--border-default-grey);
-      cursor: col-resize;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-    .resizer:hover, .resizer.dragging {
-      background: var(--border-action-high-blue-france);
-    }
 
     /* KPI Cards */
     .kpi-card {
@@ -414,27 +310,18 @@
       display: block;
     }
 
-    @media (max-width: 900px) {
-      .builder-container {
-        flex-direction: column;
-      }
-      .builder-config {
-        width: 100%;
-        max-height: 50vh;
-      }
-      .resizer { display: none; }
-    }
+    /* Responsive - les styles principaux sont dans app-layout-builder */
   </style>
 </head>
 <body>
   <!-- Header -->
   <app-header current-page="builder" base-path=""></app-header>
 
-  <div class="builder-container">
+  <app-layout-builder left-width="400">
     <!-- ============================================ -->
     <!-- PANNEAU DE CONFIGURATION -->
     <!-- ============================================ -->
-    <aside class="builder-config">
+    <aside slot="left" class="builder-config-panel">
 
       <!-- ÉTAPE 1 : Source de données -->
       <div class="config-section" id="section-source">
@@ -725,22 +612,15 @@
 
     </aside>
 
-    <!-- Resizer -->
-    <div class="resizer" id="resizer"></div>
-
     <!-- ============================================ -->
     <!-- PANNEAU DE PRÉVISUALISATION -->
     <!-- ============================================ -->
-    <main class="builder-preview">
-
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="preview">Aperçu</button>
-        <button class="tab-btn" data-tab="code">Code généré</button>
-        <button class="tab-btn" data-tab="data">Données brutes</button>
-      </div>
+    <app-preview-panel slot="right"
+      show-data-tab
+      tab-labels="Aperçu,Code généré,Données brutes">
 
       <!-- Onglet Aperçu -->
-      <div class="tab-content active" id="tab-preview">
+      <div slot="preview">
         <div class="preview-chart">
           <h2 id="preview-title">Mon graphique</h2>
           <p class="subtitle" id="preview-subtitle"></p>
@@ -766,7 +646,7 @@
       </div>
 
       <!-- Onglet Code -->
-      <div class="tab-content" id="tab-code">
+      <div slot="code">
         <p class="fr-text--sm">Copiez ce code pour l'intégrer dans votre page :</p>
         <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mb-1w" id="copy-code-btn">
           <i class="ri-file-copy-line"></i> Copier le code
@@ -775,13 +655,13 @@
       </div>
 
       <!-- Onglet Données -->
-      <div class="tab-content" id="tab-data">
+      <div slot="data">
         <p class="fr-text--sm">Données brutes reçues de l'API :</p>
         <pre class="code-output" id="raw-data">// Chargez d'abord les données...</pre>
       </div>
 
-    </main>
-  </div>
+    </app-preview-panel>
+  </app-layout-builder>
 
   <script>
     // ============================================================
@@ -933,10 +813,10 @@
     // FONCTIONS UTILITAIRES
     // ============================================================
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
+      const previewPanel = document.querySelector('app-preview-panel');
+      if (previewPanel && previewPanel.setActiveTab) {
+        previewPanel.setActiveTab(tabId);
+      }
     }
 
     // ============================================================
@@ -1129,8 +1009,8 @@
       // Toggle KPI-specific options (variant selector)
       document.getElementById('kpi-config').classList.toggle('visible', isKPI);
 
-      // Color/palette config: hide for KPI and gauge (they have their own styling)
-      document.getElementById('color-config').style.display = isSingleValue ? 'none' : 'block';
+      // Palette config: hide for KPI and gauge (they have their own styling)
+      document.getElementById('palette-config').style.display = isSingleValue ? 'none' : 'block';
 
       // Label field: hide for single value types (KPI, gauge)
       document.getElementById('label-field').closest('.fr-select-group').style.display = isSingleValue ? 'none' : 'block';
@@ -2281,39 +2161,7 @@ loadChart();
       });
     }
 
-    // ============================================================
-    // RESIZER
-    // ============================================================
-    (function initResizer() {
-      const resizer = document.getElementById('resizer');
-      const leftPanel = document.querySelector('.builder-config');
-      const container = document.querySelector('.builder-container');
-      let isResizing = false;
-
-      resizer.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        resizer.classList.add('dragging');
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-        const containerRect = container.getBoundingClientRect();
-        let newWidth = e.clientX - containerRect.left;
-        newWidth = Math.max(280, Math.min(newWidth, containerRect.width - 300));
-        leftPanel.style.width = newWidth + 'px';
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (isResizing) {
-          isResizing = false;
-          resizer.classList.remove('dragging');
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-        }
-      });
-    })();
+    // Le resizer est maintenant géré par le composant app-layout-builder
 
     // ============================================================
     // SECTIONS COLLAPSIBLES

@@ -8,191 +8,83 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
-    main { flex: 1; }
-    .demo-layout { display: flex; gap: 2rem; }
-    .fr-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
-    .demo-content { flex: 1; min-width: 0; }
-    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
-    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; overflow-x: auto; }
-    .code-block pre { margin: 0; white-space: pre-wrap; }
-    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
-    .attr-table th { background: var(--background-alt-grey); }
-    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
-    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .fr-sidemenu { position: static; } }
   </style>
 </head>
 <body>
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">Menu</button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="../../index.html" title="Accueil"><p class="fr-header__service-title">Charts builder</p></a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li><a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">GitHub</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">Fermer</button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../index.html">Accueil</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../index.html" aria-current="page">Composants</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builder.html">Builder</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builderIA.html">Builder IA</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../playground.html">Playground</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../sources.html">Sources</a></li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <app-header current-page="composants" base-path="../../"></app-header>
 
-  <main class="fr-container fr-py-4w">
-    <div class="demo-layout">
-      <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
-        <div class="fr-sidemenu__inner">
-          <button class="fr-sidemenu__btn" hidden aria-controls="fr-sidemenu-wrapper" aria-expanded="true">Menu</button>
-          <div class="fr-collapse" id="fr-sidemenu-wrapper">
-            <div class="fr-sidemenu__title" id="fr-sidemenu-title">Composants</div>
-            <ul class="fr-sidemenu__list">
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="../index.html">Vue d'ensemble</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="fr-sidemenu-composants">Nos composants</button>
-                <div class="fr-collapse" id="fr-sidemenu-composants">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-source.html">gouv-source</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-kpi.html">gouv-kpi</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-datalist.html">gouv-datalist</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../components/gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
-                  </ul>
-                </div>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="true" aria-controls="fr-sidemenu-charts">Charts DSFR natifs</button>
-                <div class="fr-collapse fr-collapse--expanded" id="fr-sidemenu-charts">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="index.html">Vue d'ensemble</a></li>
-                    <li class="fr-sidemenu__item fr-sidemenu__item--active"><a class="fr-sidemenu__link" href="line-chart.html" aria-current="page">Ligne</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="bar-chart.html">Barres</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="pie-chart.html">Camembert</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="radar-chart.html">Radar</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="gauge-chart.html">Jauge</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="map-chart.html">Carte</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="scatter-chart.html">Nuage de points</a></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+  <app-layout-demo title="Graphique en ligne" icon="ri-line-chart-line" active-path="charts/line-chart" base-path="../">
+    <div slot="content">
+      <p class="fr-text--lead">Le composant <code>&lt;line-chart&gt;</code> permet de visualiser des tendances et evolutions dans le temps.</p>
 
-      <div class="demo-content">
-        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
-          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
-          <li><a class="fr-breadcrumb__link" href="index.html">Charts DSFR</a></li>
-          <li><a class="fr-breadcrumb__link" aria-current="page">Ligne</a></li>
-        </ol></nav>
+      <h2>Attributs</h2>
+      <table class="attr-table">
+        <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>x</code></td><td>String</td><td>Valeurs axe X en JSON : <code>'[[1, 2, 3]]'</code></td></tr>
+          <tr><td><code>y</code></td><td>String</td><td>Valeurs axe Y en JSON : <code>'[[10, 20, 30]]'</code></td></tr>
+          <tr><td><code>selected-palette</code></td><td>String</td><td>Palette de couleurs</td></tr>
+          <tr><td><code>unit-tooltip</code></td><td>String</td><td>Unite dans les tooltips</td></tr>
+          <tr><td><code>x-min / x-max</code></td><td>Number</td><td>Limites axe X</td></tr>
+          <tr><td><code>y-min / y-max</code></td><td>Number</td><td>Limites axe Y</td></tr>
+        </tbody>
+      </table>
 
-        <h1><span class="ri-line-chart-line fr-mr-1w" aria-hidden="true"></span> Graphique en ligne</h1>
-        <p class="fr-text--lead">Le composant <code>&lt;line-chart&gt;</code> permet de visualiser des tendances et evolutions dans le temps.</p>
+      <h2 class="fr-mt-4w">Exemples</h2>
 
-        <h2>Attributs</h2>
-        <table class="attr-table">
-          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td><code>x</code></td><td>String</td><td>Valeurs axe X en JSON : <code>'[[1, 2, 3]]'</code></td></tr>
-            <tr><td><code>y</code></td><td>String</td><td>Valeurs axe Y en JSON : <code>'[[10, 20, 30]]'</code></td></tr>
-            <tr><td><code>selected-palette</code></td><td>String</td><td>Palette de couleurs</td></tr>
-            <tr><td><code>unit-tooltip</code></td><td>String</td><td>Unite dans les tooltips</td></tr>
-            <tr><td><code>x-min / x-max</code></td><td>Number</td><td>Limites axe X</td></tr>
-            <tr><td><code>y-min / y-max</code></td><td>Number</td><td>Limites axe Y</td></tr>
-          </tbody>
-        </table>
-
-        <h2 class="fr-mt-4w">Exemples</h2>
-
-        <section class="demo-section">
-          <h3>1. Ligne simple</h3>
-          <line-chart
-            x="[[2020, 2021, 2022, 2023, 2024]]"
-            y="[[65, 72, 78, 85, 91]]"
-            selected-palette="default"
-            unit-tooltip="%">
-          </line-chart>
-          <div class="code-block"><pre>&lt;line-chart
+      <section class="demo-section">
+        <h3>1. Ligne simple</h3>
+        <line-chart
+          x="[[2020, 2021, 2022, 2023, 2024]]"
+          y="[[65, 72, 78, 85, 91]]"
+          selected-palette="default"
+          unit-tooltip="%">
+        </line-chart>
+        <div class="code-block"><pre>&lt;line-chart
   x="[[2020, 2021, 2022, 2023, 2024]]"
   y="[[65, 72, 78, 85, 91]]"
   selected-palette="default"
   unit-tooltip="%"&gt;
 &lt;/line-chart&gt;</pre></div>
-        </section>
+      </section>
 
-        <section class="demo-section">
-          <h3>2. Multi-series</h3>
-          <line-chart
-            x="[[2020, 2021, 2022, 2023], [2020, 2021, 2022, 2023]]"
-            y="[[65, 72, 78, 85], [70, 75, 82, 88]]"
-            selected-palette="categorical"
-            unit-tooltip="%">
-          </line-chart>
-          <div class="code-block"><pre>&lt;line-chart
+      <section class="demo-section">
+        <h3>2. Multi-series</h3>
+        <line-chart
+          x="[[2020, 2021, 2022, 2023], [2020, 2021, 2022, 2023]]"
+          y="[[65, 72, 78, 85], [70, 75, 82, 88]]"
+          selected-palette="categorical"
+          unit-tooltip="%">
+        </line-chart>
+        <div class="code-block"><pre>&lt;line-chart
   x="[[2020, 2021, 2022, 2023], [2020, 2021, 2022, 2023]]"
   y="[[65, 72, 78, 85], [70, 75, 82, 88]]"
   selected-palette="categorical"&gt;
 &lt;/line-chart&gt;</pre></div>
-        </section>
+      </section>
 
-        <section class="demo-section">
-          <h3>3. Palette divergente</h3>
-          <line-chart
-            x="[[1, 2, 3, 4, 5, 6]]"
-            y="[[10, 25, 15, 30, 20, 35]]"
-            selected-palette="divergentAscending"
-            unit-tooltip="pts">
-          </line-chart>
-          <div class="code-block"><pre>&lt;line-chart
+      <section class="demo-section">
+        <h3>3. Palette divergente</h3>
+        <line-chart
+          x="[[1, 2, 3, 4, 5, 6]]"
+          y="[[10, 25, 15, 30, 20, 35]]"
+          selected-palette="divergentAscending"
+          unit-tooltip="pts">
+        </line-chart>
+        <div class="code-block"><pre>&lt;line-chart
   x="[[1, 2, 3, 4, 5, 6]]"
   y="[[10, 25, 15, 30, 20, 35]]"
   selected-palette="divergentAscending"&gt;
 &lt;/line-chart&gt;</pre></div>
-        </section>
-      </div>
+      </section>
     </div>
-  </main>
+  </app-layout-demo>
 
-  <footer class="fr-footer" role="contentinfo">
-    <div class="fr-container">
-      <div class="fr-footer__body">
-        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
-      </div>
-    </div>
-  </footer>
+  <app-footer base-path="../../"></app-footer>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
 </body>
 </html>

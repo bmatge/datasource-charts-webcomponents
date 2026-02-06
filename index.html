@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-widgets — Accueil</title>
+  <title>Charts builder — Accueil</title>
 
   <!-- DSFR -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="dist/gouv-widgets.esm.js"></script>
 
   <style>
     body {
@@ -22,31 +25,10 @@
       background: var(--background-alt-grey);
     }
 
-    .hero {
-      background: var(--background-alt-blue-france);
-      padding: 3rem 0;
-      text-align: center;
-    }
-
-    .hero h1 {
-      color: var(--text-title-blue-france);
-      margin: 0 0 0.5rem;
-      font-size: 2.5rem;
-    }
-
-    .hero p {
-      color: var(--text-default-grey);
-      font-size: 1.125rem;
-      margin: 0;
-    }
-
     .tiles-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1.5rem;
-      margin-top: -2rem;
-      position: relative;
-      z-index: 1;
     }
 
     @media (max-width: 992px) {
@@ -76,39 +58,9 @@
       color: var(--text-action-high-blue-france);
     }
 
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      margin-top: 0.5rem;
-    }
-
-    .badge-nocode { background: #16a34a; color: white; }
-    .badge-code { background: #2563eb; color: white; }
-    .badge-data { background: #9333ea; color: white; }
-    .badge-ia { background: #dc2626; color: white; }
-    .badge-soon { background: var(--text-mention-grey); color: white; }
-
-    .section-title {
-      margin: 3rem 0 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border-default-grey);
-      font-size: 1rem;
-      color: var(--text-mention-grey);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
     .workflow {
       background: var(--background-default-grey);
       border-radius: 8px;
-      padding: 2rem;
-      margin-top: 2rem;
-    }
-
-    .workflow--compact {
       padding: 1.5rem 2rem;
       margin-top: 1rem;
     }
@@ -172,82 +124,10 @@
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER DSFR -->
-  <!-- ============================================ -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo">
-                <p class="fr-logo">
-                  République<br>Française
-                </p>
-              </div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
-                  Menu
-                </button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">Charts builder</p>
-              </a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li>
-                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
-          Fermer
-        </button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="index.html" aria-current="page">Accueil</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="demo/index.html">Composants</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builder.html">Builder</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="playground.html">Playground</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="sources.html">Sources</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Header -->
+  <app-header current-page="accueil" base-path=""></app-header>
 
-  <!-- ============================================ -->
-  <!-- CONTENU PRINCIPAL -->
-  <!-- ============================================ -->
+  <!-- Contenu principal -->
   <main class="fr-pb-8w">
     <div class="fr-container">
       <!-- Présentation du projet -->
@@ -259,7 +139,7 @@
       </div>
 
       <!-- Workflow -->
-      <div class="workflow workflow--compact">
+      <div class="workflow">
         <h3 class="fr-sr-only">Comment ça marche ?</h3>
         <div class="workflow-steps">
           <div class="workflow-step">
@@ -392,49 +272,8 @@
     </div>
   </main>
 
-  <!-- ============================================ -->
-  <!-- FOOTER DSFR -->
-  <!-- ============================================ -->
-  <footer class="fr-footer" role="contentinfo" id="footer">
-    <div class="fr-container">
-      <div class="fr-footer__body">
-        <div class="fr-footer__brand fr-enlarge-link">
-          <a href="/" title="Retour à l'accueil du site - République Française">
-            <p class="fr-logo">
-              République<br>Française
-            </p>
-          </a>
-        </div>
-        <div class="fr-footer__content">
-          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de créer des visualisations de données conformes au Design System de l'État (DSFR).</p>
-          <ul class="fr-footer__content-list">
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
-            </li>
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="fr-footer__bottom">
-        <ul class="fr-footer__bottom-list">
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Accessibilité : non conforme</a>
-          </li>
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Mentions légales</a>
-          </li>
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Données personnelles</a>
-          </li>
-        </ul>
-        <div class="fr-footer__bottom-copy">
-          <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <!-- Footer -->
+  <app-footer base-path=""></app-footer>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
 </body>

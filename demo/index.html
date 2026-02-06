@@ -25,183 +25,23 @@
       display: flex;
       flex-direction: column;
     }
-    main {
-      flex: 1;
-    }
-    .demo-layout {
-      display: flex;
-      gap: 2rem;
-    }
-    .fr-sidemenu {
-      flex: 0 0 280px;
-      position: sticky;
-      top: 1rem;
-      height: fit-content;
-    }
-    .demo-content {
-      flex: 1;
-      min-width: 0;
-    }
     .fr-tile__pictogram {
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    @media (max-width: 992px) {
-      .demo-layout {
-        flex-direction: column;
-      }
-      .fr-sidemenu {
-        position: static;
-        flex: none;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER DSFR -->
-  <!-- ============================================ -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo">
-                <p class="fr-logo">
-                  Republique<br>Francaise
-                </p>
-              </div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
-                  Menu
-                </button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="../index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">Charts builder</p>
-              </a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li>
-                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
-          Fermer
-        </button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="../index.html">Accueil</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="index.html" aria-current="page">Composants</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="../builder.html">Builder</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="../builderIA.html">Builder IA</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="../playground.html">Playground</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="../sources.html">Sources</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../"></app-header>
 
-  <main class="fr-container fr-py-4w">
-    <div class="demo-layout">
-      <!-- Menu lateral DSFR -->
-      <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
-        <div class="fr-sidemenu__inner">
-          <button class="fr-sidemenu__btn" hidden aria-controls="fr-sidemenu-wrapper" aria-expanded="true">Menu</button>
-          <div class="fr-collapse" id="fr-sidemenu-wrapper">
-            <div class="fr-sidemenu__title" id="fr-sidemenu-title">Composants</div>
-            <ul class="fr-sidemenu__list">
-              <li class="fr-sidemenu__item fr-sidemenu__item--active">
-                <a class="fr-sidemenu__link" href="#overview" aria-current="page">Vue d'ensemble</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="fr-sidemenu-composants">Nos composants</button>
-                <div class="fr-collapse" id="fr-sidemenu-composants">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="components/gouv-source.html">gouv-source</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="components/gouv-kpi.html">gouv-kpi</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="components/gouv-datalist.html">gouv-datalist</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="components/gouv-dsfr-chart.html">gouv-dsfr-chart</a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="fr-sidemenu-charts">Charts DSFR</button>
-                <div class="fr-collapse" id="fr-sidemenu-charts">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/index.html">Vue d'ensemble</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/line-chart.html">Ligne</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/bar-chart.html">Barres</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/pie-chart.html">Camembert</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/radar-chart.html">Radar</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/gauge-chart.html">Jauge</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/map-chart.html">Carte</a>
-                    </li>
-                    <li class="fr-sidemenu__item">
-                      <a class="fr-sidemenu__link" href="charts/scatter-chart.html">Nuage de points</a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Contenu principal -->
-      <div class="demo-content">
-        <h1 id="overview">Bibliotheque de composants</h1>
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="Bibliotheque de composants"
+    active-path="overview"
+    base-path="">
+    <div slot="content">
         <p class="fr-text--lead">
           gouv-widgets est une bibliotheque de Web Components pour creer des tableaux de bord
           et visualisations de donnees conformes au Design System de l'Etat (DSFR).
@@ -489,53 +329,11 @@
             </div>
           </div>
         </section>
-      </div>
     </div>
-  </main>
+  </app-layout-demo>
 
-  <!-- ============================================ -->
-  <!-- FOOTER DSFR -->
-  <!-- ============================================ -->
-  <footer class="fr-footer" role="contentinfo" id="footer">
-    <div class="fr-container">
-      <div class="fr-footer__body">
-        <div class="fr-footer__brand fr-enlarge-link">
-          <a href="../index.html" title="Retour a l'accueil du site - Republique Francaise">
-            <p class="fr-logo">
-              Republique<br>Francaise
-            </p>
-          </a>
-        </div>
-        <div class="fr-footer__content">
-          <p class="fr-footer__content-desc">gouv-widgets est un projet open-source permettant de creer des visualisations de donnees conformes au Design System de l'Etat (DSFR).</p>
-          <ul class="fr-footer__content-list">
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://www.systeme-de-design.gouv.fr/">systeme-de-design.gouv.fr</a>
-            </li>
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://gouvernementfr.github.io/dsfr-chart/">DSFR Chart</a>
-            </li>
-            <li class="fr-footer__content-item">
-              <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">GitHub</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="fr-footer__bottom">
-        <ul class="fr-footer__bottom-list">
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Accessibilite : non conforme</a>
-          </li>
-          <li class="fr-footer__bottom-item">
-            <a class="fr-footer__bottom-link" href="#">Mentions legales</a>
-          </li>
-        </ul>
-        <div class="fr-footer__bottom-copy">
-          <p>Sauf mention explicite de propriete intellectuelle detenue par des tiers, les contenus de ce site sont proposes sous <a href="https://github.com/etalab/licence-ouverte/blob/master/LO.md" target="_blank" rel="noopener">licence etalab-2.0</a></p>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <!-- Footer -->
+  <app-footer base-path="../"></app-footer>
 
   <!-- DSFR JS -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>

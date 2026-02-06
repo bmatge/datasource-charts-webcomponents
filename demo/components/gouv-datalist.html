@@ -4,134 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>gouv-datalist - Composants - gouv-widgets</title>
-
-  <!-- DSFR -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-
-  <!-- gouv-widgets -->
   <script type="module" src="/dist/gouv-widgets.esm.js"></script>
-
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
-    main { flex: 1; }
-    .demo-layout { display: flex; gap: 2rem; }
-    .fr-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
-    .demo-content { flex: 1; min-width: 0; }
-    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
-    .demo-section h3 { margin-top: 0; }
-    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
-    .code-block pre { margin: 0; white-space: pre-wrap; }
-    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
-    .attr-table th { background: var(--background-alt-grey); font-weight: 600; }
-    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
-    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .fr-sidemenu { position: static; flex: none; } }
   </style>
 </head>
 <body>
-  <!-- HEADER -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">Menu</button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="../../index.html" title="Accueil"><p class="fr-header__service-title">Charts builder</p></a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li><a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">GitHub</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">Fermer</button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../index.html">Accueil</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../index.html" aria-current="page">Composants</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builder.html">Builder</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../builderIA.html">Builder IA</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../playground.html">Playground</a></li>
-            <li class="fr-nav__item"><a class="fr-nav__link" href="../../sources.html">Sources</a></li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Source de donnees -->
+  <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
 
-  <main class="fr-container fr-py-4w">
-    <!-- Source de donnees -->
-    <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
 
-    <div class="demo-layout">
-      <!-- Menu lateral DSFR -->
-      <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
-        <div class="fr-sidemenu__inner">
-          <button class="fr-sidemenu__btn" hidden aria-controls="fr-sidemenu-wrapper" aria-expanded="true">Menu</button>
-          <div class="fr-collapse" id="fr-sidemenu-wrapper">
-            <div class="fr-sidemenu__title" id="fr-sidemenu-title">Composants</div>
-            <ul class="fr-sidemenu__list">
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="../index.html">Vue d'ensemble</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="true" aria-controls="fr-sidemenu-composants">Nos composants</button>
-                <div class="fr-collapse fr-collapse--expanded" id="fr-sidemenu-composants">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="gouv-source.html">gouv-source</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="gouv-kpi.html">gouv-kpi</a></li>
-                    <li class="fr-sidemenu__item fr-sidemenu__item--active"><a class="fr-sidemenu__link" href="gouv-datalist.html" aria-current="page">gouv-datalist</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
-                  </ul>
-                </div>
-              </li>
-              <li class="fr-sidemenu__item">
-                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="fr-sidemenu-charts">Charts DSFR natifs</button>
-                <div class="fr-collapse" id="fr-sidemenu-charts">
-                  <ul class="fr-sidemenu__list">
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/index.html">Vue d'ensemble</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/line-chart.html">Ligne</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/bar-chart.html">Barres</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/pie-chart.html">Camembert</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/radar-chart.html">Radar</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/gauge-chart.html">Jauge</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/map-chart.html">Carte</a></li>
-                    <li class="fr-sidemenu__item"><a class="fr-sidemenu__link" href="../charts/scatter-chart.html">Nuage de points</a></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Contenu -->
-      <div class="demo-content">
-        <nav class="fr-breadcrumb" aria-label="Fil d'Ariane">
-          <ol class="fr-breadcrumb__list">
-            <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
-            <li><a class="fr-breadcrumb__link" aria-current="page">gouv-datalist</a></li>
-          </ol>
-        </nav>
-
-        <h1><span class="ri-table-line fr-mr-1w" aria-hidden="true"></span> gouv-datalist</h1>
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-datalist"
+    icon="ri-table-line"
+    active-path="components/gouv-datalist"
+    base-path="../">
+    <div slot="content">
         <p class="fr-text--lead">
           Composant de tableau de donnees avec fonctionnalites de recherche, filtrage, tri, pagination et export CSV.
           Se connecte a un <code>&lt;gouv-source&gt;</code> pour recevoir les donnees dynamiquement.
@@ -317,23 +211,11 @@
             pour les lecteurs d'ecran.
           </p>
         </div>
-      </div>
     </div>
-  </main>
+  </app-layout-demo>
 
-  <!-- FOOTER -->
-  <footer class="fr-footer" role="contentinfo">
-    <div class="fr-container">
-      <div class="fr-footer__body">
-        <div class="fr-footer__brand fr-enlarge-link">
-          <p class="fr-logo">Republique<br>Francaise</p>
-        </div>
-        <div class="fr-footer__content">
-          <p class="fr-footer__content-desc">gouv-widgets - Visualisations de donnees conformes DSFR</p>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <!-- Footer -->
+  <app-footer base-path="../../"></app-footer>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
 </body>
