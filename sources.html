@@ -232,6 +232,133 @@
 
     .column-item input { flex: 1; }
 
+    /* Table editor for manual source */
+    .table-editor-wrapper {
+      border: 1px solid var(--border-default-grey);
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 400px;
+    }
+
+    .table-editor {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .table-editor th,
+    .table-editor td {
+      border: 1px solid var(--border-default-grey);
+      padding: 0;
+      position: relative;
+      min-width: 120px;
+    }
+
+    .table-editor th {
+      background: var(--background-alt-grey);
+      font-weight: 600;
+    }
+
+    .table-editor th .col-header {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem;
+    }
+
+    .table-editor th .col-header input {
+      flex: 1;
+      border: 1px solid transparent;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.4rem;
+      border-radius: 3px;
+      min-width: 60px;
+    }
+
+    .table-editor th .col-header input:focus {
+      border-color: var(--border-action-high-blue-france);
+      outline: none;
+      background: var(--background-default-grey);
+    }
+
+    .table-editor th .col-remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mention-grey);
+      padding: 0.125rem;
+      font-size: 0.75rem;
+      line-height: 1;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .table-editor th .col-remove-btn:hover {
+      color: var(--text-default-error);
+      background: var(--background-alt-grey);
+    }
+
+    .table-editor td input {
+      width: 100%;
+      border: none;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+      background: transparent;
+      box-sizing: border-box;
+    }
+
+    .table-editor td input:focus {
+      outline: 2px solid var(--border-action-high-blue-france);
+      outline-offset: -2px;
+      background: var(--background-contrast-info);
+    }
+
+    .table-editor .row-number {
+      min-width: 40px;
+      width: 40px;
+      text-align: center;
+      color: var(--text-mention-grey);
+      font-size: 0.75rem;
+      background: var(--background-alt-grey);
+      padding: 0.4rem 0.25rem;
+      user-select: none;
+    }
+
+    .table-editor .row-actions {
+      min-width: 36px;
+      width: 36px;
+      text-align: center;
+      padding: 0;
+    }
+
+    .table-editor .row-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mention-grey);
+      padding: 0.25rem;
+      font-size: 0.75rem;
+      line-height: 1;
+      border-radius: 3px;
+    }
+
+    .table-editor .row-actions button:hover {
+      color: var(--text-default-error);
+      background: var(--background-alt-grey);
+    }
+
+    .table-editor-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal.modal--wide {
+      max-width: 800px;
+    }
+
     @media (max-width: 900px) {
       .content-grid {
         grid-template-columns: 1fr;
@@ -509,7 +636,7 @@
   <!-- MODAL : Créer une source manuelle -->
   <!-- ============================================ -->
   <div class="modal-overlay" id="manual-source-modal">
-    <div class="modal">
+    <div class="modal modal--wide">
       <div class="modal-header">
         <h3><i class="ri-edit-line"></i> Nouvelle source manuelle</h3>
         <button class="modal-close" onclick="closeModal('manual-source-modal')">&times;</button>
@@ -521,14 +648,60 @@
         </div>
 
         <div class="fr-input-group fr-mt-2w">
-          <label class="fr-label" for="source-data">
-            Données (JSON)
-            <span class="fr-hint-text">Un tableau d'objets JSON</span>
+          <label class="fr-label">
+            Données
+            <span class="fr-hint-text">Renseignez les noms de colonnes puis remplissez les lignes du tableau</span>
           </label>
-          <textarea class="fr-input" id="source-data" rows="10" placeholder='[
-  { "label": "Janvier", "valeur": 100 },
-  { "label": "Février", "valeur": 150 }
-]'></textarea>
+          <div class="table-editor-wrapper">
+            <table class="table-editor" id="source-table-editor">
+              <thead>
+                <tr>
+                  <th class="row-number">#</th>
+                  <th>
+                    <div class="col-header">
+                      <input type="text" value="label" placeholder="Colonne">
+                      <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="col-header">
+                      <input type="text" value="valeur" placeholder="Colonne">
+                      <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
+                    </div>
+                  </th>
+                  <th class="row-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="row-number">1</td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                </tr>
+                <tr>
+                  <td class="row-number">2</td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                </tr>
+                <tr>
+                  <td class="row-number">3</td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td><input type="text" placeholder="..."></td>
+                  <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-editor-actions">
+            <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableRow()">
+              <i class="ri-add-line"></i> Ajouter une ligne
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addTableColumn()">
+              <i class="ri-add-line"></i> Ajouter une colonne
+            </button>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1052,21 +1225,16 @@
 
     function saveManualSource() {
       const name = document.getElementById('source-name').value.trim();
-      const dataStr = document.getElementById('source-data').value.trim();
 
       if (!name) {
         alert('Veuillez entrer un nom');
         return;
       }
 
-      let data;
-      try {
-        data = JSON.parse(dataStr);
-        if (!Array.isArray(data)) {
-          throw new Error('Les données doivent être un tableau');
-        }
-      } catch (error) {
-        alert(`JSON invalide : ${error.message}`);
+      const data = collectTableData();
+
+      if (data.length === 0) {
+        alert('Le tableau est vide. Ajoutez au moins une ligne avec des données.');
         return;
       }
 
@@ -1083,9 +1251,146 @@
       renderSources();
       closeModal('manual-source-modal');
 
-      // Clear form
+      // Reset form
       document.getElementById('source-name').value = '';
-      document.getElementById('source-data').value = '';
+      resetTableEditor();
+    }
+
+    // ============================================================
+    // ÉDITEUR DE TABLEAU (source manuelle)
+    // ============================================================
+    function getTableEditor() {
+      return document.getElementById('source-table-editor');
+    }
+
+    function getColumnCount() {
+      // Subtract 2 for row-number and row-actions columns
+      return getTableEditor().querySelector('thead tr').children.length - 2;
+    }
+
+    function addTableColumn() {
+      const table = getTableEditor();
+      const headerRow = table.querySelector('thead tr');
+      const actionsHeader = headerRow.querySelector('th:last-child');
+
+      const th = document.createElement('th');
+      th.innerHTML = `<div class="col-header">
+        <input type="text" value="" placeholder="Colonne">
+        <button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button>
+      </div>`;
+      headerRow.insertBefore(th, actionsHeader);
+
+      // Focus the new column name input
+      th.querySelector('input').focus();
+
+      // Add a cell to every body row
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const actionsCell = row.querySelector('td:last-child');
+        const td = document.createElement('td');
+        td.innerHTML = '<input type="text" placeholder="...">';
+        row.insertBefore(td, actionsCell);
+      });
+    }
+
+    function removeTableColumn(btn) {
+      if (getColumnCount() <= 1) {
+        alert('Le tableau doit contenir au moins une colonne.');
+        return;
+      }
+      const th = btn.closest('th');
+      const headerRow = th.parentElement;
+      const colIndex = Array.from(headerRow.children).indexOf(th);
+
+      // Remove header
+      th.remove();
+
+      // Remove matching cell in each body row
+      getTableEditor().querySelectorAll('tbody tr').forEach(row => {
+        const cell = row.children[colIndex];
+        if (cell) cell.remove();
+      });
+    }
+
+    function addTableRow() {
+      const table = getTableEditor();
+      const tbody = table.querySelector('tbody');
+      const colCount = getColumnCount();
+      const rowNum = tbody.rows.length + 1;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="row-number">${rowNum}</td>`
+        + '<td><input type="text" placeholder="..."></td>'.repeat(colCount)
+        + '<td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>';
+      tbody.appendChild(tr);
+
+      // Focus the first input of the new row
+      tr.querySelector('td:nth-child(2) input').focus();
+    }
+
+    function removeTableRow(btn) {
+      const tbody = getTableEditor().querySelector('tbody');
+      if (tbody.rows.length <= 1) {
+        alert('Le tableau doit contenir au moins une ligne.');
+        return;
+      }
+      btn.closest('tr').remove();
+      renumberRows();
+    }
+
+    function renumberRows() {
+      getTableEditor().querySelectorAll('tbody tr').forEach((row, i) => {
+        row.querySelector('.row-number').textContent = i + 1;
+      });
+    }
+
+    function collectTableData() {
+      const table = getTableEditor();
+      const headers = [];
+      table.querySelectorAll('thead th .col-header input').forEach(input => {
+        headers.push(input.value.trim() || `col_${headers.length + 1}`);
+      });
+
+      const data = [];
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td:not(.row-number):not(.row-actions) input');
+        const rowData = {};
+        let hasValue = false;
+        cells.forEach((input, i) => {
+          const val = input.value.trim();
+          // Auto-detect numbers
+          if (val !== '' && !isNaN(val) && val !== '') {
+            rowData[headers[i]] = Number(val);
+          } else {
+            rowData[headers[i]] = val;
+          }
+          if (val !== '') hasValue = true;
+        });
+        if (hasValue) data.push(rowData);
+      });
+
+      return data;
+    }
+
+    function resetTableEditor() {
+      const table = getTableEditor();
+      // Reset header to 2 default columns
+      table.querySelector('thead tr').innerHTML = `
+        <th class="row-number">#</th>
+        <th><div class="col-header"><input type="text" value="label" placeholder="Colonne"><button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button></div></th>
+        <th><div class="col-header"><input type="text" value="valeur" placeholder="Colonne"><button class="col-remove-btn" title="Supprimer la colonne" onclick="removeTableColumn(this)"><i class="ri-close-line"></i></button></div></th>
+        <th class="row-actions"></th>`;
+
+      // Reset body to 3 empty rows
+      let rows = '';
+      for (let i = 1; i <= 3; i++) {
+        rows += `<tr>
+          <td class="row-number">${i}</td>
+          <td><input type="text" placeholder="..."></td>
+          <td><input type="text" placeholder="..."></td>
+          <td class="row-actions"><button title="Supprimer la ligne" onclick="removeTableRow(this)"><i class="ri-close-line"></i></button></td>
+        </tr>`;
+      }
+      table.querySelector('tbody').innerHTML = rows;
     }
 
     function deleteSource(index) {
