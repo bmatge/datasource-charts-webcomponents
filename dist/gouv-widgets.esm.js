@@ -45,7 +45,7 @@ const Dt = (n) => new Et(typeof n == "string" ? n : n + "", void 0, ot), wt = (n
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Tt, defineProperty: Mt, getOwnPropertyDescriptor: Ft, getOwnPropertyNames: Lt, getOwnPropertySymbols: jt, getPrototypeOf: Ut } = Object, D = globalThis, dt = D.trustedTypes, Ht = dt ? dt.emptyScript : "", et = D.reactiveElementPolyfillSupport, I = (n, t) => n, K = { toAttribute(n, t) {
+const { is: Tt, defineProperty: Ft, getOwnPropertyDescriptor: Mt, getOwnPropertyNames: Lt, getOwnPropertySymbols: jt, getPrototypeOf: Ut } = Object, D = globalThis, dt = D.trustedTypes, Ht = dt ? dt.emptyScript : "", et = D.reactiveElementPolyfillSupport, I = (n, t) => n, K = { toAttribute(n, t) {
   switch (t) {
     case Boolean:
       n = n ? Ht : null;
@@ -85,11 +85,11 @@ let L = class extends HTMLElement {
   static createProperty(t, e = pt) {
     if (e.state && (e.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((e = Object.create(e)).wrapped = !0), this.elementProperties.set(t, e), !e.noAccessor) {
       const r = Symbol(), i = this.getPropertyDescriptor(t, r, e);
-      i !== void 0 && Mt(this.prototype, t, i);
+      i !== void 0 && Ft(this.prototype, t, i);
     }
   }
   static getPropertyDescriptor(t, e, r) {
-    const { get: i, set: s } = Ft(this.prototype, t) ?? { get() {
+    const { get: i, set: s } = Mt(this.prototype, t) ?? { get() {
       return this[e];
     }, set(o) {
       this[e] = o;
@@ -284,9 +284,9 @@ L.elementStyles = [], L.shadowRootOptions = { mode: "open" }, L[I("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const V = globalThis, ft = (n) => n, Z = V.trustedTypes, gt = Z ? Z.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, Pt = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, Ot = "?" + R, It = `<${Ot}>`, F = document, z = () => F.createComment(""), B = (n) => n === null || typeof n != "object" && typeof n != "function", lt = Array.isArray, Vt = (n) => lt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", rt = `[ 	
+const V = globalThis, ft = (n) => n, Z = V.trustedTypes, gt = Z ? Z.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, Pt = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, Ot = "?" + R, It = `<${Ot}>`, M = document, z = () => M.createComment(""), B = (n) => n === null || typeof n != "object" && typeof n != "function", lt = Array.isArray, Vt = (n) => lt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", rt = `[ 	
 \f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, vt = />/g, N = RegExp(`>|${rt}(?:([^\\s"'>=/]+)(${rt}*=${rt}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), mt = /'/g, bt = /"/g, kt = /^(?:script|style|textarea|title)$/i, zt = (n) => (t, ...e) => ({ _$litType$: n, strings: t, values: e }), u = zt(1), j = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), yt = /* @__PURE__ */ new WeakMap(), T = F.createTreeWalker(F, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), mt = /'/g, bt = /"/g, kt = /^(?:script|style|textarea|title)$/i, zt = (n) => (t, ...e) => ({ _$litType$: n, strings: t, values: e }), u = zt(1), j = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), yt = /* @__PURE__ */ new WeakMap(), T = M.createTreeWalker(M, 129);
 function Rt(n, t) {
   if (!lt(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return gt !== void 0 ? gt.createHTML(t) : t;
@@ -336,7 +336,7 @@ class G {
     }
   }
   static createElement(t, e) {
-    const r = F.createElement("template");
+    const r = M.createElement("template");
     return r.innerHTML = t, r;
   }
 }
@@ -358,7 +358,7 @@ class Gt {
     return this._$AM._$AU;
   }
   u(t) {
-    const { el: { content: e }, parts: r } = this._$AD, i = ((t == null ? void 0 : t.creationScope) ?? F).importNode(e, !0);
+    const { el: { content: e }, parts: r } = this._$AD, i = ((t == null ? void 0 : t.creationScope) ?? M).importNode(e, !0);
     T.currentNode = i;
     let s = T.nextNode(), o = 0, a = 0, l = r[0];
     for (; l !== void 0; ) {
@@ -368,7 +368,7 @@ class Gt {
       }
       o !== (l == null ? void 0 : l.index) && (s = T.nextNode(), o++);
     }
-    return T.currentNode = F, i;
+    return T.currentNode = M, i;
   }
   p(t) {
     let e = 0;
@@ -404,7 +404,7 @@ class q {
     this._$AH !== t && (this._$AR(), this._$AH = this.O(t));
   }
   _(t) {
-    this._$AH !== m && B(this._$AH) ? this._$AA.nextSibling.data = t : this.T(F.createTextNode(t)), this._$AH = t;
+    this._$AH !== m && B(this._$AH) ? this._$AA.nextSibling.data = t : this.T(M.createTextNode(t)), this._$AH = t;
   }
   $(t) {
     var s;
@@ -520,7 +520,7 @@ const Kt = (n, t, e) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const M = globalThis;
+const F = globalThis;
 class O extends L {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
@@ -547,10 +547,10 @@ class O extends L {
   }
 }
 var Ct;
-O._$litElement$ = !0, O.finalized = !0, (Ct = M.litElementHydrateSupport) == null || Ct.call(M, { LitElement: O });
-const st = M.litElementPolyfillSupport;
+O._$litElement$ = !0, O.finalized = !0, (Ct = F.litElementHydrateSupport) == null || Ct.call(F, { LitElement: O });
+const st = F.litElementPolyfillSupport;
 st == null || st({ LitElement: O });
-(M.litElementVersions ?? (M.litElementVersions = [])).push("4.2.2");
+(F.litElementVersions ?? (F.litElementVersions = [])).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -882,7 +882,7 @@ function le(n) {
   }
   return { type: e, field: r };
 }
-function xt(n, t) {
+function St(n, t) {
   const e = le(t);
   if (e.type === "direct" && !Array.isArray(n))
     return n[e.field];
@@ -915,7 +915,7 @@ function xt(n, t) {
       return null;
   }
 }
-var S = function(n, t, e, r) {
+var x = function(n, t, e, r) {
   var i = arguments.length, s = i < 3 ? t : r === null ? r = Object.getOwnPropertyDescriptor(t, e) : r, o;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, t, e, r);
   else for (var a = n.length - 1; a >= 0; a--) (o = n[a]) && (s = (i < 3 ? o(s) : i > 3 ? o(t, e, s) : o(t, e)) || s);
@@ -955,7 +955,7 @@ let $ = class extends O {
     });
   }
   _computeValue() {
-    return !this._data || !this.valeur ? null : xt(this._data, this.valeur);
+    return !this._data || !this.valeur ? null : St(this._data, this.valeur);
   }
   _getColor() {
     if (this.couleur)
@@ -966,7 +966,7 @@ let $ = class extends O {
   _getTendanceInfo() {
     if (!this.tendance || !this._data)
       return null;
-    const t = xt(this._data, this.tendance);
+    const t = St(this._data, this.tendance);
     return typeof t != "number" ? null : {
       value: t,
       direction: t > 0 ? "up" : t < 0 ? "down" : "stable"
@@ -1118,49 +1118,49 @@ let $ = class extends O {
 $.styles = wt`
     /* Styles injectés via Light DOM, utilise les classes DSFR */
   `;
-S([
+x([
   h({ type: String })
 ], $.prototype, "source", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "valeur", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "label", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "description", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "icone", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "format", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "tendance", void 0);
-S([
+x([
   h({ type: Number, attribute: "seuil-vert" })
 ], $.prototype, "seuilVert", void 0);
-S([
+x([
   h({ type: Number, attribute: "seuil-orange" })
 ], $.prototype, "seuilOrange", void 0);
-S([
+x([
   h({ type: String })
 ], $.prototype, "couleur", void 0);
-S([
+x([
   v()
 ], $.prototype, "_loading", void 0);
-S([
+x([
   v()
 ], $.prototype, "_data", void 0);
-S([
+x([
   v()
 ], $.prototype, "_error", void 0);
-$ = S([
+$ = x([
   J("gouv-kpi")
 ], $);
-var x = function(n, t, e, r) {
+var S = function(n, t, e, r) {
   var i = arguments.length, s = i < 3 ? t : r === null ? r = Object.getOwnPropertyDescriptor(t, e) : r, o;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, t, e, r);
   else for (var a = n.length - 1; a >= 0; a--) (o = n[a]) && (s = (i < 3 ? o(s) : i > 3 ? o(t, e, s) : o(t, e)) || s);
@@ -1554,49 +1554,49 @@ let b = class extends O {
   }
 };
 b.styles = wt``;
-x([
+S([
   h({ type: String })
 ], b.prototype, "source", void 0);
-x([
+S([
   h({ type: String })
 ], b.prototype, "colonnes", void 0);
-x([
+S([
   h({ type: Boolean })
 ], b.prototype, "recherche", void 0);
-x([
+S([
   h({ type: String })
 ], b.prototype, "filtres", void 0);
-x([
+S([
   h({ type: String })
 ], b.prototype, "tri", void 0);
-x([
+S([
   h({ type: Number })
 ], b.prototype, "pagination", void 0);
-x([
+S([
   h({ type: String })
 ], b.prototype, "export", void 0);
-x([
+S([
   v()
 ], b.prototype, "_loading", void 0);
-x([
+S([
   v()
 ], b.prototype, "_data", void 0);
-x([
+S([
   v()
 ], b.prototype, "_error", void 0);
-x([
+S([
   v()
 ], b.prototype, "_searchQuery", void 0);
-x([
+S([
   v()
 ], b.prototype, "_activeFilters", void 0);
-x([
+S([
   v()
 ], b.prototype, "_sort", void 0);
-x([
+S([
   v()
 ], b.prototype, "_currentPage", void 0);
-b = x([
+b = S([
   J("gouv-datalist")
 ], b);
 var A = function(n, t, e, r) {
@@ -1605,7 +1605,7 @@ var A = function(n, t, e, r) {
   else for (var a = n.length - 1; a >= 0; a--) (o = n[a]) && (s = (i < 3 ? o(s) : i > 3 ? o(t, e, s) : o(t, e)) || s);
   return i > 3 && s && Object.defineProperty(t, e, s), s;
 };
-const St = [
+const xt = [
   "#000091",
   // Bleu France
   "#009081",
@@ -1718,7 +1718,7 @@ let y = class extends O {
     const i = t.getContext("2d");
     if (!i)
       return;
-    const s = ["pie", "doughnut", "radar"].includes(this.type), o = s ? e.map((l, c) => St[c % St.length]) : this.color, a = {
+    const s = ["pie", "doughnut", "radar"].includes(this.type), o = s ? e.map((l, c) => xt[c % xt.length]) : this.color, a = {
       type: this.type === "radar" ? "radar" : this.type,
       data: {
         labels: e,
@@ -1938,7 +1938,13 @@ let p = class extends O {
    */
   _getCommonAttributes() {
     const t = {};
-    return this.selectedPalette && (t["selected-palette"] = this.selectedPalette), this.unitTooltip && (t["unit-tooltip"] = this.unitTooltip), this.xMin && (t["x-min"] = this.xMin), this.xMax && (t["x-max"] = this.xMax), this.yMin && (t["y-min"] = this.yMin), this.yMax && (t["y-max"] = this.yMax), this.name && (t.name = this.name), t;
+    if (this.selectedPalette && (t["selected-palette"] = this.selectedPalette), this.unitTooltip && (t["unit-tooltip"] = this.unitTooltip), this.xMin && (t["x-min"] = this.xMin), this.xMax && (t["x-max"] = this.xMax), this.yMin && (t["y-min"] = this.yMin), this.yMax && (t["y-max"] = this.yMax), this.name)
+      t.name = this.name;
+    else if (this.valueField) {
+      const e = this.valueField2 ? [this.valueField, this.valueField2] : [this.valueField];
+      t.name = JSON.stringify(e);
+    }
+    return t;
   }
   /**
    * Rend le composant DSFR Chart approprié selon le type
@@ -2140,7 +2146,7 @@ export {
   p as GouvDsfrChart,
   $ as GouvKpi,
   C as GouvSource,
-  xt as computeAggregation,
+  St as computeAggregation,
   re as dispatchDataError,
   ee as dispatchDataLoaded,
   ie as dispatchDataLoading,

@@ -212,8 +212,16 @@ let GouvDsfrChart = class GouvDsfrChart extends LitElement {
         if (this.yMax) {
             attrs['y-max'] = this.yMax;
         }
+        // Auto-génère le name depuis valueField si non spécifié
         if (this.name) {
             attrs['name'] = this.name;
+        }
+        else if (this.valueField) {
+            // Génère automatiquement le name au format DSFR: '["Serie1", "Serie2"]'
+            const names = this.valueField2
+                ? [this.valueField, this.valueField2]
+                : [this.valueField];
+            attrs['name'] = JSON.stringify(names);
         }
         return attrs;
     }

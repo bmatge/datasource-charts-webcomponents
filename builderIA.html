@@ -2194,7 +2194,8 @@ async function loadChart() {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n        indexAxis: 'y'" : ''}
+        maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n        indexAxis: 'y'" : ''},
+        plugins: { legend: { display: ${isMultiColor} } }
       }
     });
 
@@ -2281,7 +2282,8 @@ new Chart(document.getElementById('myChart'), {
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''}${hasSecondSeries ? ",\n    plugins: { legend: { display: true } }" : ''}
+    maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''},
+    plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
   }
 });
 <\/script>`;
