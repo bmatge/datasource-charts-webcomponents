@@ -13,6 +13,9 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="dist/gouv-widgets.esm.js"></script>
+
   <!-- DSFR Chart (pour les cartes et jauges) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
@@ -424,78 +427,8 @@
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER DSFR -->
-  <!-- ============================================ -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo">
-                <p class="fr-logo">
-                  République<br>Française
-                </p>
-              </div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
-                  Menu
-                </button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">Charts builder</p>
-              </a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li>
-                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
-          Fermer
-        </button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="index.html">Accueil</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="demo/index.html">Composants</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builder.html" aria-current="page">Builder</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builderIA.html">Builder IA</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="playground.html">Playground</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="sources.html">Sources</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Header -->
+  <app-header current-page="builder" base-path=""></app-header>
 
   <div class="builder-container">
     <!-- ============================================ -->
@@ -1184,18 +1117,42 @@
       document.querySelector(`[data-type="${type}"]`).classList.add('selected');
       state.chartType = type;
 
-      // Toggle KPI-specific options
+      // Type categories
       const isKPI = type === 'kpi';
       const isGauge = type === 'gauge';
       const isScatter = type === 'scatter';
-      document.getElementById('kpi-config').classList.toggle('visible', isKPI);
-      document.getElementById('color-config').style.display = (isKPI || isGauge) ? 'none' : 'block';
+      const isMap = type === 'map';
+      const isPieOrDoughnut = ['pie', 'doughnut'].includes(type);
+      const isRadar = type === 'radar';
+      const isSingleValue = isKPI || isGauge;  // Types with a single aggregated value
 
-      // KPIs and gauges don't need label field or limit (they show a single value)
-      const hideLabels = isKPI || isGauge;
-      document.getElementById('label-field').closest('.fr-select-group').style.display = hideLabels ? 'none' : 'block';
-      document.getElementById('limit').closest('.fr-input-group').style.display = hideLabels ? 'none' : 'block';
-      document.getElementById('sort-order').closest('.fr-select-group').style.display = hideLabels ? 'none' : 'block';
+      // Toggle KPI-specific options (variant selector)
+      document.getElementById('kpi-config').classList.toggle('visible', isKPI);
+
+      // Color/palette config: hide for KPI and gauge (they have their own styling)
+      document.getElementById('color-config').style.display = isSingleValue ? 'none' : 'block';
+
+      // Label field: hide for single value types (KPI, gauge)
+      document.getElementById('label-field').closest('.fr-select-group').style.display = isSingleValue ? 'none' : 'block';
+
+      // Limit: hide for single value types AND map (map shows all departments)
+      const hideLimit = isSingleValue || isMap;
+      document.getElementById('limit').closest('.fr-input-group').style.display = hideLimit ? 'none' : 'block';
+
+      // Sort order: hide for single value types, map, radar, and scatter
+      const hideSort = isSingleValue || isMap || isRadar || isScatter;
+      document.getElementById('sort-order').closest('.fr-select-group').style.display = hideSort ? 'none' : 'block';
+
+      // Aggregation: always show (even for scatter, user might want to aggregate duplicate X values)
+      // But update hint text based on type
+      const aggLabel = document.querySelector('label[for="aggregation"]');
+      if (isSingleValue) {
+        aggLabel.innerHTML = 'Agrégation<span class="fr-hint-text">Calcul sur l\'ensemble des données</span>';
+      } else if (isMap) {
+        aggLabel.innerHTML = 'Agrégation<span class="fr-hint-text">Si plusieurs valeurs par département</span>';
+      } else {
+        aggLabel.innerHTML = 'Agrégation<span class="fr-hint-text">Comment regrouper les valeurs</span>';
+      }
 
       // Types that support multiple series: bar, horizontalBar, line, radar
       const supportsMultiSeries = ['bar', 'horizontalBar', 'line', 'radar'].includes(type);
@@ -1206,23 +1163,34 @@
       }
 
       // Map chart needs code field for department codes
-      const isMap = type === 'map';
       document.getElementById('code-field-group').style.display = isMap ? 'block' : 'none';
       if (!isMap) {
         state.codeField = '';
         document.getElementById('code-field').value = '';
       }
 
-      // Scatter needs X and Y numeric fields (different labels)
+      // Update field labels based on chart type
+      const labelFieldLabel = document.querySelector('label[for="label-field"]');
+      const valueFieldLabel = document.querySelector('label[for="value-field"]');
+
       if (isScatter) {
-        document.querySelector('label[for="label-field"]').innerHTML = 'Axe X (numérique)<span class="fr-hint-text">Valeurs horizontales</span>';
-        document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y (numérique)<span class="fr-hint-text">Valeurs verticales</span>';
+        labelFieldLabel.innerHTML = 'Axe X (numérique)<span class="fr-hint-text">Valeurs horizontales</span>';
+        valueFieldLabel.innerHTML = 'Axe Y (numérique)<span class="fr-hint-text">Valeurs verticales</span>';
       } else if (isMap) {
-        document.querySelector('label[for="label-field"]').innerHTML = 'Nom (optionnel)<span class="fr-hint-text">Nom du département pour l\'affichage</span>';
-        document.querySelector('label[for="value-field"]').innerHTML = 'Valeur<span class="fr-hint-text">Le champ numérique à visualiser</span>';
+        labelFieldLabel.innerHTML = 'Nom (optionnel)<span class="fr-hint-text">Nom du département pour l\'affichage</span>';
+        valueFieldLabel.innerHTML = 'Valeur<span class="fr-hint-text">Le champ numérique à visualiser</span>';
+      } else if (isPieOrDoughnut) {
+        labelFieldLabel.innerHTML = 'Segments<span class="fr-hint-text">Catégories du camembert (max 7 recommandé)</span>';
+        valueFieldLabel.innerHTML = 'Valeurs<span class="fr-hint-text">Taille de chaque segment</span>';
+      } else if (isRadar) {
+        labelFieldLabel.innerHTML = 'Critères<span class="fr-hint-text">Axes du radar (ex: Performance, Qualité...)</span>';
+        valueFieldLabel.innerHTML = 'Valeurs<span class="fr-hint-text">Score pour chaque critère</span>';
+      } else if (type === 'line') {
+        labelFieldLabel.innerHTML = 'Axe X / Temps<span class="fr-hint-text">Dates ou catégories temporelles</span>';
+        valueFieldLabel.innerHTML = 'Valeurs (Série 1)<span class="fr-hint-text">Le champ numérique à mesurer</span>';
       } else {
-        document.querySelector('label[for="label-field"]').innerHTML = 'Axe X / Catégories<span class="fr-hint-text">Le champ utilisé pour les labels</span>';
-        document.querySelector('label[for="value-field"]').innerHTML = 'Axe Y / Valeurs (Série 1)<span class="fr-hint-text">Le champ numérique à mesurer</span>';
+        labelFieldLabel.innerHTML = 'Axe X / Catégories<span class="fr-hint-text">Le champ utilisé pour les labels</span>';
+        valueFieldLabel.innerHTML = 'Axe Y / Valeurs (Série 1)<span class="fr-hint-text">Le champ numérique à mesurer</span>';
       }
     }
 

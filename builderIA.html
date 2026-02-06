@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
 
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="dist/gouv-widgets.esm.js"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -587,78 +590,8 @@
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER DSFR -->
-  <!-- ============================================ -->
-  <header role="banner" class="fr-header">
-    <div class="fr-header__body">
-      <div class="fr-container">
-        <div class="fr-header__body-row">
-          <div class="fr-header__brand fr-enlarge-link">
-            <div class="fr-header__brand-top">
-              <div class="fr-header__logo">
-                <p class="fr-logo">
-                  République<br>Française
-                </p>
-              </div>
-              <div class="fr-header__navbar">
-                <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-menu" aria-haspopup="menu" id="button-menu" title="Menu">
-                  Menu
-                </button>
-              </div>
-            </div>
-            <div class="fr-header__service">
-              <a href="index.html" title="Accueil - gouv-widgets">
-                <p class="fr-header__service-title">Charts builder</p>
-              </a>
-              <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
-            </div>
-          </div>
-          <div class="fr-header__tools">
-            <div class="fr-header__tools-links">
-              <ul class="fr-btns-group">
-                <li>
-                  <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-header__menu fr-modal" id="modal-menu" aria-labelledby="button-menu">
-      <div class="fr-container">
-        <button class="fr-btn--close fr-btn" aria-controls="modal-menu" title="Fermer">
-          Fermer
-        </button>
-        <div class="fr-header__menu-links"></div>
-        <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-          <ul class="fr-nav__list">
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="index.html">Accueil</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="demo/index.html">Composants</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builder.html">Builder</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="builderIA.html" aria-current="page">Builder IA</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="playground.html">Playground</a>
-            </li>
-            <li class="fr-nav__item">
-              <a class="fr-nav__link" href="sources.html">Sources</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <!-- Header -->
+  <app-header current-page="builder-ia" base-path=""></app-header>
 
   <div class="builder-container">
     <!-- ============================================ -->
@@ -950,62 +883,68 @@ Sois concis. Utilise le français.</textarea>
         content: `## Choix du type de graphique
 
 ### KPI (kpi)
-- Afficher une valeur unique importante
-- Indicateur clé, chiffre global, total
-- Ex: nombre total d'utilisateurs, CA annuel, taux de satisfaction
-- Options: variant (info|success|warning|error), unit (€, %, etc.)
+- Afficher une valeur unique importante (indicateur clé, total)
+- **Champs requis** : valueField uniquement (PAS de labelField)
+- **Options** : variant (info|success|warning|error), unit (€, %, etc.)
+- Ex: nombre total d'utilisateurs, CA annuel
 
 ### Jauge (gauge)
-- Afficher une progression vers un objectif (0-100%)
-- Valeur unique avec représentation visuelle
-- Ex: score de conformité, progression projet
+- Progression vers un objectif (0-100%)
+- **Champs requis** : valueField uniquement (PAS de labelField)
+- Ex: score de conformité, avancement projet
 
 ### Barres verticales (bar)
-- Comparer des catégories
-- Idéal: 5-15 catégories
-- Supporte 2 séries (valueField2)
+- Comparer des catégories (5-15 idéal)
+- **Champs requis** : labelField (catégories), valueField
+- **Supporte** : valueField2 pour 2 séries, limit, sortOrder
 - Ex: ventes par région, scores par équipe
 
 ### Barres horizontales (horizontalBar)
-- Catégories avec noms longs
-- Classements (top 10)
-- Supporte 2 séries (valueField2)
-- Ex: top 10 des villes, classement produits
+- Catégories avec noms longs, classements
+- **Champs requis** : labelField, valueField
+- **Supporte** : valueField2 pour 2 séries, limit, sortOrder
+- Ex: top 10 des villes
 
 ### Lignes (line)
-- Évolution temporelle
-- Tendances, séries chronologiques
-- Supporte 2 séries (valueField2) pour comparaisons
-- Ex: température par mois, CA par année
+- Évolution temporelle, tendances
+- **Champs requis** : labelField (dates/temps), valueField
+- **Supporte** : valueField2 pour comparaisons, limit, sortOrder
+- Ex: CA par mois, température par année
 
 ### Nuage de points (scatter)
 - Corrélation entre deux variables numériques
-- Pas de catégories, juste X et Y numériques
+- **Champs requis** : labelField (axe X numérique), valueField (axe Y numérique)
+- **PAS de** : valueField2, sortOrder
 - Ex: prix vs surface, âge vs revenu
 
 ### Camembert (pie)
-- Parts d'un tout (100%)
-- Max 5-7 segments
-- Ex: répartition budget, parts de marché
+- Parts d'un tout (100%), max 5-7 segments
+- **Champs requis** : labelField (segments), valueField
+- **PAS de** : valueField2
+- **limit recommandé** : 7 max
+- Ex: répartition budget
 
 ### Anneau (doughnut)
-- Comme pie mais plus lisible
-- Permet d'afficher une valeur au centre
-- Ex: progression vers objectif
+- Comme pie, plus lisible
+- **Champs requis** : labelField, valueField
+- **PAS de** : valueField2
+- Ex: répartition par catégorie
 
 ### Radar
-- Comparer plusieurs dimensions
-- Profils, scores multicritères
-- Supporte 2 séries (valueField2)
-- Ex: évaluation compétences, comparatif produits
+- Profils multicritères
+- **Champs requis** : labelField (critères), valueField (scores)
+- **Supporte** : valueField2 pour comparer 2 profils
+- **PAS de** : sortOrder
+- Ex: évaluation compétences
 
 ### Carte de France (map)
-- Visualiser des données par département
-- Requiert codeField: champ avec code INSEE (01-95, 2A, 2B, 971-976)
-- Ex: prix immobilier par département, taux de chômage régional
-- Utilise DSFR map-chart (pas Chart.js)
+- Données par département
+- **Champs requis** : codeField (code INSEE: 01-95, 2A, 2B, 971-976), valueField
+- **labelField optionnel** : nom du département pour affichage
+- **PAS de** : valueField2, limit, sortOrder
+- Ex: prix immobilier par département
 
-## Séries multiples (bar, line, radar)
+## Séries multiples (bar, horizontalBar, line, radar uniquement)
 Pour comparer 2 métriques, utilise valueField2:
 - valueField: première série (couleur principale)
 - valueField2: seconde série (couleur secondaire)`
