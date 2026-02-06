@@ -558,7 +558,15 @@
           <input class="fr-input" type="url" id="conn-url" placeholder="https://grist.numerique.gouv.fr" value="https://grist.numerique.gouv.fr">
         </div>
 
-        <div class="fr-input-group fr-mt-2w">
+        <div class="fr-checkbox-group fr-mt-2w">
+          <input type="checkbox" id="conn-public" name="conn-public">
+          <label class="fr-label" for="conn-public">
+            Document public (sans clé API)
+            <span class="fr-hint-text">Pour les documents Grist partagés publiquement</span>
+          </label>
+        </div>
+
+        <div class="fr-input-group fr-mt-2w" id="api-key-group">
           <label class="fr-label" for="conn-api-key">
             Clé API
             <span class="fr-hint-text">Trouvable dans Grist &gt; Paramètres du compte &gt; API</span>
@@ -566,7 +574,7 @@
           <input class="fr-input" type="password" id="conn-api-key" placeholder="Votre clé API Grist" autocomplete="off" data-1p-ignore data-lpignore="true">
         </div>
 
-        <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-2w">
+        <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-2w" id="api-key-info">
           <p>La clé API est stockée uniquement dans votre navigateur (localStorage).</p>
         </div>
       </div>
@@ -769,6 +777,19 @@
       document.querySelectorAll('.explorer-tab').forEach(tab => {
         tab.addEventListener('click', () => switchExplorerTab(tab.dataset.tab));
       });
+
+      // Public document toggle
+      document.getElementById('conn-public').addEventListener('change', (e) => {
+        const apiKeyGroup = document.getElementById('api-key-group');
+        const apiKeyInfo = document.getElementById('api-key-info');
+        if (e.target.checked) {
+          apiKeyGroup.style.display = 'none';
+          apiKeyInfo.style.display = 'none';
+        } else {
+          apiKeyGroup.style.display = 'block';
+          apiKeyInfo.style.display = 'block';
+        }
+      });
     });
 
     // ============================================================
@@ -797,9 +818,10 @@
       state.connections.forEach((conn, index) => {
         const card = document.createElement('div');
         card.className = `connection-card ${state.selectedConnection === index ? 'selected' : ''}`;
+        const publicBadge = conn.isPublic ? '<span class="badge-source-type" style="background: #f59e0b; color: white; margin-left: 0.25rem;">Public</span>' : '';
         card.innerHTML = `
           <div class="name">
-            <span class="badge-source-type badge-grist">Grist</span>
+            <span class="badge-source-type badge-grist">Grist</span>${publicBadge}
             ${escapeHtml(conn.name)}
           </div>
           <div class="url">${escapeHtml(conn.url)}</div>
@@ -823,9 +845,15 @@
       const name = document.getElementById('conn-name').value.trim();
       const url = document.getElementById('conn-url').value.trim().replace(/\/$/, '');
       const apiKey = document.getElementById('conn-api-key').value.trim();
+      const isPublic = document.getElementById('conn-public').checked;
 
-      if (!name || !url || !apiKey) {
-        alert('Veuillez remplir tous les champs');
+      if (!name || !url) {
+        alert('Veuillez remplir le nom et l\'URL');
+        return;
+      }
+
+      if (!isPublic && !apiKey) {
+        alert('Clé API requise (sauf pour les documents publics)');
         return;
       }
 
@@ -845,9 +873,12 @@
           testUrl = `${url}/api/orgs`;
         }
 
-        const response = await fetch(testUrl, {
-          headers: { 'Authorization': `Bearer ${apiKey}` }
-        });
+        const headers = {};
+        if (!isPublic && apiKey) {
+          headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+
+        const response = await fetch(testUrl, { headers });
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
@@ -860,9 +891,10 @@
           id: Date.now().toString(),
           name,
           url,
-          apiKey,
+          apiKey: isPublic ? null : apiKey,
+          isPublic,
           status: 'connected',
-          statusText: `Connecté (${orgs.length} org${orgs.length > 1 ? 's' : ''})`
+          statusText: isPublic ? 'Mode public' : `Connecté (${orgs.length} org${orgs.length > 1 ? 's' : ''})`
         };
 
         state.connections.push(connection);
@@ -873,12 +905,15 @@
         // Clear form
         document.getElementById('conn-name').value = '';
         document.getElementById('conn-api-key').value = '';
+        document.getElementById('conn-public').checked = false;
+        document.getElementById('api-key-group').style.display = 'block';
+        document.getElementById('api-key-info').style.display = 'block';
 
         // Auto-select the new connection
         selectConnection(state.connections.length - 1);
 
       } catch (error) {
-        alert(`Erreur de connexion : ${error.message}\n\nVérifiez l'URL et la clé API.`);
+        alert(`Erreur de connexion : ${error.message}\n\nVérifiez l'URL${isPublic ? '' : ' et la clé API'}.`);
       } finally {
         btn.disabled = false;
         btn.textContent = 'Tester et sauvegarder';
@@ -938,9 +973,12 @@
 
       const proxyUrl = getProxyUrl(conn.url, endpoint);
 
-      const response = await fetch(proxyUrl, {
-        headers: { 'Authorization': `Bearer ${conn.apiKey}` }
-      });
+      const headers = {};
+      if (!conn.isPublic && conn.apiKey) {
+        headers['Authorization'] = `Bearer ${conn.apiKey}`;
+      }
+
+      const response = await fetch(proxyUrl, { headers });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -1455,8 +1493,10 @@
         documentId: state.selectedDocument,
         tableId: state.selectedTable,
         apiUrl: `${conn.url}/api/docs/${state.selectedDocument}/tables/${state.selectedTable}/records`,
-        apiKey: conn.apiKey,
+        apiKey: conn.isPublic ? null : conn.apiKey,
+        isPublic: conn.isPublic || false,
         data: state.tableData.map(r => r.fields),
+        rawRecords: state.tableData,
         recordCount: state.tableData.length
       };
 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-source - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
+    .attr-table th { background: var(--background-alt-grey); font-weight: 600; }
+    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../index.html">Vue d'ensemble</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Nos composants</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-source.html" aria-current="page">gouv-source</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-kpi.html">gouv-kpi</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-datalist.html">gouv-datalist</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">gouv-source</a></li>
+        </ol></nav>
+
+        <h1><span class="ri-database-2-line fr-mr-1w" aria-hidden="true"></span> gouv-source</h1>
+        <p class="fr-text--lead">
+          Composant invisible de connexion aux donnees. Recupere des donnees depuis une API REST
+          et les distribue aux autres composants via le systeme d'evenements.
+        </p>
+
+        <div class="fr-callout fr-callout--blue-france">
+          <p class="fr-callout__text">
+            <strong>Invisible :</strong> Ce composant ne rend rien visuellement. Il agit comme un "pont"
+            entre votre API et les composants de visualisation.
+          </p>
+        </div>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td>Identifiant unique (requis). Les autres composants l'utilisent pour s'abonner.</td></tr>
+            <tr><td><code>url</code></td><td>String</td><td>URL de l'API (relative ou absolue)</td></tr>
+            <tr><td><code>method</code></td><td>String</td><td>Methode HTTP : <code>GET</code> ou <code>POST</code></td></tr>
+            <tr><td><code>headers</code></td><td>String</td><td>En-tetes HTTP en JSON : <code>{"Authorization": "Bearer xxx"}</code></td></tr>
+            <tr><td><code>params</code></td><td>String</td><td>Parametres de requete ou body POST en JSON</td></tr>
+            <tr><td><code>transform</code></td><td>String</td><td>Chemin JSON pour extraire les donnees : <code>"data.items"</code></td></tr>
+            <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>1. Chargement simple</h3>
+          <p>Charge des donnees depuis une API et extrait le champ "sites".</p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="mes-donnees"
+  url="/api/data.json"
+  transform="sites"&gt;
+&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>2. Avec authentification</h3>
+          <p>Ajoute un header d'authentification Bearer.</p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="donnees-auth"
+  url="/api/protected"
+  headers='{"Authorization": "Bearer mon-token"}'
+  transform="results"&gt;
+&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>3. Rafraichissement automatique</h3>
+          <p>Recharge les donnees toutes les 30 secondes.</p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="donnees-live"
+  url="/api/metrics"
+  transform="data"
+  refresh="30"&gt;
+&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>4. Requete POST</h3>
+          <p>Envoie une requete POST avec un body JSON.</p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="recherche"
+  url="/api/search"
+  method="POST"
+  params='{"query": "ministere", "limit": 50}'
+  transform="results"&gt;
+&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <h2 class="fr-mt-4w">Evenements</h2>
+        <p>Le composant emet des evenements personnalises que les autres composants peuvent ecouter :</p>
+        <ul>
+          <li><code>gouv-data-loaded</code> : Donnees chargees avec succes</li>
+          <li><code>gouv-data-loading</code> : Chargement en cours</li>
+          <li><code>gouv-data-error</code> : Erreur de chargement</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

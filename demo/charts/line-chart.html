@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Line Chart - DSFR Chart - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; overflow-x: auto; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
+    .attr-table th { background: var(--background-alt-grey); }
+    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <p class="fr-sidenav__title">Charts DSFR</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="index.html">Vue d'ensemble</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="line-chart.html" aria-current="page">Ligne</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="bar-chart.html">Barres</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="pie-chart.html">Camembert</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="radar-chart.html">Radar</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gauge-chart.html">Jauge</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+          <li><a class="fr-breadcrumb__link" href="index.html">Charts DSFR</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">Ligne</a></li>
+        </ol></nav>
+
+        <h1><span class="ri-line-chart-line fr-mr-1w" aria-hidden="true"></span> Graphique en ligne</h1>
+        <p class="fr-text--lead">Le composant <code>&lt;line-chart&gt;</code> permet de visualiser des tendances et evolutions dans le temps.</p>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>x</code></td><td>String</td><td>Valeurs axe X en JSON : <code>'[[1, 2, 3]]'</code></td></tr>
+            <tr><td><code>y</code></td><td>String</td><td>Valeurs axe Y en JSON : <code>'[[10, 20, 30]]'</code></td></tr>
+            <tr><td><code>selected-palette</code></td><td>String</td><td>Palette de couleurs</td></tr>
+            <tr><td><code>unit-tooltip</code></td><td>String</td><td>Unite dans les tooltips</td></tr>
+            <tr><td><code>x-min / x-max</code></td><td>Number</td><td>Limites axe X</td></tr>
+            <tr><td><code>y-min / y-max</code></td><td>Number</td><td>Limites axe Y</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>1. Ligne simple</h3>
+          <line-chart
+            x="[[2020, 2021, 2022, 2023, 2024]]"
+            y="[[65, 72, 78, 85, 91]]"
+            selected-palette="default"
+            unit-tooltip="%">
+          </line-chart>
+          <div class="code-block"><pre>&lt;line-chart
+  x="[[2020, 2021, 2022, 2023, 2024]]"
+  y="[[65, 72, 78, 85, 91]]"
+  selected-palette="default"
+  unit-tooltip="%"&gt;
+&lt;/line-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>2. Multi-series</h3>
+          <line-chart
+            x="[[2020, 2021, 2022, 2023], [2020, 2021, 2022, 2023]]"
+            y="[[65, 72, 78, 85], [70, 75, 82, 88]]"
+            selected-palette="categorical"
+            unit-tooltip="%">
+          </line-chart>
+          <div class="code-block"><pre>&lt;line-chart
+  x="[[2020, 2021, 2022, 2023], [2020, 2021, 2022, 2023]]"
+  y="[[65, 72, 78, 85], [70, 75, 82, 88]]"
+  selected-palette="categorical"&gt;
+&lt;/line-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>3. Palette divergente</h3>
+          <line-chart
+            x="[[1, 2, 3, 4, 5, 6]]"
+            y="[[10, 25, 15, 30, 20, 35]]"
+            selected-palette="divergentAscending"
+            unit-tooltip="pts">
+          </line-chart>
+          <div class="code-block"><pre>&lt;line-chart
+  x="[[1, 2, 3, 4, 5, 6]]"
+  y="[[10, 25, 15, 30, 20, 35]]"
+  selected-palette="divergentAscending"&gt;
+&lt;/line-chart&gt;</pre></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

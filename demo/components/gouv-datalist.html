@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-datalist - Composants - gouv-widgets</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- gouv-widgets -->
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .demo-section h3 { margin-top: 0; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
+    .attr-table th { background: var(--background-alt-grey); font-weight: 600; }
+    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; flex: none; } }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html" title="Accueil"><p class="fr-header__service-title">gouv-widgets</p></a>
+              <p class="fr-header__service-tagline">Visualisations de donnees conformes DSFR</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <!-- Source de donnees -->
+    <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+
+    <div class="demo-layout">
+      <!-- Menu lateral -->
+      <nav class="demo-sidenav fr-sidenav" aria-label="Menu des composants">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../index.html">Vue d'ensemble</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Nos composants</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-source.html">gouv-source</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-kpi.html">gouv-kpi</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-datalist.html" aria-current="page">gouv-datalist</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Charts DSFR natifs</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../charts/index.html">Vue d'ensemble</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../charts/line-chart.html">Ligne</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../charts/bar-chart.html">Barres</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../charts/pie-chart.html">Camembert</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Contenu -->
+      <div class="demo-content">
+        <nav class="fr-breadcrumb" aria-label="Fil d'Ariane">
+          <ol class="fr-breadcrumb__list">
+            <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+            <li><a class="fr-breadcrumb__link" aria-current="page">gouv-datalist</a></li>
+          </ol>
+        </nav>
+
+        <h1><span class="ri-table-line fr-mr-1w" aria-hidden="true"></span> gouv-datalist</h1>
+        <p class="fr-text--lead">
+          Composant de tableau de donnees avec fonctionnalites de recherche, filtrage, tri, pagination et export CSV.
+          Se connecte a un <code>&lt;gouv-source&gt;</code> pour recevoir les donnees dynamiquement.
+        </p>
+
+        <!-- Attributs -->
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead>
+            <tr><th>Attribut</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>String</td><td>ID du <code>&lt;gouv-source&gt;</code> a ecouter (requis)</td></tr>
+            <tr><td><code>colonnes</code></td><td>String</td><td>Colonnes a afficher : <code>"key:Label, key2:Label2"</code></td></tr>
+            <tr><td><code>recherche</code></td><td>Boolean</td><td>Afficher le champ de recherche</td></tr>
+            <tr><td><code>filtres</code></td><td>String</td><td>Colonnes filtrables : <code>"col1,col2"</code></td></tr>
+            <tr><td><code>tri</code></td><td>String</td><td>Tri par defaut : <code>"col:asc"</code> ou <code>"col:desc"</code></td></tr>
+            <tr><td><code>pagination</code></td><td>Number</td><td>Nombre d'elements par page (0 = pas de pagination)</td></tr>
+            <tr><td><code>export</code></td><td>String</td><td>Formats d'export disponibles : <code>"csv"</code></td></tr>
+          </tbody>
+        </table>
+
+        <!-- Variante 1: Tableau simple -->
+        <h2 class="fr-mt-4w">Variantes</h2>
+
+        <section class="demo-section" id="simple">
+          <h3>1. Tableau simple</h3>
+          <p>Affiche uniquement les donnees dans un tableau sans fonctionnalites supplementaires.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 2: Tableau + recherche -->
+        <section class="demo-section" id="search">
+          <h3>2. Tableau + recherche</h3>
+          <p>Ajoute un champ de recherche pour filtrer les donnees en temps reel.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+            recherche="true">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+  recherche="true"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 3: Tableau + filtres -->
+        <section class="demo-section" id="filters">
+          <h3>3. Tableau + filtres</h3>
+          <p>Ajoute des menus deroulants pour filtrer par colonne specifique.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, statut:Statut, score_rgaa:RGAA (%)"
+            filtres="ministere,statut">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, statut:Statut, score_rgaa:RGAA (%)"
+  filtres="ministere,statut"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 4: Tableau + tri -->
+        <section class="demo-section" id="sort">
+          <h3>4. Tableau + tri</h3>
+          <p>Definit un tri par defaut et permet de trier en cliquant sur les en-tetes.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+            tri="score_rgaa:desc">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+  tri="score_rgaa:desc"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 5: Tableau + pagination -->
+        <section class="demo-section" id="pagination">
+          <h3>5. Tableau + pagination</h3>
+          <p>Divise les donnees en pages pour une meilleure lisibilite.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+            pagination="5">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+  pagination="5"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 6: Tableau + export -->
+        <section class="demo-section" id="export">
+          <h3>6. Tableau + export CSV</h3>
+          <p>Ajoute un bouton pour exporter les donnees au format CSV.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+            export="csv">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%)"
+  export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Variante 7: Tableau complet -->
+        <section class="demo-section" id="complete">
+          <h3>7. Tableau complet</h3>
+          <p>Combine toutes les fonctionnalites : recherche, filtres, tri, pagination et export.</p>
+
+          <gouv-datalist
+            source="sites"
+            colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%), score_dsfr:DSFR (%), statut:Statut, certificat_valide:Certificat"
+            recherche="true"
+            filtres="ministere,statut"
+            tri="score_rgaa:desc"
+            pagination="10"
+            export="csv">
+          </gouv-datalist>
+
+          <div class="code-block">
+            <pre>&lt;gouv-datalist
+  source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:RGAA (%), score_dsfr:DSFR (%), statut:Statut, certificat_valide:Certificat"
+  recherche="true"
+  filtres="ministere,statut"
+  tri="score_rgaa:desc"
+  pagination="10"
+  export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Conseils d'utilisation -->
+        <h2 class="fr-mt-4w">Conseils d'utilisation</h2>
+        <div class="fr-callout">
+          <p class="fr-callout__text">
+            <strong>Performance :</strong> Pour les grands ensembles de donnees, utilisez toujours la pagination
+            pour eviter de surcharger le navigateur.
+          </p>
+        </div>
+
+        <div class="fr-callout fr-callout--green-emeraude">
+          <p class="fr-callout__text">
+            <strong>Accessibilite :</strong> Le composant inclut automatiquement les attributs ARIA necessaires
+            pour les lecteurs d'ecran.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand fr-enlarge-link">
+          <p class="fr-logo">Republique<br>Francaise</p>
+        </div>
+        <div class="fr-footer__content">
+          <p class="fr-footer__content-desc">gouv-widgets - Visualisations de donnees conformes DSFR</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

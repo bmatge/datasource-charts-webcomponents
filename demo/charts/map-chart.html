@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map Chart - DSFR Chart - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <p class="fr-sidenav__title">Charts DSFR</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="index.html">Vue d'ensemble</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="line-chart.html">Ligne</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="bar-chart.html">Barres</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="pie-chart.html">Camembert</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="radar-chart.html">Radar</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gauge-chart.html">Jauge</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="map-chart.html" aria-current="page">Carte</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <h1><span class="ri-map-line fr-mr-1w" aria-hidden="true"></span> Carte de France</h1>
+        <p class="fr-text--lead">Les composants <code>&lt;map-chart&gt;</code> et <code>&lt;map-chart-reg&gt;</code> visualisent des donnees geographiques.</p>
+
+        <div class="fr-callout fr-my-3w">
+          <p class="fr-callout__text">
+            Ces composants affichent une carte de France avec des donnees par departement ou par region.
+            Les valeurs sont representees par des couleurs selon la palette selectionnee.
+          </p>
+        </div>
+
+        <section class="demo-section">
+          <h3>Carte departementale</h3>
+          <p>Utilisez <code>&lt;map-chart&gt;</code> pour afficher des donnees par departement.</p>
+          <map-chart
+            x='[["75", "13", "69", "33", "31"]]'
+            y="[[95, 82, 78, 71, 68]]"
+            selected-palette="sequentialAscending"
+            unit-tooltip="%">
+          </map-chart>
+          <div class="code-block"><pre>&lt;map-chart
+  x='[["75", "13", "69", "33", "31"]]'
+  y="[[95, 82, 78, 71, 68]]"
+  selected-palette="sequentialAscending"
+  unit-tooltip="%"&gt;
+&lt;/map-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Carte regionale</h3>
+          <p>Utilisez <code>&lt;map-chart-reg&gt;</code> pour afficher des donnees par region.</p>
+          <map-chart-reg
+            x='[["IDF", "ARA", "NAQ", "OCC", "PAC"]]'
+            y="[[92, 85, 78, 73, 81]]"
+            selected-palette="categorical">
+          </map-chart-reg>
+          <div class="code-block"><pre>&lt;map-chart-reg
+  x='[["IDF", "ARA", "NAQ", "OCC", "PAC"]]'
+  y="[[92, 85, 78, 73, 81]]"
+  selected-palette="categorical"&gt;
+&lt;/map-chart-reg&gt;</pre></div>
+        </section>
+
+        <h2 class="fr-mt-4w">Codes des departements et regions</h2>
+        <p>Les codes utilisent la nomenclature officielle INSEE :</p>
+        <ul>
+          <li><strong>Departements</strong> : "01" a "95", "2A", "2B", "971" a "976"</li>
+          <li><strong>Regions</strong> : "IDF" (Ile-de-France), "ARA" (Auvergne-Rhone-Alpes), etc.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

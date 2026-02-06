@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-kpi - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
+    .attr-table th { background: var(--background-alt-grey); }
+    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <!-- Sources de donnees -->
+    <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+    <gouv-source id="meta" url="/mock-api/data.json" transform="metadata"></gouv-source>
+
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../index.html">Vue d'ensemble</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Nos composants</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-source.html">gouv-source</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-kpi.html" aria-current="page">gouv-kpi</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-datalist.html">gouv-datalist</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">gouv-kpi</a></li>
+        </ol></nav>
+
+        <h1><span class="ri-number-1 fr-mr-1w" aria-hidden="true"></span> gouv-kpi</h1>
+        <p class="fr-text--lead">
+          Affiche une valeur cle (KPI) avec formatage, couleurs conditionnelles basees sur des seuils, et icones optionnelles.
+        </p>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>String</td><td>ID du <code>&lt;gouv-source&gt;</code> (requis)</td></tr>
+            <tr><td><code>valeur</code></td><td>String</td><td>Expression de calcul : <code>"champ"</code>, <code>"avg:champ"</code>, <code>"count:champ:valeur"</code></td></tr>
+            <tr><td><code>label</code></td><td>String</td><td>Libelle affiche sous la valeur</td></tr>
+            <tr><td><code>format</code></td><td>String</td><td>Format : <code>nombre</code>, <code>pourcentage</code>, <code>euro</code>, <code>decimal</code></td></tr>
+            <tr><td><code>icone</code></td><td>String</td><td>Classe d'icone Remix Icon (ex: <code>ri-global-line</code>)</td></tr>
+            <tr><td><code>couleur</code></td><td>String</td><td>Couleur forcee : <code>vert</code>, <code>orange</code>, <code>rouge</code>, <code>bleu</code></td></tr>
+            <tr><td><code>seuil-vert</code></td><td>Number</td><td>Seuil au-dessus duquel la couleur est verte</td></tr>
+            <tr><td><code>seuil-orange</code></td><td>Number</td><td>Seuil au-dessus duquel la couleur est orange</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Expressions de calcul</h2>
+        <ul>
+          <li><code>champ</code> : Valeur directe d'un champ (pour objet unique)</li>
+          <li><code>avg:champ</code> : Moyenne des valeurs du champ</li>
+          <li><code>sum:champ</code> : Somme des valeurs</li>
+          <li><code>min:champ</code> / <code>max:champ</code> : Min/max</li>
+          <li><code>count:champ:valeur</code> : Compte les occurrences ou valeur = valeur</li>
+        </ul>
+
+        <h2 class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>1. KPI simple avec valeur directe</h3>
+          <div class="kpi-grid">
+            <gouv-kpi source="meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre"></gouv-kpi>
+          </div>
+          <div class="code-block"><pre>&lt;gouv-kpi
+  source="meta"
+  valeur="total"
+  label="Sites suivis"
+  icone="ri-global-line"
+  format="nombre"&gt;
+&lt;/gouv-kpi&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>2. KPI avec moyenne et seuils</h3>
+          <div class="kpi-grid">
+            <gouv-kpi source="sites" valeur="avg:score_rgaa" label="Score RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_dsfr" label="Score DSFR moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+          </div>
+          <div class="code-block"><pre>&lt;gouv-kpi
+  source="sites"
+  valeur="avg:score_rgaa"
+  label="Score RGAA moyen"
+  format="pourcentage"
+  seuil-vert="80"
+  seuil-orange="50"&gt;
+&lt;/gouv-kpi&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>3. KPI avec comptage conditionnel</h3>
+          <div class="kpi-grid">
+            <gouv-kpi source="sites" valeur="count:statut:actif" label="Sites actifs" icone="ri-checkbox-circle-line" couleur="vert"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="count:statut:inactif" label="Sites inactifs" icone="ri-close-circle-line" couleur="orange"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="count:certificat_valide:false" label="Certificats expires" icone="ri-shield-cross-line" couleur="rouge"></gouv-kpi>
+          </div>
+          <div class="code-block"><pre>&lt;gouv-kpi
+  source="sites"
+  valeur="count:statut:actif"
+  label="Sites actifs"
+  icone="ri-checkbox-circle-line"
+  couleur="vert"&gt;
+&lt;/gouv-kpi&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>4. KPI avec min/max</h3>
+          <div class="kpi-grid">
+            <gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur score RGAA" format="pourcentage" couleur="vert"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="min:score_rgaa" label="Plus bas score RGAA" format="pourcentage" couleur="rouge"></gouv-kpi>
+          </div>
+          <div class="code-block"><pre>&lt;gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur score" format="pourcentage" couleur="vert"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="sites" valeur="min:score_rgaa" label="Plus bas score" format="pourcentage" couleur="rouge"&gt;&lt;/gouv-kpi&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>5. Tableau de bord complet</h3>
+          <div class="kpi-grid">
+            <gouv-kpi source="meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_dsfr" label="DSFR moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="count:certificat_valide:false" label="Certificats expires" icone="ri-shield-cross-line" couleur="rouge"></gouv-kpi>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charts DSFR - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .chart-card { background: var(--background-default-grey); border: 1px solid var(--border-default-grey); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-card h3 { margin-top: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../index.html">Vue d'ensemble</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Nos composants</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../components/gouv-source.html">gouv-source</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../components/gouv-kpi.html">gouv-kpi</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../components/gouv-datalist.html">gouv-datalist</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../components/gouv-dsfr-chart.html">gouv-dsfr-chart</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Charts DSFR natifs</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="index.html" aria-current="page">Vue d'ensemble</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="line-chart.html">Ligne</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="bar-chart.html">Barres</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="pie-chart.html">Camembert</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="radar-chart.html">Radar</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gauge-chart.html">Jauge</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="map-chart.html">Carte</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="scatter-chart.html">Nuage de points</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">Charts DSFR</a></li>
+        </ol></nav>
+
+        <h1><span class="ri-dashboard-line fr-mr-1w" aria-hidden="true"></span> Graphiques DSFR Chart</h1>
+        <p class="fr-text--lead">
+          Ces graphiques proviennent de la bibliotheque officielle
+          <a href="https://gouvernementfr.github.io/dsfr-chart/" target="_blank">DSFR Chart</a>
+          et sont conformes au Design System de l'Etat.
+        </p>
+
+        <div class="fr-callout fr-my-3w">
+          <p class="fr-callout__text">
+            Utilisez ces composants directement avec des donnees statiques, ou via notre wrapper
+            <code>&lt;gouv-dsfr-chart&gt;</code> pour des donnees dynamiques connectees a une API.
+          </p>
+        </div>
+
+        <h2 class="fr-mt-4w">Tous les types de graphiques</h2>
+
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3><span class="ri-line-chart-line" aria-hidden="true"></span> Graphique en ligne</h3>
+            <p>Ideal pour visualiser des tendances et evolutions dans le temps.</p>
+            <line-chart x="[[2020, 2021, 2022, 2023, 2024]]" y="[[65, 72, 78, 85, 91]]" selected-palette="default" unit-tooltip="%"></line-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="line-chart.html">Documentation</a>
+          </div>
+
+          <div class="chart-card">
+            <h3><span class="ri-bar-chart-horizontal-line" aria-hidden="true"></span> Graphique en barres</h3>
+            <p>Parfait pour comparer des valeurs entre categories.</p>
+            <bar-chart x='[["Economie", "Education", "Culture", "Sante"]]' y="[[87, 91, 95, 68]]" selected-palette="categorical" unit-tooltip="%"></bar-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="bar-chart.html">Documentation</a>
+          </div>
+
+          <div class="chart-card">
+            <h3><span class="ri-pie-chart-line" aria-hidden="true"></span> Diagramme circulaire</h3>
+            <p>Pour representer des proportions et distributions.</p>
+            <pie-chart x='[["Actifs", "Inactifs", "Maintenance"]]' y="[[75, 15, 10]]" selected-palette="categorical" unit-tooltip="%"></pie-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="pie-chart.html">Documentation</a>
+          </div>
+
+          <div class="chart-card">
+            <h3><span class="ri-focus-3-line" aria-hidden="true"></span> Graphique radar</h3>
+            <p>Comparer plusieurs variables simultanement.</p>
+            <radar-chart x='[["RGAA", "DSFR", "Perf", "Secu", "A11y"]]' y="[[85, 90, 75, 95, 88]]" selected-palette="default"></radar-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="radar-chart.html">Documentation</a>
+          </div>
+
+          <div class="chart-card">
+            <h3><span class="ri-speed-line" aria-hidden="true"></span> Jauge</h3>
+            <p>Afficher une progression vers un objectif.</p>
+            <gauge-chart value="82" selected-palette="default"></gauge-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="gauge-chart.html">Documentation</a>
+          </div>
+
+          <div class="chart-card">
+            <h3><span class="ri-bubble-chart-line" aria-hidden="true"></span> Nuage de points</h3>
+            <p>Visualiser des correlations entre deux variables.</p>
+            <scatter-chart x="[[10, 20, 30, 40, 50]]" y="[[25, 35, 20, 45, 30]]" selected-palette="categorical"></scatter-chart>
+            <a class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-2w" href="scatter-chart.html">Documentation</a>
+          </div>
+        </div>
+
+        <h2 class="fr-mt-4w">Palettes de couleurs</h2>
+        <p>DSFR Chart propose plusieurs palettes conformes aux recommandations d'accessibilite :</p>
+        <ul>
+          <li><strong>default</strong> : Bleu France par defaut</li>
+          <li><strong>categorical</strong> : Palette categorielle pour comparer des groupes</li>
+          <li><strong>sequentialAscending / sequentialDescending</strong> : Gradient de couleurs</li>
+          <li><strong>divergentAscending / divergentDescending</strong> : Palette divergente</li>
+          <li><strong>neutral</strong> : Palette neutre avec mise en avant possible</li>
+        </ul>
+
+        <h2 class="fr-mt-4w">Ressources</h2>
+        <ul>
+          <li><a href="https://gouvernementfr.github.io/dsfr-chart/" target="_blank">Documentation officielle DSFR Chart</a></li>
+          <li><a href="https://github.com/GouvernementFR/dsfr-chart" target="_blank">Repository GitHub</a></li>
+          <li><a href="https://www.systeme-de-design.gouv.fr/" target="_blank">Design System de l'Etat</a></li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

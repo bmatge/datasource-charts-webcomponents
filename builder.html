@@ -559,6 +559,44 @@
         </div>
       </div>
 
+      <!-- ÉTAPE 1.5 : Mode de génération (visible si source Grist) -->
+      <div class="config-section" id="section-generation-mode" style="display: none;">
+        <div class="config-section-header" onclick="toggleSection('section-generation-mode')">
+          <h3><span class="step-number">1.5</span> Mode de génération</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+          <div class="fr-radio-group">
+            <input type="radio" id="mode-embedded" name="generation-mode" value="embedded" checked>
+            <label class="fr-label" for="mode-embedded">
+              Données intégrées
+              <span class="fr-hint-text">Les données sont copiées dans le code HTML</span>
+            </label>
+          </div>
+          <div class="fr-radio-group fr-mt-1w">
+            <input type="radio" id="mode-dynamic" name="generation-mode" value="dynamic">
+            <label class="fr-label" for="mode-dynamic">
+              Chargement dynamique
+              <span class="fr-hint-text">Utilise &lt;gouv-source&gt; et &lt;gouv-chart&gt; pour charger les données en temps réel</span>
+            </label>
+          </div>
+
+          <div id="dynamic-options" class="fr-mt-2w" style="display: none;">
+            <div class="fr-input-group fr-input-group--sm">
+              <label class="fr-label" for="refresh-interval">
+                Rafraîchissement automatique
+                <span class="fr-hint-text">En secondes (0 = pas de rafraîchissement)</span>
+              </label>
+              <input class="fr-input" type="number" id="refresh-interval" value="0" min="0" max="3600">
+            </div>
+          </div>
+
+          <div id="dynamic-warning" class="fr-alert fr-alert--warning fr-alert--sm fr-mt-2w" style="display: none;">
+            <p>Ce document Grist n'est pas public. Le code généré ne fonctionnera que si le document est rendu public dans Grist.</p>
+          </div>
+        </div>
+      </div>
+
       <!-- ÉTAPE 2 : Type de graphique -->
       <div class="config-section" id="section-type">
         <div class="config-section-header" onclick="toggleSection('section-type')">
@@ -822,7 +860,10 @@
       subtitle: '',
       color: '#000091',
       data: [],
-      chartInstance: null
+      chartInstance: null,
+      // Mode de génération
+      generationMode: 'embedded',  // 'embedded' ou 'dynamic'
+      refreshInterval: 0
     };
 
     // ============================================================
@@ -876,6 +917,19 @@
 
       document.getElementById('main-color').addEventListener('input', (e) => {
         state.color = e.target.value;
+      });
+
+      // Generation mode radio buttons
+      document.querySelectorAll('input[name="generation-mode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          state.generationMode = e.target.value;
+          document.getElementById('dynamic-options').style.display =
+            e.target.value === 'dynamic' ? 'block' : 'none';
+        });
+      });
+
+      document.getElementById('refresh-interval').addEventListener('input', (e) => {
+        state.refreshInterval = parseInt(e.target.value) || 0;
       });
 
       // Load saved sources and check for selected source from sources.html
@@ -996,14 +1050,46 @@
     function loadFieldsFromLocalData() {
       if (!state.localData || state.localData.length === 0) return;
 
+      const source = state.savedSource;
       const record = state.localData[0];
-      state.fields = Object.keys(record).map(key => ({
-        name: key,
-        type: typeof record[key],
-        sample: record[key]
-      }));
+
+      // Check if this is Grist data with raw records
+      if (source?.type === 'grist' && source.rawRecords && source.rawRecords.length > 0) {
+        const rawRecord = source.rawRecords[0];
+        if (rawRecord && rawRecord.fields) {
+          // Use Grist field structure with "fields." prefix for dynamic mode
+          state.fields = Object.keys(rawRecord.fields).map(key => ({
+            name: key,
+            fullPath: `fields.${key}`,
+            displayName: key,
+            type: typeof rawRecord.fields[key],
+            sample: rawRecord.fields[key]
+          }));
+        }
+      } else {
+        // Flat data structure
+        state.fields = Object.keys(record).map(key => ({
+          name: key,
+          fullPath: key,
+          displayName: key,
+          type: typeof record[key],
+          sample: record[key]
+        }));
+      }
 
       populateFieldSelects();
+
+      // Show/hide generation mode section based on source type
+      const generationModeSection = document.getElementById('section-generation-mode');
+      const dynamicWarning = document.getElementById('dynamic-warning');
+
+      if (source?.type === 'grist') {
+        generationModeSection.style.display = 'block';
+        // Show warning if not public
+        dynamicWarning.style.display = source.isPublic ? 'none' : 'block';
+      } else {
+        generationModeSection.style.display = 'none';
+      }
 
       document.getElementById('fields-status').innerHTML = `
         <div class="fr-badge fr-badge--success fr-badge--sm">${state.fields.length} champs trouvés</div>
@@ -1115,23 +1201,28 @@
       valueSelect.innerHTML = '<option value="">— Sélectionner —</option>';
 
       state.fields.forEach(field => {
+        const displayText = field.displayName
+          ? `${field.displayName} (${field.type})`
+          : `${field.name} (${field.type})`;
+
         const optionLabel = document.createElement('option');
         optionLabel.value = field.name;
-        optionLabel.textContent = `${field.name} (${field.type})`;
+        optionLabel.textContent = displayText;
         labelSelect.appendChild(optionLabel);
 
         const optionValue = document.createElement('option');
         optionValue.value = field.name;
-        optionValue.textContent = `${field.name} (${field.type})`;
+        optionValue.textContent = displayText;
         valueSelect.appendChild(optionValue);
       });
 
       // Auto-select good candidates
+      const fieldNameLower = f => (f.displayName || f.name).toLowerCase();
       const stringField = state.fields.find(f =>
-        f.type === 'string' && (f.name.includes('nom') || f.name.includes('region') || f.name.includes('departement'))
+        f.type === 'string' && (fieldNameLower(f).includes('nom') || fieldNameLower(f).includes('region') || fieldNameLower(f).includes('departement') || fieldNameLower(f).includes('label'))
       );
       const numberField = state.fields.find(f =>
-        f.type === 'number' && (f.name.includes('prix') || f.name.includes('score') || f.name.includes('valeur'))
+        f.type === 'number' && (fieldNameLower(f).includes('prix') || fieldNameLower(f).includes('score') || fieldNameLower(f).includes('valeur') || fieldNameLower(f).includes('value'))
       );
 
       if (stringField) labelSelect.value = stringField.name;
@@ -1270,8 +1361,12 @@
       // Render chart
       renderChart();
 
-      // Generate code for local data
-      generateCodeForLocalData();
+      // Generate code based on mode
+      if (state.generationMode === 'dynamic' && state.savedSource?.type === 'grist') {
+        generateDynamicCode();
+      } else {
+        generateCodeForLocalData();
+      }
 
       // Update accessible table
       updateAccessibleTable();
@@ -1362,6 +1457,82 @@ new Chart(document.getElementById('myChart'), {
   }
 });
 <\/script>`;
+
+      document.getElementById('generated-code').textContent = code;
+    }
+
+    function generateDynamicCode() {
+      const source = state.savedSource;
+      if (!source || source.type !== 'grist') return;
+
+      // Build direct Grist API URL (CORS is enabled on grist.numerique.gouv.fr)
+      let apiUrl = '';
+      if (source.apiUrl.includes('grist.numerique.gouv.fr')) {
+        apiUrl = `https://grist.numerique.gouv.fr/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+      } else if (source.apiUrl.includes('docs.getgrist.com')) {
+        apiUrl = `https://docs.getgrist.com/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+      } else {
+        // Self-hosted or other - use the stored apiUrl
+        apiUrl = source.apiUrl;
+      }
+
+      // Get field info for labels
+      const labelFieldInfo = state.fields.find(f => f.name === state.labelField);
+      const valueFieldInfo = state.fields.find(f => f.name === state.valueField);
+
+      // Use fullPath for dynamic mode (fields.X)
+      const labelFieldPath = labelFieldInfo?.fullPath || `fields.${state.labelField}`;
+      const valueFieldPath = valueFieldInfo?.fullPath || `fields.${state.valueField}`;
+
+      const refreshAttr = state.refreshInterval > 0 ? `\n  refresh="${state.refreshInterval}"` : '';
+
+      // Determine chart type for gouv-chart
+      const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
+      const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n  index-axis="y"' : '';
+
+      // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
+      if (state.chartType === 'kpi') {
+        generateCodeForLocalData();
+        return;
+      }
+
+      const code = `<!-- Graphique dynamique généré avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dépendances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@latest/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <!-- Source de données (chargement dynamique depuis Grist) -->
+  <gouv-source
+    id="chart-data"
+    url="${apiUrl}"
+    transform="records"${refreshAttr}>
+  </gouv-source>
+
+  <!-- Graphique (se met à jour automatiquement) -->
+  <gouv-chart
+    source="chart-data"
+    type="${chartType}"${indexAxisAttr}
+    label-field="${labelFieldPath}"
+    value-field="${valueFieldPath}"
+    aggregation="${state.aggregation}"
+    limit="${state.limit}"
+    sort-order="${state.sortOrder}"
+    ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
+    ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
+    color="${state.color}"
+    height="400">
+  </gouv-chart>
+</div>`;
 
       document.getElementById('generated-code').textContent = code;
     }

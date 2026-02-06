@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-dsfr-chart - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .demo-layout { display: flex; gap: 2rem; }
+    .demo-sidenav { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; }
+    .demo-content { flex: 1; min-width: 0; }
+    .demo-section { background: var(--background-alt-grey); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    .code-block { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; overflow-x: auto; }
+    .code-block pre { margin: 0; white-space: pre-wrap; }
+    .attr-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .attr-table th, .attr-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-default-grey); }
+    .attr-table th { background: var(--background-alt-grey); }
+    .attr-table code { background: var(--background-contrast-grey); padding: 0.125rem 0.25rem; border-radius: 2px; }
+    @media (max-width: 992px) { .demo-layout { flex-direction: column; } .demo-sidenav { position: static; } }
+  </style>
+</head>
+<body>
+  <header role="banner" class="fr-header">
+    <div class="fr-header__body">
+      <div class="fr-container">
+        <div class="fr-header__body-row">
+          <div class="fr-header__brand fr-enlarge-link">
+            <div class="fr-header__brand-top">
+              <div class="fr-header__logo"><p class="fr-logo">Republique<br>Francaise</p></div>
+            </div>
+            <div class="fr-header__service">
+              <a href="../../index.html"><p class="fr-header__service-title">gouv-widgets</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="fr-container fr-py-4w">
+    <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+
+    <div class="demo-layout">
+      <nav class="demo-sidenav fr-sidenav">
+        <div class="fr-sidenav__inner">
+          <div class="fr-collapse" id="fr-sidenav-wrapper">
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../index.html">Vue d'ensemble</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Nos composants</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-source.html">gouv-source</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-kpi.html">gouv-kpi</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-datalist.html">gouv-datalist</a></li>
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="gouv-dsfr-chart.html" aria-current="page">gouv-dsfr-chart</a></li>
+            </ul>
+            <p class="fr-sidenav__title fr-mt-3w">Charts DSFR natifs</p>
+            <ul class="fr-sidenav__list">
+              <li class="fr-sidenav__item"><a class="fr-sidenav__link" href="../charts/index.html">Vue d'ensemble</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="demo-content">
+        <nav class="fr-breadcrumb"><ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" href="../index.html">Composants</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">gouv-dsfr-chart</a></li>
+        </ol></nav>
+
+        <h1><span class="ri-bar-chart-box-line fr-mr-1w" aria-hidden="true"></span> gouv-dsfr-chart</h1>
+        <p class="fr-text--lead">
+          Wrapper qui connecte les graphiques officiels DSFR Chart au systeme <code>gouv-source</code>
+          pour une alimentation dynamique des donnees.
+        </p>
+
+        <div class="fr-callout fr-callout--green-emeraude">
+          <p class="fr-callout__text">
+            Ce composant utilise la bibliotheque officielle
+            <a href="https://gouvernementfr.github.io/dsfr-chart/" target="_blank">DSFR Chart</a>
+            tout en beneficiant de la connexion automatique aux sources de donnees.
+          </p>
+        </div>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>String</td><td>ID du <code>&lt;gouv-source&gt;</code> (requis)</td></tr>
+            <tr><td><code>type</code></td><td>String</td><td>Type de chart : <code>bar</code>, <code>line</code>, <code>pie</code>, <code>radar</code>, <code>gauge</code>, <code>scatter</code></td></tr>
+            <tr><td><code>label-field</code></td><td>String</td><td>Chemin vers le champ label dans les donnees</td></tr>
+            <tr><td><code>value-field</code></td><td>String</td><td>Chemin vers le champ valeur dans les donnees</td></tr>
+            <tr><td><code>selected-palette</code></td><td>String</td><td>Palette : <code>default</code>, <code>categorical</code>, <code>sequential*</code>, <code>divergent*</code></td></tr>
+            <tr><td><code>unit-tooltip</code></td><td>String</td><td>Unite affichee dans les tooltips (%, euro, etc.)</td></tr>
+            <tr><td><code>horizontal</code></td><td>Boolean</td><td>Barres horizontales (bar chart)</td></tr>
+            <tr><td><code>stacked</code></td><td>Boolean</td><td>Barres empilees (bar chart)</td></tr>
+            <tr><td><code>fill</code></td><td>Boolean</td><td>Remplissage plein (pie chart)</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Types de graphiques</h2>
+
+        <section class="demo-section">
+          <h3>1. Graphique en barres verticales</h3>
+          <gouv-dsfr-chart
+            source="sites"
+            type="bar"
+            label-field="nom"
+            value-field="score_rgaa"
+            selected-palette="categorical"
+            unit-tooltip="%">
+          </gouv-dsfr-chart>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart
+  source="sites"
+  type="bar"
+  label-field="nom"
+  value-field="score_rgaa"
+  selected-palette="categorical"
+  unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>2. Graphique en barres horizontales</h3>
+          <gouv-dsfr-chart
+            source="sites"
+            type="bar"
+            label-field="ministere"
+            value-field="score_rgaa"
+            selected-palette="sequentialAscending"
+            unit-tooltip="%"
+            horizontal="true">
+          </gouv-dsfr-chart>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart
+  source="sites"
+  type="bar"
+  label-field="ministere"
+  value-field="score_rgaa"
+  horizontal="true"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>3. Graphique en ligne</h3>
+          <gouv-dsfr-chart
+            source="sites"
+            type="line"
+            label-field="nom"
+            value-field="score_dsfr"
+            selected-palette="default"
+            unit-tooltip="%">
+          </gouv-dsfr-chart>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart
+  source="sites"
+  type="line"
+  label-field="nom"
+  value-field="score_dsfr"
+  unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>4. Diagramme circulaire (Pie)</h3>
+          <gouv-dsfr-chart
+            source="sites"
+            type="pie"
+            label-field="ministere"
+            value-field="score_rgaa"
+            selected-palette="categorical"
+            unit-tooltip="%">
+          </gouv-dsfr-chart>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart
+  source="sites"
+  type="pie"
+  label-field="ministere"
+  value-field="score_rgaa"
+  selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>5. Graphique radar</h3>
+          <gouv-dsfr-chart
+            source="sites"
+            type="radar"
+            label-field="ministere"
+            value-field="score_rgaa"
+            selected-palette="default">
+          </gouv-dsfr-chart>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart
+  source="sites"
+  type="radar"
+  label-field="ministere"
+  value-field="score_rgaa"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <h2 class="fr-mt-4w">Comparaison : gouv-dsfr-chart vs DSFR Chart natif</h2>
+        <div class="fr-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Fonctionnalite</th>
+                <th>gouv-dsfr-chart</th>
+                <th>DSFR Chart natif</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Donnees dynamiques</td>
+                <td>Oui (via gouv-source)</td>
+                <td>Non (statiques)</td>
+              </tr>
+              <tr>
+                <td>Rafraichissement auto</td>
+                <td>Oui</td>
+                <td>Non</td>
+              </tr>
+              <tr>
+                <td>Transformation donnees</td>
+                <td>Automatique</td>
+                <td>Manuelle</td>
+              </tr>
+              <tr>
+                <td>Complexite d'usage</td>
+                <td>Simple</td>
+                <td>Moyenne</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="fr-footer" role="contentinfo">
+    <div class="fr-container">
+      <div class="fr-footer__body">
+        <div class="fr-footer__brand"><p class="fr-logo">Republique<br>Francaise</p></div>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

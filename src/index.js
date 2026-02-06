@@ -7,6 +7,8 @@
 export { GouvSource } from './components/gouv-source.js';
 export { GouvKpi } from './components/gouv-kpi.js';
 export { GouvDatalist } from './components/gouv-datalist.js';
+export { GouvChart } from './components/gouv-chart.js';
+export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
 // Utilitaires (pour usage avancé)
 export { DATA_EVENTS, subscribeToSource, getDataCache, dispatchDataLoaded, dispatchDataError, dispatchDataLoading } from './utils/data-bridge.js';
 export { getByPath, hasPath, getByPathOrDefault } from './utils/json-path.js';
