@@ -23,8 +23,8 @@ services:
       - "traefik.http.routers.chartsbuilder-https.tls=true"
       - "traefik.http.routers.chartsbuilder-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.chartsbuilder-https.tls.options=anssi-strict@file"
-      # Note: security-headers@file désactivé car bloque jsdelivr CDN
-      # - "traefik.http.routers.chartsbuilder-https.middlewares=security-headers@file"
+      # Authentification Basic Auth
+      - "traefik.http.routers.chartsbuilder-https.middlewares=chartsbuilder-auth@file"
 
       # Service
       - "traefik.http.services.chartsbuilder.loadbalancer.server.port=80"
