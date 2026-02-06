@@ -1489,26 +1489,16 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
 
       // Use proxy for Albert API to avoid CORS
       let apiUrl = config.apiUrl;
-      let useProxy = false;
       if (apiUrl.includes('albert.api.etalab.gouv.fr')) {
         apiUrl = apiUrl.replace('https://albert.api.etalab.gouv.fr', '/albert-proxy');
-        useProxy = true;
-      }
-
-      // En production, utiliser X-Albert-Api-Key pour éviter conflit avec Basic Auth
-      // Le proxy nginx convertira en Authorization: Bearer
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      if (useProxy) {
-        headers['X-Albert-Api-Key'] = config.token;
-      } else {
-        headers['Authorization'] = `Bearer ${config.token}`;
       }
 
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.token}`
+        },
         body: JSON.stringify({
           model: config.model,
           messages: messages,

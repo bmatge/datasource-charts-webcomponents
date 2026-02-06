@@ -23,8 +23,7 @@ services:
       - "traefik.http.routers.chartsbuilder-https.tls=true"
       - "traefik.http.routers.chartsbuilder-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.chartsbuilder-https.tls.options=anssi-strict@file"
-      # Authentification Basic Auth
-      - "traefik.http.routers.chartsbuilder-https.middlewares=chartsbuilder-auth@file"
+      # Pas de Basic Auth - les clés API sont stockées en localStorage (privées par utilisateur)
 
       # Service
       - "traefik.http.services.chartsbuilder.loadbalancer.server.port=80"

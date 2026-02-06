@@ -765,10 +765,8 @@
 
       const proxyUrl = getProxyUrl(conn.url, endpoint);
 
-      // Utiliser X-Grist-Api-Key pour éviter conflit avec Basic Auth
-      // Le proxy nginx convertira en Authorization: Bearer
       const response = await fetch(proxyUrl, {
-        headers: { 'X-Grist-Api-Key': conn.apiKey }
+        headers: { 'Authorization': `Bearer ${conn.apiKey}` }
       });
 
       if (!response.ok) {
