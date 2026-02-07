@@ -16,3 +16,5 @@ export { DATA_EVENTS, subscribeToSource, getDataCache, dispatchDataLoaded, dispa
 export { getByPath, hasPath, getByPathOrDefault } from './utils/json-path.js';
 export { formatValue, formatNumber, formatPercentage, formatCurrency, formatDate } from './utils/formatters.js';
 export { computeAggregation, parseExpression } from './utils/aggregations.js';
+export { processChartData, extractLabelValues, aggregateByLabel, sortByValue } from './utils/chart-data.js';
+export { SourceSubscriberMixin } from './utils/source-subscriber.js';

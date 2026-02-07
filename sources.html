@@ -1367,6 +1367,22 @@
       }
     }
 
+    // Helper to use local proxy for CORS-restricted APIs
+    function getProxiedUrl(url) {
+      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isLocalDev) return url;
+
+      // Proxy for tabular-api.data.gouv.fr
+      if (url.includes('tabular-api.data.gouv.fr')) {
+        return url.replace('https://tabular-api.data.gouv.fr', '/tabular-proxy');
+      }
+      // Proxy for other data.gouv.fr APIs
+      if (url.includes('data.gouv.fr')) {
+        return url.replace(/https:\/\/([^/]+\.)?data\.gouv\.fr/, '/tabular-proxy');
+      }
+      return url;
+    }
+
     async function loadApiData() {
       const conn = state.connections[state.selectedConnection];
       if (!conn || conn.type !== 'api') return;
@@ -1380,28 +1396,86 @@
 
       try {
         const headers = conn.headers ? JSON.parse(conn.headers) : {};
-        const response = await fetch(conn.apiUrl, {
-          method: conn.method || 'GET',
-          headers
-        });
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        // Fetch all pages if pagination is detected
+        let allData = [];
+        let currentUrl = getProxiedUrl(conn.apiUrl);
+        let pageCount = 0;
+        const maxPages = 100; // Safety limit
 
-        let data = await response.json();
+        while (currentUrl && pageCount < maxPages) {
+          pageCount++;
+          info.textContent = pageCount > 1
+            ? `Chargement... (page ${pageCount})`
+            : 'Chargement...';
 
-        // Navigate to data path if specified
-        if (conn.dataPath) {
-          const parts = conn.dataPath.split('.');
-          for (const part of parts) {
-            if (data && typeof data === 'object') {
-              data = data[part];
+          const response = await fetch(currentUrl, {
+            method: conn.method || 'GET',
+            headers
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const jsonResponse = await response.json();
+
+          // Extract data using dataPath
+          let pageData = jsonResponse;
+          if (conn.dataPath) {
+            const parts = conn.dataPath.split('.');
+            for (const part of parts) {
+              if (pageData && typeof pageData === 'object') {
+                pageData = pageData[part];
+              }
             }
           }
+
+          // Normalize to array and add to allData
+          if (Array.isArray(pageData)) {
+            allData = allData.concat(pageData);
+          } else if (pageData) {
+            allData.push(pageData);
+          }
+
+          // Check for pagination - look for links.next or meta info
+          let nextUrl = null;
+
+          // Pattern 1: links.next (common in REST APIs like tabular-api.data.gouv.fr)
+          if (jsonResponse.links && jsonResponse.links.next) {
+            nextUrl = jsonResponse.links.next;
+            // Handle relative URLs
+            if (nextUrl && !nextUrl.startsWith('http')) {
+              const baseUrl = new URL(conn.apiUrl);
+              nextUrl = new URL(nextUrl, baseUrl.origin).href;
+            }
+          }
+
+          // Pattern 2: meta with page info (calculate next page URL)
+          else if (jsonResponse.meta && jsonResponse.meta.total && jsonResponse.meta.page_size) {
+            const { page, page_size, total } = jsonResponse.meta;
+            const currentPage = page || 1;
+            const totalPages = Math.ceil(total / page_size);
+
+            if (currentPage < totalPages) {
+              // Build next page URL
+              const url = new URL(currentUrl);
+              url.searchParams.set('page', String(currentPage + 1));
+              nextUrl = url.href;
+            }
+          }
+
+          // Pattern 3: next_page or nextPage field at root level
+          else if (jsonResponse.next_page || jsonResponse.nextPage) {
+            nextUrl = jsonResponse.next_page || jsonResponse.nextPage;
+          }
+
+          // Apply proxy to next URL if needed
+          currentUrl = nextUrl ? getProxiedUrl(nextUrl) : null;
         }
 
         // Normalize to array
+        let data = allData;
         if (!Array.isArray(data)) {
           data = data ? [data] : [];
         }
@@ -1423,7 +1497,7 @@
         });
         table.querySelector('thead tr').innerHTML = headerHtml;
 
-        // Body
+        // Body (show first 20 for preview)
         let bodyHtml = '';
         data.slice(0, 20).forEach(record => {
           bodyHtml += '<tr>';
@@ -1435,7 +1509,8 @@
         });
         table.querySelector('tbody').innerHTML = bodyHtml;
 
-        info.textContent = `${data.length} enregistrements`;
+        const paginationInfo = pageCount > 1 ? ` (${pageCount} pages)` : '';
+        info.textContent = `${data.length} enregistrements${paginationInfo}`;
 
         // Save as current source for builder
         saveApiAsSource();

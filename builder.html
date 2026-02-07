@@ -1128,13 +1128,35 @@
         }
       } else {
         // Flat data structure
-        state.fields = Object.keys(record).map(key => ({
-          name: key,
-          fullPath: key,
-          displayName: key,
-          type: typeof record[key],
-          sample: record[key]
-        }));
+        // Scan multiple records to find actual type (first non-null value)
+        state.fields = Object.keys(record).map(key => {
+          let detectedType = typeof record[key];
+          let sample = record[key];
+
+          // If first record has null, scan other records to find actual type
+          if (sample === null && source.data.length > 1) {
+            for (let i = 1; i < Math.min(source.data.length, 100); i++) {
+              const val = source.data[i][key];
+              if (val !== null && val !== undefined) {
+                detectedType = typeof val;
+                sample = val;
+                break;
+              }
+            }
+            // If still null after scanning, assume string (most common for codes)
+            if (sample === null) {
+              detectedType = 'string';
+            }
+          }
+
+          return {
+            name: key,
+            fullPath: key,
+            displayName: key,
+            type: detectedType,
+            sample: sample
+          };
+        });
       }
 
       populateFieldSelects();

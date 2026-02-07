@@ -1095,10 +1095,25 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
 
       const record = state.localData[0];
       state.fields = Object.keys(record).map(key => {
-        const value = record[key];
+        let value = record[key];
+
+        // If first record has null, scan other records to find actual type
+        if (value === null && state.localData.length > 1) {
+          for (let i = 1; i < Math.min(state.localData.length, 100); i++) {
+            const val = state.localData[i][key];
+            if (val !== null && val !== undefined) {
+              value = val;
+              break;
+            }
+          }
+        }
+
         let type = typeof value;
-        if (type === 'number') type = 'numérique';
-        else if (type === 'string') {
+        if (value === null) {
+          type = 'texte'; // Default to text for null-only fields
+        } else if (type === 'number') {
+          type = 'numérique';
+        } else if (type === 'string') {
           if (!isNaN(Date.parse(value))) type = 'date';
           else type = 'texte';
         }
