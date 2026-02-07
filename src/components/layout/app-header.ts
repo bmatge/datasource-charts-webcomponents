@@ -34,6 +34,13 @@ export class AppHeader extends LitElement {
     return this;
   }
 
+  /** Normalized base path with trailing slash */
+  private get _base(): string {
+    const bp = this.basePath;
+    if (!bp) return '';
+    return bp.endsWith('/') ? bp : bp + '/';
+  }
+
   connectedCallback() {
     super.connectedCallback();
     // Read favorites count
@@ -94,7 +101,7 @@ export class AppHeader extends LitElement {
                   </div>
                 </div>
                 <div class="fr-header__service">
-                  <a href="${this.basePath}index.html" title="Accueil - Charts builder">
+                  <a href="${this._base}index.html" title="Accueil - Charts builder">
                     <p class="fr-header__service-title">Charts builder</p>
                   </a>
                   <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
@@ -104,7 +111,7 @@ export class AppHeader extends LitElement {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}apps/favorites/index.html">
+                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
                         Favoris${this._favCount > 0 ? html` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : nothing}
                       </a>
                     </li>
@@ -130,7 +137,7 @@ export class AppHeader extends LitElement {
                 ${navItems.map(item => html`
                   <li class="fr-nav__item">
                     <a class="fr-nav__link"
-                       href="${this.basePath}${item.href}"
+                       href="${this._base}${item.href}"
                        ${this.currentPage === item.id ? html`aria-current="page"` : ''}>
                       ${item.label}
                     </a>

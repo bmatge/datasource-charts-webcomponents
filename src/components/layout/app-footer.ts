@@ -18,6 +18,12 @@ export class AppFooter extends LitElement {
   @property({ type: String, attribute: 'base-path' })
   basePath = '';
 
+  private get _base(): string {
+    const bp = this.basePath;
+    if (!bp) return '';
+    return bp.endsWith('/') ? bp : bp + '/';
+  }
+
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
     return this;
@@ -29,7 +35,7 @@ export class AppFooter extends LitElement {
         <div class="fr-container">
           <div class="fr-footer__body">
             <div class="fr-footer__brand fr-enlarge-link">
-              <a href="${this.basePath}index.html" title="Retour à l'accueil du site - République Française">
+              <a href="${this._base}index.html" title="Retour à l'accueil du site - République Française">
                 <p class="fr-logo">
                   République<br>Française
                 </p>

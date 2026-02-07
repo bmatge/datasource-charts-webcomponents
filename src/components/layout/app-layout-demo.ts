@@ -56,6 +56,12 @@ export class AppLayoutDemo extends LitElement {
   @property({ type: String, attribute: 'base-path' })
   basePath = '';
 
+  private get _base(): string {
+    const bp = this.basePath;
+    if (!bp) return '';
+    return bp.endsWith('/') ? bp : bp + '/';
+  }
+
   // Éléments enfants à projeter (sauvegardés avant le rendu)
   private _contentElements: Element[] = [];
   private _contentMoved = false;
@@ -159,7 +165,7 @@ export class AppLayoutDemo extends LitElement {
       return html`
         <li class="fr-sidemenu__item ${isActive ? 'fr-sidemenu__item--active' : ''}">
           <a class="fr-sidemenu__link"
-             href="${this.basePath}${item.href}"
+             href="${this._base}${item.href}"
              ${isActive ? html`aria-current="page"` : ''}>
             ${item.label}
           </a>
@@ -175,7 +181,7 @@ export class AppLayoutDemo extends LitElement {
 
     const parts = this.activePath.split('/');
     const breadcrumbItems = [
-      { label: 'Composants', href: `${this.basePath}index.html` }
+      { label: 'Composants', href: `${this._base}index.html` }
     ];
 
     if (parts.length > 1) {
