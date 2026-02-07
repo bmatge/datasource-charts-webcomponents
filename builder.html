@@ -594,6 +594,63 @@
             <option value="asc">Croissant</option>
           </select>
         </div>
+
+        <!-- Toggle Mode Avancé -->
+        <div class="fr-toggle fr-mt-2w">
+          <input type="checkbox" class="fr-toggle__input" id="advanced-mode-toggle" aria-describedby="advanced-mode-hint">
+          <label class="fr-toggle__label" for="advanced-mode-toggle" data-fr-checked-label="Activé" data-fr-unchecked-label="Désactivé">
+            Mode avancé (filtres & requêtes)
+          </label>
+          <p class="fr-hint-text" id="advanced-mode-hint">Utilisez gouv-query pour filtrer et transformer les données</p>
+        </div>
+
+        <!-- Options avancées (masquées par défaut) -->
+        <div id="advanced-query-options" class="fr-mt-2w" style="display: none;">
+          <div class="fr-alert fr-alert--info fr-alert--sm fr-mb-2w">
+            <p>Le mode avancé utilise <code>&lt;gouv-query&gt;</code> pour filtrer, regrouper et agréger les données côté client avant de les afficher.</p>
+          </div>
+
+          <!-- Filtres -->
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="query-filter">
+              Filtres
+              <span class="fr-hint-text">Format : champ:opérateur:valeur (séparés par virgule)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-filter" placeholder="Ex: score:gte:80, statut:eq:actif">
+          </div>
+          <details class="fr-accordion fr-accordion--sm fr-mt-1w">
+            <summary class="fr-accordion__btn">Opérateurs disponibles</summary>
+            <div class="fr-accordion__body">
+              <ul class="fr-text--xs fr-m-0">
+                <li><code>eq</code> = égal</li>
+                <li><code>neq</code> = différent</li>
+                <li><code>gt</code> / <code>gte</code> = supérieur (strict / ou égal)</li>
+                <li><code>lt</code> / <code>lte</code> = inférieur (strict / ou égal)</li>
+                <li><code>contains</code> = contient (texte)</li>
+                <li><code>in</code> = dans la liste (val1|val2|val3)</li>
+                <li><code>isnull</code> / <code>isnotnull</code> = null ou non</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- Group By personnalisé -->
+          <div class="fr-input-group fr-input-group--sm fr-mt-2w">
+            <label class="fr-label" for="query-group-by">
+              Regroupement personnalisé
+              <span class="fr-hint-text">Champs de regroupement (si différent de l'axe X)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-group-by" placeholder="Ex: region, annee">
+          </div>
+
+          <!-- Agrégations multiples -->
+          <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+            <label class="fr-label" for="query-aggregate">
+              Agrégations multiples
+              <span class="fr-hint-text">Format : champ:fonction (séparées par virgule)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-aggregate" placeholder="Ex: population:sum, surface:avg, count:count">
+          </div>
+        </div>
         </div>
       </div>
 
@@ -770,7 +827,12 @@
       chartInstance: null,
       // Mode de génération
       generationMode: 'embedded',  // 'embedded' ou 'dynamic'
-      refreshInterval: 0
+      refreshInterval: 0,
+      // Mode avancé (gouv-query)
+      advancedMode: false,
+      queryFilter: '',
+      queryGroupBy: '',
+      queryAggregate: ''
     };
 
     // ============================================================
@@ -822,6 +884,24 @@
 
       document.getElementById('refresh-interval').addEventListener('input', (e) => {
         state.refreshInterval = parseInt(e.target.value) || 0;
+      });
+
+      // Advanced mode toggle
+      document.getElementById('advanced-mode-toggle').addEventListener('change', (e) => {
+        state.advancedMode = e.target.checked;
+        document.getElementById('advanced-query-options').style.display =
+          e.target.checked ? 'block' : 'none';
+      });
+
+      // Advanced query inputs
+      document.getElementById('query-filter').addEventListener('input', (e) => {
+        state.queryFilter = e.target.value;
+      });
+      document.getElementById('query-group-by').addEventListener('input', (e) => {
+        state.queryGroupBy = e.target.value;
+      });
+      document.getElementById('query-aggregate').addEventListener('input', (e) => {
+        state.queryAggregate = e.target.value;
       });
 
       // Load saved sources and check for selected source from sources.html
@@ -890,7 +970,12 @@
         localData: state.localData,
         savedSource: state.savedSource,
         generationMode: state.generationMode,
-        refreshInterval: state.refreshInterval
+        refreshInterval: state.refreshInterval,
+        // Mode avancé (gouv-query)
+        advancedMode: state.advancedMode,
+        queryFilter: state.queryFilter,
+        queryGroupBy: state.queryGroupBy,
+        queryAggregate: state.queryAggregate
       };
 
       const favorite = {
@@ -955,6 +1040,15 @@
             if (state.sortOrder) document.getElementById('sort-order').value = state.sortOrder;
             if (state.limit) document.getElementById('limit').value = state.limit;
           }, 0);
+        }
+
+        // Restaurer le mode avancé
+        if (state.advancedMode) {
+          document.getElementById('advanced-mode-toggle').checked = true;
+          document.getElementById('advanced-query-options').style.display = 'block';
+          if (state.queryFilter) document.getElementById('query-filter').value = state.queryFilter;
+          if (state.queryGroupBy) document.getElementById('query-group-by').value = state.queryGroupBy;
+          if (state.queryAggregate) document.getElementById('query-aggregate').value = state.queryAggregate;
         }
 
         // Regénérer le graphique (avec délai pour laisser le DOM se mettre à jour)
@@ -1478,7 +1572,12 @@
       const groupField = isMap ? state.codeField : state.labelField;
 
       state.localData.forEach(record => {
-        const groupKey = record[groupField] || 'N/A';
+        const rawGroupKey = record[groupField];
+        // Pour les cartes, ignorer les enregistrements avec des codes invalides
+        if (isMap && (rawGroupKey === null || rawGroupKey === undefined || rawGroupKey === '')) {
+          return; // Skip this record
+        }
+        const groupKey = rawGroupKey || 'N/A';
         const value = toNumber(record[state.valueField]);
 
         if (!aggregated[groupKey]) {
@@ -1663,6 +1762,20 @@ new Chart(document.getElementById('myChart'), {
         let totalValue = 0;
         let count = 0;
 
+        // Fonction pour valider un code de département français
+        const isValidDeptCode = (code) => {
+          if (!code || typeof code !== 'string') return false;
+          // Codes invalides connus
+          if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+          // Corse: 2A, 2B
+          if (code === '2A' || code === '2B') return true;
+          // DOM-TOM: 971, 972, 973, 974, 976
+          if (/^97[1-6]$/.test(code)) return true;
+          // Métropole: 01-95 (2 chiffres)
+          if (/^(0[1-9]|[1-8]\d|9[0-5])$/.test(code)) return true;
+          return false;
+        };
+
         state.data.forEach(d => {
           const rawCode = d[state.codeField] ?? d.code ?? '';
           let code = String(rawCode).trim();
@@ -1670,7 +1783,7 @@ new Chart(document.getElementById('myChart'), {
             code = code.padStart(2, '0');
           }
           const value = d.value || 0;
-          if (code && code !== '00' && code !== '' && !isNaN(value)) {
+          if (isValidDeptCode(code) && !isNaN(value)) {
             mapData[code] = Math.round(value * 100) / 100;
             totalValue += value;
             count++;
@@ -1786,6 +1899,68 @@ new Chart(document.getElementById('myChart'), {
     // URL du proxy centralisé (chartsbuilder.matge.com fait proxy vers Grist)
     const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 
+    /**
+     * Génère le code pour gouv-query si le mode avancé est activé
+     * Retourne { queryElement, chartSource } où:
+     * - queryElement: le HTML du composant gouv-query (ou '' si désactivé)
+     * - chartSource: l'ID de source à utiliser pour le graphique ('query-data' ou 'chart-data')
+     */
+    function generateGouvQueryCode(sourceId, labelFieldPath) {
+      if (!state.advancedMode) {
+        return { queryElement: '', chartSource: sourceId };
+      }
+
+      const attrs = [];
+      attrs.push(`source="${sourceId}"`);
+
+      // Group by: utiliser le champ personnalisé ou le labelField
+      const groupByField = state.queryGroupBy || labelFieldPath;
+      if (groupByField) {
+        attrs.push(`group-by="${groupByField}"`);
+      }
+
+      // Filtres
+      if (state.queryFilter) {
+        attrs.push(`filter="${escapeHtml(state.queryFilter)}"`);
+      }
+
+      // Agrégations: utiliser celles du mode avancé ou celle par défaut
+      if (state.queryAggregate) {
+        attrs.push(`aggregate="${escapeHtml(state.queryAggregate)}"`);
+      }
+
+      // Tri et limite (reprendre les valeurs du formulaire)
+      if (state.sortOrder && state.sortOrder !== 'none') {
+        // Construire le champ de tri basé sur l'agrégation
+        let sortField = labelFieldPath;
+        if (state.queryAggregate) {
+          // Si on a des agrégations personnalisées, utiliser le premier champ agrégé
+          const firstAgg = state.queryAggregate.split(',')[0].trim();
+          const parts = firstAgg.split(':');
+          if (parts.length >= 2) {
+            sortField = `${parts[0]}__${parts[1]}`;
+          }
+        } else {
+          // Sinon utiliser value__aggregation
+          sortField = `value__${state.aggregation}`;
+        }
+        attrs.push(`order-by="${sortField}:${state.sortOrder}"`);
+      }
+
+      if (state.limit > 0) {
+        attrs.push(`limit="${state.limit}"`);
+      }
+
+      const queryElement = `
+  <!-- Requête avancée (filtrage et agrégation) -->
+  <gouv-query
+    id="query-data"
+    ${attrs.join('\n    ')}>
+  </gouv-query>`;
+
+      return { queryElement, chartSource: 'query-data' };
+    }
+
     function generateDynamicCode() {
       const source = state.savedSource;
       if (!source || source.type !== 'grist') return;
@@ -1826,9 +2001,19 @@ new Chart(document.getElementById('myChart'), {
         return;
       }
 
+      // Generate gouv-query if advanced mode is enabled
+      const { queryElement, chartSource } = generateGouvQueryCode('chart-data', labelFieldPath);
+
+      // En mode avancé avec gouv-query, le graphique utilise les données pré-traitées
+      // donc on n'applique pas les paramètres d'agrégation/limite/tri sur gouv-chart
+      const chartAggregation = state.advancedMode ? 'none' : state.aggregation;
+      const chartLimit = state.advancedMode ? 0 : state.limit;
+      const chartSortOrder = state.advancedMode ? 'none' : state.sortOrder;
+
       const code = `<!-- Graphique dynamique généré avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 <!-- Les données sont chargées via le proxy ${PROXY_BASE_URL} -->
+${state.advancedMode ? '<!-- Mode avancé activé : filtrage et agrégation via gouv-query -->' : ''}
 
 <!-- Dépendances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1848,16 +2033,16 @@ new Chart(document.getElementById('myChart'), {
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
   </gouv-source>
-
+${queryElement}
   <!-- Graphique (se met à jour automatiquement) -->
   <gouv-chart
-    source="chart-data"
+    source="${chartSource}"
     type="${chartType}"${indexAxisAttr}
-    label-field="${labelFieldPath}"
-    value-field="${valueFieldPath}"
-    aggregation="${state.aggregation}"
-    limit="${state.limit}"
-    sort-order="${state.sortOrder}"
+    label-field="${state.advancedMode ? state.queryGroupBy || labelFieldPath : labelFieldPath}"
+    value-field="${state.advancedMode && state.queryAggregate ? state.queryAggregate.split(',')[0].trim().replace(':', '__') : valueFieldPath}"
+    aggregation="${chartAggregation}"
+    limit="${chartLimit}"
+    sort-order="${chartSortOrder}"
     ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
     ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
     selected-palette="${state.palette}"
@@ -1940,8 +2125,17 @@ new Chart(document.getElementById('myChart'), {
         return;
       }
 
+      // Generate gouv-query if advanced mode is enabled
+      const { queryElement, chartSource } = generateGouvQueryCode('chart-data', labelFieldPath);
+
+      // En mode avancé avec gouv-query, le graphique utilise les données pré-traitées
+      const chartAggregation = state.advancedMode ? 'none' : state.aggregation;
+      const chartLimit = state.advancedMode ? 0 : state.limit;
+      const chartSortOrder = state.advancedMode ? 'none' : state.sortOrder;
+
       const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1960,16 +2154,16 @@ new Chart(document.getElementById('myChart'), {
     id="chart-data"
     url="${source.apiUrl}"${transformAttr}${refreshAttr}>
   </gouv-source>
-
+${queryElement}
   <!-- Graphique (se met a jour automatiquement) -->
   <gouv-chart
-    source="chart-data"
+    source="${chartSource}"
     type="${chartType}"${indexAxisAttr}
-    label-field="${labelFieldPath}"
-    value-field="${valueFieldPath}"
-    aggregation="${state.aggregation}"
-    limit="${state.limit}"
-    sort-order="${state.sortOrder}"
+    label-field="${state.advancedMode ? state.queryGroupBy || labelFieldPath : labelFieldPath}"
+    value-field="${state.advancedMode && state.queryAggregate ? state.queryAggregate.split(',')[0].trim().replace(':', '__') : valueFieldPath}"
+    aggregation="${chartAggregation}"
+    limit="${chartLimit}"
+    sort-order="${chartSortOrder}"
     ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
     ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
     selected-palette="${state.palette}"
@@ -2059,6 +2253,20 @@ new Chart(document.getElementById('myChart'), {
         let totalValue = 0;
         let count = 0;
 
+        // Fonction pour valider un code de département français
+        const isValidDeptCode = (code) => {
+          if (!code || typeof code !== 'string') return false;
+          // Codes invalides connus
+          if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+          // Corse: 2A, 2B
+          if (code === '2A' || code === '2B') return true;
+          // DOM-TOM: 971, 972, 973, 974, 976
+          if (/^97[1-6]$/.test(code)) return true;
+          // Métropole: 01-95 (2 chiffres)
+          if (/^(0[1-9]|[1-8]\d|9[0-5])$/.test(code)) return true;
+          return false;
+        };
+
         state.data.forEach(d => {
           // Le code département peut être dans codeField ou dans la clé directe
           const rawCode = d[state.codeField] ?? d.code ?? '';
@@ -2071,7 +2279,7 @@ new Chart(document.getElementById('myChart'), {
 
           const value = toNumber(d.value);
 
-          if (code && code !== '00' && code !== '' && !isNaN(value)) {
+          if (isValidDeptCode(code) && !isNaN(value)) {
             mapData[code] = Math.round(value * 100) / 100;
             totalValue += value;
             count++;
@@ -2408,6 +2616,16 @@ loadChart();
 <script type="module">
 const API_URL = '${apiUrl}';
 
+// Valide un code de département français
+function isValidDeptCode(code) {
+  if (!code || typeof code !== 'string') return false;
+  if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+  if (code === '2A' || code === '2B') return true;
+  if (/^97[1-6]$/.test(code)) return true;
+  if (/^(0[1-9]|[1-8]\\d|9[0-5])$/.test(code)) return true;
+  return false;
+}
+
 async function loadMap() {
   const response = await fetch(API_URL);
   const json = await response.json();
@@ -2416,9 +2634,12 @@ async function loadMap() {
   // Transformer les données en format carte: {"code": valeur, ...}
   const mapData = {};
   records.forEach(d => {
-    const code = String(d['${state.codeField}'] || '').padStart(2, '0');
+    let code = String(d['${state.codeField}'] || '').trim();
+    if (/^\\d+$/.test(code) && code.length < 3) {
+      code = code.padStart(2, '0');
+    }
     const value = d.value || 0;
-    if (code && code !== '00') {
+    if (isValidDeptCode(code)) {
       mapData[code] = Math.round(value * 100) / 100;
     }
   });

@@ -1625,12 +1625,25 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
         canvas.style.display = 'none';
         emptyState.style.display = 'none';
 
+        // Fonction pour valider un code de département français
+        const isValidDeptCode = (code) => {
+          if (!code || typeof code !== 'string') return false;
+          if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+          if (code === '2A' || code === '2B') return true;
+          if (/^97[1-6]$/.test(code)) return true;
+          if (/^(0[1-9]|[1-8]\d|9[0-5])$/.test(code)) return true;
+          return false;
+        };
+
         // Transform data to DSFR format: {"code": value, ...}
         const mapData = {};
         data.forEach(d => {
-          const code = String(d.code || d.label || '').padStart(2, '0');
+          let code = String(d.code || d.label || '').trim();
+          if (/^\d+$/.test(code) && code.length < 3) {
+            code = code.padStart(2, '0');
+          }
           const value = d.value || 0;
-          if (code && code !== '00') {
+          if (isValidDeptCode(code)) {
             mapData[code] = Math.round(value * 100) / 100;
           }
         });
@@ -1949,12 +1962,25 @@ new Chart(document.getElementById('myChart'), {
 
       // Handle map type
       if (config.type === 'map') {
+        // Fonction pour valider un code de département français
+        const isValidDeptCode = (code) => {
+          if (!code || typeof code !== 'string') return false;
+          if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+          if (code === '2A' || code === '2B') return true;
+          if (/^97[1-6]$/.test(code)) return true;
+          if (/^(0[1-9]|[1-8]\d|9[0-5])$/.test(code)) return true;
+          return false;
+        };
+
         // Transform data to DSFR format: {"code": value, ...}
         const mapData = {};
         data.forEach(d => {
-          const code = String(d.code || d.label || '').padStart(2, '0');
+          let code = String(d.code || d.label || '').trim();
+          if (/^\d+$/.test(code) && code.length < 3) {
+            code = code.padStart(2, '0');
+          }
           const value = d.value || 0;
-          if (code && code !== '00') {
+          if (isValidDeptCode(code)) {
             mapData[code] = Math.round(value * 100) / 100;
           }
         });
@@ -1991,6 +2017,16 @@ new Chart(document.getElementById('myChart'), {
 <script type="module">
 const API_URL = '${apiUrl}';
 
+// Valide un code de département français
+function isValidDeptCode(code) {
+  if (!code || typeof code !== 'string') return false;
+  if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
+  if (code === '2A' || code === '2B') return true;
+  if (/^97[1-6]$/.test(code)) return true;
+  if (/^(0[1-9]|[1-8]\\d|9[0-5])$/.test(code)) return true;
+  return false;
+}
+
 async function loadMap() {
   try {
     const response = await fetch(API_URL);
@@ -2000,9 +2036,12 @@ async function loadMap() {
     // Transformer les données en format carte: {"code": valeur, ...}
     const mapData = {};
     records.forEach(d => {
-      const code = String(d['${config.codeField}'] || '').padStart(2, '0');
+      let code = String(d['${config.codeField}'] || '').trim();
+      if (/^\\d+$/.test(code) && code.length < 3) {
+        code = code.padStart(2, '0');
+      }
       const value = d.value || 0;
-      if (code && code !== '00') {
+      if (isValidDeptCode(code)) {
         mapData[code] = Math.round(value * 100) / 100;
       }
     });
