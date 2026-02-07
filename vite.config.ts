@@ -28,14 +28,29 @@ export default defineConfig({
         target: 'https://docs.getgrist.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/grist-proxy/, ''),
-        secure: true
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        }
       },
       // Proxy pour Grist numerique.gouv.fr
       '/grist-gouv-proxy': {
         target: 'https://grist.numerique.gouv.fr',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/grist-gouv-proxy/, ''),
-        secure: true
+        secure: true,
+        configure: (proxy) => {
+          // Supprimer les headers qui déclenchent l'erreur "Credentials not supported"
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        }
       },
       // Proxy pour Albert API (IA)
       '/albert-proxy': {

@@ -382,28 +382,6 @@
 
     .source-badge-grist { background: #16a34a; color: white; }
     .source-badge-manual { background: #9333ea; color: white; }
-    .source-badge-api { background: #2563eb; color: white; }
-
-    .source-tab {
-      flex: 1;
-      padding: 0.4rem;
-      border: 1px solid var(--border-default-grey);
-      background: var(--background-default-grey);
-      cursor: pointer;
-      font-size: 0.75rem;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-    }
-    .source-tab:hover { background: var(--background-contrast-grey); }
-    .source-tab.active {
-      background: var(--background-contrast-info);
-      border-color: var(--border-action-high-blue-france);
-      font-weight: 600;
-    }
-
     /* Le resizer et responsive sont gérés par app-layout-builder */
 
     /* Sections collapsibles */
@@ -464,42 +442,9 @@
         </div>
         <div class="config-section-content">
 
-        <!-- Onglets de type de source -->
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-          <button class="source-tab active" data-source-type="api" onclick="switchSourceType('api')">
-            <i class="ri-cloud-line"></i> API
-          </button>
-          <button class="source-tab" data-source-type="saved" onclick="switchSourceType('saved')">
-            <i class="ri-database-2-line"></i> Mes sources
-          </button>
-        </div>
-
-        <!-- Panel API publique -->
-        <div id="source-panel-api" class="source-panel">
-          <div class="source-grid">
-            <div class="fr-select-group fr-select-group--sm">
-              <label class="fr-label" for="preset-api">API</label>
-              <select class="fr-select" id="preset-api">
-                <option value="">— Choisir —</option>
-                <option value="controle-technique">Contrôle technique</option>
-                <option value="elections">Élections</option>
-                <option value="qualite-air">Qualité de l'air</option>
-                <option value="custom">URL personnalisée...</option>
-              </select>
-            </div>
-            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" onclick="loadAPIData()">
-              <i class="ri-download-line"></i> Charger
-            </button>
-            <div class="source-status" id="source-status-api"></div>
-          </div>
-          <div class="fr-input-group fr-input-group--sm fr-mt-1w" id="custom-url-group" style="display: none;">
-            <label class="fr-label" for="custom-api-url">URL personnalisée</label>
-            <input class="fr-input" type="url" id="custom-api-url" placeholder="https://...">
-          </div>
-        </div>
-
-        <!-- Panel Mes sources -->
-        <div id="source-panel-saved" class="source-panel" style="display: none;">
+        <!-- Sélection de source (grille 3 colonnes) -->
+        <div id="source-panel-saved" class="source-panel">
+          <!-- Ligne 1 : Select | Bouton | Status -->
           <div class="source-grid">
             <div class="fr-select-group fr-select-group--sm">
               <label class="fr-label" for="saved-source">Source</label>
@@ -507,11 +452,13 @@
                 <option value="">— Choisir —</option>
               </select>
             </div>
-            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" onclick="loadSavedSourceData()">
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" id="load-fields-btn" onclick="loadSavedSourceData()">
               <i class="ri-refresh-line"></i> Charger
             </button>
-            <div class="source-status" id="source-status-saved"></div>
+            <div class="source-status" id="fields-status"></div>
           </div>
+
+          <!-- Ligne 2 : Info | Lien | (vide) -->
           <div class="source-grid source-grid-row2">
             <div id="saved-source-info" class="source-info"></div>
             <a href="sources.html" class="fr-link fr-link--sm">
@@ -520,8 +467,6 @@
             <div></div>
           </div>
         </div>
-
-        <div id="source-info" class="source-info fr-mt-1w"></div>
 
         <!-- Config IA (collapsible) -->
         <div class="ia-config-toggle" onclick="toggleIAConfig()">
@@ -1047,79 +992,10 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
     // ============================================================
     // GESTION DES SOURCES
     // ============================================================
-    const API_PRESETS = {
-      'controle-technique': 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records',
-      'elections': 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/resultats-legislatives-2024/records',
-      'qualite-air': 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/qualite-de-lair-mesuree-dans-la-station-pa04/records'
-    };
-
-    function switchSourceType(type) {
-      document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`[data-source-type="${type}"]`).classList.add('active');
-      document.getElementById('source-panel-api').style.display = type === 'api' ? 'block' : 'none';
-      document.getElementById('source-panel-saved').style.display = type === 'saved' ? 'block' : 'none';
-    }
-
-    // Handle preset change to show/hide custom URL input
-    document.getElementById('preset-api').addEventListener('change', (e) => {
-      const customGroup = document.getElementById('custom-url-group');
-      customGroup.style.display = e.target.value === 'custom' ? 'block' : 'none';
-    });
-
-    async function loadAPIData() {
-      const preset = document.getElementById('preset-api').value;
-      const statusEl = document.getElementById('source-status-api');
-      const infoEl = document.getElementById('source-info');
-      let apiUrl;
-
-      if (preset === 'custom') {
-        apiUrl = document.getElementById('custom-api-url').value.trim();
-        if (!apiUrl) {
-          if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">URL requise</span>';
-          return;
-        }
-      } else if (preset && API_PRESETS[preset]) {
-        apiUrl = API_PRESETS[preset];
-      } else {
-        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">Sélectionner</span>';
-        return;
-      }
-
-      if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--info fr-badge--sm">Chargement...</span>';
-      infoEl.innerHTML = '';
-
-      const sourceName = preset === 'custom' ? 'API personnalisée' : preset;
-
-      try {
-        const response = await fetch(apiUrl + '?limit=100');
-        const json = await response.json();
-        const records = json.results || json.records || [];
-
-        if (records.length === 0) throw new Error('Aucune donnée');
-
-        state.source = { name: sourceName, type: 'api', url: apiUrl };
-        state.localData = records.map(r => r.fields || r);
-        analyzeFields();
-        updateFieldsList();
-        updateRawData();
-
-        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>';
-        infoEl.innerHTML = `<span class="source-badge source-badge-api">API</span> ${state.localData.length} enregistrements`;
-
-        addMessage('assistant', `API "${sourceName}" chargée (${state.localData.length} lignes). Que voulez-vous visualiser ?`, [
-          'Barres',
-          'Camembert',
-          'Courbe'
-        ]);
-      } catch (error) {
-        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--error fr-badge--sm">Erreur</span>';
-        infoEl.innerHTML = `<span style="color: var(--text-default-error);">${error.message}</span>`;
-      }
-    }
 
     function loadSavedSources() {
       const select = document.getElementById('saved-source');
-      select.innerHTML = '<option value="">— Choisir une source —</option>';
+      select.innerHTML = '<option value="">— Choisir —</option>';
 
       const sources = JSON.parse(localStorage.getItem('gouv_widgets_sources') || '[]');
       const selectedSource = JSON.parse(localStorage.getItem('gouv_widgets_selected_source') || 'null');
@@ -1159,7 +1035,7 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
     function handleSourceChange() {
       const select = document.getElementById('saved-source');
       const selectedOption = select.options[select.selectedIndex];
-      const infoEl = document.getElementById('source-info');
+      const infoEl = document.getElementById('saved-source-info');
 
       if (!selectedOption || !selectedOption.dataset.source) {
         state.source = null;
@@ -1195,7 +1071,7 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
         ]);
 
         // Update status badge
-        const statusEl = document.getElementById('source-status-saved');
+        const statusEl = document.getElementById('fields-status');
         if (statusEl) {
           statusEl.innerHTML = '<span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>';
         }
@@ -1205,7 +1081,7 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
     function loadSavedSourceData() {
       const select = document.getElementById('saved-source');
       if (!select.value) {
-        const statusEl = document.getElementById('source-status-saved');
+        const statusEl = document.getElementById('fields-status');
         if (statusEl) {
           statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">Sélectionner</span>';
         }
@@ -1505,7 +1381,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
         return false;
       }
 
-      const infoEl = document.getElementById('source-info');
+      const infoEl = document.getElementById('saved-source-info');
       infoEl.innerHTML = '<i class="ri-loader-4-line"></i> Rechargement avec filtres...';
 
       try {

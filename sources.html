@@ -456,7 +456,7 @@
             </button>
           </div>
 
-          <div class="explorer-tabs">
+          <div id="explorer-tabs" class="explorer-tabs">
             <button class="explorer-tab active" data-tab="documents">Documents</button>
             <button class="explorer-tab" data-tab="tables">Tables</button>
             <button class="explorer-tab" data-tab="preview">Aperçu</button>
@@ -1105,11 +1105,16 @@
       }
 
       // Utilise le proxy pour éviter les erreurs CORS
+      const useLocalProxy = isViteDevMode();
       let testUrl;
       if (url.includes('docs.getgrist.com')) {
-        testUrl = '/grist-proxy/api/orgs';
+        testUrl = useLocalProxy
+          ? '/grist-proxy/api/orgs'
+          : `${EXTERNAL_PROXY}/grist-proxy/api/orgs`;
       } else if (url.includes('grist.numerique.gouv.fr')) {
-        testUrl = '/grist-gouv-proxy/api/orgs';
+        testUrl = useLocalProxy
+          ? '/grist-gouv-proxy/api/orgs'
+          : `${EXTERNAL_PROXY}/grist-gouv-proxy/api/orgs`;
       } else {
         testUrl = `${url}/api/orgs`;
       }
@@ -1337,6 +1342,9 @@
       // Hide export button (only for local sources)
       document.getElementById('export-grist-btn').style.display = 'none';
 
+      // Show explorer tabs (hidden when previewing local sources)
+      document.getElementById('explorer-tabs').style.display = '';
+
       // Hide/show appropriate tabs based on connection type
       const docTab = document.querySelector('[data-tab="documents"]');
       const tablesTab = document.querySelector('[data-tab="tables"]');
@@ -1499,23 +1507,34 @@
     // ============================================================
     // GRIST API
     // ============================================================
-    // Convertit une URL Grist en URL proxy locale pour éviter les erreurs CORS
+    // Détecte si on est en mode Vite dev (localhost) ou en production/Tauri
+    function isViteDevMode() {
+      return window.location.hostname === 'localhost' && window.location.port === '5173';
+    }
+
+    // Préfixe du proxy externe pour le mode production/Tauri
+    const EXTERNAL_PROXY = 'https://chartsbuilder.matge.com';
+
+    // Convertit une URL Grist en URL proxy pour éviter les erreurs CORS
     function getProxyUrl(gristUrl, endpoint) {
       const url = new URL(gristUrl);
+      const useLocalProxy = isViteDevMode();
 
       // Si c'est docs.getgrist.com, utiliser le proxy dédié
       if (url.hostname === 'docs.getgrist.com') {
-        return `/grist-proxy/api${endpoint}`;
+        return useLocalProxy
+          ? `/grist-proxy/api${endpoint}`
+          : `${EXTERNAL_PROXY}/grist-proxy/api${endpoint}`;
       }
 
       // Si c'est grist.numerique.gouv.fr, utiliser le proxy gouv
       if (url.hostname === 'grist.numerique.gouv.fr') {
-        return `/grist-gouv-proxy/api${endpoint}`;
+        return useLocalProxy
+          ? `/grist-gouv-proxy/api${endpoint}`
+          : `${EXTERNAL_PROXY}/grist-gouv-proxy/api${endpoint}`;
       }
 
-      // Sinon, utiliser le proxy générique (pour instances self-hosted)
-      // Note: pour les instances self-hosted, il faudra configurer CORS côté serveur
-      // ou ajouter d'autres entrées de proxy dans vite.config.ts
+      // Sinon, utiliser l'URL directe (instances self-hosted avec CORS configuré)
       return `${gristUrl}/api${endpoint}`;
     }
 
@@ -2226,10 +2245,14 @@
 
     function previewSource(index) {
       const source = state.sources[index];
+      console.log('previewSource called:', { index, source, hasData: !!source.data, dataLength: source.data?.length });
 
       document.getElementById('explorer-empty').style.display = 'none';
       document.getElementById('explorer-content').style.display = 'block';
       document.getElementById('explorer-title').textContent = source.name;
+
+      // Hide connection explorer tabs for local sources
+      document.getElementById('explorer-tabs').style.display = 'none';
 
       // Show preview tab
       switchExplorerTab('preview');
@@ -2239,6 +2262,16 @@
 
       if (!source.data || source.data.length === 0) {
         info.textContent = 'Source vide';
+        // Still try to show export button for sources with recordCount but no loaded data
+        state.previewedSource = source;
+        // Legacy connections may not have type field - detect Grist by presence of 'url' (not 'apiUrl')
+        const hasGristWithApiKey = state.connections.some(c => (c.type === 'grist' || (!c.type && c.url)) && !c.isPublic && c.apiKey);
+        const exportBtn = document.getElementById('export-grist-btn');
+        if (source.type === 'manual' && hasGristWithApiKey) {
+          exportBtn.style.display = '';
+        } else {
+          exportBtn.style.display = 'none';
+        }
         return;
       }
 
@@ -2269,9 +2302,11 @@
       state.previewedSource = source;
 
       // Show export button for local sources (manual) if we have Grist connections with API key
-      const hasGristConnections = state.connections.some(c => c.type === 'grist' && c.apiKey);
+      // Note: Legacy connections may not have type field - detect Grist by presence of 'url' (not 'apiUrl')
+      const gristConnections = state.connections.filter(c => c.type === 'grist' || (!c.type && c.url));
+      const hasGristWithApiKey = gristConnections.some(c => !c.isPublic && c.apiKey);
       const exportBtn = document.getElementById('export-grist-btn');
-      if (source.type === 'manual' && hasGristConnections) {
+      if (source.type === 'manual' && hasGristWithApiKey) {
         exportBtn.style.display = '';
       } else {
         exportBtn.style.display = 'none';
@@ -2316,7 +2351,9 @@
       select.innerHTML = '<option value="">-- Sélectionner --</option>';
 
       state.connections.forEach((conn, index) => {
-        if (conn.type === 'grist' && conn.apiKey) {
+        // Legacy connections may not have type field - detect Grist by presence of 'url' (not 'apiUrl')
+        const isGrist = conn.type === 'grist' || (!conn.type && conn.url);
+        if (isGrist && !conn.isPublic && conn.apiKey) {
           select.innerHTML += `<option value="${index}">${escapeHtml(conn.name)}</option>`;
         }
       });
@@ -2358,20 +2395,55 @@
         docSelect.innerHTML = '<option value="">Chargement...</option>';
         docGroup.style.display = 'block';
 
-        // Fetch documents from Grist
-        const docsUrl = getProxyUrl(conn.url, '/docs');
-        const response = await fetch(docsUrl, {
+        // Grist API: First get orgs, then workspaces with their documents
+        const orgsUrl = getProxyUrl(conn.url, '/orgs');
+        const orgsResponse = await fetch(orgsUrl, {
           headers: { 'Authorization': `Bearer ${conn.apiKey}` }
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!orgsResponse.ok) throw new Error(`HTTP ${orgsResponse.status}`);
 
-        const docs = await response.json();
+        const orgs = await orgsResponse.json();
+
+        // Collect all documents from all workspaces
+        const allDocs = [];
+
+        for (const org of orgs) {
+          try {
+            const wsUrl = getProxyUrl(conn.url, `/orgs/${org.id}/workspaces`);
+            const wsResponse = await fetch(wsUrl, {
+              headers: { 'Authorization': `Bearer ${conn.apiKey}` }
+            });
+
+            if (wsResponse.ok) {
+              const workspaces = await wsResponse.json();
+              for (const ws of workspaces) {
+                if (ws.docs && ws.docs.length > 0) {
+                  for (const doc of ws.docs) {
+                    allDocs.push({
+                      id: doc.id,
+                      name: doc.name,
+                      workspace: ws.name,
+                      org: org.name
+                    });
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn(`Erreur workspace org ${org.id}:`, e);
+          }
+        }
 
         docSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-        docs.forEach(doc => {
-          docSelect.innerHTML += `<option value="${doc.id}">${escapeHtml(doc.name)}</option>`;
-        });
+        if (allDocs.length === 0) {
+          docSelect.innerHTML = '<option value="">Aucun document trouvé</option>';
+        } else {
+          allDocs.forEach(doc => {
+            const label = `${doc.name} (${doc.workspace})`;
+            docSelect.innerHTML += `<option value="${doc.id}">${escapeHtml(label)}</option>`;
+          });
+        }
 
       } catch (error) {
         docSelect.innerHTML = '<option value="">Erreur de chargement</option>';
@@ -2413,14 +2485,27 @@
       btn.innerHTML = '<i class="ri-loader-4-line"></i> Création...';
 
       try {
-        // 1. Build columns from data
+        // Helper to sanitize column names for Grist (only alphanumeric and underscore)
+        function sanitizeColumnId(name) {
+          return name
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+            .replace(/[^a-zA-Z0-9_]/g, '_') // Replace invalid chars with underscore
+            .replace(/^(\d)/, '_$1') // Prefix with _ if starts with digit
+            .replace(/_+/g, '_') // Collapse multiple underscores
+            .replace(/^_|_$/g, ''); // Trim underscores
+        }
+
+        // 1. Build columns from data with sanitized IDs
         const firstRecord = source.data[0];
+        const columnMapping = {}; // originalKey -> sanitizedKey
         const columns = Object.keys(firstRecord).map(key => {
+          const sanitizedId = sanitizeColumnId(key);
+          columnMapping[key] = sanitizedId;
           const value = firstRecord[key];
           let type = 'Text';
           if (typeof value === 'number') type = 'Numeric';
           else if (typeof value === 'boolean') type = 'Bool';
-          return { id: key, fields: { type } };
+          return { id: sanitizedId, fields: { type, label: key } }; // Use original as label
         });
 
         // 2. Create table
@@ -2441,10 +2526,16 @@
           throw new Error(error.error || `Erreur création table: HTTP ${createResponse.status}`);
         }
 
-        // 3. Insert records
+        // 3. Insert records (with sanitized column keys)
         btn.innerHTML = '<i class="ri-loader-4-line"></i> Insertion des données...';
 
-        const records = source.data.map(record => ({ fields: record }));
+        const records = source.data.map(record => {
+          const sanitizedFields = {};
+          for (const [key, value] of Object.entries(record)) {
+            sanitizedFields[columnMapping[key] || key] = value;
+          }
+          return { fields: sanitizedFields };
+        });
 
         const insertUrl = getProxyUrl(conn.url, `/docs/${docId}/tables/${tableName}/records`);
         const insertResponse = await fetch(insertUrl, {
