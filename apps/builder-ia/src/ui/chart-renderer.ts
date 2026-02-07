@@ -1,0 +1,315 @@
+/**
+ * Chart rendering - applies chart configuration to generate visual output
+ */
+
+import { escapeHtml, DSFR_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
+import { state } from '../state.js';
+import type { ChartConfig, AggregatedResult } from '../state.js';
+import { addMessage } from '../chat/chat.js';
+import { generateCode } from './code-generator.js';
+
+/** Chart.js loaded via CDN - access from window */
+const Chart = (window as unknown as Record<string, unknown>).Chart as unknown;
+
+/**
+ * Format a KPI value with optional unit (local version that supports unit appending)
+ */
+function formatKPIValueLocal(value: number, unit?: string): string {
+  const num = Math.round(value * 100) / 100;
+  if (unit === '\u20AC' || unit === 'EUR') {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(num);
+  } else if (unit === '%') {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(num) + ' %';
+  } else {
+    const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(num);
+    return unit ? `${formatted} ${unit}` : formatted;
+  }
+}
+
+/**
+ * Main orchestrator: aggregates data and calls the appropriate renderer
+ */
+export function applyChartConfig(config: ChartConfig): void {
+  state.chartConfig = config;
+
+  // Update UI
+  (document.getElementById('preview-title') as HTMLElement).textContent = config.title || 'Mon graphique';
+  (document.getElementById('preview-subtitle') as HTMLElement).textContent = config.subtitle || '';
+
+  // Generate chart data
+  if (!state.localData || state.localData.length === 0) {
+    addMessage('assistant', 'Aucune donnee disponible. Veuillez selectionner une source de donnees.');
+    return;
+  }
+
+  // For KPI, aggregate all values into a single result
+  if (config.type === 'kpi') {
+    let kpiValue: number;
+    const values = state.localData.map(r => parseFloat(String(r[config.valueField])) || 0);
+
+    switch (config.aggregation) {
+      case 'sum':
+        kpiValue = values.reduce((a, b) => a + b, 0);
+        break;
+      case 'count':
+        kpiValue = state.localData.length;
+        break;
+      case 'min':
+        kpiValue = Math.min(...values);
+        break;
+      case 'max':
+        kpiValue = Math.max(...values);
+        break;
+      case 'avg':
+      default:
+        kpiValue = values.reduce((a, b) => a + b, 0) / values.length;
+    }
+
+    const results: AggregatedResult[] = [{ label: config.title || 'Valeur', value: kpiValue }];
+    renderKPI(config, kpiValue);
+    generateCode(config, results);
+    return;
+  }
+
+  // Aggregate data for charts
+  const aggregated: Record<string, { values: number[]; count: number; code: string | null }> = {};
+  const isMap = config.type === 'map';
+  const codeField = config.codeField || config.labelField;
+
+  state.localData.forEach(record => {
+    const label = isMap
+      ? String(record[codeField!] || 'N/A')
+      : String(record[config.labelField!] || 'N/A');
+    const value = parseFloat(String(record[config.valueField])) || 0;
+
+    if (!aggregated[label]) {
+      aggregated[label] = { values: [], count: 0, code: isMap ? String(record[codeField!] || '') : null };
+    }
+    aggregated[label].values.push(value);
+    aggregated[label].count++;
+  });
+
+  let results: AggregatedResult[] = Object.entries(aggregated).map(([label, data]) => {
+    let value: number;
+    switch (config.aggregation) {
+      case 'sum':
+        value = data.values.reduce((a, b) => a + b, 0);
+        break;
+      case 'count':
+        value = data.count;
+        break;
+      case 'min':
+        value = Math.min(...data.values);
+        break;
+      case 'max':
+        value = Math.max(...data.values);
+        break;
+      case 'avg':
+      default:
+        value = data.values.reduce((a, b) => a + b, 0) / data.values.length;
+    }
+    return { label, value, code: data.code };
+  });
+
+  // Sort
+  results.sort((a, b) => {
+    return config.sortOrder === 'asc' ? a.value - b.value : b.value - a.value;
+  });
+
+  // Limit
+  const limit = config.limit || 10;
+  results = results.slice(0, limit);
+
+  // Render chart
+  renderChart(config, results);
+
+  // Generate code
+  generateCode(config, results);
+}
+
+/**
+ * Render a KPI card in the preview panel
+ */
+function renderKPI(config: ChartConfig, value: number): void {
+  const canvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+  const emptyState = document.getElementById('empty-state') as HTMLElement;
+  const chartWrapper = document.querySelector('.chart-wrapper') as HTMLElement;
+
+  emptyState.style.display = 'none';
+  canvas.style.display = 'none';
+
+  if (state.chart) {
+    (state.chart as { destroy(): void }).destroy();
+    state.chart = null;
+  }
+
+  // Remove any existing KPI card
+  const existingKpi = chartWrapper.querySelector('.kpi-card');
+  if (existingKpi) existingKpi.remove();
+
+  const variant = config.variant || '';
+  const unit = config.unit || '';
+  const formattedValue = formatKPIValueLocal(value, unit);
+
+  const kpiCard = document.createElement('div');
+  kpiCard.className = `kpi-card${variant ? ' kpi-card--' + variant : ''}`;
+  kpiCard.style.marginTop = '2rem';
+  kpiCard.innerHTML = `
+    <span class="kpi-value">${formattedValue}</span>
+    <span class="kpi-label">${escapeHtml(config.title || 'Indicateur')}</span>
+  `;
+  chartWrapper.appendChild(kpiCard);
+}
+
+/**
+ * Render a Chart.js chart (or gauge/map special types) in the preview panel
+ */
+function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
+  const canvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+  const emptyState = document.getElementById('empty-state') as HTMLElement;
+  const chartWrapper = document.querySelector('.chart-wrapper') as HTMLElement;
+
+  // Remove any existing special cards
+  const existingKpi = chartWrapper.querySelector('.kpi-card');
+  if (existingKpi) existingKpi.remove();
+  const existingGauge = chartWrapper.querySelector('.gauge-card');
+  if (existingGauge) existingGauge.remove();
+  const existingMap = chartWrapper.querySelector('.map-card');
+  if (existingMap) existingMap.remove();
+
+  if (state.chart) {
+    (state.chart as { destroy(): void }).destroy();
+    state.chart = null;
+  }
+
+  // Handle gauge type specially (no Chart.js canvas)
+  if (config.type === 'gauge') {
+    canvas.style.display = 'none';
+    emptyState.style.display = 'none';
+
+    const gaugeValue = data[0]?.value || 0;
+    const gaugeCard = document.createElement('div');
+    gaugeCard.className = 'gauge-card';
+    gaugeCard.innerHTML = `
+      <div class="gauge-container">
+        <svg viewBox="0 0 200 120" class="gauge-svg">
+          <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20" stroke-linecap="round"/>
+          <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${config.color || '#000091'}" stroke-width="20" stroke-linecap="round"
+                stroke-dasharray="${(gaugeValue / 100) * 251.2} 251.2"/>
+        </svg>
+        <div class="gauge-value">${Math.round(gaugeValue)}%</div>
+        <div class="gauge-label">${escapeHtml(config.title || 'Jauge')}</div>
+      </div>
+    `;
+    chartWrapper.appendChild(gaugeCard);
+    return;
+  }
+
+  // Handle map type (uses DSFR map-chart)
+  if (config.type === 'map') {
+    canvas.style.display = 'none';
+    emptyState.style.display = 'none';
+
+    // Transform data to DSFR format: {"code": value, ...}
+    const mapData: Record<string, number> = {};
+    data.forEach(d => {
+      let code = String(d.code || d.label || '').trim();
+      if (/^\d+$/.test(code) && code.length < 3) {
+        code = code.padStart(2, '0');
+      }
+      const value = d.value || 0;
+      if (isValidDeptCode(code)) {
+        mapData[code] = Math.round(value * 100) / 100;
+      }
+    });
+
+    const mapCard = document.createElement('div');
+    mapCard.className = 'map-card';
+    mapCard.innerHTML = `
+      <map-chart
+        data='${JSON.stringify(mapData)}'
+        name="${escapeHtml(config.title || 'Carte')}"
+        selected-palette="${config.palette || 'sequentialAscending'}"
+      ></map-chart>
+    `;
+    chartWrapper.appendChild(mapCard);
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  canvas.style.display = 'block';
+
+  const labels = data.map(d => d.label);
+  const values = data.map(d => Math.round(d.value * 100) / 100);
+
+  // Handle scatter type
+  if (config.type === 'scatter') {
+    const scatterData = data.map(d => ({
+      x: parseFloat(d.label) || 0,
+      y: d.value,
+    }));
+
+    state.chart = new (Chart as any)(canvas, {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: config.valueField,
+          data: scatterData,
+          backgroundColor: config.color || '#000091',
+          borderColor: config.color || '#000091',
+          pointRadius: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+    return;
+  }
+
+  const chartType = config.type === 'horizontalBar' ? 'bar' : config.type;
+  const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
+
+  // Build datasets array
+  const datasets: Record<string, unknown>[] = [{
+    label: config.valueField,
+    data: values,
+    backgroundColor: isMultiColor ? DSFR_COLORS.slice(0, data.length) : (config.color || '#000091'),
+    borderColor: config.color || '#000091',
+    borderWidth: config.type === 'line' ? 2 : 1,
+  }];
+
+  // Handle multi-series (valueField2)
+  if (config.valueField2 && config.data2 && config.data2.length > 0) {
+    const values2 = config.data2.map(d => Math.round(d.value * 100) / 100);
+    datasets.push({
+      label: config.valueField2,
+      data: values2,
+      backgroundColor: config.color2 || '#E1000F',
+      borderColor: config.color2 || '#E1000F',
+      borderWidth: config.type === 'line' ? 2 : 1,
+    });
+  }
+
+  state.chart = new (Chart as any)(canvas, {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: datasets,
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: config.type === 'horizontalBar' ? 'y' : 'x',
+      plugins: {
+        legend: {
+          display: isMultiColor || datasets.length > 1,
+        },
+      },
+    },
+  });
+}

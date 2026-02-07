@@ -1,0 +1,385 @@
+/**
+ * Source loading and management.
+ * Handles saved sources from localStorage, field extraction,
+ * and favorite state restoration.
+ */
+
+import { loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { state, type Source, type Field } from './state.js';
+import { selectChartType } from './ui/chart-type-selector.js';
+import { populateFieldSelects } from './sources-fields.js';
+import { renderChart } from './ui/chart-renderer.js';
+import { generateCodeForLocalData } from './ui/code-generator.js';
+
+/**
+ * Load saved sources from localStorage and populate the dropdown.
+ */
+export function loadSavedSources(): void {
+  const panel = document.getElementById('source-panel-saved');
+  if (!panel) return;
+
+  const sources = loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []);
+  const selectedSource = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+
+  // Check if there are any sources
+  const hasAnySources = sources.length > 0 ||
+    (selectedSource && selectedSource.data && selectedSource.data.length > 0);
+
+  if (!hasAnySources) {
+    // Show empty state message
+    const selectGroup = panel.querySelector('.fr-select-group') as HTMLElement | null;
+    const infoEl = document.getElementById('saved-source-info');
+    if (selectGroup) selectGroup.style.display = 'none';
+    if (infoEl) infoEl.innerHTML = '';
+
+    // Add empty message if not already present
+    if (!panel.querySelector('.empty-sources-message')) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'empty-sources-message fr-mt-1w';
+      emptyMsg.innerHTML = `
+        <p><i class="ri-database-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i></p>
+        <p>Aucune source de donn\u00e9es enregistr\u00e9e</p>
+        <a href="sources.html" class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w">
+          <i class="ri-add-line"></i> Ajouter une source
+        </a>
+      `;
+      panel.insertBefore(emptyMsg, panel.firstChild);
+    }
+    return;
+  }
+
+  // Remove empty message if present
+  const emptyMsg = panel.querySelector('.empty-sources-message');
+  if (emptyMsg) emptyMsg.remove();
+
+  // Show select group
+  const selectGroup = panel.querySelector('.fr-select-group') as HTMLElement | null;
+  if (selectGroup) selectGroup.style.display = 'block';
+
+  const select = document.getElementById('saved-source') as HTMLSelectElement | null;
+  if (!select) return;
+
+  select.innerHTML = '<option value="">\u2014 Choisir une source \u2014</option>';
+
+  // Add saved sources
+  sources.forEach((source: Source) => {
+    const option = document.createElement('option');
+    option.value = source.id;
+    const badge = source.type === 'grist' ? '\uD83D\uDFE2 Grist' : source.type === 'manual' ? '\uD83D\uDFE3 Manuel' : '\uD83D\uDD35 API';
+    option.textContent = `${badge} ${source.name}`;
+    option.dataset.source = JSON.stringify(source);
+    select.appendChild(option);
+  });
+
+  // If we have a selected source from sources.html, add it too if not already there
+  if (selectedSource && !sources.find(s => s.id === selectedSource.id)) {
+    const option = document.createElement('option');
+    option.value = selectedSource.id;
+    const badge = selectedSource.type === 'grist' ? '\uD83D\uDFE2 Grist' : selectedSource.type === 'manual' ? '\uD83D\uDFE3 Manuel' : '\uD83D\uDD35 API';
+    option.textContent = `${badge} ${selectedSource.name} (r\u00e9cent)`;
+    option.dataset.source = JSON.stringify(selectedSource);
+    option.selected = true;
+    select.appendChild(option);
+  }
+}
+
+/**
+ * Auto-select source if one was pre-selected from sources.html
+ */
+export function checkSelectedSource(): void {
+  const selectedSource = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+
+  if (selectedSource && selectedSource.data && selectedSource.data.length > 0) {
+    // Select the source
+    const select = document.getElementById('saved-source') as HTMLSelectElement | null;
+    if (!select) return;
+
+    for (const option of Array.from(select.options)) {
+      if (option.value === selectedSource.id) {
+        option.selected = true;
+        break;
+      }
+    }
+
+    // Trigger the change
+    handleSavedSourceChange();
+
+    // Show notification
+    const statusEl = document.getElementById('fields-status');
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <span class="fr-badge fr-badge--success fr-badge--sm">Source charg\u00e9e</span>
+      `;
+    }
+  }
+}
+
+/**
+ * Handle saved source dropdown change event.
+ */
+export function handleSavedSourceChange(): void {
+  const select = document.getElementById('saved-source') as HTMLSelectElement | null;
+  if (!select) return;
+
+  const selectedOption = select.options[select.selectedIndex];
+  const infoEl = document.getElementById('saved-source-info');
+
+  if (!selectedOption || !selectedOption.dataset.source) {
+    if (infoEl) infoEl.innerHTML = '';
+    return;
+  }
+
+  const source: Source = JSON.parse(selectedOption.dataset.source);
+  state.savedSource = source;
+
+  // Show info
+  const badge = source.type === 'grist' ? 'source-badge-grist' : source.type === 'manual' ? 'source-badge-manual' : 'source-badge-api';
+  const badgeText = source.type === 'grist' ? 'Grist' : source.type === 'manual' ? 'Manuel' : 'API';
+
+  if (infoEl) {
+    infoEl.innerHTML = `
+      <span class="source-badge ${badge}">${badgeText}</span>
+      ${source.recordCount || '?'} enregistrements
+    `;
+  }
+
+  // If it has local data, load fields directly
+  if (source.data && source.data.length > 0) {
+    state.localData = source.data;
+    loadFieldsFromLocalData();
+  }
+}
+
+/**
+ * Extract field metadata from local data.
+ * Supports Grist raw records and flat data structures.
+ */
+export function loadFieldsFromLocalData(): void {
+  if (!state.localData || state.localData.length === 0) return;
+
+  const source = state.savedSource;
+  const record = state.localData[0];
+
+  // Check if this is Grist data with raw records
+  if (source?.type === 'grist' && source.rawRecords && source.rawRecords.length > 0) {
+    const rawRecord = source.rawRecords[0];
+    if (rawRecord && rawRecord.fields) {
+      // Use Grist field structure with "fields." prefix for dynamic mode
+      state.fields = Object.keys(rawRecord.fields).map((key): Field => ({
+        name: key,
+        fullPath: `fields.${key}`,
+        displayName: key,
+        type: typeof rawRecord.fields[key],
+        sample: rawRecord.fields[key],
+      }));
+    }
+  } else {
+    // Flat data structure
+    // Scan multiple records to find actual type (first non-null value)
+    state.fields = Object.keys(record).map((key): Field => {
+      let detectedType = typeof record[key];
+      let sample = record[key];
+
+      // If first record has null, scan other records to find actual type
+      if (sample === null && state.localData && state.localData.length > 1) {
+        for (let i = 1; i < Math.min(state.localData.length, 100); i++) {
+          const val = state.localData[i][key];
+          if (val !== null && val !== undefined) {
+            detectedType = typeof val;
+            sample = val;
+            break;
+          }
+        }
+        // If still null after scanning, assume string (most common for codes)
+        if (sample === null) {
+          detectedType = 'string';
+        }
+      }
+
+      return {
+        name: key,
+        fullPath: key,
+        displayName: key,
+        type: detectedType,
+        sample: sample,
+      };
+    });
+  }
+
+  populateFieldSelects();
+
+  // Show/hide generation mode section based on source type
+  const generationModeSection = document.getElementById('section-generation-mode') as HTMLElement | null;
+  const dynamicWarning = document.getElementById('dynamic-warning') as HTMLElement | null;
+
+  if (source?.type === 'grist' || source?.type === 'api') {
+    if (generationModeSection) generationModeSection.style.display = 'block';
+    // Show warning if Grist and not public
+    if (dynamicWarning) {
+      dynamicWarning.style.display = (source.type === 'grist' && !source.isPublic) ? 'block' : 'none';
+    }
+  } else {
+    if (generationModeSection) generationModeSection.style.display = 'none';
+  }
+
+  const statusEl = document.getElementById('fields-status');
+  if (statusEl) {
+    statusEl.innerHTML = `
+      <span class="fr-badge fr-badge--success fr-badge--sm">Source charg\u00e9e</span>
+    `;
+  }
+}
+
+/**
+ * Load fields by fetching from an API endpoint (fallback when no local data).
+ */
+export async function loadFields(): Promise<void> {
+  const statusEl = document.getElementById('fields-status');
+
+  // Check if we're using saved source with local data
+  if (state.localData && state.localData.length > 0) {
+    loadFieldsFromLocalData();
+    return;
+  }
+
+  // Check if we have an API URL (from a saved API source)
+  if (!state.apiUrl) {
+    if (statusEl) {
+      statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">S\u00e9lectionner</span>';
+    }
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.innerHTML = '<span class="fr-badge fr-badge--info fr-badge--sm">Chargement...</span>';
+  }
+
+  try {
+    // Fetch one record to get field names
+    const url = state.apiUrl + '?limit=1';
+    const response = await fetch(url);
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const json = await response.json();
+
+    if (!json.results || json.results.length === 0) {
+      throw new Error('Aucune donn\u00e9e trouv\u00e9e');
+    }
+
+    // Extract fields from first record
+    const record = json.results[0] as Record<string, unknown>;
+    state.fields = Object.keys(record).map((key): Field => ({
+      name: key,
+      type: typeof record[key],
+      sample: record[key],
+    }));
+
+    // Populate dropdowns
+    populateFieldSelects();
+
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="fr-badge fr-badge--success fr-badge--sm">Source charg\u00e9e</span>`;
+    }
+  } catch (error) {
+    console.error(error);
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="fr-badge fr-badge--error fr-badge--sm">Erreur</span>`;
+    }
+  }
+}
+
+/**
+ * Restore state from sessionStorage when coming back from favorites page.
+ */
+export function loadFavoriteState(): void {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('from') !== 'favorites') return;
+
+  const savedState = sessionStorage.getItem('builder-state');
+  if (!savedState) return;
+
+  try {
+    const favoriteState = JSON.parse(savedState);
+    sessionStorage.removeItem('builder-state');
+
+    // Restore state
+    Object.assign(state, favoriteState);
+
+    // Update UI
+    selectChartType(state.chartType);
+
+    const titleInput = document.getElementById('chart-title') as HTMLInputElement | null;
+    const subtitleInput = document.getElementById('chart-subtitle') as HTMLInputElement | null;
+    const previewTitle = document.getElementById('preview-title');
+    const previewSubtitle = document.getElementById('preview-subtitle');
+    const paletteSelect = document.getElementById('chart-palette') as HTMLSelectElement | null;
+
+    if (titleInput) titleInput.value = state.title || '';
+    if (subtitleInput) subtitleInput.value = state.subtitle || '';
+    if (previewTitle) previewTitle.textContent = state.title || 'Mon graphique';
+    if (previewSubtitle) previewSubtitle.textContent = state.subtitle || '';
+    if (paletteSelect) paletteSelect.value = state.palette || 'categorical';
+
+    // Update fields if available
+    if (state.fields && state.fields.length > 0) {
+      populateFieldSelects();
+
+      // Select saved fields
+      setTimeout(() => {
+        const labelSelect = document.getElementById('label-field') as HTMLSelectElement | null;
+        const valueSelect = document.getElementById('value-field') as HTMLSelectElement | null;
+        const codeSelect = document.getElementById('code-field') as HTMLSelectElement | null;
+        const aggSelect = document.getElementById('aggregation') as HTMLSelectElement | null;
+        const sortSelect = document.getElementById('sort-order') as HTMLSelectElement | null;
+        const limitInput = document.getElementById('limit') as HTMLInputElement | null;
+
+        if (state.labelField && labelSelect) labelSelect.value = state.labelField;
+        if (state.valueField && valueSelect) valueSelect.value = state.valueField;
+        if (state.codeField && codeSelect) codeSelect.value = state.codeField;
+        if (state.aggregation && aggSelect) aggSelect.value = state.aggregation;
+        if (state.sortOrder && sortSelect) sortSelect.value = state.sortOrder;
+        if (state.limit && limitInput) limitInput.value = String(state.limit);
+      }, 0);
+    }
+
+    // Restore advanced mode
+    if (state.advancedMode) {
+      const toggleEl = document.getElementById('advanced-mode-toggle') as HTMLInputElement | null;
+      const queryOptionsEl = document.getElementById('advanced-query-options') as HTMLElement | null;
+      const filterEl = document.getElementById('query-filter') as HTMLInputElement | null;
+      const groupByEl = document.getElementById('query-group-by') as HTMLInputElement | null;
+      const aggregateEl = document.getElementById('query-aggregate') as HTMLInputElement | null;
+
+      if (toggleEl) toggleEl.checked = true;
+      if (queryOptionsEl) queryOptionsEl.style.display = 'block';
+      if (state.queryFilter && filterEl) filterEl.value = state.queryFilter;
+      if (state.queryGroupBy && groupByEl) groupByEl.value = state.queryGroupBy;
+      if (state.queryAggregate && aggregateEl) aggregateEl.value = state.queryAggregate;
+    }
+
+    // Re-generate the chart (with delay for DOM to update)
+    if (state.data && state.data.length > 0) {
+      setTimeout(() => {
+        renderChart();
+        generateCodeForLocalData();
+
+        // Notification
+        const statusEl = document.getElementById('fields-status');
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <span class="fr-badge fr-badge--success fr-badge--sm">Favori restaur\u00e9</span>
+          `;
+        }
+
+        // Open relevant sections
+        const chartTypeSection = document.getElementById('section-chart-type');
+        const fieldsSection = document.getElementById('section-fields');
+        if (chartTypeSection) chartTypeSection.classList.remove('collapsed');
+        if (fieldsSection) fieldsSection.classList.remove('collapsed');
+      }, 100);
+    }
+  } catch (e) {
+    console.error('Erreur restauration favori:', e);
+  }
+}

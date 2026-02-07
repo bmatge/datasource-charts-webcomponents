@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Generateur de graphiques</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+
+  <!-- DSFR Chart (pour les cartes et jauges) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- App entry point -->
+  <script type="module" src="src/main.ts"></script>
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="builder" base-path=""></app-header>
+
+  <app-layout-builder left-ratio="50">
+    <!-- ============================================ -->
+    <!-- PANNEAU DE CONFIGURATION -->
+    <!-- ============================================ -->
+    <aside slot="left" class="builder-config-panel">
+
+      <!-- ETAPE 1 : Source de donnees -->
+      <div class="config-section" id="section-source">
+        <div class="config-section-header" onclick="toggleSection('section-source')">
+          <h3><span class="step-number">1</span> Source de donnees</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+
+        <!-- Selection de source (grille 3 colonnes) -->
+        <div id="source-panel-saved" class="source-panel">
+          <!-- Ligne 1 : Select | Bouton | Status -->
+          <div class="source-grid">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="saved-source">Source</label>
+              <select class="fr-select" id="saved-source">
+                <option value="">— Choisir —</option>
+              </select>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" id="load-fields-btn">
+              <i class="ri-refresh-line"></i> Charger
+            </button>
+            <div class="source-status" id="fields-status"></div>
+          </div>
+
+          <!-- Ligne 2 : Info | Lien | (vide) -->
+          <div class="source-grid source-grid-row2">
+            <div id="saved-source-info" class="source-info"></div>
+            <a href="sources.html" class="fr-link fr-link--sm">
+              <i class="ri-add-line"></i> Nouvelle
+            </a>
+            <div></div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 1.5 : Mode de generation (visible si source Grist) -->
+      <div class="config-section collapsed" id="section-generation-mode" style="display: none;">
+        <div class="config-section-header" onclick="toggleSection('section-generation-mode')">
+          <h3><span class="step-number">1.5</span> Mode de generation</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+          <div class="fr-radio-group">
+            <input type="radio" id="mode-embedded" name="generation-mode" value="embedded" checked>
+            <label class="fr-label" for="mode-embedded">
+              Donnees integrees
+              <span class="fr-hint-text">Les donnees sont copiees dans le code HTML</span>
+            </label>
+          </div>
+          <div class="fr-radio-group fr-mt-1w">
+            <input type="radio" id="mode-dynamic" name="generation-mode" value="dynamic">
+            <label class="fr-label" for="mode-dynamic">
+              Chargement dynamique
+              <span class="fr-hint-text">Utilise &lt;gouv-source&gt; et &lt;gouv-chart&gt; pour charger les donnees en temps reel</span>
+            </label>
+          </div>
+
+          <div id="dynamic-options" class="fr-mt-2w" style="display: none;">
+            <div class="fr-input-group fr-input-group--sm">
+              <label class="fr-label" for="refresh-interval">
+                Rafraichissement automatique
+                <span class="fr-hint-text">En secondes (0 = pas de rafraichissement)</span>
+              </label>
+              <input class="fr-input" type="number" id="refresh-interval" value="0" min="0" max="3600">
+            </div>
+          </div>
+
+          <div id="dynamic-warning" class="fr-alert fr-alert--warning fr-alert--sm fr-mt-2w" style="display: none;">
+            <p>Ce document Grist n'est pas public. Le code genere ne fonctionnera que si le document est rendu public dans Grist.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 2 : Type de graphique -->
+      <div class="config-section collapsed" id="section-type">
+        <div class="config-section-header" onclick="toggleSection('section-type')">
+          <h3><span class="step-number">2</span> Type de graphique</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+
+        <div class="chart-type-grid">
+          <button class="chart-type-btn selected" data-type="bar">
+            <i class="ri-bar-chart-fill"></i>
+            <span>Barres</span>
+          </button>
+          <button class="chart-type-btn" data-type="horizontalBar">
+            <i class="ri-bar-chart-horizontal-fill"></i>
+            <span>Barres H</span>
+          </button>
+          <button class="chart-type-btn" data-type="line">
+            <i class="ri-line-chart-fill"></i>
+            <span>Lignes</span>
+          </button>
+          <button class="chart-type-btn" data-type="pie">
+            <i class="ri-pie-chart-fill"></i>
+            <span>Camembert</span>
+          </button>
+          <button class="chart-type-btn" data-type="doughnut">
+            <i class="ri-donut-chart-fill"></i>
+            <span>Anneau</span>
+          </button>
+          <button class="chart-type-btn" data-type="radar">
+            <i class="ri-radar-fill"></i>
+            <span>Radar</span>
+          </button>
+          <button class="chart-type-btn" data-type="scatter">
+            <i class="ri-bubble-chart-fill"></i>
+            <span>Nuage</span>
+          </button>
+          <button class="chart-type-btn" data-type="gauge">
+            <i class="ri-speed-fill"></i>
+            <span>Jauge</span>
+          </button>
+          <button class="chart-type-btn" data-type="kpi">
+            <i class="ri-numbers-fill"></i>
+            <span>KPI</span>
+          </button>
+          <button class="chart-type-btn" data-type="map">
+            <i class="ri-map-fill"></i>
+            <span>Carte</span>
+          </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 3 : Mapping des donnees -->
+      <div class="config-section collapsed" id="section-data">
+        <div class="config-section-header" onclick="toggleSection('section-data')">
+          <h3><span class="step-number">3</span> Configuration des donnees</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+
+        <!-- Ligne 1 : Axe X / Axe Y -->
+        <div class="config-grid-2col">
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="label-field">
+              Axe X / Categories
+              <span class="fr-hint-text">Labels</span>
+            </label>
+            <select class="fr-select" id="label-field">
+              <option value="">— Charger les champs —</option>
+            </select>
+          </div>
+
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="value-field">
+              Axe Y / Valeurs
+              <span class="fr-hint-text">Champ numerique</span>
+            </label>
+            <select class="fr-select" id="value-field">
+              <option value="">— Charger les champs —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Champs optionnels (affiches conditionnellement) -->
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="value-field-2-group" style="display: none;">
+          <label class="fr-label" for="value-field-2">
+            Serie 2 (optionnel)
+            <span class="fr-hint-text">Second champ pour comparaison</span>
+          </label>
+          <select class="fr-select" id="value-field-2">
+            <option value="">— Aucune (serie unique) —</option>
+          </select>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="code-field-group" style="display: none;">
+          <label class="fr-label" for="code-field">
+            Code departement
+            <span class="fr-hint-text">Code INSEE (01-95, 2A, 2B, 971-976)</span>
+          </label>
+          <select class="fr-select" id="code-field">
+            <option value="">— Charger les champs —</option>
+          </select>
+        </div>
+
+        <!-- Ligne 2 : Agregation / Limite -->
+        <div class="config-grid-2col fr-mt-1w">
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="aggregation">Agregation</label>
+            <select class="fr-select" id="aggregation">
+              <option value="avg">Moyenne</option>
+              <option value="sum">Somme</option>
+              <option value="count">Comptage</option>
+              <option value="min">Min</option>
+              <option value="max">Max</option>
+            </select>
+          </div>
+
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="limit">Limite</label>
+            <input class="fr-input" type="number" id="limit" value="10" min="1" max="100">
+          </div>
+        </div>
+
+        <!-- Tri -->
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+          <label class="fr-label" for="sort-order">Tri</label>
+          <select class="fr-select" id="sort-order">
+            <option value="desc">Decroissant</option>
+            <option value="asc">Croissant</option>
+          </select>
+        </div>
+
+        <!-- Toggle Mode Avance -->
+        <div class="fr-toggle fr-mt-2w">
+          <input type="checkbox" class="fr-toggle__input" id="advanced-mode-toggle" aria-describedby="advanced-mode-hint">
+          <label class="fr-toggle__label" for="advanced-mode-toggle" data-fr-checked-label="Active" data-fr-unchecked-label="Desactive">
+            Mode avance (filtres & requetes)
+          </label>
+          <p class="fr-hint-text" id="advanced-mode-hint">Utilisez gouv-query pour filtrer et transformer les donnees</p>
+        </div>
+
+        <!-- Options avancees (masquees par defaut) -->
+        <div id="advanced-query-options" class="fr-mt-2w" style="display: none;">
+          <div class="fr-alert fr-alert--info fr-alert--sm fr-mb-2w">
+            <p>Le mode avance utilise <code>&lt;gouv-query&gt;</code> pour filtrer, regrouper et agreger les donnees cote client avant de les afficher.</p>
+          </div>
+
+          <!-- Filtres -->
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="query-filter">
+              Filtres
+              <span class="fr-hint-text">Format : champ:operateur:valeur (separes par virgule)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-filter" placeholder="Ex: score:gte:80, statut:eq:actif">
+          </div>
+          <details class="fr-accordion fr-accordion--sm fr-mt-1w">
+            <summary class="fr-accordion__btn">Operateurs disponibles</summary>
+            <div class="fr-accordion__body">
+              <ul class="fr-text--xs fr-m-0">
+                <li><code>eq</code> = egal</li>
+                <li><code>neq</code> = different</li>
+                <li><code>gt</code> / <code>gte</code> = superieur (strict / ou egal)</li>
+                <li><code>lt</code> / <code>lte</code> = inferieur (strict / ou egal)</li>
+                <li><code>contains</code> = contient (texte)</li>
+                <li><code>in</code> = dans la liste (val1|val2|val3)</li>
+                <li><code>isnull</code> / <code>isnotnull</code> = null ou non</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- Group By personnalise -->
+          <div class="fr-input-group fr-input-group--sm fr-mt-2w">
+            <label class="fr-label" for="query-group-by">
+              Regroupement personnalise
+              <span class="fr-hint-text">Champs de regroupement (si different de l'axe X)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-group-by" placeholder="Ex: region, annee">
+          </div>
+
+          <!-- Agregations multiples -->
+          <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+            <label class="fr-label" for="query-aggregate">
+              Agregations multiples
+              <span class="fr-hint-text">Format : champ:fonction (separees par virgule)</span>
+            </label>
+            <input class="fr-input" type="text" id="query-aggregate" placeholder="Ex: population:sum, surface:avg, count:count">
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 4 : Apparence -->
+      <div class="config-section collapsed" id="section-appearance">
+        <div class="config-section-header" onclick="toggleSection('section-appearance')">
+          <h3><span class="step-number">4</span> Apparence</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+
+        <!-- Ligne 1 : Titre / Sous-titre -->
+        <div class="config-grid-2col">
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="chart-title">Titre</label>
+            <input class="fr-input" type="text" id="chart-title" value="Mon graphique" placeholder="Titre...">
+          </div>
+
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="chart-subtitle">Sous-titre / Source</label>
+            <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
+          </div>
+        </div>
+
+        <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="palette-config">
+          <label class="fr-label" for="chart-palette">Palette de couleurs</label>
+          <select class="fr-select" id="chart-palette">
+            <option value="default">Bleu France</option>
+            <option value="categorical">Categorielle</option>
+            <option value="sequentialAscending">Sequentielle &#8593;</option>
+            <option value="sequentialDescending">Sequentielle &#8595;</option>
+            <option value="divergentAscending">Divergente &#8593;</option>
+            <option value="divergentDescending">Divergente &#8595;</option>
+            <option value="neutral">Neutre</option>
+          </select>
+        </div>
+
+        <!-- Options specifiques KPI -->
+        <div class="kpi-config" id="kpi-config">
+          <div class="config-grid-2col fr-mt-1w">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="kpi-variant">Style KPI</label>
+              <select class="fr-select" id="kpi-variant">
+                <option value="">Par defaut</option>
+                <option value="info">Info (bleu)</option>
+                <option value="success">Succes (vert)</option>
+                <option value="warning">Attention (orange)</option>
+                <option value="error">Alerte (rouge)</option>
+              </select>
+            </div>
+            <div class="fr-input-group fr-input-group--sm">
+              <label class="fr-label" for="kpi-unit">Unite</label>
+              <input class="fr-input" type="text" id="kpi-unit" placeholder="EUR, %, ...">
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- BOUTON GENERER -->
+      <div class="config-section">
+        <button class="fr-btn fr-btn--icon-left" id="generate-btn" style="width: 100%;">
+          <i class="ri-play-fill"></i> Generer le graphique
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ============================================ -->
+    <!-- PANNEAU DE PREVISUALISATION -->
+    <!-- ============================================ -->
+    <app-preview-panel slot="right"
+      show-data-tab
+      show-save-button
+      show-playground-button
+      tab-labels="Apercu,Code genere,Donnees brutes">
+
+      <!-- Onglet Apercu -->
+      <div slot="preview">
+        <div class="preview-chart">
+          <h2 id="preview-title">Mon graphique</h2>
+          <p class="subtitle" id="preview-subtitle"></p>
+          <div class="chart-container">
+            <div class="empty-state" id="empty-state">
+              <i class="ri-bar-chart-box-line"></i>
+              <p>Configurez votre graphique et cliquez sur "Generer"</p>
+            </div>
+            <canvas id="preview-canvas" style="display: none;"></canvas>
+          </div>
+        </div>
+
+        <!-- Tableau accessible -->
+        <details class="fr-accordion">
+          <summary class="fr-accordion__btn">Donnees en tableau (accessibilite RGAA)</summary>
+          <div class="fr-accordion__content">
+            <table class="fr-table" id="accessible-table">
+              <thead><tr><th>Categorie</th><th>Valeur</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- Onglet Code -->
+      <div slot="code">
+        <p class="fr-text--sm">Copiez ce code pour l'integrer dans votre page :</p>
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mb-1w" id="copy-code-btn">
+          <i class="ri-file-copy-line"></i> Copier le code
+        </button>
+        <pre class="code-output" id="generated-code">// Le code sera genere ici...</pre>
+      </div>
+
+      <!-- Onglet Donnees -->
+      <div slot="data">
+        <p class="fr-text--sm">Donnees brutes recues de l'API :</p>
+        <pre class="code-output" id="raw-data">// Chargez d'abord les donnees...</pre>
+      </div>
+
+    </app-preview-panel>
+  </app-layout-builder>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

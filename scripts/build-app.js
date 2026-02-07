@@ -1,9 +1,26 @@
 /**
  * Script de build pour l'application Tauri
- * Copie les fichiers HTML et assets dans le dossier app-dist
+ * Copie les fichiers HTML, apps et assets dans le dossier app-dist
+ *
+ * Structure de sortie :
+ *   app-dist/
+ *     index.html          (hub page)
+ *     dist/               (gouv-widgets library)
+ *     demo/               (demo pages)
+ *     favoris.html         (redirect -> apps/favorites/)
+ *     builder.html         (redirect -> apps/builder/)
+ *     builderIA.html       (redirect -> apps/builder-ia/)
+ *     playground.html      (redirect -> apps/playground/)
+ *     sources.html         (redirect -> apps/sources/)
+ *     apps/
+ *       favorites/         (built app)
+ *       playground/
+ *       sources/
+ *       builder-ia/
+ *       builder/
  */
 
-import { cpSync, mkdirSync, rmSync, existsSync } from 'fs';
+import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,46 +34,72 @@ if (existsSync(distDir)) {
 }
 mkdirSync(distDir, { recursive: true });
 
-// Fichiers HTML à copier
-const htmlFiles = [
-  'index.html',
-  'builder.html',
-  'builderIA.html',
-  'playground.html',
-  'favoris.html',
-  'sources.html'
-];
-
-// Dossiers à copier
-const directories = [
-  'demo',
-  'dist'  // Les fichiers JS compilés
-];
-
-// Copier les fichiers HTML
-console.log('Copying HTML files...');
-for (const file of htmlFiles) {
+// Copy root index.html (hub page)
+console.log('Copying root files...');
+const rootFiles = ['index.html'];
+for (const file of rootFiles) {
   const src = join(rootDir, file);
   const dest = join(distDir, file);
   if (existsSync(src)) {
     cpSync(src, dest);
-    console.log(`  ✓ ${file}`);
-  } else {
-    console.log(`  ✗ ${file} (not found)`);
+    console.log(`  + ${file}`);
   }
 }
 
-// Copier les dossiers
-console.log('\nCopying directories...');
+// Copy core directories
+console.log('\nCopying core directories...');
+const directories = ['demo', 'dist'];
 for (const dir of directories) {
   const src = join(rootDir, dir);
   const dest = join(distDir, dir);
   if (existsSync(src)) {
     cpSync(src, dest, { recursive: true });
-    console.log(`  ✓ ${dir}/`);
+    console.log(`  + ${dir}/`);
   } else {
-    console.log(`  ✗ ${dir}/ (not found)`);
+    console.log(`  - ${dir}/ (not found)`);
   }
 }
 
-console.log('\n✓ Build completed: app-dist/');
+// Copy built apps
+console.log('\nCopying built apps...');
+const apps = ['favorites', 'playground', 'sources', 'builder-ia', 'builder'];
+for (const app of apps) {
+  const appDist = join(rootDir, 'apps', app, 'dist');
+  const dest = join(distDir, 'apps', app);
+  if (existsSync(appDist)) {
+    mkdirSync(dest, { recursive: true });
+    cpSync(appDist, dest, { recursive: true });
+    console.log(`  + apps/${app}/`);
+  } else {
+    console.log(`  - apps/${app}/ (not built yet)`);
+  }
+}
+
+// Create redirect HTML files for backwards compatibility
+console.log('\nCreating redirect files...');
+const redirects = {
+  'favoris.html': 'apps/favorites/index.html',
+  'builder.html': 'apps/builder/index.html',
+  'builderIA.html': 'apps/builder-ia/index.html',
+  'playground.html': 'apps/playground/index.html',
+  'sources.html': 'apps/sources/index.html',
+};
+
+for (const [oldFile, newPath] of Object.entries(redirects)) {
+  const dest = join(distDir, oldFile);
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=${newPath}">
+  <title>Redirection...</title>
+</head>
+<body>
+  <p>Redirection vers <a href="${newPath}">${newPath}</a></p>
+</body>
+</html>`;
+  writeFileSync(dest, html);
+  console.log(`  + ${oldFile} -> ${newPath}`);
+}
+
+console.log('\n+ Build completed: app-dist/');

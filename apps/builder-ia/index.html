@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Builder IA</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- DSFR Chart (pour les cartes) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="builder-ia" base-path=""></app-header>
+
+  <app-layout-builder left-ratio="50">
+    <!-- ============================================ -->
+    <!-- PANNEAU GAUCHE : CONFIG + CHAT -->
+    <!-- ============================================ -->
+    <aside slot="left" class="builder-config-panel">
+
+      <!-- Source de donnees + Config IA -->
+      <div class="config-section" id="section-source">
+        <div class="config-section-header" onclick="toggleSection('section-source')">
+          <h3><span class="step-number">1</span> Source de donnees</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+
+        <!-- Selection de source (grille 3 colonnes) -->
+        <div id="source-panel-saved" class="source-panel">
+          <!-- Ligne 1 : Select | Bouton | Status -->
+          <div class="source-grid">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="saved-source">Source</label>
+              <select class="fr-select" id="saved-source">
+                <option value="">-- Choisir --</option>
+              </select>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" id="load-fields-btn" onclick="loadSavedSourceData()">
+              <i class="ri-refresh-line"></i> Charger
+            </button>
+            <div class="source-status" id="fields-status"></div>
+          </div>
+
+          <!-- Ligne 2 : Info | Lien | (vide) -->
+          <div class="source-grid source-grid-row2">
+            <div id="saved-source-info" class="source-info"></div>
+            <a href="sources.html" class="fr-link fr-link--sm">
+              <i class="ri-add-line"></i> Nouvelle
+            </a>
+            <div></div>
+          </div>
+        </div>
+
+        <!-- Config IA (collapsible) -->
+        <div class="ia-config-toggle" onclick="toggleIAConfig()">
+          <span><i class="ri-robot-line"></i> Configuration Albert IA</span>
+          <i class="ri-arrow-down-s-line" id="ia-config-arrow"></i>
+        </div>
+        <div class="ia-config-content" id="ia-config-content">
+          <div class="fr-input-group">
+            <label class="fr-label" for="ia-api-url">URL de l'API</label>
+            <input class="fr-input" type="url" id="ia-api-url"
+                   value="https://albert.api.etalab.gouv.fr/v1/chat/completions"
+                   placeholder="https://albert.api.etalab.gouv.fr/v1/chat/completions">
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label" for="ia-model">Modele</label>
+            <select class="fr-select" id="ia-model">
+              <option value="albert-small">albert-small — Llama 3.1 8B (rapide)</option>
+              <option value="albert-large" selected>albert-large — Mistral Small 24B (recommande)</option>
+              <option value="albert-code">albert-code — Qwen Coder 32B</option>
+              <option value="openweight-large">openweight-large — GPT OSS 120B (lent)</option>
+              <option value="openweight-code">openweight-code — Qwen3 Coder 30B</option>
+            </select>
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label" for="ia-token">Token API</label>
+            <input class="fr-input" type="password" id="ia-token" placeholder="Votre token Albert">
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label" for="ia-system-prompt">System prompt</label>
+            <textarea class="fr-input" id="ia-system-prompt" rows="4" style="font-size: 0.75rem;">Tu es un assistant expert en visualisation de donnees pour les services publics francais.
+
+Role : Analyser les donnees fournies, suggerer des visualisations, et generer des graphiques ou KPIs.
+
+Pour creer un graphique, genere un bloc JSON :
+```json
+{
+  "action": "createChart",
+  "config": {
+    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map",
+    "labelField": "champ_labels",
+    "valueField": "champ_valeurs",
+    "valueField2": "champ_valeurs_serie2",
+    "codeField": "code_departement",
+    "aggregation": "sum|avg|count|min|max",
+    "limit": 10,
+    "sortOrder": "desc|asc",
+    "title": "Titre",
+    "subtitle": "Sous-titre",
+    "color": "#000091",
+    "color2": "#E1000F",
+    "variant": "info|success|warning|error",
+    "unit": "EUR|%|unite"
+  }
+}
+```
+
+Pour un KPI (indicateur chiffre unique), utilise type:"kpi" avec un seul valueField. Le labelField n'est pas requis pour un KPI. Les options variant et unit sont optionnelles.
+
+Tu disposes de SKILLS (connaissances specialisees) qui seront injectes automatiquement selon le contexte : ODSQL, versions API, types de graphiques, couleurs DSFR.
+
+Sois concis. Utilise le francais.</textarea>
+          </div>
+          <button class="fr-btn fr-btn--sm fr-btn--secondary" onclick="saveIAConfig()">
+            <i class="ri-save-line"></i> Sauvegarder config
+          </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- Zone Chat -->
+      <div class="chat-container">
+        <div class="chat-header">
+          <i class="ri-chat-3-line"></i>
+          Assistant graphiques
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <!-- Messages will be added here -->
+        </div>
+
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <textarea class="chat-input" id="chat-input"
+                      placeholder="Decrivez le graphique que vous souhaitez creer..."
+                      rows="1"></textarea>
+            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+              <i class="ri-send-plane-fill"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ============================================ -->
+    <!-- PANNEAU DROIT : APERCU -->
+    <!-- ============================================ -->
+    <app-preview-panel slot="right"
+      show-data-tab
+      show-save-button
+      show-playground-button
+      tab-labels="Apercu,Code,Donnees">
+
+      <!-- Tab Apercu -->
+      <div slot="preview">
+        <div class="preview-chart">
+          <h2 class="preview-title" id="preview-title">Mon graphique</h2>
+          <p class="preview-subtitle" id="preview-subtitle"></p>
+          <div class="chart-wrapper">
+            <div class="empty-state" id="empty-state">
+              <i class="ri-bar-chart-box-line"></i>
+              <p>Discutez avec l'assistant pour creer votre graphique</p>
+            </div>
+            <canvas id="preview-canvas" style="display: none;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Code -->
+      <div slot="code">
+        <button class="fr-btn fr-btn--sm fr-btn--secondary copy-btn" onclick="copyCode()">
+          <i class="ri-file-copy-line"></i> Copier le code
+        </button>
+        <pre id="generated-code">// Le code sera genere ici apres creation du graphique</pre>
+      </div>
+
+      <!-- Tab Donnees -->
+      <div slot="data">
+        <div class="data-summary" id="data-summary">
+          <h4>Champs disponibles</h4>
+          <div class="field-list" id="field-list">
+            <span style="color: var(--text-mention-grey); font-size: 0.8rem;">
+              Selectionnez une source de donnees
+            </span>
+          </div>
+        </div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Donnees brutes</h4>
+        <pre id="raw-data">// Selectionnez une source pour voir les donnees</pre>
+      </div>
+
+    </app-preview-panel>
+  </app-layout-builder>
+
+  <script type="module" src="src/main.ts"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

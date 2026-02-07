@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Mes favoris</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- DSFR Chart -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="src/styles/favorites.css">
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="favoris" base-path="../.."></app-header>
+
+  <div class="favorites-layout">
+    <!-- Sidebar avec liste des favoris -->
+    <aside class="favorites-sidebar">
+      <div class="sidebar-header">
+        <h2>
+          <i class="ri-star-fill" aria-hidden="true"></i>
+          Mes favoris
+          <span class="favorites-count" id="favorites-count">0</span>
+        </h2>
+      </div>
+      <div class="favorites-list" id="favorites-list">
+        <!-- Dynamic list -->
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="favorites-content" id="favorites-content">
+      <!-- Dynamic content -->
+    </main>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-content">
+      <h3>Supprimer ce favori ?</h3>
+      <p>Cette action est irreversible. Le favori "<span id="delete-name"></span>" sera definitivement supprime.</p>
+      <div class="modal-actions">
+        <button class="fr-btn fr-btn--secondary" onclick="closeDeleteModal()">Annuler</button>
+        <button class="fr-btn fr-btn--tertiary-no-outline" id="confirm-delete-btn">
+          <i class="ri-delete-bin-line" aria-hidden="true"></i>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer base-path="../.."></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <!-- App entry point -->
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>

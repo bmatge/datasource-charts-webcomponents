@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Playground</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- DSFR Chart -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/dracula.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/css/css.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="src/styles/playground.css">
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="playground" base-path="../.."></app-header>
+
+  <div class="example-selector">
+    <label for="example-select">Charger un exemple :</label>
+    <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
+      <optgroup label="Chart.js (API OpenDataSoft)">
+        <option value="bar-chart">Graphique en barres — Prix moyen par region</option>
+        <option value="pie-chart">Graphique circulaire — Repartition par energie</option>
+        <option value="line-chart">Graphique lineaire — Evolution des prix</option>
+        <option value="kpi-dashboard">Dashboard KPI</option>
+      </optgroup>
+      <optgroup label="DSFR Chart natifs">
+        <option value="dsfr-bar">DSFR Bar Chart</option>
+        <option value="dsfr-line">DSFR Line Chart</option>
+        <option value="dsfr-pie">DSFR Pie Chart</option>
+        <option value="dsfr-gauge">DSFR Gauge Chart</option>
+        <option value="dsfr-radar">DSFR Radar Chart</option>
+        <option value="dsfr-map">DSFR Map Chart (carte)</option>
+      </optgroup>
+      <optgroup label="Composants gouv-widgets">
+        <option value="gouv-source-chart">gouv-source + gouv-dsfr-chart</option>
+        <option value="gouv-kpi">gouv-kpi (indicateurs)</option>
+        <option value="gouv-datalist">gouv-datalist (tableau)</option>
+        <option value="gouv-dashboard">Dashboard complet gouv-widgets</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <app-layout-builder left-ratio="50">
+    <div slot="left" class="playground-editor">
+      <div class="editor-toolbar">
+        <button id="run-btn" class="fr-btn fr-btn--sm fr-btn--icon-left fr-icon-play-line">
+          Executer
+        </button>
+        <button id="reset-btn" class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-refresh-line">
+          Reinitialiser
+        </button>
+        <span style="flex: 1;"></span>
+        <button id="save-btn" class="fr-btn fr-btn--sm fr-btn--secondary">
+          <i class="ri-star-line" aria-hidden="true"></i>
+          Favoris
+        </button>
+      </div>
+      <textarea id="code-editor"></textarea>
+    </div>
+    <div slot="right" class="playground-preview">
+      <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </app-layout-builder>
+
+  <!-- Footer -->
+  <app-footer base-path="../.."></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <!-- App entry point -->
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>
