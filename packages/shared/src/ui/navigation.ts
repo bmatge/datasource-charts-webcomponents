@@ -1,22 +1,23 @@
 /**
  * Centralized inter-app navigation helpers.
- * Maps app identifiers to their root-level HTML file paths.
+ * Maps app identifiers to their paths under apps/.
  */
 
-type AppId = 'builder' | 'builder-ia' | 'playground' | 'sources' | 'favorites';
+type AppId = 'builder' | 'builder-ia' | 'dashboard' | 'playground' | 'sources' | 'favorites';
 
 const APP_FILES: Record<AppId, string> = {
-  'builder': 'builder.html',
-  'builder-ia': 'builderIA.html',
-  'playground': 'playground.html',
-  'sources': 'sources.html',
-  'favorites': 'favoris.html',
+  'builder': 'apps/builder/index.html',
+  'builder-ia': 'apps/builder-ia/index.html',
+  'dashboard': 'apps/dashboard/index.html',
+  'playground': 'apps/playground/index.html',
+  'sources': 'apps/sources/index.html',
+  'favorites': 'apps/favorites/index.html',
 };
 
 /**
  * Compute relative prefix from current page to root.
  * E.g. from /apps/builder/index.html → "../../"
- * E.g. from /builder.html → "./"
+ * E.g. from /index.html → "./"
  */
 function getRootPrefix(): string {
   const path = window.location.pathname;

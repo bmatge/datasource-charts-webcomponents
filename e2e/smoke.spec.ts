@@ -8,23 +8,28 @@ test.describe('Smoke tests', () => {
   });
 
   test('Builder app loads', async ({ page }) => {
-    await page.goto('/builder.html');
+    await page.goto('/apps/builder/index.html');
     await expect(page.locator('#source-panel-saved')).toBeVisible();
   });
 
   test('Playground app loads', async ({ page }) => {
-    await page.goto('/playground.html');
+    await page.goto('/apps/playground/index.html');
     await expect(page.locator('.CodeMirror')).toBeVisible();
   });
 
   test('Sources app loads', async ({ page }) => {
-    await page.goto('/sources.html');
+    await page.goto('/apps/sources/index.html');
     await expect(page.locator('#connections-list')).toBeVisible();
   });
 
   test('Favorites app loads', async ({ page }) => {
-    await page.goto('/favoris.html');
+    await page.goto('/apps/favorites/index.html');
     await expect(page.locator('#favorites-list')).toBeVisible();
+  });
+
+  test('Dashboard app loads', async ({ page }) => {
+    await page.goto('/apps/dashboard/index.html');
+    await expect(page.locator('#dashboard-grid')).toBeVisible();
   });
 
   test('No native alert() dialogs are triggered on load', async ({ page }) => {
@@ -34,7 +39,7 @@ test.describe('Smoke tests', () => {
       dialog.dismiss();
     });
 
-    for (const path of ['/', '/builder.html', '/playground.html', '/sources.html', '/favoris.html']) {
+    for (const path of ['/', '/apps/builder/index.html', '/apps/playground/index.html', '/apps/sources/index.html', '/apps/favorites/index.html', '/apps/dashboard/index.html']) {
       await page.goto(path);
       await page.waitForTimeout(500);
     }

@@ -10,9 +10,11 @@ Architecture monorepo avec npm workspaces.
 
 ```
 /
+├── index.html               # Hub (page d'accueil)
 ├── apps/                    # Applications TypeScript
 │   ├── builder/             # Generateur visuel de graphiques
 │   ├── builder-ia/          # Generateur IA avec Albert
+│   ├── dashboard/           # Editeur de tableaux de bord
 │   ├── sources/             # Gestionnaire de sources de donnees
 │   ├── playground/          # Environnement de code interactif
 │   └── favorites/           # Gestion des favoris
@@ -21,7 +23,8 @@ Architecture monorepo avec npm workspaces.
 ├── src/                     # Composants web gouv-widgets (Lit)
 ├── dist/                    # Build output (ESM + UMD)
 ├── demo/                    # Pages de demonstration
-├── tests/                   # Tests Vitest (397 tests)
+├── tests/                   # Tests Vitest + Playwright E2E
+├── e2e/                     # Tests E2E Playwright
 ├── src-tauri/               # App desktop Tauri
 ├── scripts/                 # Scripts de build
 └── app-dist/                # Build output pour Tauri (genere)
@@ -49,6 +52,7 @@ npm run tauri:build   # Build Tauri production (build:all + build:app + tauri bu
 ```bash
 npm run dev --workspace=@gouv-widgets/app-builder
 npm run dev --workspace=@gouv-widgets/app-builder-ia
+npm run dev --workspace=@gouv-widgets/app-dashboard
 npm run dev --workspace=@gouv-widgets/app-sources
 npm run dev --workspace=@gouv-widgets/app-playground
 npm run dev --workspace=@gouv-widgets/app-favorites
@@ -74,6 +78,8 @@ Utilitaires partages entre toutes les apps :
 - `getProxyConfig()`, `getProxiedUrl()` - Configuration proxy
 - `loadFromStorage()`, `saveToStorage()`, `STORAGE_KEYS` - localStorage
 - `openModal()`, `closeModal()` - Modales DSFR
+- `toastWarning()`, `toastSuccess()` - Notifications toast DSFR
+- `appHref()`, `navigateTo()` - Navigation inter-apps
 
 ## APIs externes utilisees
 
@@ -93,5 +99,4 @@ Utilitaires partages entre toutes les apps :
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
 - Toujours lancer `npm run build` apres modification des composants
-- Les anciens fichiers HTML (builder.html, etc.) sont conserves comme redirections
 - Docker : `docker build -t gouv-widgets . && docker run -p 8080:80 gouv-widgets`

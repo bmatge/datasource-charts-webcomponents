@@ -62,7 +62,7 @@ for (const dir of directories) {
 
 // Copy built apps
 console.log('\nCopying built apps...');
-const apps = ['favorites', 'playground', 'sources', 'builder-ia', 'builder'];
+const apps = ['favorites', 'playground', 'sources', 'builder-ia', 'builder', 'dashboard'];
 for (const app of apps) {
   const appDist = join(rootDir, 'apps', app, 'dist');
   const dest = join(distDir, 'apps', app);
@@ -83,6 +83,7 @@ const redirects = {
   'builderIA.html': 'apps/builder-ia/index.html',
   'playground.html': 'apps/playground/index.html',
   'sources.html': 'apps/sources/index.html',
+  'dashboard.html': 'apps/dashboard/index.html',
 };
 
 for (const [oldFile, newPath] of Object.entries(redirects)) {

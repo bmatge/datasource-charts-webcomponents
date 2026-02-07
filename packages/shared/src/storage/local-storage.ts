@@ -5,6 +5,7 @@
 /** Well-known storage keys used across apps */
 export const STORAGE_KEYS = {
   FAVORITES: 'gouv-widgets-favorites',
+  DASHBOARDS: 'gouv-widgets-dashboards',
   CONNECTIONS: 'gouv_widgets_connections',
   SOURCES: 'gouv_widgets_sources',
   SELECTED_SOURCE: 'gouv_widgets_selected_source',

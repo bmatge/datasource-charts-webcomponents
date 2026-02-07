@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Dashboard Editor - gouv-widgets</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- DSFR Chart -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- gouv-widgets -->
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="src/styles/dashboard.css">
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="dashboard" base-path="../.."></app-header>
+
+  <div class="vde-container">
+    <!-- Sidebar gauche -->
+    <aside class="vde-sidebar">
+      <!-- Bibliothèque de widgets -->
+      <div class="vde-sidebar-section">
+        <h3><i class="ri-dashboard-line"></i> Widgets</h3>
+        <div class="widget-library" id="widget-library">
+          <div class="widget-item" draggable="true" data-widget-type="kpi">
+            <i class="ri-number-1"></i>
+            <span>KPI</span>
+          </div>
+          <div class="widget-item" draggable="true" data-widget-type="chart">
+            <i class="ri-bar-chart-box-line"></i>
+            <span>Graphique</span>
+          </div>
+          <div class="widget-item" draggable="true" data-widget-type="table">
+            <i class="ri-table-line"></i>
+            <span>Tableau</span>
+          </div>
+          <div class="widget-item" draggable="true" data-widget-type="text">
+            <i class="ri-text"></i>
+            <span>Texte</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Favoris -->
+      <div class="vde-sidebar-section">
+        <h3><i class="ri-star-line"></i> Mes favoris</h3>
+        <div class="favorites-list" id="favorites-list">
+          <p class="favorites-empty">Chargement...</p>
+        </div>
+      </div>
+
+      <!-- Paramètres de grille -->
+      <div class="vde-sidebar-section">
+        <h3><i class="ri-settings-3-line"></i> Grille</h3>
+        <div class="grid-settings">
+          <label>
+            Colonnes par défaut
+            <select id="grid-columns">
+              <option value="1">1 colonne</option>
+              <option value="2" selected>2 colonnes</option>
+              <option value="3">3 colonnes</option>
+              <option value="4">4 colonnes</option>
+            </select>
+          </label>
+          <label>
+            Espacement
+            <select id="grid-gap">
+              <option value="fr-grid-row--gutters">Normal</option>
+              <option value="">Sans espacement</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <div class="vde-sidebar-section">
+        <h3><i class="ri-database-2-line"></i> Sources</h3>
+        <div id="sources-list">
+          <p class="favorites-empty">Aucune source</p>
+        </div>
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w" id="add-source-btn">
+          <i class="ri-add-line"></i> Ajouter une source
+        </button>
+      </div>
+    </aside>
+
+    <!-- Zone principale -->
+    <main class="vde-main">
+      <!-- Toolbar -->
+      <div class="vde-toolbar">
+        <div class="vde-toolbar-left">
+          <input type="text" class="dashboard-title-input" id="dashboard-title" value="Mon tableau de bord" placeholder="Titre du dashboard">
+        </div>
+        <div class="vde-toolbar-right">
+          <button class="fr-btn fr-btn--sm fr-btn--secondary" id="btn-new">
+            <i class="ri-file-add-line"></i> Nouveau
+          </button>
+          <button class="fr-btn fr-btn--sm fr-btn--secondary" id="btn-load">
+            <i class="ri-folder-open-line"></i> Ouvrir
+          </button>
+          <button class="fr-btn fr-btn--sm" id="btn-save">
+            <i class="ri-save-line"></i> Sauvegarder
+          </button>
+          <button class="fr-btn fr-btn--sm fr-btn--tertiary" id="btn-export">
+            <i class="ri-download-line"></i> Exporter HTML
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="vde-preview">
+        <div class="vde-canvas">
+          <div class="dashboard-grid" id="dashboard-grid">
+            <!-- Ligne 1 -->
+            <div class="fr-grid-row fr-grid-row--gutters dashboard-row" data-row="0">
+              <div class="fr-col-12 fr-col-md-6">
+                <div class="drop-cell empty" data-row="0" data-col="0" data-colspan="6">
+                  <div class="drop-cell-placeholder">
+                    <i class="ri-add-circle-line"></i>
+                    <span>Glisser un widget ici</span>
+                  </div>
+                </div>
+              </div>
+              <div class="fr-col-12 fr-col-md-6">
+                <div class="drop-cell empty" data-row="0" data-col="1" data-colspan="6">
+                  <div class="drop-cell-placeholder">
+                    <i class="ri-add-circle-line"></i>
+                    <span>Glisser un widget ici</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-row-btn" id="add-row-btn">
+            <i class="ri-add-line"></i> Ajouter une ligne
+          </button>
+        </div>
+      </div>
+
+      <!-- Onglets bas -->
+      <div class="vde-tabs">
+        <button class="vde-tab active" data-tab="preview">
+          <i class="ri-eye-line"></i> Aperçu
+        </button>
+        <button class="vde-tab" data-tab="code">
+          <i class="ri-code-line"></i> Code généré
+        </button>
+        <button class="vde-tab" data-tab="json">
+          <i class="ri-braces-line"></i> JSON
+        </button>
+      </div>
+
+      <div class="vde-tab-content" id="tab-preview"></div>
+      <div class="vde-tab-content" id="tab-code">
+        <pre class="code-preview" id="generated-code"><!-- Le code sera généré ici --></pre>
+      </div>
+      <div class="vde-tab-content" id="tab-json">
+        <pre class="code-preview" id="generated-json">{}</pre>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de configuration -->
+  <div class="config-modal" id="config-modal">
+    <div class="config-modal-content">
+      <div class="config-modal-header">
+        <h3 id="config-modal-title">Configurer le widget</h3>
+        <button class="widget-action-btn" id="close-modal">
+          <i class="ri-close-line" style="font-size: 1.5rem;"></i>
+        </button>
+      </div>
+      <div class="config-modal-body" id="config-modal-body">
+        <!-- Contenu dynamique -->
+      </div>
+      <div class="config-modal-footer">
+        <button class="fr-btn fr-btn--secondary" id="cancel-config">Annuler</button>
+        <button class="fr-btn" id="apply-config">Appliquer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal liste des dashboards -->
+  <div class="config-modal" id="dashboards-modal">
+    <div class="config-modal-content">
+      <div class="config-modal-header">
+        <h3>Mes tableaux de bord</h3>
+        <button class="widget-action-btn" id="close-dashboards-modal">
+          <i class="ri-close-line" style="font-size: 1.5rem;"></i>
+        </button>
+      </div>
+      <div class="config-modal-body" id="dashboards-list">
+        <!-- Liste dynamique -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer base-path="../.."></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <!-- App entry point -->
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>

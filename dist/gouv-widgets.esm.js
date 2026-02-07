@@ -2316,12 +2316,12 @@ let oe = class extends $ {
     return [
       { id: "accueil", label: "Accueil", href: "index.html" },
       { id: "composants", label: "Composants", href: "demo/index.html" },
-      { id: "builder", label: "Builder", href: "builder.html" },
-      { id: "builder-ia", label: "Builder IA", href: "builderIA.html" },
-      { id: "dashboard", label: "Dashboard", href: "dashboard.html" },
-      { id: "playground", label: "Playground", href: "playground.html" },
-      { id: "favoris", label: "Favoris", href: "favoris.html" },
-      { id: "sources", label: "Sources", href: "sources.html" }
+      { id: "builder", label: "Builder", href: "apps/builder/index.html" },
+      { id: "builder-ia", label: "Builder IA", href: "apps/builder-ia/index.html" },
+      { id: "dashboard", label: "Dashboard", href: "apps/dashboard/index.html" },
+      { id: "playground", label: "Playground", href: "apps/playground/index.html" },
+      { id: "favoris", label: "Favoris", href: "apps/favorites/index.html" },
+      { id: "sources", label: "Sources", href: "apps/sources/index.html" }
     ];
   }
   render() {
@@ -2355,7 +2355,7 @@ let oe = class extends $ {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}favoris.html">
+                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}apps/favorites/index.html">
                         Favoris
                       </a>
                     </li>
