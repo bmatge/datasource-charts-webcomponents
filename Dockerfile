@@ -31,9 +31,13 @@ COPY --from=builder /app/app-dist /usr/share/nginx/html
 # Copier les fichiers publics
 COPY --from=builder /app/public /usr/share/nginx/html/public
 
+# Scripts de monitoring (parsing beacon logs -> JSON)
+COPY scripts/parse-beacon-logs.sh /usr/local/bin/parse-beacon-logs.sh
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://127.0.0.1/ || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -29,6 +29,10 @@ const DATA_URL = 'https://chartsbuilder.matge.com/public/monitoring-data.json';
 export async function fetchMonitoringData(): Promise<MonitoringData> {
   const response = await fetch(`${DATA_URL}?_=${Date.now()}`, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const ct = response.headers.get('content-type') || '';
+  if (!ct.includes('json')) {
+    throw new Error(`Le fichier monitoring-data.json n'existe pas encore sur le serveur (reponse ${ct || 'text/html'}). Lancez scripts/parse-beacon-logs.js pour le generer.`);
+  }
   return response.json();
 }
 
