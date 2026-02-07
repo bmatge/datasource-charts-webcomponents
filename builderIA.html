@@ -124,6 +124,46 @@
       font-size: 0.8rem;
     }
 
+    /* Grille source 3 colonnes (même que builder.html) */
+    .source-grid {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .source-grid .fr-select-group,
+    .source-grid .fr-input-group {
+      margin-bottom: 0;
+    }
+
+    .source-grid .fr-label {
+      margin-bottom: 0.25rem;
+    }
+
+    .source-btn {
+      white-space: nowrap;
+      height: 40px;
+    }
+
+    .source-status {
+      font-size: 0.75rem;
+      white-space: nowrap;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .source-grid-row2 {
+      margin-top: 0.5rem;
+      align-items: center;
+    }
+
+    .source-info {
+      font-size: 0.8rem;
+      color: var(--text-mention-grey);
+    }
+
     /* ============================================ */
     /* ZONE CHAT */
     /* ============================================ */
@@ -436,36 +476,52 @@
 
         <!-- Panel API publique -->
         <div id="source-panel-api" class="source-panel">
-          <div class="fr-select-group fr-select-group--sm">
-            <label class="fr-label" for="preset-api">API prédéfinie</label>
-            <select class="fr-select" id="preset-api">
-              <option value="">— Choisir —</option>
-              <option value="controle-technique">Contrôle technique</option>
-              <option value="elections">Élections</option>
-              <option value="qualite-air">Qualité de l'air</option>
-              <option value="custom">URL personnalisée...</option>
-            </select>
+          <div class="source-grid">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="preset-api">API</label>
+              <select class="fr-select" id="preset-api">
+                <option value="">— Choisir —</option>
+                <option value="controle-technique">Contrôle technique</option>
+                <option value="elections">Élections</option>
+                <option value="qualite-air">Qualité de l'air</option>
+                <option value="custom">URL personnalisée...</option>
+              </select>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" onclick="loadAPIData()">
+              <i class="ri-download-line"></i> Charger
+            </button>
+            <div class="source-status" id="source-status-api"></div>
           </div>
           <div class="fr-input-group fr-input-group--sm fr-mt-1w" id="custom-url-group" style="display: none;">
-            <label class="fr-label" for="custom-api-url">URL de l'API (OpenDataSoft v2.1)</label>
+            <label class="fr-label" for="custom-api-url">URL personnalisée</label>
             <input class="fr-input" type="url" id="custom-api-url" placeholder="https://...">
           </div>
-          <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w" onclick="loadAPIData()">
-            <i class="ri-download-line"></i> Charger
-          </button>
         </div>
 
         <!-- Panel Mes sources -->
         <div id="source-panel-saved" class="source-panel" style="display: none;">
-          <div class="fr-select-group fr-select-group--sm">
-            <label class="fr-label" for="saved-source">Source</label>
-            <select class="fr-select" id="saved-source">
-              <option value="">— Choisir —</option>
-            </select>
+          <div class="source-grid">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="saved-source">Source</label>
+              <select class="fr-select" id="saved-source">
+                <option value="">— Choisir —</option>
+              </select>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" onclick="loadSavedSourceData()">
+              <i class="ri-refresh-line"></i> Charger
+            </button>
+            <div class="source-status" id="source-status-saved"></div>
+          </div>
+          <div class="source-grid source-grid-row2">
+            <div id="saved-source-info" class="source-info"></div>
+            <a href="sources.html" class="fr-link fr-link--sm">
+              <i class="ri-add-line"></i> Nouvelle
+            </a>
+            <div></div>
           </div>
         </div>
 
-        <div id="source-info" style="font-size: 0.8rem; color: var(--text-mention-grey); margin-top: 0.5rem;"></div>
+        <div id="source-info" class="source-info fr-mt-1w"></div>
 
         <!-- Config IA (collapsible) -->
         <div class="ia-config-toggle" onclick="toggleIAConfig()">
@@ -945,23 +1001,25 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
 
     async function loadAPIData() {
       const preset = document.getElementById('preset-api').value;
+      const statusEl = document.getElementById('source-status-api');
+      const infoEl = document.getElementById('source-info');
       let apiUrl;
 
       if (preset === 'custom') {
         apiUrl = document.getElementById('custom-api-url').value.trim();
         if (!apiUrl) {
-          alert('Entrez une URL d\'API');
+          if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">URL requise</span>';
           return;
         }
       } else if (preset && API_PRESETS[preset]) {
         apiUrl = API_PRESETS[preset];
       } else {
-        alert('Sélectionnez une API');
+        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">Sélectionner</span>';
         return;
       }
 
-      const infoEl = document.getElementById('source-info');
-      infoEl.innerHTML = '<i class="ri-loader-4-line"></i> Chargement...';
+      if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--info fr-badge--sm">Chargement...</span>';
+      infoEl.innerHTML = '';
 
       const sourceName = preset === 'custom' ? 'API personnalisée' : preset;
 
@@ -978,6 +1036,7 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
         updateFieldsList();
         updateRawData();
 
+        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>';
         infoEl.innerHTML = `<span class="source-badge source-badge-api">API</span> ${state.localData.length} enregistrements`;
 
         addMessage('assistant', `API "${sourceName}" chargée (${state.localData.length} lignes). Que voulez-vous visualiser ?`, [
@@ -986,7 +1045,8 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
           'Courbe'
         ]);
       } catch (error) {
-        infoEl.innerHTML = `<span style="color: red;">Erreur: ${error.message}</span>`;
+        if (statusEl) statusEl.innerHTML = '<span class="fr-badge fr-badge--error fr-badge--sm">Erreur</span>';
+        infoEl.innerHTML = `<span style="color: var(--text-default-error);">${error.message}</span>`;
       }
     }
 
@@ -1066,7 +1126,25 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
           'Camembert',
           'Courbe'
         ]);
+
+        // Update status badge
+        const statusEl = document.getElementById('source-status-saved');
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>';
+        }
       }
+    }
+
+    function loadSavedSourceData() {
+      const select = document.getElementById('saved-source');
+      if (!select.value) {
+        const statusEl = document.getElementById('source-status-saved');
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">Sélectionner</span>';
+        }
+        return;
+      }
+      handleSourceChange();
     }
 
     function analyzeFields() {

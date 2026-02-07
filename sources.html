@@ -367,6 +367,29 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Edit/Delete button hover */
+    .edit-conn-btn:hover,
+    .edit-source-btn:hover {
+      color: var(--text-action-high-blue-france) !important;
+      background: var(--background-alt-grey);
+    }
+    .delete-conn-btn:hover,
+    .delete-source-btn:hover {
+      color: var(--text-default-error) !important;
+      background: var(--background-alt-grey);
+    }
+
+    /* Source mode panels */
+    .source-mode-panel {
+      margin-top: 1rem;
+    }
+
+    /* JSON textarea */
+    #json-input {
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
@@ -421,6 +444,9 @@
             <h2 id="explorer-title" style="margin: 0; flex: 1;">Explorer</h2>
             <button class="fr-btn fr-btn--sm" id="use-in-builder-btn">
               <i class="ri-bar-chart-box-line"></i> Utiliser dans le Builder
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary" id="save-favorite-btn" style="display: none;">
+              <i class="ri-star-line"></i> Garder en favori
             </button>
             <button class="fr-btn fr-btn--sm fr-btn--secondary" id="refresh-btn">
               <i class="ri-refresh-line"></i> Rafraîchir
@@ -645,7 +671,7 @@
     <div class="modal modal--wide">
       <div class="modal-header">
         <h3><i class="ri-edit-line"></i> Nouvelle source manuelle</h3>
-        <button class="modal-close" onclick="closeModal('manual-source-modal')">&times;</button>
+        <button class="modal-close" onclick="closeManualSourceModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div class="fr-input-group">
@@ -653,7 +679,21 @@
           <input class="fr-input" type="text" id="source-name" placeholder="Ex: Statistiques mensuelles">
         </div>
 
-        <div class="fr-input-group fr-mt-2w">
+        <!-- Tabs pour les 3 modes -->
+        <div class="explorer-tabs fr-mt-2w" id="source-mode-tabs">
+          <button class="explorer-tab active" data-source-mode="table">
+            <i class="ri-table-line"></i> Tableau
+          </button>
+          <button class="explorer-tab" data-source-mode="json">
+            <i class="ri-code-s-slash-line"></i> Coller JSON
+          </button>
+          <button class="explorer-tab" data-source-mode="csv">
+            <i class="ri-file-text-line"></i> Importer CSV
+          </button>
+        </div>
+
+        <!-- Mode Tableau -->
+        <div id="source-mode-table" class="source-mode-panel">
           <label class="fr-label">
             Données
             <span class="fr-hint-text">Renseignez les noms de colonnes puis remplissez les lignes du tableau</span>
@@ -709,9 +749,64 @@
             </button>
           </div>
         </div>
+
+        <!-- Mode JSON -->
+        <div id="source-mode-json" class="source-mode-panel" style="display: none;">
+          <div class="fr-input-group">
+            <label class="fr-label" for="json-input">
+              Contenu JSON
+              <span class="fr-hint-text">Collez un tableau JSON ou un objet contenant un tableau</span>
+            </label>
+            <textarea class="fr-input" id="json-input" rows="10" placeholder='[
+  {"label": "Janvier", "valeur": 100},
+  {"label": "Février", "valeur": 150}
+]'></textarea>
+          </div>
+          <div class="fr-input-group fr-mt-1w">
+            <label class="fr-label" for="json-data-path">
+              Chemin vers les données (optionnel)
+              <span class="fr-hint-text">Si le tableau est imbriqué, indiquez le chemin (ex: data.items)</span>
+            </label>
+            <input class="fr-input" type="text" id="json-data-path" placeholder="data.items">
+          </div>
+          <div id="json-preview" class="fr-mt-2w" style="display: none;">
+            <p class="fr-text--sm" style="color: var(--text-mention-grey);">Aperçu : <span id="json-preview-count">0</span> éléments détectés</p>
+          </div>
+        </div>
+
+        <!-- Mode CSV -->
+        <div id="source-mode-csv" class="source-mode-panel" style="display: none;">
+          <div class="fr-upload-group">
+            <label class="fr-label" for="csv-file">
+              Fichier CSV
+              <span class="fr-hint-text">Sélectionnez un fichier CSV (séparateur : virgule ou point-virgule)</span>
+            </label>
+            <input class="fr-upload" type="file" id="csv-file" accept=".csv,text/csv">
+          </div>
+          <div class="fr-input-group fr-mt-2w">
+            <label class="fr-label" for="csv-separator">
+              Séparateur
+            </label>
+            <select class="fr-select" id="csv-separator">
+              <option value="auto">Automatique</option>
+              <option value=";">Point-virgule (;)</option>
+              <option value=",">Virgule (,)</option>
+              <option value="\t">Tabulation</option>
+            </select>
+          </div>
+          <div id="csv-preview" class="fr-mt-2w" style="display: none;">
+            <p class="fr-text--sm" style="color: var(--text-mention-grey);">Aperçu : <span id="csv-preview-count">0</span> lignes détectées</p>
+            <div class="table-preview" style="max-height: 200px;">
+              <table class="fr-table" id="csv-preview-table">
+                <thead><tr></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
-        <button class="fr-btn fr-btn--secondary" onclick="closeModal('manual-source-modal')">Annuler</button>
+        <button class="fr-btn fr-btn--secondary" onclick="closeManualSourceModal()">Annuler</button>
         <button class="fr-btn" id="save-source-btn">Sauvegarder</button>
       </div>
     </div>
@@ -750,7 +845,8 @@
       selectedTable: null,
       documents: [],
       tables: [],
-      tableData: []
+      tableData: [],
+      editingConnectionIndex: null  // Index de la connexion en cours d'édition (null = création)
     };
 
     // ============================================================
@@ -770,9 +866,10 @@
       document.getElementById('create-table-confirm-btn').addEventListener('click', createGristTable);
       document.getElementById('refresh-btn').addEventListener('click', refreshCurrentView);
       document.getElementById('use-in-builder-btn').addEventListener('click', openInBuilder);
+      document.getElementById('save-favorite-btn').addEventListener('click', saveAsFavorite);
 
-      // Tabs
-      document.querySelectorAll('.explorer-tab').forEach(tab => {
+      // Tabs (only explorer tabs, not modal tabs)
+      document.querySelectorAll('.explorer-tabs:not(#source-mode-tabs) .explorer-tab').forEach(tab => {
         tab.addEventListener('click', () => switchExplorerTab(tab.dataset.tab));
       });
 
@@ -787,6 +884,37 @@
           apiKeyGroup.style.display = 'block';
           apiKeyInfo.style.display = 'block';
         }
+      });
+
+      // Connection type toggle (Grist vs API)
+      document.querySelectorAll('input[name="conn-type"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const gristFields = document.getElementById('grist-fields');
+          const apiFields = document.getElementById('api-fields');
+          if (e.target.value === 'grist') {
+            gristFields.style.display = 'block';
+            apiFields.style.display = 'none';
+          } else {
+            gristFields.style.display = 'none';
+            apiFields.style.display = 'block';
+          }
+        });
+      });
+
+      // Source mode tabs (Table / JSON / CSV)
+      document.querySelectorAll('[data-source-mode]').forEach(tab => {
+        tab.addEventListener('click', () => switchSourceMode(tab.dataset.sourceMode));
+      });
+
+      // JSON input parsing
+      document.getElementById('json-input').addEventListener('input', parseJsonInput);
+      document.getElementById('json-data-path').addEventListener('input', parseJsonInput);
+
+      // CSV file handling
+      document.getElementById('csv-file').addEventListener('change', handleCsvFile);
+      document.getElementById('csv-separator').addEventListener('change', () => {
+        const file = document.getElementById('csv-file').files[0];
+        if (file) handleCsvFile({ target: { files: [file] } });
       });
     });
 
@@ -816,18 +944,50 @@
       state.connections.forEach((conn, index) => {
         const card = document.createElement('div');
         card.className = `connection-card ${state.selectedConnection === index ? 'selected' : ''}`;
+
+        // Badge selon le type
+        const typeBadge = conn.type === 'api'
+          ? '<span class="badge-source-type badge-api">API</span>'
+          : '<span class="badge-source-type badge-grist">Grist</span>';
         const publicBadge = conn.isPublic ? '<span class="badge-source-type" style="background: #f59e0b; color: white; margin-left: 0.25rem;">Public</span>' : '';
+
         card.innerHTML = `
-          <div class="name">
-            <span class="badge-source-type badge-grist">Grist</span>${publicBadge}
-            ${escapeHtml(conn.name)}
+          <div class="name" style="display: flex; align-items: center; gap: 0.5rem;">
+            ${typeBadge}${publicBadge}
+            <span style="flex: 1;">${escapeHtml(conn.name)}</span>
+            <button class="edit-conn-btn" title="Modifier cette connexion" style="background: none; border: none; cursor: pointer; color: var(--text-mention-grey); padding: 0.25rem; font-size: 0.875rem; line-height: 1; border-radius: 3px;">
+              <i class="ri-pencil-line"></i>
+            </button>
+            <button class="delete-conn-btn" title="Supprimer cette connexion" style="background: none; border: none; cursor: pointer; color: var(--text-mention-grey); padding: 0.25rem; font-size: 0.875rem; line-height: 1; border-radius: 3px;">
+              <i class="ri-delete-bin-line"></i>
+            </button>
           </div>
-          <div class="url">${escapeHtml(conn.url)}</div>
+          <div class="url">${escapeHtml(conn.url || conn.apiUrl || '')}</div>
           <div class="status ${conn.status || ''}">${conn.statusText || 'Non testé'}</div>
         `;
-        card.addEventListener('click', () => selectConnection(index));
 
-        // Context menu (right-click to delete)
+        // Click on card to select
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.delete-conn-btn') && !e.target.closest('.edit-conn-btn')) {
+            selectConnection(index);
+          }
+        });
+
+        // Edit button
+        card.querySelector('.edit-conn-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          editConnection(index);
+        });
+
+        // Delete button
+        card.querySelector('.delete-conn-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Supprimer la connexion "${conn.name}" ?`)) {
+            deleteConnection(index);
+          }
+        });
+
+        // Context menu (right-click to delete) - keep as alternative
         card.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           if (confirm(`Supprimer la connexion "${conn.name}" ?`)) {
@@ -840,13 +1000,37 @@
     }
 
     async function saveConnection() {
+      const connType = document.querySelector('input[name="conn-type"]:checked').value;
       const name = document.getElementById('conn-name').value.trim();
+
+      if (!name) {
+        alert('Veuillez entrer un nom pour la connexion');
+        return;
+      }
+
+      const btn = document.getElementById('save-connection-btn');
+      btn.disabled = true;
+      btn.textContent = 'Test en cours...';
+
+      try {
+        if (connType === 'grist') {
+          await saveGristConnection(name);
+        } else {
+          await saveApiConnection(name);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Tester et sauvegarder';
+      }
+    }
+
+    async function saveGristConnection(name) {
       const url = document.getElementById('conn-url').value.trim().replace(/\/$/, '');
       const apiKey = document.getElementById('conn-api-key').value.trim();
       const isPublic = document.getElementById('conn-public').checked;
 
-      if (!name || !url) {
-        alert('Veuillez remplir le nom et l\'URL');
+      if (!url) {
+        alert('Veuillez remplir l\'URL du serveur Grist');
         return;
       }
 
@@ -855,67 +1039,212 @@
         return;
       }
 
-      // Test the connection
-      const btn = document.getElementById('save-connection-btn');
-      btn.disabled = true;
-      btn.textContent = 'Test en cours...';
-
-      try {
-        // Utilise le proxy pour éviter les erreurs CORS
-        let testUrl;
-        if (url.includes('docs.getgrist.com')) {
-          testUrl = '/grist-proxy/api/orgs';
-        } else if (url.includes('grist.numerique.gouv.fr')) {
-          testUrl = '/grist-gouv-proxy/api/orgs';
-        } else {
-          testUrl = `${url}/api/orgs`;
-        }
-
-        const headers = {};
-        if (!isPublic && apiKey) {
-          headers['Authorization'] = `Bearer ${apiKey}`;
-        }
-
-        const response = await fetch(testUrl, { headers });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const orgs = await response.json();
-
-        // Save connection
-        const connection = {
-          id: Date.now().toString(),
-          name,
-          url,
-          apiKey: isPublic ? null : apiKey,
-          isPublic,
-          status: 'connected',
-          statusText: isPublic ? 'Mode public' : `Connecté (${orgs.length} org${orgs.length > 1 ? 's' : ''})`
-        };
-
-        state.connections.push(connection);
-        saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
-        renderConnections();
-        closeModal('connection-modal');
-
-        // Clear form
-        document.getElementById('conn-name').value = '';
-        document.getElementById('conn-api-key').value = '';
-        document.getElementById('conn-public').checked = false;
-        document.getElementById('api-key-group').style.display = 'block';
-        document.getElementById('api-key-info').style.display = 'block';
-
-        // Auto-select the new connection
-        selectConnection(state.connections.length - 1);
-
-      } catch (error) {
-        alert(`Erreur de connexion : ${error.message}\n\nVérifiez l'URL${isPublic ? '' : ' et la clé API'}.`);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Tester et sauvegarder';
+      // Utilise le proxy pour éviter les erreurs CORS
+      let testUrl;
+      if (url.includes('docs.getgrist.com')) {
+        testUrl = '/grist-proxy/api/orgs';
+      } else if (url.includes('grist.numerique.gouv.fr')) {
+        testUrl = '/grist-gouv-proxy/api/orgs';
+      } else {
+        testUrl = `${url}/api/orgs`;
       }
+
+      const headers = {};
+      if (!isPublic && apiKey) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+
+      const response = await fetch(testUrl, { headers });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const orgs = await response.json();
+
+      // Save or update connection
+      const connection = {
+        id: state.editingConnectionIndex !== null ? state.connections[state.editingConnectionIndex].id : Date.now().toString(),
+        type: 'grist',
+        name,
+        url,
+        apiKey: isPublic ? null : apiKey,
+        isPublic,
+        status: 'connected',
+        statusText: isPublic ? 'Mode public' : `Connecté (${orgs.length} org${orgs.length > 1 ? 's' : ''})`
+      };
+
+      if (state.editingConnectionIndex !== null) {
+        // Mode édition : mettre à jour la connexion existante
+        state.connections[state.editingConnectionIndex] = connection;
+      } else {
+        // Mode création : ajouter une nouvelle connexion
+        state.connections.push(connection);
+      }
+
+      const wasEditing = state.editingConnectionIndex;
+      saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
+      renderConnections();
+      closeModal('connection-modal');
+      resetConnectionForm();
+
+      // Auto-select the connection (edited or new)
+      if (wasEditing !== null) {
+        selectConnection(wasEditing);
+      } else {
+        selectConnection(state.connections.length - 1);
+      }
+    }
+
+    async function saveApiConnection(name) {
+      const apiUrl = document.getElementById('api-url').value.trim();
+      const method = document.getElementById('api-method').value;
+      const headersText = document.getElementById('api-headers').value.trim();
+      const dataPath = document.getElementById('api-data-path').value.trim();
+
+      if (!apiUrl) {
+        alert('Veuillez remplir l\'URL de l\'API');
+        return;
+      }
+
+      // Parse headers
+      let headers = {};
+      if (headersText) {
+        try {
+          headers = JSON.parse(headersText);
+        } catch (e) {
+          alert('Les en-têtes doivent être au format JSON valide');
+          return;
+        }
+      }
+
+      // Test the API
+      const response = await fetch(apiUrl, {
+        method,
+        headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      let data = await response.json();
+
+      // Navigate to data path if specified
+      if (dataPath) {
+        const parts = dataPath.split('.');
+        for (const part of parts) {
+          if (data && typeof data === 'object') {
+            data = data[part];
+          }
+        }
+      }
+
+      // Check if data is an array
+      const isArray = Array.isArray(data);
+      const count = isArray ? data.length : (data ? 1 : 0);
+
+      // Save or update connection
+      const connection = {
+        id: state.editingConnectionIndex !== null ? state.connections[state.editingConnectionIndex].id : Date.now().toString(),
+        type: 'api',
+        name,
+        apiUrl,
+        method,
+        headers: headersText || null,
+        dataPath: dataPath || null,
+        status: 'connected',
+        statusText: `Connecté (${count} ${isArray ? 'éléments' : 'objet'})`
+      };
+
+      const wasEditing = state.editingConnectionIndex;
+
+      if (state.editingConnectionIndex !== null) {
+        // Mode édition : mettre à jour la connexion existante
+        state.connections[state.editingConnectionIndex] = connection;
+      } else {
+        // Mode création : ajouter une nouvelle connexion
+        state.connections.push(connection);
+      }
+
+      saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
+      renderConnections();
+      closeModal('connection-modal');
+      resetConnectionForm();
+
+      // Auto-select the connection (edited or new)
+      if (wasEditing !== null) {
+        selectConnection(wasEditing);
+      } else {
+        selectConnection(state.connections.length - 1);
+      }
+    }
+
+    function resetConnectionForm() {
+      state.editingConnectionIndex = null;
+      document.getElementById('conn-name').value = '';
+      document.getElementById('conn-url').value = 'https://grist.numerique.gouv.fr';
+      document.getElementById('conn-api-key').value = '';
+      document.getElementById('conn-public').checked = false;
+      document.getElementById('api-key-group').style.display = 'block';
+      document.getElementById('api-key-info').style.display = 'block';
+      document.getElementById('api-url').value = '';
+      document.getElementById('api-method').value = 'GET';
+      document.getElementById('api-headers').value = '';
+      document.getElementById('api-data-path').value = '';
+      document.getElementById('conn-type-grist').checked = true;
+      document.getElementById('grist-fields').style.display = 'block';
+      document.getElementById('api-fields').style.display = 'none';
+      // Réinitialiser le titre de la modale
+      document.querySelector('#connection-modal .modal-header h3').innerHTML = '<i class="ri-link"></i> Nouvelle connexion';
+      document.getElementById('save-connection-btn').textContent = 'Tester et sauvegarder';
+    }
+
+    function editConnection(index) {
+      const conn = state.connections[index];
+      if (!conn) return;
+
+      state.editingConnectionIndex = index;
+
+      // Mettre à jour le titre de la modale
+      document.querySelector('#connection-modal .modal-header h3').innerHTML = '<i class="ri-pencil-line"></i> Modifier la connexion';
+      document.getElementById('save-connection-btn').textContent = 'Enregistrer les modifications';
+
+      // Pré-remplir les champs communs
+      document.getElementById('conn-name').value = conn.name || '';
+
+      if (conn.type === 'api') {
+        // Connexion API
+        document.getElementById('conn-type-api').checked = true;
+        document.getElementById('grist-fields').style.display = 'none';
+        document.getElementById('api-fields').style.display = 'block';
+        document.getElementById('api-url').value = conn.apiUrl || '';
+        document.getElementById('api-method').value = conn.method || 'GET';
+        document.getElementById('api-headers').value = conn.headers || '';
+        document.getElementById('api-data-path').value = conn.dataPath || '';
+      } else {
+        // Connexion Grist
+        document.getElementById('conn-type-grist').checked = true;
+        document.getElementById('grist-fields').style.display = 'block';
+        document.getElementById('api-fields').style.display = 'none';
+        document.getElementById('conn-url').value = conn.url || 'https://grist.numerique.gouv.fr';
+        document.getElementById('conn-public').checked = conn.isPublic || false;
+        document.getElementById('conn-api-key').value = conn.apiKey || '';
+
+        // Afficher/masquer le champ API key selon le mode public
+        const apiKeyGroup = document.getElementById('api-key-group');
+        const apiKeyInfo = document.getElementById('api-key-info');
+        if (conn.isPublic) {
+          apiKeyGroup.style.display = 'none';
+          apiKeyInfo.style.display = 'none';
+        } else {
+          apiKeyGroup.style.display = 'block';
+          apiKeyInfo.style.display = 'block';
+        }
+      }
+
+      // Ouvrir la modale
+      openModal('connection-modal');
     }
 
     function deleteConnection(index) {
@@ -939,7 +1268,163 @@
       document.getElementById('explorer-empty').style.display = 'none';
       document.getElementById('explorer-content').style.display = 'block';
 
-      await loadDocuments();
+      // Hide/show appropriate tabs based on connection type
+      const docTab = document.querySelector('[data-tab="documents"]');
+      const tablesTab = document.querySelector('[data-tab="tables"]');
+      const createTableBtn = document.getElementById('create-table-btn');
+
+      if (conn.type === 'api') {
+        // API connections: hide docs/tables tabs, show preview directly
+        docTab.style.display = 'none';
+        tablesTab.style.display = 'none';
+        createTableBtn.style.display = 'none';
+        switchExplorerTab('preview');
+        await loadApiData();
+      } else {
+        // Grist connections: show all tabs
+        docTab.style.display = '';
+        tablesTab.style.display = '';
+        createTableBtn.style.display = '';
+        switchExplorerTab('documents');
+        await loadDocuments();
+      }
+    }
+
+    async function loadApiData() {
+      const conn = state.connections[state.selectedConnection];
+      if (!conn || conn.type !== 'api') return;
+
+      const info = document.getElementById('preview-info');
+      const table = document.getElementById('preview-table');
+
+      info.textContent = 'Chargement...';
+      table.querySelector('thead tr').innerHTML = '';
+      table.querySelector('tbody').innerHTML = '';
+
+      try {
+        const headers = conn.headers ? JSON.parse(conn.headers) : {};
+        const response = await fetch(conn.apiUrl, {
+          method: conn.method || 'GET',
+          headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        let data = await response.json();
+
+        // Navigate to data path if specified
+        if (conn.dataPath) {
+          const parts = conn.dataPath.split('.');
+          for (const part of parts) {
+            if (data && typeof data === 'object') {
+              data = data[part];
+            }
+          }
+        }
+
+        // Normalize to array
+        if (!Array.isArray(data)) {
+          data = data ? [data] : [];
+        }
+
+        state.tableData = data;
+
+        if (data.length === 0) {
+          info.textContent = 'Aucune donnée';
+          return;
+        }
+
+        // Get columns from first record
+        const columns = Object.keys(data[0]);
+
+        // Header
+        let headerHtml = '';
+        columns.forEach(col => {
+          headerHtml += `<th>${escapeHtml(col)}</th>`;
+        });
+        table.querySelector('thead tr').innerHTML = headerHtml;
+
+        // Body
+        let bodyHtml = '';
+        data.slice(0, 20).forEach(record => {
+          bodyHtml += '<tr>';
+          columns.forEach(col => {
+            const val = record[col];
+            bodyHtml += `<td>${escapeHtml(String(val ?? ''))}</td>`;
+          });
+          bodyHtml += '</tr>';
+        });
+        table.querySelector('tbody').innerHTML = bodyHtml;
+
+        info.textContent = `${data.length} enregistrements`;
+
+        // Save as current source for builder
+        saveApiAsSource();
+
+        // Show favorite button
+        document.getElementById('save-favorite-btn').style.display = '';
+
+      } catch (error) {
+        info.textContent = `Erreur : ${error.message}`;
+      }
+    }
+
+    function saveApiAsSource() {
+      const conn = state.connections[state.selectedConnection];
+      if (!conn) return;
+
+      const source = {
+        id: `api_${conn.id}`,
+        name: conn.name,
+        type: 'api',
+        connectionId: conn.id,
+        apiUrl: conn.apiUrl,
+        method: conn.method,
+        headers: conn.headers,
+        dataPath: conn.dataPath,
+        data: state.tableData,
+        recordCount: state.tableData.length
+      };
+
+      localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+    }
+
+    function saveAsFavorite() {
+      // Get the current source from localStorage
+      const currentSource = JSON.parse(localStorage.getItem(STORAGE_KEYS.SELECTED_SOURCE) || 'null');
+      if (!currentSource) {
+        alert('Aucune source sélectionnée');
+        return;
+      }
+
+      // Check if already in favorites
+      const existingIndex = state.sources.findIndex(s => s.id === currentSource.id);
+      if (existingIndex >= 0) {
+        if (confirm('Cette source est déjà dans vos favoris. Voulez-vous la mettre à jour avec les données actuelles ?')) {
+          state.sources[existingIndex] = currentSource;
+          saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+          renderSources();
+          alert('Source mise à jour !');
+        }
+        return;
+      }
+
+      // Add to favorites
+      state.sources.push(currentSource);
+      saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+      renderSources();
+
+      // Change button to indicate success
+      const btn = document.getElementById('save-favorite-btn');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="ri-star-fill"></i> Ajouté aux favoris';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+      }, 2000);
     }
 
     // ============================================================
@@ -1132,6 +1617,9 @@
         // Save as current source for builder
         saveCurrentAsSource();
 
+        // Show favorite button
+        document.getElementById('save-favorite-btn').style.display = '';
+
       } catch (error) {
         info.textContent = `Erreur : ${error.message}`;
       }
@@ -1240,14 +1728,32 @@
         const card = document.createElement('div');
         card.className = 'connection-card';
         card.innerHTML = `
-          <div class="name">
+          <div class="name" style="display: flex; align-items: center; gap: 0.5rem;">
             <span class="badge-source-type ${badge}">${badgeText}</span>
-            ${escapeHtml(source.name)}
+            <span style="flex: 1;">${escapeHtml(source.name)}</span>
+            <button class="delete-source-btn" title="Supprimer cette source" style="background: none; border: none; cursor: pointer; color: var(--text-mention-grey); padding: 0.25rem; font-size: 0.875rem; line-height: 1; border-radius: 3px;">
+              <i class="ri-delete-bin-line"></i>
+            </button>
           </div>
           <div class="url">${source.recordCount || '?'} enregistrements</div>
         `;
 
-        card.addEventListener('click', () => previewSource(index));
+        // Click on card to preview
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.delete-source-btn')) {
+            previewSource(index);
+          }
+        });
+
+        // Delete button
+        card.querySelector('.delete-source-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Supprimer la source "${source.name}" ?`)) {
+            deleteSource(index);
+          }
+        });
+
+        // Context menu (right-click to delete) - keep as alternative
         card.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           if (confirm(`Supprimer la source "${source.name}" ?`)) {
@@ -1259,6 +1765,179 @@
       });
     }
 
+    // Variable to store current source mode
+    let currentSourceMode = 'table';
+    let parsedJsonData = null;
+    let parsedCsvData = null;
+
+    function switchSourceMode(mode) {
+      currentSourceMode = mode;
+
+      // Update tabs
+      document.querySelectorAll('[data-source-mode]').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-source-mode="${mode}"]`).classList.add('active');
+
+      // Show/hide panels
+      document.querySelectorAll('.source-mode-panel').forEach(p => p.style.display = 'none');
+      document.getElementById(`source-mode-${mode}`).style.display = 'block';
+    }
+
+    function parseJsonInput() {
+      const input = document.getElementById('json-input').value.trim();
+      const dataPath = document.getElementById('json-data-path').value.trim();
+      const preview = document.getElementById('json-preview');
+      const countSpan = document.getElementById('json-preview-count');
+
+      if (!input) {
+        preview.style.display = 'none';
+        parsedJsonData = null;
+        return;
+      }
+
+      try {
+        let data = JSON.parse(input);
+
+        // Navigate to data path if specified
+        if (dataPath) {
+          const parts = dataPath.split('.');
+          for (const part of parts) {
+            if (data && typeof data === 'object') {
+              data = data[part];
+            }
+          }
+        }
+
+        // Normalize to array
+        if (!Array.isArray(data)) {
+          data = data ? [data] : [];
+        }
+
+        parsedJsonData = data;
+        countSpan.textContent = data.length;
+        preview.style.display = 'block';
+        preview.querySelector('p').style.color = 'var(--text-default-success)';
+
+      } catch (e) {
+        parsedJsonData = null;
+        countSpan.textContent = 'Erreur JSON';
+        preview.style.display = 'block';
+        preview.querySelector('p').style.color = 'var(--text-default-error)';
+      }
+    }
+
+    function handleCsvFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        parseCsvText(text);
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCsvText(text) {
+      const separatorSelect = document.getElementById('csv-separator').value;
+      let separator = separatorSelect;
+
+      // Auto-detect separator
+      if (separator === 'auto') {
+        const firstLine = text.split('\n')[0];
+        if (firstLine.includes(';')) separator = ';';
+        else if (firstLine.includes('\t')) separator = '\t';
+        else separator = ',';
+      }
+
+      const lines = text.trim().split('\n');
+      if (lines.length === 0) {
+        parsedCsvData = null;
+        return;
+      }
+
+      // Parse header
+      const headers = parseCSVLine(lines[0], separator);
+
+      // Parse data rows
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i], separator);
+        if (values.length === 0 || (values.length === 1 && values[0] === '')) continue;
+
+        const row = {};
+        headers.forEach((header, index) => {
+          let val = values[index] || '';
+          // Auto-detect numbers (gère formats FR et EN)
+          if (looksLikeNumber(val)) {
+            const num = toNumber(val);
+            if (num !== null) {
+              val = num;
+            }
+          }
+          row[header] = val;
+        });
+        data.push(row);
+      }
+
+      parsedCsvData = data;
+
+      // Show preview
+      const preview = document.getElementById('csv-preview');
+      const countSpan = document.getElementById('csv-preview-count');
+      const table = document.getElementById('csv-preview-table');
+
+      countSpan.textContent = data.length;
+      preview.style.display = 'block';
+
+      // Header
+      let headerHtml = '';
+      headers.forEach(h => {
+        headerHtml += `<th>${escapeHtml(h)}</th>`;
+      });
+      table.querySelector('thead tr').innerHTML = headerHtml;
+
+      // Body (first 5 rows)
+      let bodyHtml = '';
+      data.slice(0, 5).forEach(row => {
+        bodyHtml += '<tr>';
+        headers.forEach(h => {
+          bodyHtml += `<td>${escapeHtml(String(row[h] ?? ''))}</td>`;
+        });
+        bodyHtml += '</tr>';
+      });
+      if (data.length > 5) {
+        bodyHtml += `<tr><td colspan="${headers.length}" style="text-align: center; color: var(--text-mention-grey);">... et ${data.length - 5} autres lignes</td></tr>`;
+      }
+      table.querySelector('tbody').innerHTML = bodyHtml;
+    }
+
+    function parseCSVLine(line, separator) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === separator && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+
+      return result;
+    }
+
     function saveManualSource() {
       const name = document.getElementById('source-name').value.trim();
 
@@ -1267,11 +1946,26 @@
         return;
       }
 
-      const data = collectTableData();
+      let data;
 
-      if (data.length === 0) {
-        alert('Le tableau est vide. Ajoutez au moins une ligne avec des données.');
-        return;
+      if (currentSourceMode === 'table') {
+        data = collectTableData();
+        if (data.length === 0) {
+          alert('Le tableau est vide. Ajoutez au moins une ligne avec des données.');
+          return;
+        }
+      } else if (currentSourceMode === 'json') {
+        if (!parsedJsonData || parsedJsonData.length === 0) {
+          alert('Aucune donnée JSON valide. Vérifiez le format.');
+          return;
+        }
+        data = parsedJsonData;
+      } else if (currentSourceMode === 'csv') {
+        if (!parsedCsvData || parsedCsvData.length === 0) {
+          alert('Aucun fichier CSV chargé ou fichier vide.');
+          return;
+        }
+        data = parsedCsvData;
       }
 
       const source = {
@@ -1288,8 +1982,32 @@
       closeModal('manual-source-modal');
 
       // Reset form
+      resetManualSourceModal();
+    }
+
+    function resetManualSourceModal() {
       document.getElementById('source-name').value = '';
       resetTableEditor();
+
+      // Reset JSON mode
+      document.getElementById('json-input').value = '';
+      document.getElementById('json-data-path').value = '';
+      document.getElementById('json-preview').style.display = 'none';
+      parsedJsonData = null;
+
+      // Reset CSV mode
+      document.getElementById('csv-file').value = '';
+      document.getElementById('csv-separator').value = 'auto';
+      document.getElementById('csv-preview').style.display = 'none';
+      parsedCsvData = null;
+
+      // Reset to table mode
+      switchSourceMode('table');
+    }
+
+    function closeManualSourceModal() {
+      closeModal('manual-source-modal');
+      resetManualSourceModal();
     }
 
     // ============================================================
@@ -1392,13 +2110,15 @@
         const rowData = {};
         let hasValue = false;
         cells.forEach((input, i) => {
-          const val = input.value.trim();
-          // Auto-detect numbers
-          if (val !== '' && !isNaN(val) && val !== '') {
-            rowData[headers[i]] = Number(val);
-          } else {
-            rowData[headers[i]] = val;
+          let val = input.value.trim();
+          // Auto-detect numbers (gère formats FR et EN)
+          if (looksLikeNumber(val)) {
+            const num = toNumber(val);
+            if (num !== null) {
+              val = num;
+            }
           }
+          rowData[headers[i]] = val;
           if (val !== '') hasValue = true;
         });
         if (hasValue) data.push(rowData);
@@ -1505,11 +2225,17 @@
     // UI HELPERS
     // ============================================================
     function switchExplorerTab(tabId) {
-      document.querySelectorAll('.explorer-tab').forEach(t => t.classList.remove('active'));
+      if (!tabId) return;
+
+      // Only affect explorer tabs, not modal tabs
+      document.querySelectorAll('.explorer-tabs:not(#source-mode-tabs) .explorer-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
 
-      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-      document.getElementById(`tab-${tabId}`).style.display = 'block';
+      const tabBtn = document.querySelector(`.explorer-tabs:not(#source-mode-tabs) [data-tab="${tabId}"]`);
+      const tabPanel = document.getElementById(`tab-${tabId}`);
+
+      if (tabBtn) tabBtn.classList.add('active');
+      if (tabPanel) tabPanel.style.display = 'block';
     }
 
     function showExplorerEmpty() {
@@ -1526,6 +2252,49 @@
     function openInBuilder() {
       // Source is already saved in localStorage
       window.location.href = 'builder.html';
+    }
+
+    // Convertit une valeur en nombre (gère les formats FR et EN)
+    function toNumber(val) {
+      if (typeof val === 'number') return isNaN(val) ? null : val;
+      if (typeof val !== 'string') return null;
+
+      let cleaned = val.trim();
+      if (cleaned === '') return null;
+
+      // Supprimer les espaces (séparateurs de milliers)
+      cleaned = cleaned.replace(/\s/g, '');
+
+      const hasComma = cleaned.includes(',');
+      const hasDot = cleaned.includes('.');
+
+      if (hasComma && hasDot) {
+        // Format mixte : déterminer quel est le séparateur décimal
+        const lastComma = cleaned.lastIndexOf(',');
+        const lastDot = cleaned.lastIndexOf('.');
+        if (lastComma > lastDot) {
+          // Virgule après point : format FR (1.234,56)
+          cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else {
+          // Point après virgule : format EN (1,234.56)
+          cleaned = cleaned.replace(/,/g, '');
+        }
+      } else if (hasComma) {
+        // Seulement virgule : format FR (1234,56)
+        cleaned = cleaned.replace(',', '.');
+      }
+
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? null : num;
+    }
+
+    // Détecte si une valeur ressemble à un nombre
+    function looksLikeNumber(val) {
+      if (typeof val !== 'string') return false;
+      const cleaned = val.trim();
+      if (cleaned === '') return false;
+      // Accepte : 123, 123.45, 123,45, 1 234, 1 234,56, -123, etc.
+      return /^-?[\d\s]+([.,]\d+)?$/.test(cleaned);
     }
 
     function escapeHtml(text) {

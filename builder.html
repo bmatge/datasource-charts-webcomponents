@@ -46,6 +46,7 @@
     .builder-config-panel {
       overflow-y: auto;
       background: var(--background-alt-grey);
+      container-type: inline-size;
     }
 
     .config-section {
@@ -110,14 +111,14 @@
 
     .chart-type-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 0.5rem;
     }
 
     .chart-type-btn {
       background: var(--background-default-grey);
       border: 2px solid transparent;
-      padding: 1rem 0.5rem;
+      padding: 0.75rem 0.25rem;
       border-radius: 4px;
       cursor: pointer;
       text-align: center;
@@ -134,13 +135,96 @@
     }
 
     .chart-type-btn i {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       display: block;
       margin-bottom: 0.25rem;
     }
 
     .chart-type-btn span {
+      font-size: 0.7rem;
+    }
+
+    /* Layout 2 colonnes pour les selects */
+    .config-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .config-grid-2col > .fr-select-group,
+    .config-grid-2col > .fr-input-group {
+      margin-top: 0 !important;
+    }
+
+    /* Grille source 3 colonnes */
+    .source-grid {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .source-grid .fr-select-group {
+      margin-bottom: 0;
+    }
+
+    .source-grid .fr-select-group .fr-label {
+      margin-bottom: 0.25rem;
+    }
+
+    .source-btn {
+      white-space: nowrap;
+      height: 40px; /* Même hauteur que le select DSFR */
+    }
+
+    .source-status {
       font-size: 0.75rem;
+      white-space: nowrap;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .source-grid-row2 {
+      margin-top: 0.5rem;
+      align-items: center;
+    }
+
+    .source-info {
+      font-size: 0.8rem;
+      color: var(--text-mention-grey);
+    }
+
+    /* Responsive : réduire quand le panneau est étroit */
+    @container (max-width: 400px) {
+      .chart-type-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .config-grid-2col {
+        grid-template-columns: 1fr;
+      }
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+      .source-grid-row2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Fallback pour navigateurs sans container queries */
+    @media (max-width: 600px) {
+      .chart-type-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .config-grid-2col {
+        grid-template-columns: 1fr;
+      }
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+      .source-grid-row2 {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     /* Sections collapsibles */
@@ -312,32 +396,36 @@
         </div>
         <div class="config-section-content">
 
-        <!-- Sélection de source -->
+        <!-- Sélection de source (grille 3 colonnes) -->
         <div id="source-panel-saved" class="source-panel">
-          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
-            <label class="fr-label" for="saved-source">Source enregistrée</label>
-            <select class="fr-select" id="saved-source">
-              <option value="">— Choisir une source —</option>
-            </select>
+          <!-- Ligne 1 : Select | Bouton | Status -->
+          <div class="source-grid">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="saved-source">Source</label>
+              <select class="fr-select" id="saved-source">
+                <option value="">— Choisir —</option>
+              </select>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" id="load-fields-btn">
+              <i class="ri-refresh-line"></i> Charger
+            </button>
+            <div class="source-status" id="fields-status"></div>
           </div>
 
-          <div id="saved-source-info" class="fr-mt-1w" style="font-size: 0.8rem; color: var(--text-mention-grey);"></div>
-
-          <a href="sources.html" class="fr-link fr-link--sm fr-mt-1w" style="display: inline-block;">
-            <i class="ri-add-line"></i> Ajouter une nouvelle source
-          </a>
+          <!-- Ligne 2 : Info | Lien | (vide) -->
+          <div class="source-grid source-grid-row2">
+            <div id="saved-source-info" class="source-info"></div>
+            <a href="sources.html" class="fr-link fr-link--sm">
+              <i class="ri-add-line"></i> Nouvelle
+            </a>
+            <div></div>
+          </div>
         </div>
-
-        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-2w" id="load-fields-btn">
-          <i class="ri-refresh-line"></i> Charger les champs
-        </button>
-
-        <div id="fields-status" class="fr-mt-1w"></div>
         </div>
       </div>
 
       <!-- ÉTAPE 1.5 : Mode de génération (visible si source Grist) -->
-      <div class="config-section" id="section-generation-mode" style="display: none;">
+      <div class="config-section collapsed" id="section-generation-mode" style="display: none;">
         <div class="config-section-header" onclick="toggleSection('section-generation-mode')">
           <h3><span class="step-number">1.5</span> Mode de génération</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
@@ -375,7 +463,7 @@
       </div>
 
       <!-- ÉTAPE 2 : Type de graphique -->
-      <div class="config-section" id="section-type">
+      <div class="config-section collapsed" id="section-type">
         <div class="config-section-header" onclick="toggleSection('section-type')">
           <h3><span class="step-number">2</span> Type de graphique</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
@@ -428,33 +516,37 @@
       </div>
 
       <!-- ÉTAPE 3 : Mapping des données -->
-      <div class="config-section" id="section-data">
+      <div class="config-section collapsed" id="section-data">
         <div class="config-section-header" onclick="toggleSection('section-data')">
           <h3><span class="step-number">3</span> Configuration des données</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
 
-        <div class="fr-select-group fr-select-group--sm">
-          <label class="fr-label" for="label-field">
-            Axe X / Catégories
-            <span class="fr-hint-text">Le champ utilisé pour les labels</span>
-          </label>
-          <select class="fr-select" id="label-field">
-            <option value="">— Charger les champs d'abord —</option>
-          </select>
+        <!-- Ligne 1 : Axe X / Axe Y -->
+        <div class="config-grid-2col">
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="label-field">
+              Axe X / Catégories
+              <span class="fr-hint-text">Labels</span>
+            </label>
+            <select class="fr-select" id="label-field">
+              <option value="">— Charger les champs —</option>
+            </select>
+          </div>
+
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="value-field">
+              Axe Y / Valeurs
+              <span class="fr-hint-text">Champ numérique</span>
+            </label>
+            <select class="fr-select" id="value-field">
+              <option value="">— Charger les champs —</option>
+            </select>
+          </div>
         </div>
 
-        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
-          <label class="fr-label" for="value-field">
-            Axe Y / Valeurs (Série 1)
-            <span class="fr-hint-text">Le champ numérique à mesurer</span>
-          </label>
-          <select class="fr-select" id="value-field">
-            <option value="">— Charger les champs d'abord —</option>
-          </select>
-        </div>
-
+        <!-- Champs optionnels (affichés conditionnellement) -->
         <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="value-field-2-group" style="display: none;">
           <label class="fr-label" for="value-field-2">
             Série 2 (optionnel)
@@ -468,88 +560,94 @@
         <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="code-field-group" style="display: none;">
           <label class="fr-label" for="code-field">
             Code département
-            <span class="fr-hint-text">Champ contenant le code INSEE (01-95, 2A, 2B, 971-976)</span>
+            <span class="fr-hint-text">Code INSEE (01-95, 2A, 2B, 971-976)</span>
           </label>
           <select class="fr-select" id="code-field">
-            <option value="">— Charger les champs d'abord —</option>
+            <option value="">— Charger les champs —</option>
           </select>
         </div>
 
-        <div class="fr-select-group fr-select-group--sm fr-mt-1w">
-          <label class="fr-label" for="aggregation">
-            Agrégation
-            <span class="fr-hint-text">Comment regrouper les valeurs</span>
-          </label>
-          <select class="fr-select" id="aggregation">
-            <option value="avg">Moyenne (avg)</option>
-            <option value="sum">Somme (sum)</option>
-            <option value="count">Comptage (count)</option>
-            <option value="min">Minimum (min)</option>
-            <option value="max">Maximum (max)</option>
-          </select>
+        <!-- Ligne 2 : Agrégation / Limite -->
+        <div class="config-grid-2col fr-mt-1w">
+          <div class="fr-select-group fr-select-group--sm">
+            <label class="fr-label" for="aggregation">Agrégation</label>
+            <select class="fr-select" id="aggregation">
+              <option value="avg">Moyenne</option>
+              <option value="sum">Somme</option>
+              <option value="count">Comptage</option>
+              <option value="min">Min</option>
+              <option value="max">Max</option>
+            </select>
+          </div>
+
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="limit">Limite</label>
+            <input class="fr-input" type="number" id="limit" value="10" min="1" max="100">
+          </div>
         </div>
 
-        <div class="fr-input-group fr-input-group--sm fr-mt-1w">
-          <label class="fr-label" for="limit">Nombre de résultats</label>
-          <input class="fr-input" type="number" id="limit" value="10" min="1" max="100">
-        </div>
-
+        <!-- Tri -->
         <div class="fr-select-group fr-select-group--sm fr-mt-1w">
           <label class="fr-label" for="sort-order">Tri</label>
           <select class="fr-select" id="sort-order">
-            <option value="desc">Décroissant (plus grand en premier)</option>
-            <option value="asc">Croissant (plus petit en premier)</option>
+            <option value="desc">Décroissant</option>
+            <option value="asc">Croissant</option>
           </select>
         </div>
         </div>
       </div>
 
       <!-- ÉTAPE 4 : Apparence -->
-      <div class="config-section" id="section-appearance">
+      <div class="config-section collapsed" id="section-appearance">
         <div class="config-section-header" onclick="toggleSection('section-appearance')">
           <h3><span class="step-number">4</span> Apparence</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
 
-        <div class="fr-input-group fr-input-group--sm">
-          <label class="fr-label" for="chart-title">Titre du graphique</label>
-          <input class="fr-input" type="text" id="chart-title" value="Mon graphique" placeholder="Titre...">
-        </div>
+        <!-- Ligne 1 : Titre / Sous-titre -->
+        <div class="config-grid-2col">
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="chart-title">Titre</label>
+            <input class="fr-input" type="text" id="chart-title" value="Mon graphique" placeholder="Titre...">
+          </div>
 
-        <div class="fr-input-group fr-input-group--sm fr-mt-1w">
-          <label class="fr-label" for="chart-subtitle">Sous-titre / Source</label>
-          <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="chart-subtitle">Sous-titre / Source</label>
+            <input class="fr-input" type="text" id="chart-subtitle" value="" placeholder="Source : ...">
+          </div>
         </div>
 
         <div class="fr-select-group fr-select-group--sm fr-mt-1w" id="palette-config">
           <label class="fr-label" for="chart-palette">Palette de couleurs</label>
           <select class="fr-select" id="chart-palette">
-            <option value="default">Par défaut (Bleu France)</option>
-            <option value="categorical">Catégorielle (comparaison de groupes)</option>
-            <option value="sequentialAscending">Séquentielle croissante</option>
-            <option value="sequentialDescending">Séquentielle décroissante</option>
-            <option value="divergentAscending">Divergente croissante</option>
-            <option value="divergentDescending">Divergente décroissante</option>
+            <option value="default">Bleu France</option>
+            <option value="categorical">Catégorielle</option>
+            <option value="sequentialAscending">Séquentielle ↑</option>
+            <option value="sequentialDescending">Séquentielle ↓</option>
+            <option value="divergentAscending">Divergente ↑</option>
+            <option value="divergentDescending">Divergente ↓</option>
             <option value="neutral">Neutre</option>
           </select>
         </div>
 
         <!-- Options spécifiques KPI -->
         <div class="kpi-config" id="kpi-config">
-          <div class="fr-select-group fr-select-group--sm fr-mt-1w">
-            <label class="fr-label" for="kpi-variant">Style du KPI</label>
-            <select class="fr-select" id="kpi-variant">
-              <option value="">Par défaut (gris)</option>
-              <option value="info">Information (bleu)</option>
-              <option value="success">Succès (vert)</option>
-              <option value="warning">Attention (orange)</option>
-              <option value="error">Alerte (rouge)</option>
-            </select>
-          </div>
-          <div class="fr-input-group fr-input-group--sm fr-mt-1w">
-            <label class="fr-label" for="kpi-unit">Unité (optionnel)</label>
-            <input class="fr-input" type="text" id="kpi-unit" placeholder="€, %, unités...">
+          <div class="config-grid-2col fr-mt-1w">
+            <div class="fr-select-group fr-select-group--sm">
+              <label class="fr-label" for="kpi-variant">Style KPI</label>
+              <select class="fr-select" id="kpi-variant">
+                <option value="">Par défaut</option>
+                <option value="info">Info (bleu)</option>
+                <option value="success">Succès (vert)</option>
+                <option value="warning">Attention (orange)</option>
+                <option value="error">Alerte (rouge)</option>
+              </select>
+            </div>
+            <div class="fr-input-group fr-input-group--sm">
+              <label class="fr-label" for="kpi-unit">Unité</label>
+              <input class="fr-input" type="text" id="kpi-unit" placeholder="€, %, ...">
+            </div>
           </div>
         </div>
         </div>
@@ -824,9 +922,7 @@
 
         // Show notification
         document.getElementById('fields-status').innerHTML = `
-          <div class="fr-badge fr-badge--success fr-badge--sm">
-            Source "${selectedSource.name}" chargée automatiquement
-          </div>
+          <span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>
         `;
       }
     }
@@ -905,7 +1001,7 @@
       }
 
       document.getElementById('fields-status').innerHTML = `
-        <div class="fr-badge fr-badge--success fr-badge--sm">${state.fields.length} champs trouvés</div>
+        <span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>
       `;
     }
 
@@ -1005,11 +1101,11 @@
 
       // Check if we have an API URL (from a saved API source)
       if (!state.apiUrl) {
-        statusEl.innerHTML = '<div class="error-message">Veuillez sélectionner une source de données</div>';
+        statusEl.innerHTML = '<span class="fr-badge fr-badge--warning fr-badge--sm">Sélectionner</span>';
         return;
       }
 
-      statusEl.innerHTML = '<div class="loading-indicator"><i class="ri-loader-4-line"></i> Chargement...</div>';
+      statusEl.innerHTML = '<span class="fr-badge fr-badge--info fr-badge--sm">Chargement...</span>';
 
       try {
         // Fetch one record to get field names
@@ -1035,11 +1131,11 @@
         // Populate dropdowns
         populateFieldSelects();
 
-        statusEl.innerHTML = `<div class="fr-badge fr-badge--success fr-badge--sm">${state.fields.length} champs trouvés</div>`;
+        statusEl.innerHTML = `<span class="fr-badge fr-badge--success fr-badge--sm">Source chargée</span>`;
 
       } catch (error) {
         console.error(error);
-        statusEl.innerHTML = `<div class="error-message">Erreur : ${error.message}</div>`;
+        statusEl.innerHTML = `<span class="fr-badge fr-badge--error fr-badge--sm">Erreur</span>`;
       }
     }
 
@@ -1198,19 +1294,23 @@
       // Aggregate local data
       const aggregated = {};
 
-      state.localData.forEach(record => {
-        const label = record[state.labelField] || 'N/A';
-        const value = parseFloat(record[state.valueField]) || 0;
+      // For maps, aggregate by codeField; for other charts, by labelField
+      const isMap = state.chartType === 'map';
+      const groupField = isMap ? state.codeField : state.labelField;
 
-        if (!aggregated[label]) {
-          aggregated[label] = { values: [], count: 0 };
+      state.localData.forEach(record => {
+        const groupKey = record[groupField] || 'N/A';
+        const value = toNumber(record[state.valueField]);
+
+        if (!aggregated[groupKey]) {
+          aggregated[groupKey] = { values: [], count: 0 };
         }
-        aggregated[label].values.push(value);
-        aggregated[label].count++;
+        aggregated[groupKey].values.push(value);
+        aggregated[groupKey].count++;
       });
 
       // Apply aggregation function
-      let results = Object.entries(aggregated).map(([label, data]) => {
+      let results = Object.entries(aggregated).map(([groupKey, data]) => {
         let value;
         switch (state.aggregation) {
           case 'sum':
@@ -1229,7 +1329,11 @@
           default:
             value = data.values.reduce((a, b) => a + b, 0) / data.values.length;
         }
-        return { [state.labelField]: label, value };
+        // For maps, include codeField; for others, include labelField
+        if (isMap) {
+          return { [state.codeField]: groupKey, value };
+        }
+        return { [state.labelField]: groupKey, value };
       });
 
       // Sort
@@ -1596,20 +1700,40 @@ new Chart(document.getElementById('myChart'), {
 
         // Transform data to DSFR format: {"code": value, ...}
         const mapData = {};
+        let totalValue = 0;
+        let count = 0;
+
         state.data.forEach(d => {
-          const code = String(d[state.codeField] || '').padStart(2, '0');
-          const value = d.value || 0;
-          if (code && code !== '00') {
+          // Le code département peut être dans codeField ou dans la clé directe
+          const rawCode = d[state.codeField] ?? d.code ?? '';
+          // Normaliser le code : convertir en string et padder si nécessaire
+          let code = String(rawCode).trim();
+          // Gérer les codes numériques (1 -> "01", 34 -> "34")
+          if (/^\d+$/.test(code) && code.length < 3) {
+            code = code.padStart(2, '0');
+          }
+
+          const value = toNumber(d.value);
+
+          if (code && code !== '00' && code !== '' && !isNaN(value)) {
             mapData[code] = Math.round(value * 100) / 100;
+            totalValue += value;
+            count++;
           }
         });
+
+        // Calculer la moyenne nationale pour l'attribut value-nat
+        const avgValue = count > 0 ? Math.round((totalValue / count) * 100) / 100 : 0;
+        const today = new Date().toISOString().split('T')[0];
 
         const mapCard = document.createElement('div');
         mapCard.className = 'map-card';
         mapCard.innerHTML = `
           <map-chart
             data='${JSON.stringify(mapData)}'
-            name="${state.title}"
+            name="${escapeHtml(state.title || 'Données')}"
+            date="${today}"
+            value-nat="${avgValue}"
             selected-palette="${state.palette}"
           ></map-chart>
         `;
@@ -2057,6 +2181,47 @@ loadChart();
       document.getElementById('generated-code').textContent = code;
     }
 
+    /**
+     * Convertit une valeur (string ou number) en nombre
+     * Gère les formats français (virgule décimale, espaces milliers)
+     */
+    function toNumber(val) {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      if (typeof val !== 'string') return 0;
+
+      // Nettoyer la string
+      let cleaned = val.trim();
+      if (cleaned === '') return 0;
+
+      // Supprimer les espaces (séparateurs de milliers)
+      cleaned = cleaned.replace(/\s/g, '');
+
+      // Détecter le format (français avec virgule ou international avec point)
+      const hasComma = cleaned.includes(',');
+      const hasDot = cleaned.includes('.');
+
+      if (hasComma && hasDot) {
+        // Format "1.234,56" (français) ou "1,234.56" (anglais)
+        // Déterminer lequel est le séparateur décimal (le dernier)
+        const lastComma = cleaned.lastIndexOf(',');
+        const lastDot = cleaned.lastIndexOf('.');
+        if (lastComma > lastDot) {
+          // Format français: 1.234,56
+          cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else {
+          // Format anglais: 1,234.56
+          cleaned = cleaned.replace(/,/g, '');
+        }
+      } else if (hasComma) {
+        // Virgule seule - probablement séparateur décimal français
+        cleaned = cleaned.replace(',', '.');
+      }
+      // Si point seul, c'est déjà le format correct
+
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
@@ -2077,10 +2242,22 @@ loadChart();
     // Le resizer est maintenant géré par le composant app-layout-builder
 
     // ============================================================
-    // SECTIONS COLLAPSIBLES
+    // SECTIONS COLLAPSIBLES (pattern accordéon)
     // ============================================================
     function toggleSection(sectionId) {
       const section = document.getElementById(sectionId);
+      const isCurrentlyCollapsed = section.classList.contains('collapsed');
+
+      // Si on ouvre une section, fermer toutes les autres
+      if (isCurrentlyCollapsed) {
+        document.querySelectorAll('.config-section:not(#' + sectionId + ')').forEach(s => {
+          // Ne pas fermer la section du bouton générer (pas de header)
+          if (s.querySelector('.config-section-header')) {
+            s.classList.add('collapsed');
+          }
+        });
+      }
+
       section.classList.toggle('collapsed');
     }
   </script>
