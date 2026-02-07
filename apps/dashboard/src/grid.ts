@@ -1,35 +1,73 @@
 /**
- * Dashboard app - Grid management
+ * Dashboard app - Grid management (per-row column control)
  */
 
-import { state } from './state.js';
+import { state, getRowColumns, setRowColumns, removeRowFromLayout } from './state.js';
 import { initDropZones } from './drag-drop.js';
 import { renderWidget } from './widgets.js';
+import { updateGeneratedCode } from './code-generator.js';
+
+function colClassFor(columns: number): string {
+  const colSize = Math.floor(12 / columns);
+  return colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
+}
+
+function buildRowControls(rowIdx: number, columns: number): string {
+  return `
+    <div class="row-controls" data-row="${rowIdx}">
+      <span class="row-label">Ligne ${rowIdx + 1}</span>
+      <div class="row-controls-actions">
+        <button class="row-control-btn" onclick="removeColumnFromRow(${rowIdx})"
+                title="Retirer une cellule" ${columns <= 1 ? 'disabled' : ''}>
+          <i class="ri-subtract-line"></i>
+        </button>
+        <span class="row-columns-count">${columns}</span>
+        <button class="row-control-btn" onclick="addColumnToRow(${rowIdx})"
+                title="Ajouter une cellule" ${columns >= 4 ? 'disabled' : ''}>
+          <i class="ri-add-line"></i>
+        </button>
+        <button class="row-control-btn row-control-btn--danger" onclick="deleteRow(${rowIdx})"
+                title="Supprimer la ligne">
+          <i class="ri-delete-bin-line"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
 
 export function addRow(): void {
   const grid = document.getElementById('dashboard-grid');
   if (!grid) return;
 
   const rowIndex = grid.querySelectorAll('.dashboard-row').length;
-  const columns = parseInt((document.getElementById('grid-columns') as HTMLSelectElement)?.value || '2');
-  const colSize = Math.floor(12 / columns);
+  const defaultColumns = parseInt(
+    (document.getElementById('grid-columns') as HTMLSelectElement)?.value || '2'
+  );
 
+  setRowColumns(state.dashboard, rowIndex, defaultColumns);
+
+  const cc = colClassFor(defaultColumns);
   const row = document.createElement('div');
   row.className = `fr-grid-row ${state.dashboard.layout.gap} dashboard-row`;
   row.dataset.row = String(rowIndex);
 
-  for (let i = 0; i < columns; i++) {
-    const colClass = colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
-    row.innerHTML += `
-      <div class="${colClass}">
-        <div class="drop-cell empty" data-row="${rowIndex}" data-col="${i}" data-colspan="${colSize}">
-          <div class="drop-cell-placeholder">
-            <i class="ri-add-circle-line"></i>
-            <span>Glisser un widget ici</span>
-          </div>
+  // Insert row controls
+  const tmp = document.createElement('div');
+  tmp.innerHTML = buildRowControls(rowIndex, defaultColumns);
+  row.appendChild(tmp.firstElementChild!);
+
+  for (let i = 0; i < defaultColumns; i++) {
+    const colDiv = document.createElement('div');
+    colDiv.className = cc;
+    colDiv.innerHTML = `
+      <div class="drop-cell empty" data-row="${rowIndex}" data-col="${i}">
+        <div class="drop-cell-placeholder">
+          <i class="ri-add-circle-line"></i>
+          <span>Glisser un widget ici</span>
         </div>
       </div>
     `;
+    row.appendChild(colDiv);
   }
 
   grid.appendChild(row);
@@ -40,15 +78,20 @@ export function resetGrid(): void {
   const grid = document.getElementById('dashboard-grid');
   if (!grid) return;
 
-  const columns = parseInt((document.getElementById('grid-columns') as HTMLSelectElement)?.value || '2');
-  const colSize = Math.floor(12 / columns);
-  const colClass = colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
+  const columns = parseInt(
+    (document.getElementById('grid-columns') as HTMLSelectElement)?.value || '2'
+  );
+
+  state.dashboard.layout.rowColumns = { 0: columns };
+
+  const cc = colClassFor(columns);
 
   grid.innerHTML = `
     <div class="fr-grid-row ${state.dashboard.layout.gap} dashboard-row" data-row="0">
+      ${buildRowControls(0, columns)}
       ${Array(columns).fill(0).map((_, i) => `
-        <div class="${colClass}">
-          <div class="drop-cell empty" data-row="0" data-col="${i}" data-colspan="${colSize}">
+        <div class="${cc}">
+          <div class="drop-cell empty" data-row="0" data-col="${i}">
             <div class="drop-cell-placeholder">
               <i class="ri-add-circle-line"></i>
               <span>Glisser un widget ici</span>
@@ -66,29 +109,40 @@ export function rebuildGrid(): void {
   const grid = document.getElementById('dashboard-grid');
   if (!grid) return;
 
-  const columns = state.dashboard.layout.columns || 2;
-  const colSize = Math.floor(12 / columns);
-  const colClass = colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
-
-  const maxRow = state.dashboard.widgets.reduce((max, w) => Math.max(max, w.position.row), 0);
+  // Determine max row from widgets and rowColumns
+  let maxRow = state.dashboard.widgets.reduce((max, w) => Math.max(max, w.position.row), -1);
+  if (state.dashboard.layout.rowColumns) {
+    for (const key of Object.keys(state.dashboard.layout.rowColumns)) {
+      maxRow = Math.max(maxRow, Number(key));
+    }
+  }
 
   grid.innerHTML = '';
 
   for (let rowIdx = 0; rowIdx <= maxRow; rowIdx++) {
+    const columns = getRowColumns(state.dashboard, rowIdx);
+    const cc = colClassFor(columns);
+
     const row = document.createElement('div');
     row.className = `fr-grid-row ${state.dashboard.layout.gap} dashboard-row`;
     row.dataset.row = String(rowIdx);
 
+    // Row controls
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildRowControls(rowIdx, columns);
+    row.appendChild(tmp.firstElementChild!);
+
     for (let colIdx = 0; colIdx < columns; colIdx++) {
-      const widget = state.dashboard.widgets.find(w => w.position.row === rowIdx && w.position.col === colIdx);
+      const widget = state.dashboard.widgets.find(
+        w => w.position.row === rowIdx && w.position.col === colIdx
+      );
       const colDiv = document.createElement('div');
-      colDiv.className = colClass;
+      colDiv.className = cc;
 
       const cell = document.createElement('div');
       cell.className = 'drop-cell';
       cell.dataset.row = String(rowIdx);
       cell.dataset.col = String(colIdx);
-      cell.dataset.colspan = String(colSize);
 
       if (widget) {
         renderWidget(widget, cell);
@@ -109,9 +163,60 @@ export function rebuildGrid(): void {
     grid.appendChild(row);
   }
 
-  if (state.dashboard.widgets.length === 0 || state.dashboard.widgets.every(w => w.position.row <= maxRow)) {
-    addRow();
-  }
+  // Always add an empty row at the end for dropping new widgets
+  addRow();
 
   initDropZones();
+}
+
+export function addColumnToRow(rowIndex: number): void {
+  const current = getRowColumns(state.dashboard, rowIndex);
+  if (current >= 4) return;
+  setRowColumns(state.dashboard, rowIndex, current + 1);
+  rebuildGrid();
+  updateGeneratedCode();
+}
+
+export function removeColumnFromRow(rowIndex: number): void {
+  const current = getRowColumns(state.dashboard, rowIndex);
+  if (current <= 1) return;
+
+  const widgetsInLastCol = state.dashboard.widgets.filter(
+    w => w.position.row === rowIndex && w.position.col === current - 1
+  );
+
+  if (widgetsInLastCol.length > 0) {
+    if (!confirm('Cette cellule contient un widget. Le supprimer ?')) return;
+    state.dashboard.widgets = state.dashboard.widgets.filter(
+      w => !(w.position.row === rowIndex && w.position.col === current - 1)
+    );
+  }
+
+  setRowColumns(state.dashboard, rowIndex, current - 1);
+  rebuildGrid();
+  updateGeneratedCode();
+}
+
+export function deleteRow(rowIndex: number): void {
+  const widgetsInRow = state.dashboard.widgets.filter(w => w.position.row === rowIndex);
+
+  if (widgetsInRow.length > 0) {
+    if (!confirm(`Cette ligne contient ${widgetsInRow.length} widget(s). Supprimer ?`)) return;
+  }
+
+  // Remove widgets in the row
+  state.dashboard.widgets = state.dashboard.widgets.filter(w => w.position.row !== rowIndex);
+
+  // Re-index widget positions for rows above the deleted one
+  state.dashboard.widgets.forEach(w => {
+    if (w.position.row > rowIndex) {
+      w.position.row -= 1;
+    }
+  });
+
+  // Re-index rowColumns
+  removeRowFromLayout(state.dashboard, rowIndex);
+
+  rebuildGrid();
+  updateGeneratedCode();
 }

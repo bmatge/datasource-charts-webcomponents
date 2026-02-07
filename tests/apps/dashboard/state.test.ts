@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createEmptyDashboard, state } from '../../../apps/dashboard/src/state';
+import { createEmptyDashboard, state, getRowColumns, setRowColumns, removeRowFromLayout } from '../../../apps/dashboard/src/state';
 import type { WidgetType, Widget, DashboardData, AppState } from '../../../apps/dashboard/src/state';
 
 describe('dashboard/state', () => {
@@ -52,6 +52,59 @@ describe('dashboard/state', () => {
       };
       expect(widget.id).toBe('w-1');
       expect(widget.type).toBe('kpi');
+    });
+  });
+
+  describe('getRowColumns', () => {
+    it('should return global columns when no rowColumns exists', () => {
+      const dashboard = createEmptyDashboard();
+      expect(getRowColumns(dashboard, 0)).toBe(2);
+      expect(getRowColumns(dashboard, 5)).toBe(2);
+    });
+
+    it('should return per-row value when set', () => {
+      const dashboard = createEmptyDashboard();
+      dashboard.layout.rowColumns = { 0: 3, 1: 4 };
+      expect(getRowColumns(dashboard, 0)).toBe(3);
+      expect(getRowColumns(dashboard, 1)).toBe(4);
+      expect(getRowColumns(dashboard, 2)).toBe(2); // falls back to global
+    });
+  });
+
+  describe('setRowColumns', () => {
+    it('should initialize rowColumns if undefined', () => {
+      const dashboard = createEmptyDashboard();
+      setRowColumns(dashboard, 0, 3);
+      expect(dashboard.layout.rowColumns).toEqual({ 0: 3 });
+    });
+
+    it('should update existing rowColumns', () => {
+      const dashboard = createEmptyDashboard();
+      dashboard.layout.rowColumns = { 0: 2 };
+      setRowColumns(dashboard, 1, 4);
+      expect(dashboard.layout.rowColumns).toEqual({ 0: 2, 1: 4 });
+    });
+  });
+
+  describe('removeRowFromLayout', () => {
+    it('should remove row and re-index higher rows', () => {
+      const dashboard = createEmptyDashboard();
+      dashboard.layout.rowColumns = { 0: 3, 1: 2, 2: 4 };
+      removeRowFromLayout(dashboard, 1);
+      expect(dashboard.layout.rowColumns).toEqual({ 0: 3, 1: 4 });
+    });
+
+    it('should set rowColumns to undefined when last row removed', () => {
+      const dashboard = createEmptyDashboard();
+      dashboard.layout.rowColumns = { 0: 3 };
+      removeRowFromLayout(dashboard, 0);
+      expect(dashboard.layout.rowColumns).toBeUndefined();
+    });
+
+    it('should do nothing when rowColumns is undefined', () => {
+      const dashboard = createEmptyDashboard();
+      removeRowFromLayout(dashboard, 0);
+      expect(dashboard.layout.rowColumns).toBeUndefined();
     });
   });
 });

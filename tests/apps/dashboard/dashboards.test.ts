@@ -11,7 +11,7 @@ vi.mock('@gouv-widgets/shared', () => ({
   navigateTo: vi.fn(),
 }));
 
-import { saveDashboard, newDashboard, loadDashboard } from '../../../apps/dashboard/src/dashboards';
+import { confirmSave, openSaveModal, closeSaveModal, newDashboard, loadDashboard, deleteDashboard } from '../../../apps/dashboard/src/dashboards';
 import { saveToStorage, toastWarning, toastSuccess } from '@gouv-widgets/shared';
 
 describe('dashboard/dashboards', () => {
@@ -20,9 +20,12 @@ describe('dashboard/dashboards', () => {
     state.savedDashboards = [];
     vi.clearAllMocks();
 
-    // Set up minimal DOM
+    // Set up minimal DOM with save modal fields
     document.body.innerHTML = `
       <input id="dashboard-title" value="" />
+      <input id="save-dashboard-name" value="" />
+      <textarea id="save-dashboard-description"></textarea>
+      <div id="save-modal" class="config-modal"></div>
       <select id="grid-columns"><option value="2">2</option></select>
       <div id="dashboard-grid"></div>
       <div id="generated-code"></div>
@@ -30,18 +33,39 @@ describe('dashboard/dashboards', () => {
     `;
   });
 
-  describe('saveDashboard', () => {
+  describe('openSaveModal', () => {
+    it('should pre-fill name and description from state', () => {
+      state.dashboard.name = 'Test Dashboard';
+      state.dashboard.description = 'A description';
+      openSaveModal();
+      expect((document.getElementById('save-dashboard-name') as HTMLInputElement).value).toBe('Test Dashboard');
+      expect((document.getElementById('save-dashboard-description') as HTMLTextAreaElement).value).toBe('A description');
+      expect(document.getElementById('save-modal')?.classList.contains('active')).toBe(true);
+    });
+  });
+
+  describe('closeSaveModal', () => {
+    it('should remove active class from save modal', () => {
+      document.getElementById('save-modal')?.classList.add('active');
+      closeSaveModal();
+      expect(document.getElementById('save-modal')?.classList.contains('active')).toBe(false);
+    });
+  });
+
+  describe('confirmSave', () => {
     it('should warn when name is empty', () => {
-      (document.getElementById('dashboard-title') as HTMLInputElement).value = '';
-      saveDashboard();
+      (document.getElementById('save-dashboard-name') as HTMLInputElement).value = '';
+      confirmSave();
       expect(toastWarning).toHaveBeenCalledWith('Veuillez donner un nom au tableau de bord');
       expect(saveToStorage).not.toHaveBeenCalled();
     });
 
-    it('should save a new dashboard', () => {
-      (document.getElementById('dashboard-title') as HTMLInputElement).value = 'Mon Dashboard';
-      saveDashboard();
+    it('should save a new dashboard with name and description', () => {
+      (document.getElementById('save-dashboard-name') as HTMLInputElement).value = 'Mon Dashboard';
+      (document.getElementById('save-dashboard-description') as HTMLTextAreaElement).value = 'Une description';
+      confirmSave();
       expect(state.dashboard.name).toBe('Mon Dashboard');
+      expect(state.dashboard.description).toBe('Une description');
       expect(state.dashboard.id).toBeTruthy();
       expect(state.dashboard.createdAt).toBeTruthy();
       expect(state.savedDashboards).toHaveLength(1);
@@ -52,11 +76,63 @@ describe('dashboard/dashboards', () => {
     it('should update an existing dashboard', () => {
       state.dashboard.id = 'existing-id';
       state.savedDashboards = [{ ...createEmptyDashboard(), id: 'existing-id', name: 'Old Name' }];
-      (document.getElementById('dashboard-title') as HTMLInputElement).value = 'New Name';
+      (document.getElementById('save-dashboard-name') as HTMLInputElement).value = 'New Name';
 
-      saveDashboard();
+      confirmSave();
       expect(state.savedDashboards).toHaveLength(1);
       expect(state.savedDashboards[0].name).toBe('New Name');
+    });
+
+    it('should sync toolbar title after save', () => {
+      (document.getElementById('save-dashboard-name') as HTMLInputElement).value = 'Updated Title';
+      confirmSave();
+      expect((document.getElementById('dashboard-title') as HTMLInputElement).value).toBe('Updated Title');
+    });
+  });
+
+  describe('deleteDashboard', () => {
+    it('should remove dashboard from savedDashboards', () => {
+      const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'To Delete' };
+      state.savedDashboards = [dash];
+
+      // Mock confirm to return true
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      // Add dashboards-modal and dashboards-list for re-render
+      document.body.innerHTML += '<div id="dashboards-modal"><div id="dashboards-list"></div></div>';
+
+      deleteDashboard('dash-1');
+      expect(state.savedDashboards).toHaveLength(0);
+      expect(saveToStorage).toHaveBeenCalled();
+      expect(toastSuccess).toHaveBeenCalled();
+    });
+
+    it('should reset current dashboard id if deleting the active one', () => {
+      const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'Active' };
+      state.savedDashboards = [dash];
+      state.dashboard.id = 'dash-1';
+
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      document.body.innerHTML += '<div id="dashboards-modal"><div id="dashboards-list"></div></div>';
+
+      deleteDashboard('dash-1');
+      expect(state.dashboard.id).toBeNull();
+    });
+
+    it('should not delete when confirm is cancelled', () => {
+      const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'Keep' };
+      state.savedDashboards = [dash];
+
+      vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+      deleteDashboard('dash-1');
+      expect(state.savedDashboards).toHaveLength(1);
+      expect(saveToStorage).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing for unknown id', () => {
+      deleteDashboard('nonexistent');
+      expect(saveToStorage).not.toHaveBeenCalled();
     });
   });
 

@@ -7,14 +7,39 @@ import { state, createEmptyDashboard } from './state.js';
 import { resetGrid, rebuildGrid } from './grid.js';
 import { updateGeneratedCode, generateHTMLCode } from './code-generator.js';
 
-export function saveDashboard(): void {
-  const name = (document.getElementById('dashboard-title') as HTMLInputElement)?.value.trim();
+/** Opens the save modal pre-filled with current dashboard name & description */
+export function openSaveModal(): void {
+  const modal = document.getElementById('save-modal');
+  const nameInput = document.getElementById('save-dashboard-name') as HTMLInputElement | null;
+  const descInput = document.getElementById('save-dashboard-description') as HTMLTextAreaElement | null;
+  if (!modal) return;
+
+  if (nameInput) nameInput.value = state.dashboard.name;
+  if (descInput) descInput.value = state.dashboard.description || '';
+
+  modal.classList.add('active');
+  nameInput?.focus();
+}
+
+/** Closes the save modal */
+export function closeSaveModal(): void {
+  document.getElementById('save-modal')?.classList.remove('active');
+}
+
+/** Confirms save from the modal form */
+export function confirmSave(): void {
+  const nameInput = document.getElementById('save-dashboard-name') as HTMLInputElement | null;
+  const descInput = document.getElementById('save-dashboard-description') as HTMLTextAreaElement | null;
+
+  const name = nameInput?.value.trim() || '';
   if (!name) {
     toastWarning('Veuillez donner un nom au tableau de bord');
+    nameInput?.focus();
     return;
   }
 
   state.dashboard.name = name;
+  state.dashboard.description = descInput?.value.trim() || '';
   state.dashboard.updatedAt = new Date().toISOString();
 
   if (!state.dashboard.id) {
@@ -22,14 +47,21 @@ export function saveDashboard(): void {
     state.dashboard.createdAt = state.dashboard.updatedAt;
   }
 
+  const clone = JSON.parse(JSON.stringify(state.dashboard));
   const index = state.savedDashboards.findIndex(d => d.id === state.dashboard.id);
   if (index > -1) {
-    state.savedDashboards[index] = { ...state.dashboard };
+    state.savedDashboards[index] = clone;
   } else {
-    state.savedDashboards.push({ ...state.dashboard });
+    state.savedDashboards.push(clone);
   }
 
   saveToStorage(STORAGE_KEYS.DASHBOARDS, state.savedDashboards);
+
+  // Sync title input in toolbar
+  const titleInput = document.getElementById('dashboard-title') as HTMLInputElement | null;
+  if (titleInput) titleInput.value = state.dashboard.name;
+
+  closeSaveModal();
   toastSuccess('Tableau de bord sauvegarde !');
 }
 
@@ -56,17 +88,42 @@ export function openDashboardsList(): void {
     list.innerHTML = '<p class="favorites-empty">Aucun tableau de bord sauvegarde</p>';
   } else {
     list.innerHTML = state.savedDashboards.map(d => `
-      <div class="favorite-item" style="cursor: pointer; margin-bottom: 0.5rem;" onclick="loadDashboard('${d.id}')">
+      <div class="dashboard-list-item" onclick="loadDashboard('${d.id}')">
         <i class="ri-dashboard-line"></i>
-        <span>${escapeHtml(d.name)}</span>
-        <small style="color: var(--text-mention-grey); margin-left: auto;">
+        <div class="dashboard-list-item-info">
+          <div class="dashboard-list-item-name">${escapeHtml(d.name)}</div>
+          ${d.description ? `<div class="dashboard-list-item-desc">${escapeHtml(d.description)}</div>` : ''}
+        </div>
+        <span class="dashboard-list-item-date">
           ${new Date(d.updatedAt || '').toLocaleDateString('fr-FR')}
-        </small>
+        </span>
+        <button class="dashboard-list-item-delete" onclick="event.stopPropagation(); deleteDashboard('${d.id}')" title="Supprimer">
+          <i class="ri-delete-bin-line"></i>
+        </button>
       </div>
     `).join('');
   }
 
   modal.classList.add('active');
+}
+
+export function deleteDashboard(id: string): void {
+  const dashboard = state.savedDashboards.find(d => d.id === id);
+  if (!dashboard) return;
+
+  if (!confirm(`Supprimer le tableau de bord "${dashboard.name}" ?`)) return;
+
+  state.savedDashboards = state.savedDashboards.filter(d => d.id !== id);
+  saveToStorage(STORAGE_KEYS.DASHBOARDS, state.savedDashboards);
+
+  // If the deleted dashboard is the currently loaded one, reset its id
+  if (state.dashboard.id === id) {
+    state.dashboard.id = null;
+  }
+
+  // Re-render the list
+  openDashboardsList();
+  toastSuccess('Tableau de bord supprime');
 }
 
 export function loadDashboard(id: string): void {

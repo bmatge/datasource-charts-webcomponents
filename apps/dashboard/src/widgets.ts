@@ -2,7 +2,7 @@
  * Dashboard app - Widget management
  */
 
-import { escapeHtml, appHref } from '@gouv-widgets/shared';
+import { escapeHtml, navigateTo } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import { openConfigModal } from './widget-config.js';
 import { updateGeneratedCode } from './code-generator.js';
@@ -108,33 +108,29 @@ function renderWidgetContent(widget: Widget): string {
   switch (widget.type) {
     case 'kpi':
       return `
-        <div style="text-align: center; padding: 1rem;">
-          <div style="font-size: 2rem; font-weight: 700; color: var(--text-action-high-blue-france);">
-            ${widget.config.valeur || '\u2014'}
-          </div>
-          <div style="font-size: 0.875rem; color: var(--text-mention-grey);">
-            ${escapeHtml(widget.config.label || '')}
-          </div>
+        <div class="widget-preview-center">
+          <div class="widget-kpi-value">${widget.config.valeur || '\u2014'}</div>
+          <div class="widget-kpi-label">${escapeHtml(widget.config.label || '')}</div>
         </div>
       `;
     case 'chart':
       if (widget.config.fromFavorite) {
-        return `<div style="padding: 1rem; text-align: center; color: var(--text-mention-grey);">
-          <i class="ri-bar-chart-box-line" style="font-size: 2rem;"></i>
-          <p style="margin: 0.5rem 0 0;">Graphique depuis favoris</p>
+        return `<div class="widget-preview-center widget-preview-muted">
+          <i class="ri-bar-chart-box-line widget-preview-icon"></i>
+          <p class="widget-preview-text">Graphique depuis favoris</p>
         </div>`;
       }
-      return `<div style="padding: 1rem; text-align: center; color: var(--text-mention-grey);">
-        <i class="ri-bar-chart-box-line" style="font-size: 2rem;"></i>
-        <p style="margin: 0.5rem 0 0;">Configurez le graphique</p>
+      return `<div class="widget-preview-center widget-preview-muted">
+        <i class="ri-bar-chart-box-line widget-preview-icon"></i>
+        <p class="widget-preview-text">Configurez le graphique</p>
       </div>`;
     case 'table':
-      return `<div style="padding: 1rem; text-align: center; color: var(--text-mention-grey);">
-        <i class="ri-table-line" style="font-size: 2rem;"></i>
-        <p style="margin: 0.5rem 0 0;">Tableau de donnees</p>
+      return `<div class="widget-preview-center widget-preview-muted">
+        <i class="ri-table-line widget-preview-icon"></i>
+        <p class="widget-preview-text">Tableau de donnees</p>
       </div>`;
     case 'text':
-      return `<div style="padding: 0.5rem;">${widget.config.content || ''}</div>`;
+      return `<div class="widget-text-content">${widget.config.content || ''}</div>`;
     default:
       return '<div>Widget</div>';
   }
@@ -174,7 +170,7 @@ export function openInBuilder(widgetId: string): void {
   const widget = state.dashboard.widgets.find(w => w.id === widgetId);
   if (!widget?.config.builderState) return;
   sessionStorage.setItem('builder-state', JSON.stringify(widget.config.builderState));
-  window.location.href = appHref('builder', { from: 'dashboard' });
+  navigateTo('builder', { from: 'dashboard' });
 }
 
 export function duplicateWidget(widgetId: string): void {

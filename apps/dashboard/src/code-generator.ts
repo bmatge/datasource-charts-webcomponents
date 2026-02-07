@@ -3,7 +3,7 @@
  */
 
 import { escapeHtml } from '@gouv-widgets/shared';
-import { state } from './state.js';
+import { state, getRowColumns } from './state.js';
 import type { Widget } from './state.js';
 
 export function updateGeneratedCode(): void {
@@ -16,9 +16,6 @@ export function updateGeneratedCode(): void {
 
 export function generateHTMLCode(): string {
   const { dashboard } = state;
-  const columns = dashboard.layout.columns || 2;
-  const colSize = Math.floor(12 / columns);
-  const colClass = colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
 
   const widgetsByRow: Record<number, Widget[]> = {};
   dashboard.widgets.forEach(w => {
@@ -29,8 +26,15 @@ export function generateHTMLCode(): string {
   });
 
   let widgetsHTML = '';
-  Object.keys(widgetsByRow).sort((a, b) => Number(a) - Number(b)).forEach(rowIdx => {
-    const widgets = widgetsByRow[Number(rowIdx)];
+  Object.keys(widgetsByRow).sort((a, b) => Number(a) - Number(b)).forEach(rowKey => {
+    const rowIdx = Number(rowKey);
+    const widgets = widgetsByRow[rowIdx];
+
+    // Per-row column class
+    const columns = getRowColumns(dashboard, rowIdx);
+    const colSize = Math.floor(12 / columns);
+    const colClass = colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
+
     widgetsHTML += `    <div class="fr-grid-row ${dashboard.layout.gap}">\n`;
 
     widgets.forEach(widget => {

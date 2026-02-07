@@ -114,6 +114,9 @@
           <button class="fr-btn fr-btn--sm fr-btn--tertiary" id="btn-export">
             <i class="ri-download-line"></i> Exporter HTML
           </button>
+          <button class="fr-btn fr-btn--sm fr-btn--secondary" id="btn-preview">
+            <i class="ri-eye-line"></i> Apercu
+          </button>
           <div class="fr-select-group fr-select-group--sm" style="display:inline-block;min-width:auto;">
             <select id="template-select" class="fr-select fr-select--sm" style="padding:0.25rem 2rem 0.25rem 0.5rem;">
               <option value="">Templates...</option>
@@ -210,6 +213,45 @@
       <div class="config-modal-body" id="dashboards-list">
         <!-- Liste dynamique -->
       </div>
+    </div>
+  </div>
+
+  <!-- Modal de sauvegarde -->
+  <div class="config-modal" id="save-modal">
+    <div class="config-modal-content" style="max-width: 480px;">
+      <div class="config-modal-header">
+        <h3>Sauvegarder le tableau de bord</h3>
+        <button class="widget-action-btn" id="close-save-modal">
+          <i class="ri-close-line" style="font-size: 1.5rem;"></i>
+        </button>
+      </div>
+      <div class="config-modal-body">
+        <div class="config-group">
+          <label for="save-dashboard-name">Nom</label>
+          <input type="text" class="fr-input" id="save-dashboard-name" placeholder="Mon tableau de bord">
+        </div>
+        <div class="config-group">
+          <label for="save-dashboard-description">Description (optionnelle)</label>
+          <textarea class="fr-input" id="save-dashboard-description" rows="3" placeholder="Decrivez votre tableau de bord..."></textarea>
+        </div>
+      </div>
+      <div class="config-modal-footer">
+        <button class="fr-btn fr-btn--secondary" id="cancel-save">Annuler</button>
+        <button class="fr-btn" id="confirm-save"><i class="ri-save-line"></i> Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de previsualisation -->
+  <div class="preview-modal" id="preview-modal">
+    <div class="preview-modal-header">
+      <h3>Apercu du tableau de bord</h3>
+      <button class="fr-btn fr-btn--sm fr-btn--secondary" id="close-preview-modal">
+        <i class="ri-close-line"></i> Fermer
+      </button>
+    </div>
+    <div class="preview-modal-body">
+      <iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin" title="Apercu du dashboard"></iframe>
     </div>
   </div>
 
