@@ -3,7 +3,7 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ne = globalThis, _e = ne.ShadowRoot && (ne.ShadyCSS === void 0 || ne.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ye = Symbol(), Se = /* @__PURE__ */ new WeakMap();
+const ne = globalThis, me = ne.ShadowRoot && (ne.ShadyCSS === void 0 || ne.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ye = Symbol(), Se = /* @__PURE__ */ new WeakMap();
 let ze = class {
   constructor(e, t, r) {
     if (this._$cssResult$ = !0, r !== ye) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -12,7 +12,7 @@ let ze = class {
   get styleSheet() {
     let e = this.o;
     const t = this.t;
-    if (_e && e === void 0) {
+    if (me && e === void 0) {
       const r = t !== void 0 && t.length === 1;
       r && (e = Se.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), r && Se.set(t, e));
     }
@@ -30,12 +30,12 @@ const Xe = (n) => new ze(typeof n == "string" ? n : n + "", void 0, ye), He = (n
   })(i) + n[s + 1], n[0]);
   return new ze(t, n, ye);
 }, Ye = (n, e) => {
-  if (_e) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+  if (me) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
     const r = document.createElement("style"), i = ne.litNonce;
     i !== void 0 && r.setAttribute("nonce", i), r.textContent = t.cssText, n.appendChild(r);
   }
-}, Ce = _e ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
+}, Ce = me ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const r of e.cssRules) t += r.cssText;
   return Xe(t);
@@ -566,7 +566,7 @@ const k = (n) => (e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const vt = { attribute: !0, type: String, converter: ae, reflect: !1, hasChanged: $e }, mt = (n = vt, e, t) => {
+const vt = { attribute: !0, type: String, converter: ae, reflect: !1, hasChanged: $e }, _t = (n = vt, e, t) => {
   const { kind: r, metadata: i } = t;
   let s = globalThis.litPropertyMetadata.get(i);
   if (s === void 0 && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), r === "setter" && ((n = Object.create(n)).wrapped = !0), s.set(t.name, n), r === "accessor") {
@@ -588,7 +588,7 @@ const vt = { attribute: !0, type: String, converter: ae, reflect: !1, hasChanged
   throw Error("Unsupported decorator location: " + r);
 };
 function l(n) {
-  return (e, t) => typeof t == "object" ? mt(n, e, t) : ((r, i, s) => {
+  return (e, t) => typeof t == "object" ? _t(n, e, t) : ((r, i, s) => {
     const a = i.hasOwnProperty(s);
     return i.constructor.createProperty(s, r), a ? Object.getOwnPropertyDescriptor(i, s) : void 0;
   })(n, e, t);
@@ -598,7 +598,7 @@ function l(n) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function m(n) {
+function _(n) {
   return l({ ...n, state: !0, attribute: !1 });
 }
 function $(n, e) {
@@ -620,14 +620,14 @@ function Lt(n, e, t) {
   const r = $(n, e);
   return r !== void 0 ? r : t;
 }
-const _t = "https://chartsbuilder.matge.com/beacon", Ne = /* @__PURE__ */ new Set();
+const mt = "https://chartsbuilder.matge.com/beacon", Ne = /* @__PURE__ */ new Set();
 function W(n, e) {
   const t = `${n}:${e || ""}`;
   if (Ne.has(t) || (Ne.add(t), typeof window > "u" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
     return;
   const r = new URLSearchParams();
   r.set("c", n), e && r.set("t", e);
-  const i = `${_t}?${r.toString()}`;
+  const i = `${mt}?${r.toString()}`;
   try {
     navigator.sendBeacon ? navigator.sendBeacon(i) : fetch(i, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
     });
@@ -818,18 +818,18 @@ M([
   l({ type: String })
 ], P.prototype, "transform", void 0);
 M([
-  m()
+  _()
 ], P.prototype, "_loading", void 0);
 M([
-  m()
+  _()
 ], P.prototype, "_error", void 0);
 M([
-  m()
+  _()
 ], P.prototype, "_data", void 0);
 P = M([
   k("gouv-source")
 ], P);
-var _ = function(n, e, t, r) {
+var m = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -1172,61 +1172,61 @@ let v = class extends w {
     return this._error;
   }
 };
-_([
+m([
   l({ type: String, attribute: "api-type" })
 ], v.prototype, "apiType", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "source", void 0);
-_([
+m([
   l({ type: String, attribute: "base-url" })
 ], v.prototype, "baseUrl", void 0);
-_([
+m([
   l({ type: String, attribute: "dataset-id" })
 ], v.prototype, "datasetId", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "resource", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "select", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "where", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "filter", void 0);
-_([
+m([
   l({ type: String, attribute: "group-by" })
 ], v.prototype, "groupBy", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "aggregate", void 0);
-_([
+m([
   l({ type: String, attribute: "order-by" })
 ], v.prototype, "orderBy", void 0);
-_([
+m([
   l({ type: Number })
 ], v.prototype, "limit", void 0);
-_([
+m([
   l({ type: String })
 ], v.prototype, "transform", void 0);
-_([
+m([
   l({ type: Number })
 ], v.prototype, "refresh", void 0);
-_([
-  m()
+m([
+  _()
 ], v.prototype, "_loading", void 0);
-_([
-  m()
+m([
+  _()
 ], v.prototype, "_error", void 0);
-_([
-  m()
+m([
+  _()
 ], v.prototype, "_data", void 0);
-_([
-  m()
+m([
+  _()
 ], v.prototype, "_rawData", void 0);
-v = _([
+v = m([
   k("gouv-query")
 ], v);
 function ce(n) {
@@ -1869,19 +1869,19 @@ A([
   l({ type: String })
 ], x.prototype, "export", void 0);
 A([
-  m()
+  _()
 ], x.prototype, "_data", void 0);
 A([
-  m()
+  _()
 ], x.prototype, "_searchQuery", void 0);
 A([
-  m()
+  _()
 ], x.prototype, "_activeFilters", void 0);
 A([
-  m()
+  _()
 ], x.prototype, "_sort", void 0);
 A([
-  m()
+  _()
 ], x.prototype, "_currentPage", void 0);
 x = A([
   k("gouv-datalist")
@@ -2176,10 +2176,10 @@ S([
   l({ type: Number })
 ], y.prototype, "height", void 0);
 S([
-  m()
+  _()
 ], y.prototype, "_data", void 0);
 S([
-  m()
+  _()
 ], y.prototype, "_chartJsMissing", void 0);
 y = S([
   k("gouv-chart")
@@ -2387,7 +2387,7 @@ b([
   l({ type: String, attribute: "map-highlight" })
 ], g.prototype, "mapHighlight", void 0);
 b([
-  m()
+  _()
 ], g.prototype, "_data", void 0);
 g = b([
   k("gouv-dsfr-chart")
@@ -2405,6 +2405,11 @@ let te = class extends w {
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
     return this;
+  }
+  /** Normalized base path with trailing slash */
+  get _base() {
+    const e = this.basePath;
+    return e ? e.endsWith("/") ? e : e + "/" : "";
   }
   connectedCallback() {
     super.connectedCallback();
@@ -2460,7 +2465,7 @@ let te = class extends w {
                   </div>
                 </div>
                 <div class="fr-header__service">
-                  <a href="${this.basePath}index.html" title="Accueil - Charts builder">
+                  <a href="${this._base}index.html" title="Accueil - Charts builder">
                     <p class="fr-header__service-title">Charts builder</p>
                   </a>
                   <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
@@ -2470,7 +2475,7 @@ let te = class extends w {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}apps/favorites/index.html">
+                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
                         Favoris${this._favCount > 0 ? u` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : f}
                       </a>
                     </li>
@@ -2496,7 +2501,7 @@ let te = class extends w {
                 ${e.map((t) => u`
                   <li class="fr-nav__item">
                     <a class="fr-nav__link"
-                       href="${this.basePath}${t.href}"
+                       href="${this._base}${t.href}"
                        ${this.currentPage === t.id ? u`aria-current="page"` : ""}>
                       ${t.label}
                     </a>
@@ -2517,7 +2522,7 @@ ue([
   l({ type: String, attribute: "base-path" })
 ], te.prototype, "basePath", void 0);
 ue([
-  m()
+  _()
 ], te.prototype, "_favCount", void 0);
 te = ue([
   k("app-header")
@@ -2528,9 +2533,13 @@ var Ze = function(n, e, t, r) {
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 };
-let me = class extends w {
+let _e = class extends w {
   constructor() {
     super(...arguments), this.basePath = "";
+  }
+  get _base() {
+    const e = this.basePath;
+    return e ? e.endsWith("/") ? e : e + "/" : "";
   }
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
@@ -2542,7 +2551,7 @@ let me = class extends w {
         <div class="fr-container">
           <div class="fr-footer__body">
             <div class="fr-footer__brand fr-enlarge-link">
-              <a href="${this.basePath}index.html" title="Retour à l'accueil du site - République Française">
+              <a href="${this._base}index.html" title="Retour à l'accueil du site - République Française">
                 <p class="fr-logo">
                   République<br>Française
                 </p>
@@ -2589,10 +2598,10 @@ let me = class extends w {
 };
 Ze([
   l({ type: String, attribute: "base-path" })
-], me.prototype, "basePath", void 0);
-me = Ze([
+], _e.prototype, "basePath", void 0);
+_e = Ze([
   k("app-footer")
-], me);
+], _e);
 var J = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
@@ -2753,10 +2762,10 @@ J([
   l({ type: Number, attribute: "min-right-width" })
 ], B.prototype, "minRightWidth", void 0);
 J([
-  m()
+  _()
 ], B.prototype, "_isResizing", void 0);
 J([
-  m()
+  _()
 ], B.prototype, "_currentLeftRatio", void 0);
 B = J([
   k("app-layout-builder")
@@ -2770,6 +2779,10 @@ var ie = function(n, e, t, r) {
 let G = class extends w {
   constructor() {
     super(...arguments), this.title = "", this.icon = "", this.activePath = "", this.basePath = "", this._contentElements = [], this._contentMoved = !1;
+  }
+  get _base() {
+    const e = this.basePath;
+    return e ? e.endsWith("/") ? e : e + "/" : "";
   }
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
@@ -2848,7 +2861,7 @@ let G = class extends w {
       return u`
         <li class="fr-sidemenu__item ${t ? "fr-sidemenu__item--active" : ""}">
           <a class="fr-sidemenu__link"
-             href="${this.basePath}${e.href}"
+             href="${this._base}${e.href}"
              ${t ? u`aria-current="page"` : ""}>
             ${e.label}
           </a>
@@ -2859,7 +2872,7 @@ let G = class extends w {
     if (!this.activePath || this.activePath === "overview")
       return "";
     const e = this.activePath.split("/"), t = [
-      { label: "Composants", href: `${this.basePath}index.html` }
+      { label: "Composants", href: `${this._base}index.html` }
     ];
     if (e.length > 1) {
       const r = e[0] === "components" ? "Nos composants" : "Graphiques DSFR";
@@ -3390,13 +3403,13 @@ q([
   l({ type: String, attribute: "active-tab" })
 ], L.prototype, "activeTab", void 0);
 q([
-  m()
+  _()
 ], L.prototype, "_activeTab", void 0);
 L = q([
   k("app-preview-panel")
 ], L);
 export {
-  me as AppFooter,
+  _e as AppFooter,
   te as AppHeader,
   B as AppLayoutBuilder,
   G as AppLayoutDemo,

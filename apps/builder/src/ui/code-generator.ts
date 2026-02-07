@@ -676,7 +676,7 @@ export function generateDynamicCodeForApi(): void {
   <!-- Carte (se met a jour automatiquement) -->
   <gouv-dsfr-chart
     source="map-data"
-    type="${state.chartType === ('mapReg' as any) ? 'map-chart-reg' : 'map-chart'}"
+    type="${state.chartType === ('mapReg' as any) ? 'map-reg' : 'map'}"
     code-field="${state.codeField}"
     value-field="${valueFieldPath}"
     aggregation="${state.aggregation}"
