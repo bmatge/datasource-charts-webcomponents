@@ -292,6 +292,29 @@ export async function createGristTable(): Promise<void> {
   }
 }
 
+/**
+ * Add a column row to the create-table modal columns list
+ */
+export function addColumnRow(): void {
+  const container = document.getElementById('columns-list');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'column-item';
+  row.innerHTML = `
+    <input class="fr-input fr-input--sm" type="text" placeholder="Nom de colonne">
+    <select class="fr-select fr-select--sm" style="width: 120px;">
+      <option value="Text">Texte</option>
+      <option value="Numeric">Nombre</option>
+      <option value="Date">Date</option>
+      <option value="Bool">Booleen</option>
+    </select>
+    <button class="fr-btn fr-btn--sm fr-btn--tertiary" onclick="this.parentElement.remove()">
+      <i class="ri-delete-bin-line"></i>
+    </button>
+  `;
+  container.appendChild(row);
+}
+
 // ============================================================
 // Save current Grist data as source
 // ============================================================

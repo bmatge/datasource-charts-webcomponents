@@ -22,7 +22,7 @@ export function openInPlayground(): void {
   // Store the code in sessionStorage
   sessionStorage.setItem('playground-code', code);
   // Redirect to the playground
-  window.location.href = 'playground.html?from=builder';
+  window.location.href = '../../playground.html?from=builder';
 }
 
 /**

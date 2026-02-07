@@ -3,7 +3,7 @@
  */
 
 import { state } from '../state.js';
-import type { Message } from '../state.js';
+import type { Message, ChartConfig } from '../state.js';
 import { getIAConfig } from '../ia/ia-config.js';
 import type { IAConfig } from '../ia/ia-config.js';
 import { SKILLS, getRelevantSkills, buildSkillsContext } from '../skills.js';
@@ -119,7 +119,7 @@ En attendant, je peux vous aider avec des commandes simples. Essayez :
     const textWithoutJson = response.replace(/```json[\s\S]*?```/g, '').trim();
 
     if (action?.action === 'createChart' && action.config) {
-      applyChartConfig(action.config);
+      applyChartConfig(action.config as ChartConfig);
       addMessage('assistant', textWithoutJson || 'Voici votre graphique !', [
         'Changer le type',
         'Modifier les couleurs',
@@ -128,7 +128,7 @@ En attendant, je peux vous aider avec des commandes simples. Essayez :
     } else if (action?.action === 'reloadData') {
       const success = await handleReloadData(action);
       if (success) {
-        addMessage('assistant', textWithoutJson || action.reason || 'Donnees rechargees avec les filtres.', [
+        addMessage('assistant', textWithoutJson || (action.reason as string) || 'Donnees rechargees avec les filtres.', [
           'Barres',
           'Camembert',
           'Courbe',

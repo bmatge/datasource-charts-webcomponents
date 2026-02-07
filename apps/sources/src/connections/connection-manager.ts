@@ -11,7 +11,6 @@ import {
   getProxiedUrl,
   getProxyUrl,
   isViteDevMode,
-  getExternalProxyUrl,
 } from '@gouv-widgets/shared';
 
 import { state, EXTERNAL_PROXY } from '../state.js';
@@ -262,7 +261,7 @@ export async function saveApiConnection(name: string): Promise<void> {
   }
 
   const isArray = Array.isArray(data);
-  const count = isArray ? data.length : data ? 1 : 0;
+  const count = isArray ? (data as unknown[]).length : data ? 1 : 0;
 
   const connection: StoredConnection = {
     id:

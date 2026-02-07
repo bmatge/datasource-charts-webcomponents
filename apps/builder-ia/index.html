@@ -22,7 +22,7 @@
 </head>
 <body>
   <!-- Header -->
-  <app-header current-page="builder-ia" base-path=""></app-header>
+  <app-header current-page="builder-ia" base-path="../../"></app-header>
 
   <app-layout-builder left-ratio="50">
     <!-- ============================================ -->
@@ -93,18 +93,20 @@
           <div class="fr-input-group">
             <label class="fr-label" for="ia-system-prompt">System prompt</label>
             <textarea class="fr-input" id="ia-system-prompt" rows="4" style="font-size: 0.75rem;">Tu es un assistant expert en visualisation de donnees pour les services publics francais.
+Tu connais la bibliotheque gouv-widgets (web components) et les composants DSFR Chart officiels.
 
-Role : Analyser les donnees fournies, suggerer des visualisations, et generer des graphiques ou KPIs.
+Role : Analyser les donnees, suggerer des visualisations, et generer du code.
 
-Pour creer un graphique, genere un bloc JSON :
+## Action createChart (apercu interactif)
+Pour creer un graphique dans l'apercu, genere un bloc JSON :
 ```json
 {
   "action": "createChart",
   "config": {
-    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map",
+    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map|bar-line|map-reg",
     "labelField": "champ_labels",
     "valueField": "champ_valeurs",
-    "valueField2": "champ_valeurs_serie2",
+    "valueField2": "champ_serie2",
     "codeField": "code_departement",
     "aggregation": "sum|avg|count|min|max",
     "limit": 10,
@@ -119,9 +121,17 @@ Pour creer un graphique, genere un bloc JSON :
 }
 ```
 
-Pour un KPI (indicateur chiffre unique), utilise type:"kpi" avec un seul valueField. Le labelField n'est pas requis pour un KPI. Les options variant et unit sont optionnelles.
+## Composants gouv-widgets disponibles
+Tu peux aussi proposer du code HTML declaratif avec ces composants :
+- <gouv-source> : connexion API (url, transform, refresh)
+- <gouv-query> : filtrage, agregation, tri declaratif (where, group-by, aggregate, order-by)
+- <gouv-dsfr-chart> : graphiques DSFR (bar, line, pie, radar, scatter, gauge, bar-line, map, map-reg)
+- <gouv-kpi> : indicateur chiffre cle (valeur, format, seuils, tendance)
+- <gouv-datalist> : tableau filtrable avec recherche, pagination, export CSV
 
-Tu disposes de SKILLS (connaissances specialisees) qui seront injectes automatiquement selon le contexte : ODSQL, versions API, types de graphiques, couleurs DSFR.
+Pipeline type : <gouv-source> -> <gouv-query> -> <gouv-dsfr-chart> / <gouv-kpi> / <gouv-datalist>
+
+Tu disposes de SKILLS (connaissances specialisees) injectes automatiquement selon le contexte.
 
 Sois concis. Utilise le francais.</textarea>
           </div>

@@ -2679,6 +2679,7 @@ let G = class extends $ {
         href: "#",
         children: [
           { id: "components/gouv-source", label: "gouv-source", href: "components/gouv-source.html" },
+          { id: "components/gouv-query", label: "gouv-query", href: "components/gouv-query.html" },
           { id: "components/gouv-kpi", label: "gouv-kpi", href: "components/gouv-kpi.html" },
           { id: "components/gouv-datalist", label: "gouv-datalist", href: "components/gouv-datalist.html" },
           { id: "components/gouv-dsfr-chart", label: "gouv-dsfr-chart", href: "components/gouv-dsfr-chart.html" }

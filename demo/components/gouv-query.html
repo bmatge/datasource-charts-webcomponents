@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-query - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <!-- Source de donnees pour les exemples client-side -->
+  <gouv-source
+    id="demo-communes"
+    url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+    transform="data">
+  </gouv-source>
+
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
+
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-query"
+    icon="ri-filter-3-line"
+    active-path="components/gouv-query"
+    base-path="../">
+    <div slot="content">
+        <p class="fr-text--lead">
+          Composant intermediaire de requete et transformation de donnees.
+          Se place entre <code>&lt;gouv-source&gt;</code> et les composants de visualisation
+          pour filtrer, grouper, agreger et trier les donnees.
+        </p>
+
+        <div class="fr-callout fr-callout--blue-france">
+          <p class="fr-callout__text">
+            <strong>Invisible :</strong> Ce composant ne rend rien visuellement. Il transforme les donnees
+            et les redistribue aux composants de visualisation via le systeme d'evenements.
+          </p>
+        </div>
+
+        <h2>Modes de fonctionnement</h2>
+        <p>Le composant supporte trois modes via l'attribut <code>api-type</code> :</p>
+        <table class="attr-table">
+          <thead><tr><th>Mode</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>generic</code> (defaut)</td>
+              <td>Traitement client-side des donnees d'une <code>&lt;gouv-source&gt;</code> existante. Necessite l'attribut <code>source</code>.</td>
+            </tr>
+            <tr>
+              <td><code>opendatasoft</code></td>
+              <td>Requete directe a une API OpenDataSoft. Utilise la syntaxe ODSQL pour les filtres et selections.</td>
+            </tr>
+            <tr>
+              <td><code>tabular</code></td>
+              <td>Requete directe a l'API Tabular de data.gouv.fr. Necessite les attributs <code>dataset-id</code> et <code>resource</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td>Identifiant unique (requis). Les composants de visualisation l'utilisent pour s'abonner aux donnees transformees.</td></tr>
+            <tr><td><code>api-type</code></td><td>String</td><td>Mode de fonctionnement : <code>generic</code> (defaut), <code>opendatasoft</code> ou <code>tabular</code></td></tr>
+            <tr><td><code>source</code></td><td>String</td><td>ID de la <code>&lt;gouv-source&gt;</code> a ecouter (mode <code>generic</code> uniquement)</td></tr>
+            <tr><td><code>base-url</code></td><td>String</td><td>URL de base de l'API (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
+            <tr><td><code>dataset-id</code></td><td>String</td><td>Identifiant du dataset (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
+            <tr><td><code>resource</code></td><td>String</td><td>Identifiant de la ressource (mode <code>tabular</code> uniquement)</td></tr>
+            <tr><td><code>select</code></td><td>String</td><td>Clause SELECT avec agregations en syntaxe ODSQL (mode <code>opendatasoft</code>). Ex: <code>"sum(population) as total, region"</code></td></tr>
+            <tr><td><code>where</code></td><td>String</td><td>Filtres. OpenDataSoft : syntaxe ODSQL. Generic/Tabular : format <code>"champ:operateur:valeur"</code></td></tr>
+            <tr><td><code>filter</code></td><td>String</td><td>Alias pour <code>where</code></td></tr>
+            <tr><td><code>group-by</code></td><td>String</td><td>Champs de regroupement separes par virgule. Ex: <code>"region, departement"</code></td></tr>
+            <tr><td><code>aggregate</code></td><td>String</td><td>Agregations (modes <code>generic</code> / <code>tabular</code>). Format: <code>"champ:fonction"</code>. Fonctions : <code>count</code>, <code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code></td></tr>
+            <tr><td><code>order-by</code></td><td>String</td><td>Tri des resultats. Format: <code>"champ:direction"</code>. Ex: <code>"population__sum:desc"</code></td></tr>
+            <tr><td><code>limit</code></td><td>Number</td><td>Nombre maximum de resultats (0 = pas de limite)</td></tr>
+            <tr><td><code>transform</code></td><td>String</td><td>Chemin JSONPath pour extraire les donnees de la reponse API</td></tr>
+            <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Operateurs de filtre</h2>
+        <p>Utilisables dans les attributs <code>where</code> / <code>filter</code> (format <code>"champ:operateur:valeur"</code>) :</p>
+        <table class="attr-table">
+          <thead><tr><th>Operateur</th><th>Description</th><th>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td><code>eq</code></td><td>Egal a</td><td><code>status:eq:active</code></td></tr>
+            <tr><td><code>neq</code></td><td>Different de</td><td><code>status:neq:archived</code></td></tr>
+            <tr><td><code>gt</code></td><td>Strictement superieur</td><td><code>population:gt:5000</code></td></tr>
+            <tr><td><code>gte</code></td><td>Superieur ou egal</td><td><code>population:gte:5000</code></td></tr>
+            <tr><td><code>lt</code></td><td>Strictement inferieur</td><td><code>population:lt:1000</code></td></tr>
+            <tr><td><code>lte</code></td><td>Inferieur ou egal</td><td><code>population:lte:1000</code></td></tr>
+            <tr><td><code>contains</code></td><td>Contient (insensible a la casse)</td><td><code>nom:contains:paris</code></td></tr>
+            <tr><td><code>notcontains</code></td><td>Ne contient pas</td><td><code>nom:notcontains:test</code></td></tr>
+            <tr><td><code>in</code></td><td>Dans une liste (separateur <code>|</code>)</td><td><code>region:in:IDF|OCC|BRE</code></td></tr>
+            <tr><td><code>notin</code></td><td>Pas dans une liste</td><td><code>region:notin:IDF|OCC</code></td></tr>
+            <tr><td><code>isnull</code></td><td>Est null/undefined</td><td><code>email:isnull</code></td></tr>
+            <tr><td><code>isnotnull</code></td><td>N'est pas null</td><td><code>email:isnotnull</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>Mode generic : filtrer et trier des donnees existantes</h3>
+          <p>
+            Recupere les donnees d'une <code>&lt;gouv-source&gt;</code> et les filtre/trie cote client.
+            Ici on filtre les 10 premieres lignes triees par nom.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="raw-data"
+  url="https://mon-api.gouv.fr/records"
+  transform="results"
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query
+  id="filtered-data"
+  source="raw-data"
+  where="population:gt:5000"
+  order-by="nom:asc"
+  limit="10"
+&gt;&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart
+  source="filtered-data"
+  type="bar"
+  label-key="nom"
+  value-key="population"
+&gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode generic : grouper et agreger</h3>
+          <p>
+            Regroupe les donnees par region et calcule la somme de la population
+            et le nombre d'enregistrements par groupe.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="communes"
+  url="https://mon-api.gouv.fr/communes"
+  transform="results"
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query
+  id="stats-region"
+  source="communes"
+  group-by="region"
+  aggregate="population:sum, population:count"
+  order-by="population__sum:desc"
+  limit="10"
+&gt;&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart
+  source="stats-region"
+  type="bar"
+  label-key="region"
+  value-key="population__sum"
+  title="Population par region"
+&gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode OpenDataSoft : requete serveur</h3>
+          <p>
+            Interroge directement une API OpenDataSoft avec des agregations et filtres ODSQL.
+            La requete est executee cote serveur.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-query
+  id="ods-stats"
+  api-type="opendatasoft"
+  dataset-id="demographyref-communes-2021"
+  base-url="https://data.opendatasoft.com"
+  select="sum(pop_municipale) as total_pop, nom_reg"
+  where="pop_municipale &gt; 5000"
+  group-by="nom_reg"
+  order-by="total_pop:desc"
+  limit="15"
+&gt;&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart
+  source="ods-stats"
+  type="bar"
+  label-key="nom_reg"
+  value-key="total_pop"
+  title="Population par region (OpenDataSoft)"
+&gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode Tabular API : requete data.gouv.fr</h3>
+          <p>
+            Interroge directement l'API Tabular de data.gouv.fr avec groupement et agregation.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-query
+  id="tabular-stats"
+  api-type="tabular"
+  resource="d0566522-604d-4571-848c-73c73c254230"
+  group-by="departement"
+  aggregate="population:sum"
+  order-by="population__sum:desc"
+  limit="10"
+&gt;&lt;/gouv-query&gt;
+
+&lt;gouv-kpi
+  source="tabular-stats"
+  value-key="population__sum"
+  label="Population totale"
+&gt;&lt;/gouv-kpi&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Combinaison de filtres multiples</h3>
+          <p>
+            Plusieurs filtres peuvent etre combines en les separant par des virgules.
+            Tous les filtres doivent etre satisfaits (logique ET).
+          </p>
+          <div class="code-block"><pre>&lt;gouv-query
+  id="filtered"
+  source="raw-data"
+  where="population:gte:10000, region:in:IDF|OCC|BRE, status:eq:active"
+  order-by="population:desc"
+  limit="20"
+&gt;&lt;/gouv-query&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Rafraichissement automatique</h3>
+          <p>
+            L'attribut <code>refresh</code> permet de re-executer la requete a intervalles reguliers.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-query
+  id="live-stats"
+  api-type="opendatasoft"
+  dataset-id="mon-dataset"
+  base-url="https://data.opendatasoft.com"
+  select="count(*) as total"
+  refresh="30"
+&gt;&lt;/gouv-query&gt;</pre></div>
+        </section>
+
+        <h2 class="fr-mt-4w">Evenements</h2>
+        <p>Le composant emet les memes evenements que <code>&lt;gouv-source&gt;</code> :</p>
+        <ul>
+          <li><code>gouv-data-loaded</code> : Donnees transformees disponibles</li>
+          <li><code>gouv-data-loading</code> : Traitement en cours</li>
+          <li><code>gouv-data-error</code> : Erreur de traitement ou de requete</li>
+        </ul>
+
+        <h2 class="fr-mt-4w">Methodes publiques</h2>
+        <table class="attr-table">
+          <thead><tr><th>Methode</th><th>Retour</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>reload()</code></td><td>void</td><td>Force le rechargement / re-traitement des donnees</td></tr>
+            <tr><td><code>getData()</code></td><td>Array</td><td>Retourne les donnees transformees actuelles</td></tr>
+            <tr><td><code>isLoading()</code></td><td>Boolean</td><td>Indique si un traitement est en cours</td></tr>
+            <tr><td><code>getError()</code></td><td>Error | null</td><td>Retourne l'erreur eventuelle</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Conseils d'utilisation</h2>
+        <div class="fr-callout">
+          <p class="fr-callout__text">
+            <strong>Choisir le bon mode :</strong> Utilisez <code>generic</code> pour transformer des donnees deja chargees
+            (petits volumes, combinaison de filtres dynamiques). Utilisez <code>opendatasoft</code> ou <code>tabular</code>
+            pour deleguer le traitement au serveur (gros volumes, agregations complexes).
+          </p>
+        </div>
+        <div class="fr-callout fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>Nommage des champs agreges :</strong> En mode <code>generic</code>, les champs agreges sont nommes
+            automatiquement <code>champ__fonction</code> (ex: <code>population__sum</code>, <code>population__count</code>).
+            Vous pouvez definir un alias avec le format <code>"champ:fonction:alias"</code>.
+          </p>
+        </div>
+        <div class="fr-callout fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>Chainabilite :</strong> Un <code>&lt;gouv-query&gt;</code> peut servir de source a un autre
+            <code>&lt;gouv-query&gt;</code> en utilisant son <code>id</code> comme attribut <code>source</code>,
+            permettant de construire des pipelines de transformation.
+          </p>
+        </div>
+    </div>
+  </app-layout-demo>
+
+  <!-- Footer -->
+  <app-footer base-path="../../"></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

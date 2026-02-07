@@ -7,11 +7,18 @@ import {
 import type { Source } from '../../../apps/builder-ia/src/state';
 
 describe('builder-ia skills', () => {
-  it('should have 5 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(5);
+  it('should have 12 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(12);
   });
 
   it('should have expected skill IDs', () => {
+    expect(SKILLS).toHaveProperty('gouvSource');
+    expect(SKILLS).toHaveProperty('gouvQuery');
+    expect(SKILLS).toHaveProperty('gouvKpi');
+    expect(SKILLS).toHaveProperty('gouvDsfrChart');
+    expect(SKILLS).toHaveProperty('gouvDatalist');
+    expect(SKILLS).toHaveProperty('dsfrChartNative');
+    expect(SKILLS).toHaveProperty('compositionPatterns');
     expect(SKILLS).toHaveProperty('odsql');
     expect(SKILLS).toHaveProperty('odsApiVersions');
     expect(SKILLS).toHaveProperty('chartTypes');
@@ -35,10 +42,10 @@ describe('builder-ia skills', () => {
       expect(result).toEqual([]);
     });
 
-    it('should match chartTypes skill for "graphique" keyword', () => {
+    it('should match gouvDsfrChart skill for "graphique" keyword', () => {
       const result = getRelevantSkills('je veux un graphique', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('chartTypes');
+      expect(ids).toContain('gouvDsfrChart');
     });
 
     it('should match dsfrColors skill for "couleur" keyword', () => {
@@ -47,17 +54,17 @@ describe('builder-ia skills', () => {
       expect(ids).toContain('dsfrColors');
     });
 
-    it('should match apiQuery skill for "filtre" keyword', () => {
+    it('should match gouvQuery skill for "filtre" keyword', () => {
       const result = getRelevantSkills('ajoute un filtre', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('apiQuery');
+      expect(ids).toContain('gouvQuery');
     });
 
     it('should match multiple skills for a complex message', () => {
       const result = getRelevantSkills('fais un graphique avec un filtre sur les couleurs', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('chartTypes');
-      expect(ids).toContain('apiQuery');
+      expect(ids).toContain('gouvDsfrChart');
+      expect(ids).toContain('gouvQuery');
       expect(ids).toContain('dsfrColors');
     });
 
@@ -85,7 +92,7 @@ describe('builder-ia skills', () => {
     it('should be case-insensitive', () => {
       const result = getRelevantSkills('GRAPHIQUE EN BARRES', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('chartTypes');
+      expect(ids).toContain('gouvDsfrChart');
     });
   });
 
@@ -98,14 +105,14 @@ describe('builder-ia skills', () => {
       const skills = [SKILLS.dsfrColors];
       const result = buildSkillsContext(skills);
       expect(result).toContain('CONNAISSANCES DISPONIBLES');
-      expect(result).toContain('Palette DSFR');
+      expect(result).toContain('Bleu France');
     });
 
     it('should concatenate multiple skills', () => {
       const skills = [SKILLS.chartTypes, SKILLS.dsfrColors];
       const result = buildSkillsContext(skills);
       expect(result).toContain('Choix du type de graphique');
-      expect(result).toContain('Palette DSFR');
+      expect(result).toContain('Bleu France');
     });
   });
 });

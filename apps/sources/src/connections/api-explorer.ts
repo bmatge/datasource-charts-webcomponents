@@ -106,10 +106,10 @@ export async function loadApiData(): Promise<void> {
         const currentPage = meta.page || 1;
         const totalPages = Math.ceil(meta.total / meta.page_size);
 
-        if (currentPage < totalPages) {
-          const url = new URL(currentUrl);
-          url.searchParams.set('page', String(currentPage + 1));
-          nextUrl = url.href;
+        if (currentPage < totalPages && currentUrl) {
+          const pageUrl: URL = new URL(currentUrl);
+          pageUrl.searchParams.set('page', String(currentPage + 1));
+          nextUrl = pageUrl.href;
         }
       }
       // Pattern 3: next_page or nextPage field at root level

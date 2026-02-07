@@ -4,7 +4,8 @@
  */
 
 // Chart.js loaded via CDN - use global reference
-const Chart = (window as Record<string, unknown>).Chart as unknown;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Chart = (window as any).Chart as unknown;
 export { Chart };
 
 /** External proxy base URL for production usage */
@@ -36,7 +37,7 @@ export type GenerationMode = 'embedded' | 'dynamic';
 export type AggregationType = 'avg' | 'sum' | 'count' | 'min' | 'max';
 
 /** Sort orders */
-export type SortOrder = 'asc' | 'desc';
+export type SortOrder = 'asc' | 'desc' | 'none';
 
 /** A field descriptor extracted from data */
 export interface Field {

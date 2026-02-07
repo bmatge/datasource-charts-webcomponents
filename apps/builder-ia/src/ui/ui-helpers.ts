@@ -49,7 +49,7 @@ export function openInPlayground(): void {
   // Store code in sessionStorage
   sessionStorage.setItem('playground-code', code);
   // Redirect to the playground
-  window.location.href = 'playground.html?from=builder-ia';
+  window.location.href = '../../playground.html?from=builder-ia';
 }
 
 /** Favorites localStorage key */

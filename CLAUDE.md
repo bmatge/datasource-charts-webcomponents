@@ -2,31 +2,56 @@
 
 ## Contexte du projet
 
-Bibliothèque de Web Components de dataviz pour sites gouvernementaux français.
-Composants Lit conformes DSFR (Design System de l'État).
+Bibliotheque de Web Components de dataviz pour sites gouvernementaux francais.
+Composants Lit conformes DSFR (Design System de l'Etat).
+Architecture monorepo avec npm workspaces.
 
-## Architecture actuelle
+## Architecture
 
-- `/src/` - Code source TypeScript des composants
-- `/dist/` - Build output (ESM + UMD)
-- `/demo/` - Pages de démonstration
-- `/tests/` - Tests Vitest
-
-### Apps HTML (à migrer vers TypeScript)
-- `builder.html` - Générateur visuel de graphiques (~2000 lignes JS inline)
-- `builderIA.html` - Générateur IA avec Albert (~1700 lignes JS inline)
-- `sources.html` - Gestionnaire de sources de données (~1850 lignes JS inline)
-- `playground.html` - Environnement de code interactif (~1200 lignes JS inline)
-- `favoris.html` - Gestion des favoris (~300 lignes JS inline)
+```
+/
+├── apps/                    # Applications TypeScript
+│   ├── builder/             # Generateur visuel de graphiques
+│   ├── builder-ia/          # Generateur IA avec Albert
+│   ├── sources/             # Gestionnaire de sources de donnees
+│   ├── playground/          # Environnement de code interactif
+│   └── favorites/           # Gestion des favoris
+├── packages/
+│   └── shared/              # Utilitaires partages (@gouv-widgets/shared)
+├── src/                     # Composants web gouv-widgets (Lit)
+├── dist/                    # Build output (ESM + UMD)
+├── demo/                    # Pages de demonstration
+├── tests/                   # Tests Vitest (397 tests)
+├── src-tauri/               # App desktop Tauri
+├── scripts/                 # Scripts de build
+└── app-dist/                # Build output pour Tauri (genere)
+```
 
 ## Commandes disponibles
 
 ```bash
-npm run dev        # Serveur de dev Vite (port 5173)
-npm run build      # Build TypeScript + Vite
-npm run test       # Tests Vitest en watch mode
-npm run test:run   # Tests une seule fois
-npm run preview    # Preview du build
+npm run dev           # Serveur de dev Vite (port 5173)
+npm run build         # Build bibliotheque TypeScript + Vite
+npm run build:shared  # Build du package shared
+npm run build:apps    # Build de toutes les apps
+npm run build:all     # Build complet (shared + lib + apps)
+npm run build:app     # Assembler app-dist/ pour Tauri
+npm run test          # Tests Vitest en watch mode
+npm run test:run      # Tests une seule fois
+npm run test:coverage # Tests avec couverture
+npm run preview       # Preview du build
+npm run tauri:dev     # Dev Tauri (app desktop)
+npm run tauri:build   # Build Tauri production (build:all + build:app + tauri build)
+```
+
+### Dev d'une app individuelle
+
+```bash
+npm run dev --workspace=@gouv-widgets/app-builder
+npm run dev --workspace=@gouv-widgets/app-builder-ia
+npm run dev --workspace=@gouv-widgets/app-sources
+npm run dev --workspace=@gouv-widgets/app-playground
+npm run dev --workspace=@gouv-widgets/app-favorites
 ```
 
 ## Conventions de code
@@ -36,42 +61,37 @@ npm run preview    # Preview du build
 - Nommage : `gouv-*` pour les composants publics, `app-*` pour les layouts
 - Tests : fichiers `*.test.ts` dans `/tests/`
 - Pas d'emoji dans le code sauf demande explicite
+- Imports partages via `@gouv-widgets/shared`
 
-## Refactorisation en cours
+## Package shared (@gouv-widgets/shared)
 
-### Objectif
-Migrer les apps HTML avec JS inline vers une structure monorepo professionnelle :
+Utilitaires partages entre toutes les apps :
+- `escapeHtml()` - Echappement HTML
+- `formatKPIValue()`, `formatDateShort()` - Formatage
+- `toNumber()`, `looksLikeNumber()` - Parsing numerique
+- `isValidDeptCode()` - Validation codes departementaux
+- `DSFR_COLORS`, `PALETTE_COLORS` - Palettes DSFR
+- `getProxyConfig()`, `getProxiedUrl()` - Configuration proxy
+- `loadFromStorage()`, `saveToStorage()`, `STORAGE_KEYS` - localStorage
+- `openModal()`, `closeModal()` - Modales DSFR
 
-```
-/apps/{app-name}/src/  → Code TypeScript des apps
-/packages/shared/      → Utilitaires partagés
-/packages/gouv-widgets/ → Bibliothèque existante
-```
-
-### Code à factoriser (dupliqué)
-- `escapeHtml()` → packages/shared/src/utils/escape-html.ts
-- `formatKPIValue()` → packages/shared/src/utils/formatters.ts
-- `toNumber()` → packages/shared/src/utils/number-parser.ts
-- `isValidDeptCode()` → packages/shared/src/utils/dept-codes.ts
-- Palettes DSFR → packages/shared/src/constants/dsfr-palettes.ts
-- Logique proxy Grist → packages/shared/src/api/proxy.ts
-
-### Ordre de migration
-1. favorites (simple, validation setup)
-2. playground (pattern établi)
-3. sources (complexité moyenne)
-4. builder-ia
-5. builder (le plus complexe)
-
-## APIs externes utilisées
+## APIs externes utilisees
 
 - Grist : docs.getgrist.com, grist.numerique.gouv.fr
 - Albert IA : albert.api.etalab.gouv.fr
 - OpenDataSoft : *.opendatasoft.com
 - Tabular API : tabular-api.data.gouv.fr
 
+## Proxy
+
+- Dev : Vite proxy (configure dans vite.config.ts de chaque app)
+- Production : chartsbuilder.matge.com (nginx)
+- Tauri : proxy distant via detection `window.__TAURI__`
+- Configurable via `VITE_PROXY_URL`
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
-- Toujours lancer `npm run build` après modification des composants
-- Utiliser le proxy externe `https://chartsbuilder.matge.com` pour la production
+- Toujours lancer `npm run build` apres modification des composants
+- Les anciens fichiers HTML (builder.html, etc.) sont conserves comme redirections
+- Docker : `docker build -t gouv-widgets . && docker run -p 8080:80 gouv-widgets`

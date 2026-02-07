@@ -11,7 +11,6 @@ import {
   currentSourceMode,
   parsedJsonData,
   parsedCsvData,
-  setCurrentSourceMode,
   setParsedJsonData,
   setParsedCsvData,
 } from './state.js';
@@ -19,12 +18,9 @@ import {
 import {
   renderConnections,
   saveConnection,
-  showExplorerEmpty,
   refreshCurrentView,
   renderSources,
   saveAsFavorite,
-  previewSource,
-  deleteSource,
   switchExplorerTab,
   switchSourceMode,
   openExportGristModal,
@@ -128,20 +124,22 @@ function closeManualSourceModal(): void {
 
 function openInBuilder(): void {
   // Source is already saved in localStorage
-  window.location.href = 'builder.html';
+  window.location.href = '../../builder.html';
 }
 
 // ============================================================
 // Expose functions to window for inline onclick handlers
 // ============================================================
 
-(window as Record<string, unknown>).removeTableColumn = removeTableColumn;
-(window as Record<string, unknown>).removeTableRow = removeTableRow;
-(window as Record<string, unknown>).addTableRow = addTableRow;
-(window as Record<string, unknown>).addTableColumn = addTableColumn;
-(window as Record<string, unknown>).closeManualSourceModal = closeManualSourceModal;
-(window as Record<string, unknown>).switchSourceMode = switchSourceMode;
-(window as Record<string, unknown>).closeModal = closeModal;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+(window as any).removeTableColumn = removeTableColumn;
+(window as any).removeTableRow = removeTableRow;
+(window as any).addTableRow = addTableRow;
+(window as any).addTableColumn = addTableColumn;
+(window as any).closeManualSourceModal = closeManualSourceModal;
+(window as any).switchSourceMode = switchSourceMode;
+(window as any).closeModal = closeModal;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ============================================================
 // DOM initialization
