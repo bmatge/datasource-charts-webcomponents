@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { subscribeToSource, getDataCache } from '../utils/data-bridge.js';
-import { getByPath } from '../utils/json-path.js';
+import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
+import { processChartData, ChartAggregation } from '../utils/chart-data.js';
 
 // Déclaration pour Chart.js (chargé globalement via CDN)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,10 +19,7 @@ const DSFR_COLORS = [
   '#5770BE', // Archipel
 ];
 
-interface ProcessedDataItem {
-  label: string;
-  value: number;
-}
+const MULTI_COLOR_TYPES = new Set(['pie', 'doughnut', 'radar']);
 
 /**
  * <gouv-chart> - Composant graphique connecté à une source de données
@@ -31,12 +28,6 @@ interface ProcessedDataItem {
  * Se met à jour automatiquement quand la source émet de nouvelles données.
  *
  * @example
- * <gouv-source
- *   id="grist-data"
- *   url="/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
- *   transform="records">
- * </gouv-source>
- *
  * <gouv-chart
  *   source="grist-data"
  *   type="bar"
@@ -48,91 +39,59 @@ interface ProcessedDataItem {
  * </gouv-chart>
  */
 @customElement('gouv-chart')
-export class GouvChart extends LitElement {
-  /**
-   * ID de la source de données à écouter
-   */
+export class GouvChart extends SourceSubscriberMixin(LitElement) {
   @property({ type: String })
   source = '';
 
-  /**
-   * Type de graphique: bar, line, pie, doughnut, radar
-   */
+  /** Type de graphique: bar, line, pie, doughnut, radar */
   @property({ type: String })
   type: 'bar' | 'line' | 'pie' | 'doughnut' | 'radar' = 'bar';
 
-  /**
-   * Orientation de l'axe pour bar chart: x (vertical) ou y (horizontal)
-   */
+  /** Orientation de l'axe pour bar chart: x (vertical) ou y (horizontal) */
   @property({ type: String, attribute: 'index-axis' })
   indexAxis: 'x' | 'y' = 'x';
 
-  /**
-   * Chemin vers le champ à utiliser comme label (ex: "fields.Nom")
-   */
+  /** Chemin vers le champ à utiliser comme label (ex: "fields.Nom") */
   @property({ type: String, attribute: 'label-field' })
   labelField = '';
 
-  /**
-   * Chemin vers le champ à utiliser comme valeur (ex: "fields.Valeur")
-   */
+  /** Chemin vers le champ à utiliser comme valeur (ex: "fields.Valeur") */
   @property({ type: String, attribute: 'value-field' })
   valueField = '';
 
-  /**
-   * Fonction d'agrégation: none, sum, avg, count, min, max
-   */
+  /** Fonction d'agrégation: none, sum, avg, count, min, max */
   @property({ type: String })
-  aggregation: 'none' | 'sum' | 'avg' | 'count' | 'min' | 'max' = 'none';
+  aggregation: ChartAggregation = 'none';
 
-  /**
-   * Nombre maximum d'éléments à afficher (0 = tous)
-   */
+  /** Nombre maximum d'éléments à afficher (0 = tous) */
   @property({ type: Number })
   limit = 0;
 
-  /**
-   * Ordre de tri: none, asc, desc
-   */
+  /** Ordre de tri: none, asc, desc */
   @property({ type: String, attribute: 'sort-order' })
   sortOrder: 'none' | 'asc' | 'desc' = 'desc';
 
-  /**
-   * Titre du graphique
-   */
+  /** Titre du graphique */
   @property({ type: String })
   title = '';
 
-  /**
-   * Sous-titre du graphique
-   */
+  /** Sous-titre du graphique */
   @property({ type: String })
   subtitle = '';
 
-  /**
-   * Couleur principale (pour bar, line)
-   */
+  /** Couleur principale (pour bar, line) */
   @property({ type: String })
   color = '#000091';
 
-  /**
-   * Hauteur du graphique en pixels
-   */
+  /** Hauteur du graphique en pixels */
   @property({ type: Number })
   height = 350;
 
   @state()
-  private _loading = false;
-
-  @state()
   private _data: unknown[] = [];
-
-  @state()
-  private _error: Error | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _chartInstance: any = null;
-  private _unsubscribe: (() => void) | null = null;
   private _canvasId = `gouv-chart-${Math.random().toString(36).substr(2, 9)}`;
 
   // Light DOM pour les styles DSFR
@@ -140,26 +99,19 @@ export class GouvChart extends LitElement {
     return this;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this._subscribeToSource();
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
-    if (this._unsubscribe) {
-      this._unsubscribe();
-      this._unsubscribe = null;
-    }
     this._destroyChart();
   }
 
-  updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('source')) {
-      this._subscribeToSource();
-    }
+  onSourceData(data: unknown): void {
+    this._data = Array.isArray(data) ? data : [];
+    this.updateComplete.then(() => this._renderChart());
+  }
 
-    // Re-render chart if config changed
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+
     const chartConfigProps = ['type', 'indexAxis', 'labelField', 'valueField', 'aggregation', 'limit', 'sortOrder', 'title', 'subtitle', 'color', 'height'];
     const needsRerender = chartConfigProps.some(prop => changedProperties.has(prop));
 
@@ -168,113 +120,15 @@ export class GouvChart extends LitElement {
     }
   }
 
-  private _subscribeToSource() {
-    if (this._unsubscribe) {
-      this._unsubscribe();
-    }
-
-    if (!this.source) {
-      return;
-    }
-
-    // Récupère les données en cache
-    const cachedData = getDataCache(this.source);
-    if (cachedData !== undefined && Array.isArray(cachedData)) {
-      this._data = cachedData;
-      this.updateComplete.then(() => this._renderChart());
-    }
-
-    this._unsubscribe = subscribeToSource(this.source, {
-      onLoaded: (data) => {
-        this._data = Array.isArray(data) ? data : [];
-        this._loading = false;
-        this._error = null;
-        this.updateComplete.then(() => this._renderChart());
-      },
-      onLoading: () => {
-        this._loading = true;
-      },
-      onError: (error) => {
-        this._error = error;
-        this._loading = false;
-      }
-    });
-  }
-
   private _processData(): { labels: string[]; values: number[] } {
-    if (!this._data || !Array.isArray(this._data) || this._data.length === 0) {
-      return { labels: [], values: [] };
-    }
-
-    // 1. Extraire les paires label/value
-    let processed: ProcessedDataItem[] = this._data.map(record => ({
-      label: String(getByPath(record, this.labelField) ?? 'N/A'),
-      value: Number(getByPath(record, this.valueField)) || 0
-    }));
-
-    // 2. Appliquer l'agrégation si nécessaire
-    if (this.aggregation !== 'none') {
-      processed = this._aggregate(processed);
-    }
-
-    // 3. Trier
-    if (this.sortOrder !== 'none') {
-      processed.sort((a, b) =>
-        this.sortOrder === 'desc' ? b.value - a.value : a.value - b.value
-      );
-    }
-
-    // 4. Limiter
-    if (this.limit > 0) {
-      processed = processed.slice(0, this.limit);
-    }
-
-    return {
-      labels: processed.map(p => p.label),
-      values: processed.map(p => Math.round(p.value * 100) / 100)
-    };
-  }
-
-  private _aggregate(data: ProcessedDataItem[]): ProcessedDataItem[] {
-    // Grouper par label
-    const groups = new Map<string, number[]>();
-
-    for (const item of data) {
-      const existing = groups.get(item.label) || [];
-      existing.push(item.value);
-      groups.set(item.label, existing);
-    }
-
-    // Appliquer la fonction d'agrégation
-    const result: ProcessedDataItem[] = [];
-
-    for (const [label, values] of groups) {
-      let aggregatedValue: number;
-
-      switch (this.aggregation) {
-        case 'sum':
-          aggregatedValue = values.reduce((a, b) => a + b, 0);
-          break;
-        case 'avg':
-          aggregatedValue = values.reduce((a, b) => a + b, 0) / values.length;
-          break;
-        case 'count':
-          aggregatedValue = values.length;
-          break;
-        case 'min':
-          aggregatedValue = Math.min(...values);
-          break;
-        case 'max':
-          aggregatedValue = Math.max(...values);
-          break;
-        default:
-          aggregatedValue = values[0] || 0;
-      }
-
-      result.push({ label, value: aggregatedValue });
-    }
-
-    return result;
+    return processChartData(
+      this._data,
+      this.labelField,
+      this.valueField,
+      this.aggregation,
+      this.sortOrder,
+      this.limit,
+    );
   }
 
   private _destroyChart() {
@@ -288,7 +142,6 @@ export class GouvChart extends LitElement {
     const canvas = this.querySelector(`#${this._canvasId}`) as HTMLCanvasElement;
     if (!canvas) return;
 
-    // Vérifier que Chart.js est disponible
     if (typeof Chart === 'undefined') {
       console.error('gouv-chart: Chart.js non chargé');
       return;
@@ -297,22 +150,19 @@ export class GouvChart extends LitElement {
     this._destroyChart();
 
     const { labels, values } = this._processData();
-
-    if (labels.length === 0) {
-      return;
-    }
+    if (labels.length === 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const isMultiColor = ['pie', 'doughnut', 'radar'].includes(this.type);
+    const isMultiColor = MULTI_COLOR_TYPES.has(this.type);
     const backgroundColor = isMultiColor
       ? labels.map((_, i) => DSFR_COLORS[i % DSFR_COLORS.length])
       : this.color;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chartConfig: any = {
-      type: this.type === 'radar' ? 'radar' : this.type,
+      type: this.type,
       data: {
         labels,
         datasets: [{
@@ -320,8 +170,8 @@ export class GouvChart extends LitElement {
           data: values,
           backgroundColor,
           borderColor: isMultiColor ? backgroundColor : this.color,
-          borderWidth: this.type === 'line' ? 2 : 1
-        }]
+          borderWidth: this.type === 'line' ? 2 : 1,
+        }],
       },
       options: {
         responsive: true,
@@ -331,69 +181,63 @@ export class GouvChart extends LitElement {
           title: {
             display: !!this.title,
             text: this.title,
-            font: { size: 16, weight: 'bold' }
+            font: { size: 16, weight: 'bold' },
           },
           subtitle: {
             display: !!this.subtitle,
             text: this.subtitle,
-            font: { size: 12 }
+            font: { size: 12 },
           },
           legend: {
             display: isMultiColor,
-            position: 'bottom'
-          }
+            position: 'bottom',
+          },
         },
-        scales: ['pie', 'doughnut', 'radar'].includes(this.type) ? undefined : {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
+        scales: MULTI_COLOR_TYPES.has(this.type) ? undefined : {
+          y: { beginAtZero: true },
+        },
+      },
     };
 
     this._chartInstance = new Chart(ctx, chartConfig);
   }
 
-  private _getAccessibleTableHtml(): string {
+  private _renderAccessibleTable() {
     const { labels, values } = this._processData();
+    if (labels.length === 0) return html``;
 
-    if (labels.length === 0) return '';
+    const labelHeader = this.labelField.split('.').pop() || 'Label';
+    const valueHeader = this.valueField.split('.').pop() || 'Valeur';
 
-    const rows = labels.map((label, i) =>
-      `<tr><td>${this._escapeHtml(label)}</td><td>${values[i]}</td></tr>`
-    ).join('');
-
-    return `
+    return html`
       <table class="fr-table">
         <thead>
           <tr>
-            <th>${this.labelField.split('.').pop() || 'Label'}</th>
-            <th>${this.valueField.split('.').pop() || 'Valeur'}</th>
+            <th>${labelHeader}</th>
+            <th>${valueHeader}</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        <tbody>
+          ${labels.map((label, i) => html`
+            <tr><td>${label}</td><td>${values[i]}</td></tr>
+          `)}
+        </tbody>
       </table>
     `;
-  }
-
-  private _escapeHtml(str: string): string {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
   }
 
   render() {
     return html`
       <div class="gouv-chart-container" style="height: ${this.height}px;">
-        ${this._loading ? html`
+        ${this._sourceLoading ? html`
           <div class="gouv-chart__loading" aria-live="polite">
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement...
           </div>
-        ` : this._error ? html`
+        ` : this._sourceError ? html`
           <div class="gouv-chart__error" aria-live="assertive">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
-            Erreur de chargement: ${this._error.message}
+            Erreur de chargement: ${this._sourceError.message}
           </div>
         ` : html`
           <canvas id="${this._canvasId}" role="img" aria-label="${this.title || 'Graphique'}"></canvas>
@@ -403,29 +247,17 @@ export class GouvChart extends LitElement {
       <!-- Tableau accessible (RGAA) -->
       <details class="fr-accordion fr-mt-2w">
         <summary class="fr-accordion__btn">Données du graphique (tableau accessible)</summary>
-        <div class="fr-collapse" .innerHTML=${this._getAccessibleTableHtml()}></div>
+        <div class="fr-collapse">${this._renderAccessibleTable()}</div>
       </details>
 
       <style>
-        .gouv-chart-container {
-          position: relative;
-          width: 100%;
-        }
-
+        .gouv-chart-container { position: relative; width: 100%; }
         .gouv-chart__loading,
         .gouv-chart__error {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          height: 100%;
-          color: var(--text-mention-grey, #666);
-          font-size: 0.875rem;
+          display: flex; align-items: center; justify-content: center;
+          gap: 0.5rem; height: 100%; color: var(--text-mention-grey, #666); font-size: 0.875rem;
         }
-
-        .gouv-chart__error {
-          color: var(--text-default-error, #ce0500);
-        }
+        .gouv-chart__error { color: var(--text-default-error, #ce0500); }
       </style>
     `;
   }
