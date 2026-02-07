@@ -212,7 +212,7 @@ export class AppLayoutDemo extends LitElement {
     const menuItems = this._getMenuStructure();
 
     return html`
-      <main class="fr-container fr-py-4w">
+      <main class="fr-container fr-py-4w" id="main-content">
         <div class="demo-layout">
           <!-- Sidemenu -->
           <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">

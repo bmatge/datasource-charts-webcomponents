@@ -175,7 +175,7 @@ export class AppLayoutBuilder extends LitElement {
              @mousedown="${this._handleMouseDown}">
         </div>
 
-        <main class="builder-layout-right">
+        <main class="builder-layout-right" id="main-content">
           <!-- Contenu slot="right" sera déplacé ici -->
         </main>
       </div>

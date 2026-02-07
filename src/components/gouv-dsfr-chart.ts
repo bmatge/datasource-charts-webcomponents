@@ -218,6 +218,17 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
   /**
    * Crée un élément DSFR Chart via DOM API (pas d'innerHTML)
    */
+  private _getAriaLabel(): string {
+    const typeLabels: Record<string, string> = {
+      bar: 'barres', line: 'lignes', pie: 'camembert', radar: 'radar',
+      gauge: 'jauge', scatter: 'nuage de points', 'bar-line': 'barres et lignes',
+      map: 'carte departements', 'map-reg': 'carte regions',
+    };
+    const typeName = typeLabels[this.type] || this.type;
+    const count = this._data.length;
+    return `Graphique ${typeName}, ${count} valeurs`;
+  }
+
   private _createChartElement(tagName: string, attributes: Record<string, string>) {
     const el = document.createElement(tagName);
     for (const [key, value] of Object.entries(attributes)) {
@@ -228,6 +239,8 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'gouv-dsfr-chart__wrapper';
+    wrapper.setAttribute('role', 'img');
+    wrapper.setAttribute('aria-label', this._getAriaLabel());
     wrapper.appendChild(el);
     return wrapper;
   }

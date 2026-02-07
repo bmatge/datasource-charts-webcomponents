@@ -68,6 +68,14 @@ export class AppHeader extends LitElement {
     const navItems = this._getNavItems();
 
     return html`
+      <div class="fr-skiplinks">
+        <nav class="fr-container" role="navigation" aria-label="Accès rapide">
+          <ul class="fr-skiplinks__list">
+            <li><a class="fr-link" href="#main-content">Contenu</a></li>
+            <li><a class="fr-link" href="#header-navigation">Menu</a></li>
+          </ul>
+        </nav>
+      </div>
       <header role="banner" class="fr-header">
         <div class="fr-header__body">
           <div class="fr-container">

@@ -108,7 +108,7 @@ function renderSidebar(): void {
 }
 
 function renderContent(): void {
-  const contentEl = document.getElementById('favorites-content');
+  const contentEl = document.getElementById('main-content');
   if (!contentEl) return;
 
   if (!selectedId) {

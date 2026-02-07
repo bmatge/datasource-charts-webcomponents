@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ne = globalThis, _e = ne.ShadowRoot && (ne.ShadyCSS === void 0 || ne.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ye = Symbol(), Se = /* @__PURE__ */ new WeakMap();
-let qe = class {
+let ze = class {
   constructor(e, t, r) {
     if (this._$cssResult$ = !0, r !== ye) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
@@ -22,13 +22,13 @@ let qe = class {
     return this.cssText;
   }
 };
-const Xe = (n) => new qe(typeof n == "string" ? n : n + "", void 0, ye), He = (n, ...e) => {
+const Xe = (n) => new ze(typeof n == "string" ? n : n + "", void 0, ye), He = (n, ...e) => {
   const t = n.length === 1 ? n[0] : e.reduce((r, i, s) => r + ((a) => {
     if (a._$cssResult$ === !0) return a.cssText;
     if (typeof a == "number") return a;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + a + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(i) + n[s + 1], n[0]);
-  return new qe(t, n, ye);
+  return new ze(t, n, ye);
 }, Ye = (n, e) => {
   if (_e) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
@@ -75,7 +75,7 @@ const { is: et, defineProperty: tt, getOwnPropertyDescriptor: rt, getOwnProperty
   return t;
 } }, $e = (n, e) => !et(n, e), Ee = { attribute: !0, type: String, converter: ae, reflect: !1, useDefault: !1, hasChanged: $e };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), N.litPropertyMetadata ?? (N.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-let q = class extends HTMLElement {
+let z = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ?? (this.l = [])).push(e);
   }
@@ -278,18 +278,18 @@ let q = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-q.elementStyles = [], q.shadowRootOptions = { mode: "open" }, q[K("elementProperties")] = /* @__PURE__ */ new Map(), q[K("finalized")] = /* @__PURE__ */ new Map(), de == null || de({ ReactiveElement: q }), (N.reactiveElementVersions ?? (N.reactiveElementVersions = [])).push("2.1.2");
+z.elementStyles = [], z.shadowRootOptions = { mode: "open" }, z[K("elementProperties")] = /* @__PURE__ */ new Map(), z[K("finalized")] = /* @__PURE__ */ new Map(), de == null || de({ ReactiveElement: z }), (N.reactiveElementVersions ?? (N.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Z = globalThis, Pe = (n) => n, oe = Z.trustedTypes, Re = oe ? oe.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, Ve = "$lit$", D = `lit$${Math.random().toFixed(9).slice(2)}$`, Ge = "?" + D, ot = `<${Ge}>`, j = document, X = () => j.createComment(""), Y = (n) => n === null || typeof n != "object" && typeof n != "function", we = Array.isArray, lt = (n) => we(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", he = `[ 	
-\f\r]`, Q = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ke = /-->/g, Me = />/g, F = RegExp(`>|${he}(?:([^\\s"'>=/]+)(${he}*=${he}*(?:[^ 	
+const Z = globalThis, Pe = (n) => n, oe = Z.trustedTypes, ke = oe ? oe.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, Ve = "$lit$", D = `lit$${Math.random().toFixed(9).slice(2)}$`, Ge = "?" + D, ot = `<${Ge}>`, j = document, X = () => j.createComment(""), Y = (n) => n === null || typeof n != "object" && typeof n != "function", we = Array.isArray, lt = (n) => we(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", he = `[ 	
+\f\r]`, Q = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Re = /-->/g, Me = />/g, F = RegExp(`>|${he}(?:([^\\s"'>=/]+)(${he}*=${he}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), Te = /'/g, Oe = /"/g, We = /^(?:script|style|textarea|title)$/i, ct = (n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), u = ct(1), H = Symbol.for("lit-noChange"), f = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), U = j.createTreeWalker(j, 129);
 function Je(n, e) {
   if (!we(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Re !== void 0 ? Re.createHTML(e) : e;
+  return ke !== void 0 ? ke.createHTML(e) : e;
 }
 const ut = (n, e) => {
   const t = n.length - 1, r = [];
@@ -297,7 +297,7 @@ const ut = (n, e) => {
   for (let o = 0; o < t; o++) {
     const c = n[o];
     let h, p, d = -1, E = 0;
-    for (; E < c.length && (a.lastIndex = E, p = a.exec(c), p !== null); ) E = a.lastIndex, a === Q ? p[1] === "!--" ? a = ke : p[1] !== void 0 ? a = Me : p[2] !== void 0 ? (We.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = F) : p[3] !== void 0 && (a = F) : a === F ? p[0] === ">" ? (a = i ?? Q, d = -1) : p[1] === void 0 ? d = -2 : (d = a.lastIndex - p[2].length, h = p[1], a = p[3] === void 0 ? F : p[3] === '"' ? Oe : Te) : a === Oe || a === Te ? a = F : a === ke || a === Me ? a = Q : (a = F, i = void 0);
+    for (; E < c.length && (a.lastIndex = E, p = a.exec(c), p !== null); ) E = a.lastIndex, a === Q ? p[1] === "!--" ? a = Re : p[1] !== void 0 ? a = Me : p[2] !== void 0 ? (We.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = F) : p[3] !== void 0 && (a = F) : a === F ? p[0] === ">" ? (a = i ?? Q, d = -1) : p[1] === void 0 ? d = -2 : (d = a.lastIndex - p[2].length, h = p[1], a = p[3] === void 0 ? F : p[3] === '"' ? Oe : Te) : a === Oe || a === Te ? a = F : a === Re || a === Me ? a = Q : (a = F, i = void 0);
     const O = a === F && n[o + 1].startsWith("/>") ? " " : "";
     s += a === Q ? c + ot : d >= 0 ? (r.push(h), c.slice(0, d) + Ve + c.slice(d) + D + O) : c + D + (d === -2 ? o : O);
   }
@@ -521,7 +521,7 @@ const bt = (n, e, t) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const I = globalThis;
-class w extends q {
+class w extends z {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -546,8 +546,8 @@ class w extends q {
     return H;
   }
 }
-var ze;
-w._$litElement$ = !0, w.finalized = !0, (ze = I.litElementHydrateSupport) == null || ze.call(I, { LitElement: w });
+var qe;
+w._$litElement$ = !0, w.finalized = !0, (qe = I.litElementHydrateSupport) == null || qe.call(I, { LitElement: w });
 const fe = I.litElementPolyfillSupport;
 fe == null || fe({ LitElement: w });
 (I.litElementVersions ?? (I.litElementVersions = [])).push("4.2.2");
@@ -556,7 +556,7 @@ fe == null || fe({ LitElement: w });
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const R = (n) => (e, t) => {
+const k = (n) => (e, t) => {
   t !== void 0 ? t.addInitializer(() => {
     customElements.define(n, e);
   }) : customElements.define(n, e);
@@ -827,7 +827,7 @@ M([
   m()
 ], P.prototype, "_data", void 0);
 P = M([
-  R("gouv-source")
+  k("gouv-source")
 ], P);
 var _ = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -1227,7 +1227,7 @@ _([
   m()
 ], v.prototype, "_rawData", void 0);
 v = _([
-  R("gouv-query")
+  k("gouv-query")
 ], v);
 function ce(n) {
   class e extends n {
@@ -1373,7 +1373,7 @@ function Ue(n, e) {
       return null;
   }
 }
-var k = function(n, e, t, r) {
+var R = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -1490,38 +1490,38 @@ let C = class extends ce(w) {
   }
 };
 C.styles = He``;
-k([
+R([
   l({ type: String })
 ], C.prototype, "source", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "valeur", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "label", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "description", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "icone", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "format", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "tendance", void 0);
-k([
+R([
   l({ type: Number, attribute: "seuil-vert" })
 ], C.prototype, "seuilVert", void 0);
-k([
+R([
   l({ type: Number, attribute: "seuil-orange" })
 ], C.prototype, "seuilOrange", void 0);
-k([
+R([
   l({ type: String })
 ], C.prototype, "couleur", void 0);
-C = k([
-  R("gouv-kpi")
+C = R([
+  k("gouv-kpi")
 ], C);
 var A = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -1884,7 +1884,7 @@ A([
   m()
 ], x.prototype, "_currentPage", void 0);
 x = A([
-  R("gouv-datalist")
+  k("gouv-datalist")
 ], x);
 function Et(n, e, t) {
   return n.map((r) => ({
@@ -1902,10 +1902,10 @@ function Pt(n, e) {
   }
   const r = [];
   for (const [i, s] of t)
-    r.push({ label: i, value: Rt(s, e) });
+    r.push({ label: i, value: kt(s, e) });
   return r;
 }
-function Rt(n, e) {
+function kt(n, e) {
   switch (e) {
     case "sum":
       return n.reduce((t, r) => t + r, 0);
@@ -1921,14 +1921,14 @@ function Rt(n, e) {
       return n[0] || 0;
   }
 }
-function kt(n, e) {
+function Rt(n, e) {
   return e === "none" ? n : [...n].sort((t, r) => e === "desc" ? r.value - t.value : t.value - r.value);
 }
 function Mt(n, e, t, r = "none", i = "none", s = 0) {
   if (!n || n.length === 0)
     return { labels: [], values: [] };
   let a = Et(n, e, t);
-  return a = Pt(a, r), a = kt(a, i), s > 0 && (a = a.slice(0, s)), {
+  return a = Pt(a, r), a = Rt(a, i), s > 0 && (a = a.slice(0, s)), {
     labels: a.map((o) => o.label),
     values: a.map((o) => Math.round(o.value * 100) / 100)
   };
@@ -2182,7 +2182,7 @@ S([
   m()
 ], y.prototype, "_chartJsMissing", void 0);
 y = S([
-  R("gouv-chart")
+  k("gouv-chart")
 ], y);
 var b = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -2259,12 +2259,26 @@ let g = class extends ce(w) {
   /**
    * Crée un élément DSFR Chart via DOM API (pas d'innerHTML)
    */
+  _getAriaLabel() {
+    const t = {
+      bar: "barres",
+      line: "lignes",
+      pie: "camembert",
+      radar: "radar",
+      gauge: "jauge",
+      scatter: "nuage de points",
+      "bar-line": "barres et lignes",
+      map: "carte departements",
+      "map-reg": "carte regions"
+    }[this.type] || this.type, r = this._data.length;
+    return `Graphique ${t}, ${r} valeurs`;
+  }
   _createChartElement(e, t) {
     const r = document.createElement(e);
     for (const [s, a] of Object.entries(t))
       a !== void 0 && a !== "" && r.setAttribute(s, a);
     const i = document.createElement("div");
-    return i.className = "gouv-dsfr-chart__wrapper", i.appendChild(r), i;
+    return i.className = "gouv-dsfr-chart__wrapper", i.setAttribute("role", "img"), i.setAttribute("aria-label", this._getAriaLabel()), i.appendChild(r), i;
   }
   _renderChart() {
     const e = Tt[this.type];
@@ -2376,7 +2390,7 @@ b([
   m()
 ], g.prototype, "_data", void 0);
 g = b([
-  R("gouv-dsfr-chart")
+  k("gouv-dsfr-chart")
 ], g);
 var ue = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -2420,6 +2434,14 @@ let te = class extends w {
   render() {
     const e = this._getNavItems();
     return u`
+      <div class="fr-skiplinks">
+        <nav class="fr-container" role="navigation" aria-label="Accès rapide">
+          <ul class="fr-skiplinks__list">
+            <li><a class="fr-link" href="#main-content">Contenu</a></li>
+            <li><a class="fr-link" href="#header-navigation">Menu</a></li>
+          </ul>
+        </nav>
+      </div>
       <header role="banner" class="fr-header">
         <div class="fr-header__body">
           <div class="fr-container">
@@ -2498,7 +2520,7 @@ ue([
   m()
 ], te.prototype, "_favCount", void 0);
 te = ue([
-  R("app-header")
+  k("app-header")
 ], te);
 var Ze = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -2569,7 +2591,7 @@ Ze([
   l({ type: String, attribute: "base-path" })
 ], me.prototype, "basePath", void 0);
 me = Ze([
-  R("app-footer")
+  k("app-footer")
 ], me);
 var J = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -2644,7 +2666,7 @@ let B = class extends w {
              @mousedown="${this._handleMouseDown}">
         </div>
 
-        <main class="builder-layout-right">
+        <main class="builder-layout-right" id="main-content">
           <!-- Contenu slot="right" sera déplacé ici -->
         </main>
       </div>
@@ -2737,7 +2759,7 @@ J([
   m()
 ], B.prototype, "_currentLeftRatio", void 0);
 B = J([
-  R("app-layout-builder")
+  k("app-layout-builder")
 ], B);
 var ie = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
@@ -2863,7 +2885,7 @@ let G = class extends w {
   render() {
     const e = this._getMenuStructure();
     return u`
-      <main class="fr-container fr-py-4w">
+      <main class="fr-container fr-py-4w" id="main-content">
         <div class="demo-layout">
           <!-- Sidemenu -->
           <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
@@ -2986,9 +3008,9 @@ ie([
   l({ type: String, attribute: "base-path" })
 ], G.prototype, "basePath", void 0);
 G = ie([
-  R("app-layout-demo")
+  k("app-layout-demo")
 ], G);
-var z = function(n, e, t, r) {
+var q = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -3352,26 +3374,26 @@ let L = class extends w {
     `;
   }
 };
-z([
+q([
   l({ type: Boolean, attribute: "show-data-tab" })
 ], L.prototype, "showDataTab", void 0);
-z([
+q([
   l({ type: Boolean, attribute: "show-save-button" })
 ], L.prototype, "showSaveButton", void 0);
-z([
+q([
   l({ type: Boolean, attribute: "show-playground-button" })
 ], L.prototype, "showPlaygroundButton", void 0);
-z([
+q([
   l({ type: String, attribute: "tab-labels" })
 ], L.prototype, "tabLabels", void 0);
-z([
+q([
   l({ type: String, attribute: "active-tab" })
 ], L.prototype, "activeTab", void 0);
-z([
+q([
   m()
 ], L.prototype, "_activeTab", void 0);
-L = z([
-  R("app-preview-panel")
+L = q([
+  k("app-preview-panel")
 ], L);
 export {
   me as AppFooter,
@@ -3403,6 +3425,6 @@ export {
   Nt as hasPath,
   At as parseExpression,
   Mt as processChartData,
-  kt as sortByValue,
+  Rt as sortByValue,
   Ke as subscribeToSource
 };
