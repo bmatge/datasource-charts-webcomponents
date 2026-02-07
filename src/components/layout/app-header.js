@@ -21,7 +21,7 @@ let AppHeader = class AppHeader extends LitElement {
         super(...arguments);
         /**
          * Page courante pour mettre en surbrillance dans la nav
-         * Valeurs: 'accueil' | 'composants' | 'builder' | 'builder-ia' | 'playground' | 'sources'
+         * Valeurs: 'accueil' | 'composants' | 'builder' | 'builder-ia' | 'playground' | 'favoris' | 'sources'
          */
         this.currentPage = '';
         /**
@@ -40,6 +40,7 @@ let AppHeader = class AppHeader extends LitElement {
             { id: 'builder', label: 'Builder', href: 'builder.html' },
             { id: 'builder-ia', label: 'Builder IA', href: 'builderIA.html' },
             { id: 'playground', label: 'Playground', href: 'playground.html' },
+            { id: 'favoris', label: 'Favoris', href: 'favoris.html' },
             { id: 'sources', label: 'Sources', href: 'sources.html' },
         ];
     }

@@ -15,7 +15,7 @@ import { customElement, property } from 'lit/decorators.js';
 export class AppHeader extends LitElement {
   /**
    * Page courante pour mettre en surbrillance dans la nav
-   * Valeurs: 'accueil' | 'composants' | 'builder' | 'builder-ia' | 'playground' | 'sources'
+   * Valeurs: 'accueil' | 'composants' | 'builder' | 'builder-ia' | 'playground' | 'favoris' | 'sources'
    */
   @property({ type: String, attribute: 'current-page' })
   currentPage = '';
@@ -38,6 +38,7 @@ export class AppHeader extends LitElement {
       { id: 'builder', label: 'Builder', href: 'builder.html' },
       { id: 'builder-ia', label: 'Builder IA', href: 'builderIA.html' },
       { id: 'playground', label: 'Playground', href: 'playground.html' },
+      { id: 'favoris', label: 'Favoris', href: 'favoris.html' },
       { id: 'sources', label: 'Sources', href: 'sources.html' },
     ];
   }

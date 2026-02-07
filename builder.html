@@ -667,6 +667,7 @@
     <!-- ============================================ -->
     <app-preview-panel slot="right"
       show-data-tab
+      show-save-button
       tab-labels="Aperçu,Code généré,Données brutes">
 
       <!-- Onglet Aperçu -->
@@ -825,7 +826,53 @@
       // Load saved sources and check for selected source from sources.html
       loadSavedSources();
       checkSelectedSource();
+
+      // Listen for save-favorite event from preview panel
+      document.querySelector('app-preview-panel').addEventListener('save-favorite', saveFavorite);
     });
+
+    // ============================================================
+    // GESTION DES FAVORIS
+    // ============================================================
+    const FAVORITES_KEY = 'gouv-widgets-favorites';
+
+    function saveFavorite() {
+      const code = document.getElementById('generated-code').textContent;
+
+      if (!code || code === '// Le code sera généré ici...' || code.startsWith('//')) {
+        alert('Générez d\'abord un graphique avant de le sauvegarder en favori.');
+        return;
+      }
+
+      const name = prompt('Nom du favori :', state.title || 'Mon graphique');
+      if (!name) return;
+
+      const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+
+      const favorite = {
+        id: 'fav-' + Date.now(),
+        name: name,
+        code: code,
+        chartType: state.chartType,
+        source: 'builder',
+        createdAt: new Date().toISOString()
+      };
+
+      favorites.unshift(favorite);
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+
+      // Feedback visuel
+      const btn = document.querySelector('.preview-panel-save-btn');
+      if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="ri-check-line" aria-hidden="true"></i> Sauvegardé !';
+        btn.style.background = 'var(--background-contrast-success)';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.background = '';
+        }, 2000);
+      }
+    }
 
     // ============================================================
     // FONCTIONS UTILITAIRES
@@ -1024,6 +1071,12 @@
 
       // Palette config: hide for KPI and gauge (they have their own styling)
       document.getElementById('palette-config').style.display = isSingleValue ? 'none' : 'block';
+
+      // Pour les cartes, forcer une palette séquentielle pour avoir un dégradé de couleurs
+      if (isMap && !state.palette.startsWith('sequential')) {
+        state.palette = 'sequentialAscending';
+        document.getElementById('chart-palette').value = 'sequentialAscending';
+      }
 
       // Label field: hide for single value types (KPI, gauge)
       document.getElementById('label-field').closest('.fr-select-group').style.display = isSingleValue ? 'none' : 'block';
@@ -1466,6 +1519,60 @@ new Chart(document.getElementById('myChart'), {
         return;
       }
 
+      // Handle Map type (local data)
+      if (state.chartType === 'map') {
+        // Pour les cartes choroplèthes, il faut une palette séquentielle ou divergente
+        const mapPalette = state.palette.includes('sequential') || state.palette.includes('divergent')
+          ? state.palette
+          : 'sequentialAscending';
+
+        // Transform data to DSFR format: {"code": value, ...}
+        const mapData = {};
+        let totalValue = 0;
+        let count = 0;
+
+        state.data.forEach(d => {
+          const rawCode = d[state.codeField] ?? d.code ?? '';
+          let code = String(rawCode).trim();
+          if (/^\d+$/.test(code) && code.length < 3) {
+            code = code.padStart(2, '0');
+          }
+          const value = d.value || 0;
+          if (code && code !== '00' && code !== '' && !isNaN(value)) {
+            mapData[code] = Math.round(value * 100) / 100;
+            totalValue += value;
+            count++;
+          }
+        });
+
+        const avgValue = count > 0 ? Math.round((totalValue / count) * 100) / 100 : 0;
+        const today = new Date().toISOString().split('T')[0];
+
+        const mapCode = `<!-- Carte générée avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Données locales'} -->
+<!-- Palette: ${mapPalette} -->
+
+<!-- Dépendances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(state.title)}</h2>
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+  <map-chart
+    data='${JSON.stringify(mapData)}'
+    name="${escapeHtml(state.title || 'Données')}"
+    date="${today}"
+    value-nat="${avgValue}"
+    selected-palette="${mapPalette}"
+  ></map-chart>
+</div>`;
+        document.getElementById('generated-code').textContent = mapCode;
+        return;
+      }
+
       // Get palette colors for code generation
       const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
       const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
@@ -1698,6 +1805,11 @@ new Chart(document.getElementById('myChart'), {
       if (state.chartType === 'map') {
         canvas.style.display = 'none';
 
+        // Pour les cartes choroplèthes, il faut une palette séquentielle ou divergente pour le dégradé
+        const mapPalette = state.palette.includes('sequential') || state.palette.includes('divergent')
+          ? state.palette
+          : 'sequentialAscending';
+
         // Transform data to DSFR format: {"code": value, ...}
         const mapData = {};
         let totalValue = 0;
@@ -1734,7 +1846,7 @@ new Chart(document.getElementById('myChart'), {
             name="${escapeHtml(state.title || 'Données')}"
             date="${today}"
             value-nat="${avgValue}"
-            selected-palette="${state.palette}"
+            selected-palette="${mapPalette}"
           ></map-chart>
         `;
         chartContainer.appendChild(mapCard);
@@ -2029,8 +2141,13 @@ loadChart();
 
       // Handle Map type
       if (state.chartType === 'map') {
+        // Pour les cartes choroplèthes, il faut une palette séquentielle ou divergente
+        const mapPalette = state.palette.includes('sequential') || state.palette.includes('divergent')
+          ? state.palette
+          : 'sequentialAscending';
+
         const code = `<!-- Carte générée avec gouv-widgets Builder -->
-<!-- Palette: ${state.palette} -->
+<!-- Palette: ${mapPalette} -->
 
 <!-- Dépendances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -2066,7 +2183,7 @@ async function loadMap() {
     <map-chart
       data='\${JSON.stringify(mapData)}'
       name="${escapeHtml(state.title)}"
-      selected-palette="${state.palette}"
+      selected-palette="${mapPalette}"
     ></map-chart>
   \`;
 }

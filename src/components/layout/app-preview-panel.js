@@ -51,6 +51,10 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
          */
         this.showDataTab = false;
         /**
+         * Afficher le bouton Sauvegarder en favoris
+         */
+        this.showSaveButton = false;
+        /**
          * Labels personnalisés pour les onglets (séparés par des virgules)
          */
         this.tabLabels = 'Aperçu,Code,Données';
@@ -136,6 +140,12 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
     _getTabLabels() {
         return this.tabLabels.split(',').map(l => l.trim());
     }
+    _handleSaveClick() {
+        this.dispatchEvent(new CustomEvent('save-favorite', {
+            bubbles: true,
+            composed: true
+        }));
+    }
     render() {
         const labels = this._getTabLabels();
         const [previewLabel, codeLabel, dataLabel] = labels;
@@ -161,6 +171,15 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
               data-tab="data"
               @click="${() => this._handleTabClick('data')}">
               ${dataLabel || 'Données'}
+            </button>
+          ` : nothing}
+          ${this.showSaveButton ? html `
+            <button
+              class="preview-panel-save-btn"
+              @click="${this._handleSaveClick}"
+              title="Sauvegarder en favoris">
+              <i class="ri-star-line" aria-hidden="true"></i>
+              <span>Favoris</span>
             </button>
           ` : nothing}
         </div>
@@ -224,6 +243,33 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
           color: var(--text-action-high-blue-france);
           border-bottom-color: var(--border-action-high-blue-france);
           font-weight: 600;
+        }
+
+        /* Bouton Favoris */
+        .preview-panel-save-btn {
+          margin-left: auto;
+          padding: 0.5rem 1rem;
+          border: none;
+          background: var(--background-action-low-blue-france);
+          color: var(--text-action-high-blue-france);
+          cursor: pointer;
+          font-size: 0.8rem;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-right: 0.5rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+          transition: background 0.15s;
+        }
+
+        .preview-panel-save-btn:hover {
+          background: var(--background-action-low-blue-france-hover);
+        }
+
+        .preview-panel-save-btn i {
+          font-size: 1rem;
         }
 
         /* Contenu des onglets */
@@ -385,6 +431,9 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
 __decorate([
     property({ type: Boolean, attribute: 'show-data-tab' })
 ], AppPreviewPanel.prototype, "showDataTab", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'show-save-button' })
+], AppPreviewPanel.prototype, "showSaveButton", void 0);
 __decorate([
     property({ type: String, attribute: 'tab-labels' })
 ], AppPreviewPanel.prototype, "tabLabels", void 0);
