@@ -1,5 +1,5 @@
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { LitElement, html, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 
 /**
  * <app-header> - Header DSFR avec navigation
@@ -26,9 +26,28 @@ export class AppHeader extends LitElement {
   @property({ type: String, attribute: 'base-path' })
   basePath = '';
 
+  @state()
+  private _favCount = 0;
+
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Read favorites count
+    try {
+      const favs = JSON.parse(localStorage.getItem('gouv-widgets-favorites') || '[]');
+      this._favCount = Array.isArray(favs) ? favs.length : 0;
+    } catch { /* ignore */ }
+    // Inject active page style once
+    if (!document.getElementById('app-header-active-style')) {
+      const style = document.createElement('style');
+      style.id = 'app-header-active-style';
+      style.textContent = `.fr-nav__link[aria-current="page"]{font-weight:700;border-bottom:2px solid var(--border-action-high-blue-france);color:var(--text-action-high-blue-france)}`;
+      document.head.appendChild(style);
+    }
   }
 
   private _getNavItems() {
@@ -41,6 +60,7 @@ export class AppHeader extends LitElement {
       { id: 'playground', label: 'Playground', href: 'apps/playground/index.html' },
       { id: 'favoris', label: 'Favoris', href: 'apps/favorites/index.html' },
       { id: 'sources', label: 'Sources', href: 'apps/sources/index.html' },
+      { id: 'monitoring', label: 'Monitoring', href: 'apps/monitoring/index.html' },
     ];
   }
 
@@ -77,7 +97,7 @@ export class AppHeader extends LitElement {
                   <ul class="fr-btns-group">
                     <li>
                       <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}apps/favorites/index.html">
-                        Favoris
+                        Favoris${this._favCount > 0 ? html` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : nothing}
                       </a>
                     </li>
                     <li>

@@ -25,13 +25,22 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
 }
 
 /**
- * Save a JSON value to localStorage
+ * Save a JSON value to localStorage.
+ * Shows a toast if quota is exceeded.
  */
-export function saveToStorage<T>(key: string, data: T): void {
+export function saveToStorage<T>(key: string, data: T): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(data));
+    return true;
   } catch (e) {
-    console.error(`Error saving to localStorage key "${key}":`, e);
+    if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      import('../ui/toast.js').then(({ toastError }) => {
+        toastError('Espace de stockage plein. Supprimez des elements pour continuer.');
+      });
+    } else {
+      console.error(`Error saving to localStorage key "${key}":`, e);
+    }
+    return false;
   }
 }
 

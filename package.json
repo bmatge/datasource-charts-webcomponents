@@ -17,7 +17,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:shared": "npm run build --workspace=@gouv-widgets/shared",
-    "build:apps": "npm run build --workspace=@gouv-widgets/app-favorites && npm run build --workspace=@gouv-widgets/app-playground && npm run build --workspace=@gouv-widgets/app-sources && npm run build --workspace=@gouv-widgets/app-builder-ia && npm run build --workspace=@gouv-widgets/app-builder && npm run build --workspace=@gouv-widgets/app-dashboard",
+    "build:apps": "npm run build --workspace=@gouv-widgets/app-favorites && npm run build --workspace=@gouv-widgets/app-playground && npm run build --workspace=@gouv-widgets/app-sources && npm run build --workspace=@gouv-widgets/app-builder-ia && npm run build --workspace=@gouv-widgets/app-builder && npm run build --workspace=@gouv-widgets/app-dashboard && npm run build --workspace=@gouv-widgets/app-monitoring",
     "build:all": "npm run build:shared && npm run build && npm run build:apps",
     "preview": "vite preview",
     "test": "vitest",

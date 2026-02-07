@@ -81,6 +81,28 @@ Utilitaires partages entre toutes les apps :
 - `toastWarning()`, `toastSuccess()` - Notifications toast DSFR
 - `appHref()`, `navigateTo()` - Navigation inter-apps
 
+## Skills builder-IA (alignement composants)
+
+Le builder-IA (`apps/builder-ia/`) utilise un systeme de skills : des blocs de connaissances injectes dans le prompt de l'IA selon le contexte. Les skills sont definis dans `apps/builder-ia/src/skills.ts`.
+
+**Regle importante** : quand on ajoute/modifie un attribut, un type de graphique, un operateur de filtre ou une fonction d'agregation dans un composant `gouv-*`, il faut mettre a jour le skill correspondant dans `skills.ts`.
+
+Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient automatiquement que :
+- Chaque attribut HTML d'un composant est documente dans son skill (via introspection Lit `elementProperties`)
+- Tous les types de graphiques, operateurs de filtre et fonctions d'agregation sont couverts
+- Chaque composant data a un skill correspondant
+
+Si un attribut est ajoute a un composant sans maj du skill, le test echouera.
+
+## Release Tauri
+
+La release est declenchee par un tag git :
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM + x86), Linux (deb + AppImage) et Windows (NSIS + MSI).
+
 ## APIs externes utilisees
 
 - Grist : docs.getgrist.com, grist.numerique.gouv.fr

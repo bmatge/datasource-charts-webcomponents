@@ -4,7 +4,7 @@
  * and favorite state restoration.
  */
 
-import { loadFromStorage, STORAGE_KEYS, appHref } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage } from '@gouv-widgets/shared';
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
@@ -257,9 +257,9 @@ export async function loadFields(): Promise<void> {
   try {
     // Fetch one record to get field names
     const url = state.apiUrl + '?limit=1';
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) throw new Error(httpErrorMessage(response.status));
 
     const json = await response.json();
 
@@ -283,8 +283,9 @@ export async function loadFields(): Promise<void> {
     }
   } catch (error) {
     console.error(error);
+    const msg = error instanceof Error ? error.message : 'Erreur inconnue';
     if (statusEl) {
-      statusEl.innerHTML = `<span class="fr-badge fr-badge--error fr-badge--sm">Erreur</span>`;
+      statusEl.innerHTML = `<span class="fr-badge fr-badge--error fr-badge--sm">${msg}</span>`;
     }
   }
 }

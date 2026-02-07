@@ -9,6 +9,7 @@ import { loadSavedSources, handleSourceChange, loadSavedSourceData } from './sou
 import { toggleIAConfig, loadIAConfig, saveIAConfig } from './ia/ia-config.js';
 import { addMessage, sendMessage } from './chat/chat.js';
 import { switchTab, toggleSection, copyCode, openInPlayground, saveFavorite } from './ui/ui-helpers.js';
+import { state } from './state.js';
 
 // Expose functions that are called from inline onclick attributes in HTML
 (window as unknown as Record<string, unknown>).toggleSection = toggleSection;
@@ -47,11 +48,34 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSavedSources();
   loadIAConfig();
 
-  // Welcome message
-  addMessage('assistant', 'Bonjour ! Selectionnez une source de donnees, puis decrivez le graphique souhaite.', [
-    'Aide',
-    'Suggestion',
-  ]);
+  // Restore previous conversation if any
+  try {
+    const savedMessages = sessionStorage.getItem('builder-ia-messages');
+    if (savedMessages) {
+      const messages = JSON.parse(savedMessages);
+      if (Array.isArray(messages) && messages.length > 0) {
+        messages.forEach((m: { role: string; content: string }) => addMessage(m.role as 'user' | 'assistant', m.content));
+        state.messages = messages;
+      }
+    }
+  } catch { /* ignore */ }
+
+  // Welcome message (only if no restored conversation)
+  if (state.messages.length === 0) {
+    addMessage('assistant', 'Bonjour ! Selectionnez une source de donnees, puis decrivez le graphique souhaite.', [
+      'Aide',
+      'Suggestion',
+    ]);
+  }
+
+  // Clear conversation button
+  document.getElementById('clear-chat')?.addEventListener('click', () => {
+    sessionStorage.removeItem('builder-ia-messages');
+    state.messages = [];
+    const container = document.getElementById('chat-messages');
+    if (container) container.innerHTML = '';
+    addMessage('assistant', 'Conversation effacee. Comment puis-je vous aider ?');
+  });
 
   // Listen for save-favorite and open-playground events from preview panel
   const previewPanel = document.querySelector('app-preview-panel');

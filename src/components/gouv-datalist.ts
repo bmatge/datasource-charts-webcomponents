@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 
 interface ColumnDef {
   key: string;
@@ -80,6 +81,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
+    sendWidgetBeacon('gouv-datalist');
     this._initSort();
   }
 
@@ -417,9 +419,15 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
         ${this._renderToolbar()}
 
         ${this._sourceLoading ? html`
-          <div class="gouv-datalist__loading" aria-live="polite">Chargement des données...</div>
+          <div class="gouv-datalist__loading" aria-live="polite">
+            <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
+            Chargement des données...
+          </div>
         ` : this._sourceError ? html`
-          <div class="gouv-datalist__error" aria-live="assertive">Erreur: ${this._sourceError.message}</div>
+          <div class="gouv-datalist__error" aria-live="assertive">
+            <span class="fr-icon-error-line" aria-hidden="true"></span>
+            Erreur: ${this._sourceError.message}
+          </div>
         ` : html`
           <p class="fr-text--sm" aria-live="polite">
             ${totalFiltered} résultat${totalFiltered > 1 ? 's' : ''}
@@ -455,8 +463,11 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
         }
         .gouv-datalist__sort-btn:hover { text-decoration: underline; }
         .gouv-datalist__loading,
-        .gouv-datalist__error { padding: 2rem; text-align: center; }
-        .gouv-datalist__error { color: var(--text-default-error); }
+        .gouv-datalist__error {
+          display: flex; align-items: center; justify-content: center;
+          gap: 0.5rem; padding: 2rem; color: var(--text-mention-grey, #666); font-size: 0.875rem;
+        }
+        .gouv-datalist__error { color: var(--text-default-error, #ce0500); }
         .gouv-datalist__empty { text-align: center; color: var(--text-mention-grey); padding: 2rem !important; }
       </style>
     `;

@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { processChartData, ChartAggregation } from '../utils/chart-data.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 
 // Déclaration pour Chart.js (chargé globalement via CDN)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,6 +100,11 @@ export class GouvChart extends SourceSubscriberMixin(LitElement) {
     return this;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    sendWidgetBeacon('gouv-chart', this.type);
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     this._destroyChart();
@@ -138,12 +144,16 @@ export class GouvChart extends SourceSubscriberMixin(LitElement) {
     }
   }
 
+  @state()
+  private _chartJsMissing = false;
+
   private _renderChart() {
     const canvas = this.querySelector(`#${this._canvasId}`) as HTMLCanvasElement;
     if (!canvas) return;
 
     if (typeof Chart === 'undefined') {
       console.error('gouv-chart: Chart.js non chargé');
+      this._chartJsMissing = true;
       return;
     }
 
@@ -226,23 +236,69 @@ export class GouvChart extends SourceSubscriberMixin(LitElement) {
     `;
   }
 
+  private _downloadImage() {
+    const canvas = this.querySelector(`#${this._canvasId}`) as HTMLCanvasElement;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `${this.title || 'graphique'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  private _getAriaLabel(): string {
+    const { labels } = this._processData();
+    const chartTypeLabels: Record<string, string> = {
+      bar: 'barres', line: 'lignes', pie: 'camembert', doughnut: 'anneau', radar: 'radar',
+    };
+    const typeName = chartTypeLabels[this.type] || this.type;
+    const title = this.title ? ` : ${this.title}` : '';
+    return `Graphique ${typeName}${title}, ${labels.length} valeurs`;
+  }
+
+  private _getContainerStyle(): string {
+    if (this.height === 0) {
+      return 'aspect-ratio: 16 / 9; width: 100%;';
+    }
+    return `height: ${this.height}px;`;
+  }
+
   render() {
     return html`
-      <div class="gouv-chart-container" style="height: ${this.height}px;">
+      <div class="gouv-chart-container" style="${this._getContainerStyle()}">
         ${this._sourceLoading ? html`
           <div class="gouv-chart__loading" aria-live="polite">
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement...
+          </div>
+        ` : this._chartJsMissing ? html`
+          <div class="gouv-chart__error" aria-live="assertive">
+            <span class="fr-icon-error-line" aria-hidden="true"></span>
+            Erreur : la bibliothèque Chart.js n'a pas pu être chargée.
           </div>
         ` : this._sourceError ? html`
           <div class="gouv-chart__error" aria-live="assertive">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
             Erreur de chargement: ${this._sourceError.message}
           </div>
+        ` : this._data.length === 0 ? html`
+          <div class="gouv-chart__empty" aria-live="polite">
+            <span class="fr-icon-information-line" aria-hidden="true"></span>
+            Aucune donnée disponible
+          </div>
         ` : html`
-          <canvas id="${this._canvasId}" role="img" aria-label="${this.title || 'Graphique'}"></canvas>
+          <canvas id="${this._canvasId}" role="img" aria-label="${this._getAriaLabel()}"></canvas>
         `}
       </div>
+
+      ${this._data.length > 0 && this._chartInstance ? html`
+        <div class="gouv-chart__toolbar">
+          <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline fr-icon-download-line"
+                  title="Télécharger en PNG"
+                  @click=${this._downloadImage}>
+            Télécharger
+          </button>
+        </div>
+      ` : ''}
 
       <!-- Tableau accessible (RGAA) -->
       <details class="fr-accordion fr-mt-2w">
@@ -253,11 +309,16 @@ export class GouvChart extends SourceSubscriberMixin(LitElement) {
       <style>
         .gouv-chart-container { position: relative; width: 100%; }
         .gouv-chart__loading,
-        .gouv-chart__error {
+        .gouv-chart__error,
+        .gouv-chart__empty {
           display: flex; align-items: center; justify-content: center;
-          gap: 0.5rem; height: 100%; color: var(--text-mention-grey, #666); font-size: 0.875rem;
+          gap: 0.5rem; height: 100%; min-height: 200px; color: var(--text-mention-grey, #666); font-size: 0.875rem;
         }
         .gouv-chart__error { color: var(--text-default-error, #ce0500); }
+        .gouv-chart__empty {
+          background: var(--background-alt-grey, #f5f5f5); border-radius: 4px;
+        }
+        .gouv-chart__toolbar { display: flex; justify-content: flex-end; margin-top: 0.25rem; }
       </style>
     `;
   }

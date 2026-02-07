@@ -2,7 +2,7 @@
  * Dashboard app - Widget management
  */
 
-import { escapeHtml } from '@gouv-widgets/shared';
+import { escapeHtml, appHref } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import { openConfigModal } from './widget-config.js';
 import { updateGeneratedCode } from './code-generator.js';
@@ -77,6 +77,8 @@ export function renderWidget(widget: Widget, cell: HTMLElement): void {
           ${escapeHtml(widget.title)}
         </h4>
         <div class="widget-actions">
+          <button class="widget-action-btn" onclick="duplicateWidget('${widget.id}')" title="Dupliquer"><i class="ri-file-copy-line"></i></button>
+          ${widget.config.fromFavorite ? `<button class="widget-action-btn" onclick="openInBuilder('${widget.id}')" title="Editer dans le Builder"><i class="ri-edit-line"></i></button>` : ''}
           <button class="widget-action-btn" onclick="editWidget('${widget.id}')" title="Configurer">
             <i class="ri-settings-3-line"></i>
           </button>
@@ -166,4 +168,38 @@ export function deleteWidget(widgetId: string): void {
 
     updateGeneratedCode();
   }
+}
+
+export function openInBuilder(widgetId: string): void {
+  const widget = state.dashboard.widgets.find(w => w.id === widgetId);
+  if (!widget?.config.builderState) return;
+  sessionStorage.setItem('builder-state', JSON.stringify(widget.config.builderState));
+  window.location.href = appHref('builder', { from: 'dashboard' });
+}
+
+export function duplicateWidget(widgetId: string): void {
+  const widget = state.dashboard.widgets.find(w => w.id === widgetId);
+  if (!widget) return;
+
+  // Find next empty cell
+  const grid = document.getElementById('dashboard-grid');
+  const emptyCell = grid?.querySelector('.drop-cell.empty') as HTMLElement | null;
+  if (!emptyCell) {
+    return;
+  }
+
+  const newWidget: Widget = {
+    id: `widget-${Date.now()}`,
+    type: widget.type,
+    title: widget.title + ' (copie)',
+    position: {
+      row: parseInt(emptyCell.dataset.row || '0'),
+      col: parseInt(emptyCell.dataset.col || '0'),
+    },
+    config: JSON.parse(JSON.stringify(widget.config)),
+  };
+
+  state.dashboard.widgets.push(newWidget);
+  renderWidget(newWidget, emptyCell);
+  updateGeneratedCode();
 }

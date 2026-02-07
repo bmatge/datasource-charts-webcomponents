@@ -8,6 +8,7 @@ COPY apps/playground/package.json apps/playground/
 COPY apps/sources/package.json apps/sources/
 COPY apps/builder-ia/package.json apps/builder-ia/
 COPY apps/builder/package.json apps/builder/
+COPY apps/monitoring/package.json apps/monitoring/
 RUN npm ci
 COPY . .
 RUN npm run build:all
@@ -18,6 +19,8 @@ FROM nginx:alpine
 
 # Copier la config nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Ajouter le log_format beacon (inclus dans le bloc http par nginx)
+RUN echo "log_format beacon '\$time_iso8601|\$http_referer|\$arg_c|\$arg_t|\$remote_addr';" > /etc/nginx/conf.d/beacon-log.conf
 
 # Copier tous les fichiers depuis app-dist
 COPY --from=builder /app/app-dist /usr/share/nginx/html

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 import {
   dispatchDataLoaded,
   dispatchDataError,
@@ -83,6 +84,7 @@ export class GouvSource extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    sendWidgetBeacon('gouv-source');
     this._fetchData();
     this._setupRefresh();
   }

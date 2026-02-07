@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoring - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+  <link rel="stylesheet" href="src/styles/monitoring.css">
+</head>
+<body>
+  <app-header current-page="monitoring" base-path="../.."></app-header>
+
+  <main class="fr-pb-8w">
+    <div class="fr-container">
+      <h1 class="fr-mt-4w">
+        <i class="ri-pulse-line"></i> Monitoring des widgets
+      </h1>
+      <p class="fr-text--lead">
+        Suivi des deploiements de composants gouv-widgets sur les sites gouvernementaux.
+      </p>
+
+      <div id="load-error" class="fr-alert fr-alert--info fr-mb-2w" style="display:none"></div>
+
+      <!-- KPIs -->
+      <div id="kpi-row" class="monitoring-kpi-row fr-mb-4w"></div>
+
+      <!-- Filters -->
+      <div class="fr-card fr-p-3w fr-mb-4w">
+        <div class="monitoring-filters">
+          <div class="fr-input-group">
+            <label class="fr-label" for="filter-component">Composant</label>
+            <select class="fr-select" id="filter-component">
+              <option value="">Tous</option>
+            </select>
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label" for="filter-type">Type de graphique</label>
+            <select class="fr-select" id="filter-type">
+              <option value="">Tous</option>
+            </select>
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label" for="search-referer">Rechercher un site</label>
+            <input class="fr-input" type="search" id="search-referer" placeholder="URL ou domaine...">
+          </div>
+          <div style="display:flex;gap:0.5rem">
+            <button class="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left" id="btn-export">
+              <i class="ri-download-line"></i> Export CSV
+            </button>
+            <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left" id="btn-refresh">
+              <i class="ri-refresh-line"></i> Actualiser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <div id="monitoring-table">
+        <div class="monitoring-empty">Chargement...</div>
+      </div>
+    </div>
+  </main>
+
+  <app-footer base-path="../.."></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>

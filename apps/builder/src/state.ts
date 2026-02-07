@@ -111,6 +111,32 @@ export interface BuilderState {
   queryAggregate: string;
 }
 
+// --- Draft persistence helpers ---
+
+const DRAFT_KEY = 'builder-draft';
+
+export function saveDraft(): void {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+  } catch { /* ignore */ }
+}
+
+export function loadDraft(): boolean {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return false;
+    const draft = JSON.parse(raw);
+    Object.assign(state, draft);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearDraft(): void {
+  sessionStorage.removeItem(DRAFT_KEY);
+}
+
 /** The singleton application state */
 export const state: BuilderState = {
   sourceType: 'saved',

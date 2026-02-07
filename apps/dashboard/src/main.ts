@@ -4,10 +4,11 @@
 
 import { escapeHtml, loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
 import { state } from './state.js';
+import { createEmptyDashboard } from './state.js';
 import { initDragAndDrop, handleFavoriteDragStart } from './drag-drop.js';
-import { editWidget, deleteWidget } from './widgets.js';
+import { editWidget, deleteWidget, openInBuilder, duplicateWidget } from './widgets.js';
 import { closeConfigModal, applyConfig } from './widget-config.js';
-import { addRow, resetGrid } from './grid.js';
+import { addRow, resetGrid, rebuildGrid } from './grid.js';
 import { updateGeneratedCode } from './code-generator.js';
 import { saveDashboard, newDashboard, openDashboardsList, loadDashboard, exportHTML, navigateToSources } from './dashboards.js';
 
@@ -66,6 +67,51 @@ function renderSources(sources: any[]): void {
   `).join('');
 }
 
+function loadTemplate(name: string): void {
+  if (state.dashboard.widgets.length > 0) {
+    if (!confirm('Charger un template ? Les modifications non sauvegardees seront perdues.')) return;
+  }
+  state.dashboard = createEmptyDashboard();
+
+  switch (name) {
+    case 'kpi-chart':
+      state.dashboard.name = 'KPIs + Graphique';
+      state.dashboard.layout.columns = 3;
+      state.dashboard.widgets = [
+        { id: `w-${Date.now()}`, type: 'kpi', title: 'Indicateur 1', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 1' } },
+        { id: `w-${Date.now()+1}`, type: 'kpi', title: 'Indicateur 2', position: { row: 0, col: 1 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 2' } },
+        { id: `w-${Date.now()+2}`, type: 'kpi', title: 'Indicateur 3', position: { row: 0, col: 2 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 3' } },
+        { id: `w-${Date.now()+3}`, type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+      ];
+      break;
+    case 'two-charts':
+      state.dashboard.name = 'Deux graphiques';
+      state.dashboard.layout.columns = 2;
+      state.dashboard.widgets = [
+        { id: `w-${Date.now()}`, type: 'chart', title: 'Graphique 1', position: { row: 0, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: `w-${Date.now()+1}`, type: 'chart', title: 'Graphique 2', position: { row: 0, col: 1 }, config: { chartType: 'line', labelField: '', valueField: '', palette: 'categorical' } },
+      ];
+      break;
+    case 'full':
+      state.dashboard.name = 'Dashboard complet';
+      state.dashboard.layout.columns = 2;
+      state.dashboard.widgets = [
+        { id: `w-${Date.now()}`, type: 'kpi', title: 'Indicateur', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'Mon KPI' } },
+        { id: `w-${Date.now()+1}`, type: 'text', title: 'Description', position: { row: 0, col: 1 }, config: { content: '<p>Description du dashboard</p>', style: 'callout' } },
+        { id: `w-${Date.now()+2}`, type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: `w-${Date.now()+3}`, type: 'table', title: 'Tableau', position: { row: 1, col: 1 }, config: { columns: [], searchable: true, sortable: true } },
+      ];
+      break;
+  }
+
+  const titleInput = document.getElementById('dashboard-title') as HTMLInputElement | null;
+  const columnsSelect = document.getElementById('grid-columns') as HTMLSelectElement | null;
+  if (titleInput) titleInput.value = state.dashboard.name;
+  if (columnsSelect) columnsSelect.value = String(state.dashboard.layout.columns);
+  rebuildGrid();
+  updateGeneratedCode();
+}
+
 function initEventListeners(): void {
   document.getElementById('btn-new')?.addEventListener('click', newDashboard);
   document.getElementById('btn-load')?.addEventListener('click', openDashboardsList);
@@ -113,6 +159,14 @@ function initEventListeners(): void {
 
   document.getElementById('add-source-btn')?.addEventListener('click', navigateToSources);
 
+  document.getElementById('template-select')?.addEventListener('change', (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    if (value) {
+      loadTemplate(value);
+      (e.target as HTMLSelectElement).value = '';
+    }
+  });
+
   document.querySelectorAll('.config-modal').forEach(modal => {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -138,9 +192,15 @@ declare global {
     editWidget: typeof editWidget;
     deleteWidget: typeof deleteWidget;
     loadDashboard: typeof loadDashboard;
+    openInBuilder: typeof openInBuilder;
+    loadTemplate: typeof loadTemplate;
+    duplicateWidget: typeof duplicateWidget;
   }
 }
 
 window.editWidget = editWidget;
 window.deleteWidget = deleteWidget;
 window.loadDashboard = loadDashboard;
+window.openInBuilder = openInBuilder;
+window.loadTemplate = loadTemplate;
+window.duplicateWidget = duplicateWidget;

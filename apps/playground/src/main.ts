@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -18,11 +18,21 @@ function runCode(): void {
   }
 }
 
-function loadExample(name: string): void {
+function loadExample(name: string, skipConfirm = false): void {
   if (examples[name]) {
+    if (!skipConfirm && editor.getValue().trim() && !confirm('Remplacer le code actuel par cet exemple ?')) return;
     editor.setValue(examples[name]);
     runCode();
   }
+}
+
+function copyCode(): void {
+  const code = editor.getValue();
+  if (!code || code.trim() === '') return;
+
+  navigator.clipboard.writeText(code).then(() => {
+    toastSuccess('Code copie dans le presse-papiers');
+  });
 }
 
 function saveFavorite(): void {
@@ -74,10 +84,20 @@ function saveFavorite(): void {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  // Show back link if navigated from another app
+  const fromApp = new URLSearchParams(window.location.search).get('from');
+  if (fromApp) {
+    const backBar = document.createElement('div');
+    backBar.className = 'fr-mb-1w';
+    backBar.innerHTML = `<a href="${appHref(fromApp as any)}" class="fr-link fr-icon-arrow-left-line fr-link--icon-left">Retour au ${fromApp === 'builder' ? 'Builder' : fromApp === 'builder-ia' ? 'Builder IA' : fromApp}</a>`;
+    const main = document.querySelector('main .fr-container') || document.querySelector('main');
+    if (main) main.prepend(backBar);
+  }
+
   editor = initEditor('code-editor');
 
-  // Load first example
-  loadExample('bar-chart');
+  // Load first example (skip confirm since editor is empty)
+  loadExample('bar-chart', true);
 
   // Event listeners
   document.getElementById('run-btn')?.addEventListener('click', runCode);
@@ -95,6 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
       runCode();
     }
   });
+
+  // Ctrl+S shortcut - save to favorites
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-btn');
+      if (saveBtn) saveBtn.click();
+    }
+  });
+
+  // Copy code button
+  document.getElementById('copy-btn')?.addEventListener('click', copyCode);
 
   // Save to favorites button
   document.getElementById('save-btn')?.addEventListener('click', saveFavorite);

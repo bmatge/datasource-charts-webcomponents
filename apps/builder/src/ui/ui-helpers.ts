@@ -4,7 +4,7 @@
  */
 
 import { state, FAVORITES_KEY } from '../state.js';
-import { loadFromStorage, saveToStorage, toastWarning, navigateTo } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, toastWarning, toastSuccess, navigateTo } from '@gouv-widgets/shared';
 import type { Favorite } from '../state.js';
 
 /**
@@ -113,6 +113,7 @@ export function copyCode(): void {
   const code = codeEl?.textContent || '';
 
   navigator.clipboard.writeText(code).then(() => {
+    toastSuccess('Code copie dans le presse-papiers');
     const btn = document.getElementById('copy-code-btn');
     if (btn) {
       btn.innerHTML = '<i class="ri-check-line"></i> Copi\u00e9 !';

@@ -93,6 +93,7 @@ export function exportHTML(): void {
   a.download = `${state.dashboard.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.html`;
   a.click();
   URL.revokeObjectURL(url);
+  toastSuccess('Fichier HTML telecharge');
 }
 
 export function navigateToSources(): void {

@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 
 type DSFRChartType = 'line' | 'bar' | 'pie' | 'radar' | 'gauge' | 'scatter' | 'bar-line' | 'map' | 'map-reg';
 
@@ -113,6 +114,11 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
   // Light DOM pour les styles DSFR
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    sendWidgetBeacon('gouv-dsfr-chart', this.type);
   }
 
   onSourceData(data: unknown): void {

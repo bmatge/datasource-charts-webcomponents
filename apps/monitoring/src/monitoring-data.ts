@@ -1,0 +1,141 @@
+/**
+ * Types and data fetching for widget monitoring.
+ */
+
+export interface MonitoringEntry {
+  referer: string;
+  component: string;
+  chartType: string | null;
+  firstSeen: string;
+  lastSeen: string;
+  callCount: number;
+}
+
+export interface MonitoringSummary {
+  totalSites: number;
+  totalComponents: number;
+  byComponent: Record<string, number>;
+  byChartType: Record<string, number>;
+}
+
+export interface MonitoringData {
+  generated: string;
+  entries: MonitoringEntry[];
+  summary: MonitoringSummary;
+}
+
+const DATA_URL = 'https://chartsbuilder.matge.com/public/monitoring-data.json';
+
+export async function fetchMonitoringData(): Promise<MonitoringData> {
+  const response = await fetch(`${DATA_URL}?_=${Date.now()}`, { cache: 'no-cache' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+/** Extract domain from a full URL */
+export function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
+
+/** Extract path from a full URL */
+export function extractPath(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url;
+  }
+}
+
+/** Mock data for development */
+export function getMockData(): MonitoringData {
+  return {
+    generated: new Date().toISOString(),
+    entries: [
+      {
+        referer: 'https://ministere-interieur.gouv.fr/stats/tableau-de-bord',
+        component: 'gouv-dsfr-chart',
+        chartType: 'bar',
+        firstSeen: '2026-01-15T10:23:45Z',
+        lastSeen: '2026-02-07T08:12:33Z',
+        callCount: 1247,
+      },
+      {
+        referer: 'https://ministere-interieur.gouv.fr/stats/tableau-de-bord',
+        component: 'gouv-kpi',
+        chartType: null,
+        firstSeen: '2026-01-15T10:23:45Z',
+        lastSeen: '2026-02-07T08:12:33Z',
+        callCount: 1245,
+      },
+      {
+        referer: 'https://education.gouv.fr/donnees/indicateurs',
+        component: 'gouv-dsfr-chart',
+        chartType: 'line',
+        firstSeen: '2026-01-20T14:05:12Z',
+        lastSeen: '2026-02-06T22:45:01Z',
+        callCount: 892,
+      },
+      {
+        referer: 'https://education.gouv.fr/donnees/indicateurs',
+        component: 'gouv-datalist',
+        chartType: null,
+        firstSeen: '2026-01-22T09:15:00Z',
+        lastSeen: '2026-02-06T22:45:01Z',
+        callCount: 654,
+      },
+      {
+        referer: 'https://sante.gouv.fr/open-data/dashboard',
+        component: 'gouv-dsfr-chart',
+        chartType: 'pie',
+        firstSeen: '2026-01-25T16:30:00Z',
+        lastSeen: '2026-02-07T07:00:00Z',
+        callCount: 423,
+      },
+      {
+        referer: 'https://sante.gouv.fr/open-data/dashboard',
+        component: 'gouv-dsfr-chart',
+        chartType: 'bar',
+        firstSeen: '2026-01-25T16:30:00Z',
+        lastSeen: '2026-02-07T07:00:00Z',
+        callCount: 418,
+      },
+      {
+        referer: 'https://ecologie.gouv.fr/observatoire/emissions',
+        component: 'gouv-dsfr-chart',
+        chartType: 'scatter',
+        firstSeen: '2026-02-01T11:00:00Z',
+        lastSeen: '2026-02-07T06:30:00Z',
+        callCount: 156,
+      },
+      {
+        referer: 'https://ecologie.gouv.fr/observatoire/emissions',
+        component: 'gouv-source',
+        chartType: null,
+        firstSeen: '2026-02-01T11:00:00Z',
+        lastSeen: '2026-02-07T06:30:00Z',
+        callCount: 312,
+      },
+    ],
+    summary: {
+      totalSites: 4,
+      totalComponents: 8,
+      byComponent: {
+        'gouv-dsfr-chart': 4,
+        'gouv-kpi': 1,
+        'gouv-datalist': 1,
+        'gouv-source': 1,
+        'gouv-query': 1,
+      },
+      byChartType: {
+        bar: 2,
+        line: 1,
+        pie: 1,
+        scatter: 1,
+      },
+    },
+  };
+}

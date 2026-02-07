@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 import {
   dispatchDataLoaded,
   dispatchDataError,
@@ -215,6 +216,7 @@ export class GouvQuery extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    sendWidgetBeacon('gouv-query', this.apiType);
     this._initialize();
   }
 

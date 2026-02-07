@@ -12,6 +12,7 @@ export type { PaletteType } from './constants/dsfr-palettes.js';
 export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG } from './api/proxy-config.js';
 export type { ProxyConfig } from './api/proxy-config.js';
 export { getProxyUrl, getProxiedUrl, getExternalProxyUrl } from './api/proxy.js';
+export { fetchWithTimeout, httpErrorMessage } from './api/fetch-helpers.js';
 
 // Storage
 export { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from './storage/local-storage.js';

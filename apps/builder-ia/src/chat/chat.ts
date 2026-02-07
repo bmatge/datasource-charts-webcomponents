@@ -9,6 +9,7 @@ import type { IAConfig } from '../ia/ia-config.js';
 import { SKILLS, getRelevantSkills, buildSkillsContext } from '../skills.js';
 import { applyChartConfig } from '../ui/chart-renderer.js';
 import { analyzeFields, updateFieldsList, updateRawData } from '../sources.js';
+import { fetchWithTimeout, httpErrorMessage } from '@gouv-widgets/shared';
 
 /**
  * Add a message to the chat UI and state
@@ -50,6 +51,9 @@ export function addMessage(role: 'user' | 'assistant', content: string, suggesti
   container.scrollTop = container.scrollHeight;
 
   state.messages.push({ role, content } as Message);
+
+  // Persist conversation
+  try { sessionStorage.setItem('builder-ia-messages', JSON.stringify(state.messages)); } catch { /* ignore */ }
 
   return messageEl;
 }
@@ -144,9 +148,9 @@ En attendant, je peux vous aider avec des commandes simples. Essayez :
     removeThinkingMessage();
     const errMsg = error instanceof Error ? error.message : String(error);
     console.error('API Error:', error);
-    addMessage('assistant', `Erreur de communication avec l'API : ${errMsg}
-
-Verifiez votre token et l'URL de l'API dans la configuration.`);
+    addMessage('assistant', `Erreur : ${errMsg}`, ['Reessayer']);
+    const retryInput = document.getElementById('chat-input') as HTMLTextAreaElement;
+    if (retryInput) retryInput.value = message;
   }
 
   state.isThinking = false;
@@ -192,7 +196,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     apiUrl = apiUrl.replace('https://albert.api.etalab.gouv.fr', '/albert-proxy');
   }
 
-  const response = await fetch(apiUrl, {
+  const response = await fetchWithTimeout(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -204,11 +208,10 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
       temperature: 0.7,
       max_tokens: 1000,
     }),
-  });
+  }, 15000);
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
+    throw new Error(httpErrorMessage(response.status));
   }
 
   const data = await response.json();
@@ -256,7 +259,7 @@ async function handleReloadData(actionData: Record<string, unknown>): Promise<bo
     if (query.order_by) url.searchParams.set('order_by', String(query.order_by));
     if (query.limit) url.searchParams.set('limit', String(query.limit));
 
-    const response = await fetch(url.toString());
+    const response = await fetchWithTimeout(url.toString());
     const json = await response.json();
     const records: Record<string, unknown>[] = json.results || json.records || [];
 

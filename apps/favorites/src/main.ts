@@ -2,14 +2,65 @@
  * Favorites app - main entry point
  */
 
-import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, appHref, navigateTo } from '@gouv-widgets/shared';
+import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo } from '@gouv-widgets/shared';
 import { loadFavorites, saveFavorites, deleteFavorite, findFavorite } from './favorites-manager.js';
+import type { Favorite } from './favorites-manager.js';
 import { getPreviewHTML } from './preview.js';
 
 // State
 let favorites = loadFavorites();
 let selectedId: string | null = null;
 let deleteTargetId: string | null = null;
+let currentSort = 'date-desc';
+
+function sortFavorites(favs: Favorite[], sortBy: string): Favorite[] {
+  const sorted = [...favs];
+  switch (sortBy) {
+    case 'date-desc': return sorted.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    case 'date-asc': return sorted.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    case 'name-asc': return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    case 'type': return sorted.sort((a, b) => (a.chartType || '').localeCompare(b.chartType || ''));
+    default: return sorted;
+  }
+}
+
+function exportFavorites(): void {
+  const favs = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
+  const blob = new Blob([JSON.stringify(favs, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gouv-widgets-favoris.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toastSuccess('Favoris exportes');
+}
+
+function importFavorites(): void {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result as string);
+        if (!Array.isArray(imported)) throw new Error('Format invalide');
+        const existing = loadFromStorage<Favorite[]>(STORAGE_KEYS.FAVORITES, []);
+        const merged = [...existing, ...imported.filter((imp: Favorite) => !existing.some((e: Favorite) => e.id === imp.id))];
+        saveToStorage(STORAGE_KEYS.FAVORITES, merged);
+        toastSuccess(`${imported.length} favoris importes`);
+        window.location.reload();
+      } catch {
+        toastError('Fichier invalide');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
 
 function renderSidebar(): void {
   const listEl = document.getElementById('favorites-list');
@@ -29,11 +80,24 @@ function renderSidebar(): void {
     return;
   }
 
-  listEl.innerHTML = favorites.map(fav => `
+  const sorted = sortFavorites(favorites, currentSort);
+
+  const searchTerm = (document.getElementById('fav-search') as HTMLInputElement | null)?.value?.toLowerCase() || '';
+  const filtered = searchTerm
+    ? sorted.filter(fav => fav.name.toLowerCase().includes(searchTerm))
+    : sorted;
+
+  listEl.innerHTML = filtered.map(fav => `
     <div class="favorite-item ${selectedId === fav.id ? 'active' : ''}"
          data-id="${fav.id}"
          onclick="selectFavorite('${fav.id}')">
-      <div class="favorite-item-name">${escapeHtml(fav.name)}</div>
+      <div class="favorite-item-name" style="display: flex; align-items: center; gap: 0.25rem;">
+        <span id="fav-name-${fav.id}" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(fav.name)}</span>
+        <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" style="padding: 0; min-height: 0; width: 1.5rem; height: 1.5rem; flex-shrink: 0;"
+                onclick="event.stopPropagation(); renameFavorite('${fav.id}')" title="Renommer">
+          <i class="ri-pencil-line" aria-hidden="true" style="font-size: 0.875rem;"></i>
+        </button>
+      </div>
       <div class="favorite-item-meta">
         <span class="favorite-item-type">${fav.chartType || 'chart'}</span>
         <span>${formatDateShort(fav.createdAt)}</span>
@@ -161,6 +225,48 @@ function copyCode(id: string): void {
   }
 }
 
+function renameFavorite(id: string): void {
+  const fav = findFavorite(favorites, id);
+  if (!fav) return;
+
+  const nameSpan = document.getElementById(`fav-name-${id}`);
+  if (!nameSpan) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'fr-input fr-input--sm';
+  input.value = fav.name;
+  input.style.cssText = 'padding: 0.125rem 0.25rem; height: 1.5rem; font-size: 0.875rem;';
+
+  const commitRename = () => {
+    const newName = input.value.trim();
+    if (newName && newName !== fav.name) {
+      fav.name = newName;
+      saveFavorites(favorites);
+      renderSidebar();
+      renderContent();
+    } else {
+      // Revert: just re-render
+      renderSidebar();
+    }
+  };
+
+  input.addEventListener('blur', commitRename);
+  input.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      input.blur();
+    } else if (e.key === 'Escape') {
+      input.removeEventListener('blur', commitRename);
+      renderSidebar();
+    }
+  });
+
+  nameSpan.replaceWith(input);
+  input.focus();
+  input.select();
+}
+
 function showDeleteModal(id: string): void {
   const fav = findFavorite(favorites, id);
   if (fav) {
@@ -203,6 +309,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteBtn = document.getElementById('confirm-delete-btn');
   if (deleteBtn) deleteBtn.addEventListener('click', confirmDelete);
 
+  // Sort dropdown
+  const sortSelect = document.getElementById('fav-sort') as HTMLSelectElement | null;
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      currentSort = sortSelect.value;
+      renderSidebar();
+    });
+  }
+
+  // Search input - filters favorites list in real time
+  const searchInput = document.getElementById('fav-search') as HTMLInputElement | null;
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderSidebar();
+    });
+  }
+
+  // Export / Import
+  document.getElementById('export-btn')?.addEventListener('click', exportFavorites);
+  document.getElementById('import-btn')?.addEventListener('click', importFavorites);
+
   setupModalOverlayClose('delete-modal');
 });
 
@@ -215,6 +342,7 @@ declare global {
     copyCode: typeof copyCode;
     showDeleteModal: typeof showDeleteModal;
     closeDeleteModal: typeof handleCloseDeleteModal;
+    renameFavorite: typeof renameFavorite;
   }
 }
 
@@ -224,3 +352,4 @@ window.openInBuilder = openInBuilder;
 window.copyCode = copyCode;
 window.showDeleteModal = showDeleteModal;
 window.closeDeleteModal = handleCloseDeleteModal;
+window.renameFavorite = renameFavorite;

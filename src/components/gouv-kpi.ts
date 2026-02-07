@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { formatValue, FormatType, getColorBySeuil } from '../utils/formatters.js';
 import { computeAggregation } from '../utils/aggregations.js';
+import { sendWidgetBeacon } from '../utils/beacon.js';
 
 type KpiColor = 'vert' | 'orange' | 'rouge' | 'bleu';
 
@@ -73,6 +74,11 @@ export class GouvKpi extends SourceSubscriberMixin(LitElement) {
   // Utilise le Light DOM pour bénéficier des styles DSFR
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    sendWidgetBeacon('gouv-kpi');
   }
 
   static styles = css``;

@@ -42,6 +42,17 @@ export function applyChartConfig(config: ChartConfig): void {
     return;
   }
 
+  // Validate that fields exist in data
+  const dataKeys = Object.keys(state.localData[0]);
+  if (config.labelField && !dataKeys.includes(config.labelField)) {
+    addMessage('assistant', `Le champ "${config.labelField}" n'existe pas dans les donnees. Champs disponibles : ${dataKeys.join(', ')}`);
+    return;
+  }
+  if (config.valueField && !dataKeys.includes(config.valueField)) {
+    addMessage('assistant', `Le champ "${config.valueField}" n'existe pas dans les donnees. Champs disponibles : ${dataKeys.join(', ')}`);
+    return;
+  }
+
   // For KPI, aggregate all values into a single result
   if (config.type === 'kpi') {
     let kpiValue: number;
