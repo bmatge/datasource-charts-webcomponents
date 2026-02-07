@@ -26,7 +26,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "npm run build:all && npm run build:app && tauri build",
-    "build:app": "node scripts/build-app.js"
+    "build:app": "node scripts/build-app.js",
+    "test:e2e": "playwright test"
   },
   "keywords": [
     "web-components",
