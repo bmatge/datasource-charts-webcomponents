@@ -11,6 +11,8 @@ import {
   isValidDeptCode,
   PALETTE_PRIMARY_COLOR,
   PALETTE_COLORS,
+  toastWarning,
+  toastError,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
@@ -43,11 +45,11 @@ export async function generateChart(): Promise<void> {
 
   // Validation: KPI/Gauge only need valueField, charts need both
   if (!isSingleValue && (!state.labelField || !state.valueField)) {
-    alert('Veuillez s\u00e9lectionner les champs pour les axes X et Y');
+    toastWarning('Veuillez s\u00e9lectionner les champs pour les axes X et Y');
     return;
   }
   if (isSingleValue && !state.valueField && state.aggregation !== 'count') {
-    alert('Veuillez s\u00e9lectionner un champ pour la valeur');
+    toastWarning('Veuillez s\u00e9lectionner un champ pour la valeur');
     return;
   }
 
@@ -108,7 +110,7 @@ export async function generateChart(): Promise<void> {
     }
   } catch (error) {
     console.error(error);
-    alert('Erreur lors du chargement des donn\u00e9es : ' + (error as Error).message);
+    toastError('Erreur lors du chargement des donn\u00e9es : ' + (error as Error).message);
   }
 }
 

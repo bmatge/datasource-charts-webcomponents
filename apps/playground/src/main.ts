@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -29,7 +29,7 @@ function saveFavorite(): void {
   const code = editor.getValue();
 
   if (!code || code.trim() === '') {
-    alert('Ecrivez du code avant de le sauvegarder en favori.');
+    toastWarning('Ecrivez du code avant de le sauvegarder en favori.');
     return;
   }
 

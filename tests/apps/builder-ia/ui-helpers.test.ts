@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { switchTab, toggleSection, copyCode, openInPlayground } from '../../../apps/builder-ia/src/ui/ui-helpers';
+import * as toast from '../../../packages/shared/src/ui/toast';
 
 describe('builder-ia ui-helpers', () => {
   beforeEach(() => {
@@ -40,12 +41,12 @@ describe('builder-ia ui-helpers', () => {
   });
 
   describe('openInPlayground', () => {
-    it('should alert when no code is generated', () => {
+    it('should show warning toast when no code is generated', () => {
       document.body.innerHTML = '<pre id="generated-code">// Le code sera genere</pre>';
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(toast, 'toastWarning').mockImplementation(() => {});
 
       openInPlayground();
-      expect(alertSpy).toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalled();
     });
 
     it('should store code in sessionStorage when valid code present', () => {
@@ -54,7 +55,7 @@ describe('builder-ia ui-helpers', () => {
       // Mock location to prevent jsdom navigation error
       const originalLocation = window.location;
       delete (window as any).location;
-      (window as any).location = { href: '', assign: vi.fn() };
+      (window as any).location = { href: '', pathname: '/apps/builder-ia/', assign: vi.fn() };
 
       openInPlayground();
       expect(sessionStorage.getItem('playground-code')).toBe('valid chart code here');

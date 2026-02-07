@@ -4,7 +4,7 @@
  */
 
 import './styles/sources.css';
-import { openModal, closeModal, saveToStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { openModal, closeModal, saveToStorage, STORAGE_KEYS, toastWarning, navigateTo } from '@gouv-widgets/shared';
 
 import {
   state,
@@ -50,7 +50,7 @@ function saveManualSource(): void {
   const nameEl = document.getElementById('source-name') as HTMLInputElement | null;
   const name = nameEl?.value.trim();
   if (!name) {
-    alert('Veuillez saisir un nom pour la source.');
+    toastWarning('Veuillez saisir un nom pour la source.');
     return;
   }
 
@@ -59,19 +59,19 @@ function saveManualSource(): void {
   if (currentSourceMode === 'table') {
     data = collectTableData();
     if (!data || data.length === 0) {
-      alert('Le tableau est vide.');
+      toastWarning('Le tableau est vide.');
       return;
     }
   } else if (currentSourceMode === 'json') {
     data = parsedJsonData;
     if (!data || data.length === 0) {
-      alert('Aucune donnee JSON valide.');
+      toastWarning('Aucune donnee JSON valide.');
       return;
     }
   } else if (currentSourceMode === 'csv') {
     data = parsedCsvData;
     if (!data || data.length === 0) {
-      alert('Aucune donnee CSV valide.');
+      toastWarning('Aucune donnee CSV valide.');
       return;
     }
   }
@@ -124,7 +124,7 @@ function closeManualSourceModal(): void {
 
 function openInBuilder(): void {
   // Source is already saved in localStorage
-  window.location.href = '../../builder.html';
+  navigateTo('builder');
 }
 
 // ============================================================

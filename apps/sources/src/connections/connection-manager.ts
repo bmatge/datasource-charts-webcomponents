@@ -11,6 +11,9 @@ import {
   getProxiedUrl,
   getProxyUrl,
   isViteDevMode,
+  toastWarning,
+  toastSuccess,
+  toastError,
 } from '@gouv-widgets/shared';
 
 import { state, EXTERNAL_PROXY } from '../state.js';
@@ -109,7 +112,7 @@ export async function saveConnection(): Promise<void> {
   const name = nameEl?.value.trim() ?? '';
 
   if (!name) {
-    alert('Veuillez entrer un nom pour la connexion');
+    toastWarning('Veuillez entrer un nom pour la connexion');
     return;
   }
 
@@ -143,12 +146,12 @@ export async function saveGristConnection(name: string): Promise<void> {
   const isPublic = publicEl?.checked ?? false;
 
   if (!url) {
-    alert("Veuillez remplir l'URL du serveur Grist");
+    toastWarning("Veuillez remplir l'URL du serveur Grist");
     return;
   }
 
   if (!isPublic && !apiKey) {
-    alert('Cle API requise (sauf pour les documents publics)');
+    toastWarning('Cle API requise (sauf pour les documents publics)');
     return;
   }
 
@@ -227,7 +230,7 @@ export async function saveApiConnection(name: string): Promise<void> {
   const dataPath = dataPathEl?.value.trim() ?? '';
 
   if (!apiUrl) {
-    alert("Veuillez remplir l'URL de l'API");
+    toastWarning("Veuillez remplir l'URL de l'API");
     return;
   }
 
@@ -237,7 +240,7 @@ export async function saveApiConnection(name: string): Promise<void> {
     try {
       headers = JSON.parse(headersText);
     } catch {
-      alert('Les en-tetes doivent etre au format JSON valide');
+      toastWarning('Les en-tetes doivent etre au format JSON valide');
       return;
     }
   }
@@ -680,7 +683,7 @@ export function saveAsFavorite(): void {
   // Check if already exists
   const exists = existingSources.some((s: { id: string }) => s.id === source.id);
   if (exists) {
-    alert('Cette source est deja enregistree.');
+    toastWarning('Cette source est deja enregistree.');
     return;
   }
 
@@ -690,7 +693,7 @@ export function saveAsFavorite(): void {
   // Reload state
   state.sources = existingSources;
   renderSources();
-  alert('Source enregistree !');
+  toastSuccess('Source enregistree !');
 }
 
 // ============================================================
@@ -699,7 +702,7 @@ export function saveAsFavorite(): void {
 
 export function openExportGristModal(): void {
   if (!state.previewedSource) {
-    alert('Aucune source a exporter.');
+    toastWarning('Aucune source a exporter.');
     return;
   }
 
@@ -885,10 +888,10 @@ export async function exportToGrist(): Promise<void> {
       throw new Error(error.error || `Erreur insertion: HTTP ${insertResponse.status}`);
     }
 
-    alert(`Table "${tableName}" creee avec ${source.data.length} enregistrements !`);
+    toastSuccess(`Table "${tableName}" creee avec ${source.data.length} enregistrements !`);
     closeModal('export-grist-modal');
   } catch (error) {
-    alert(`Erreur : ${(error as Error).message}`);
+    toastError(`Erreur : ${(error as Error).message}`);
     console.error('Erreur export Grist:', error);
   } finally {
     if (btn) {

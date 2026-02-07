@@ -6,6 +6,9 @@ import {
   escapeHtml,
   getProxyUrl,
   STORAGE_KEYS,
+  toastWarning,
+  toastSuccess,
+  toastError,
 } from '@gouv-widgets/shared';
 
 import { state } from '../state.js';
@@ -226,14 +229,14 @@ export async function loadTablePreview(): Promise<void> {
 
 export async function createGristTable(): Promise<void> {
   if (!state.selectedDocument) {
-    alert("Selectionnez d'abord un document Grist");
+    toastWarning("Selectionnez d'abord un document Grist");
     return;
   }
 
   const tableNameEl = document.getElementById('table-name') as HTMLInputElement | null;
   const tableName = tableNameEl?.value.trim() ?? '';
   if (!tableName) {
-    alert('Veuillez entrer un nom de table');
+    toastWarning('Veuillez entrer un nom de table');
     return;
   }
 
@@ -252,7 +255,7 @@ export async function createGristTable(): Promise<void> {
   });
 
   if (columns.length === 0) {
-    alert('Ajoutez au moins une colonne');
+    toastWarning('Ajoutez au moins une colonne');
     return;
   }
 
@@ -281,14 +284,14 @@ export async function createGristTable(): Promise<void> {
       throw new Error((error as Record<string, unknown>).error as string || `HTTP ${response.status}`);
     }
 
-    alert(`Table "${tableName}" creee avec succes !`);
+    toastSuccess(`Table "${tableName}" creee avec succes !`);
     const { closeModal } = await import('@gouv-widgets/shared');
     closeModal('create-table-modal');
 
     // Refresh tables list
     await loadTables();
   } catch (error) {
-    alert(`Erreur : ${(error as Error).message}`);
+    toastError(`Erreur : ${(error as Error).message}`);
   }
 }
 
@@ -461,7 +464,7 @@ function sanitizeColumnId(name: string): string {
 export async function exportToGrist(): Promise<void> {
   const source = state.previewedSource;
   if (!source || !source.data || source.data.length === 0) {
-    alert('Aucune donnee a exporter');
+    toastWarning('Aucune donnee a exporter');
     return;
   }
 
@@ -474,7 +477,7 @@ export async function exportToGrist(): Promise<void> {
   const tableName = tableNameEl?.value.trim() ?? '';
 
   if ((isNaN(connIndex)) || !docId || !tableName) {
-    alert('Veuillez remplir tous les champs');
+    toastWarning('Veuillez remplir tous les champs');
     return;
   }
 
@@ -560,7 +563,7 @@ export async function exportToGrist(): Promise<void> {
       );
     }
 
-    alert(`Table "${tableName}" creee avec ${source.data.length} enregistrements !`);
+    toastSuccess(`Table "${tableName}" creee avec ${source.data.length} enregistrements !`);
     const { closeModal } = await import('@gouv-widgets/shared');
     closeModal('export-grist-modal');
 
@@ -569,7 +572,7 @@ export async function exportToGrist(): Promise<void> {
       await loadTables();
     }
   } catch (error) {
-    alert(`Erreur : ${(error as Error).message}`);
+    toastError(`Erreur : ${(error as Error).message}`);
     console.error('Erreur export Grist:', error);
   } finally {
     if (btn) {

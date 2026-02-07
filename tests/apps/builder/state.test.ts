@@ -56,8 +56,8 @@ describe('builder state', () => {
   });
 
   it('should support sort orders', () => {
-    const orders: SortOrder[] = ['asc', 'desc'];
-    expect(orders).toHaveLength(2);
+    const orders: SortOrder[] = ['asc', 'desc', 'none'];
+    expect(orders).toHaveLength(3);
   });
 
   it('should support generation modes', () => {

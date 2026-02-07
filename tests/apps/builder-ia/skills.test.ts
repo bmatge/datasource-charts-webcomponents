@@ -6,6 +6,38 @@ import {
 } from '../../../apps/builder-ia/src/skills';
 import type { Source } from '../../../apps/builder-ia/src/state';
 
+// Component imports for introspection
+import { GouvSource } from '../../../src/components/gouv-source.js';
+import { GouvQuery } from '../../../src/components/gouv-query.js';
+import { GouvKpi } from '../../../src/components/gouv-kpi.js';
+import { GouvDatalist } from '../../../src/components/gouv-datalist.js';
+import { GouvDsfrChart } from '../../../src/components/gouv-dsfr-chart.js';
+
+// Type/constant imports for alignment checks
+import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
+
+/**
+ * Extract HTML attribute names from a Lit component class via elementProperties.
+ * - If attribute option is false → skip (internal property)
+ * - If attribute option is a string → use it (explicit mapping)
+ * - Otherwise → Lit lowercases the property name
+ */
+function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
+  const attrs = new Set<string>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = (ComponentClass as any).elementProperties as Map<string, { attribute?: string | false }> | undefined;
+  if (!props) return attrs;
+
+  for (const [propName, options] of props) {
+    if (options?.attribute === false) continue; // @state() or internal
+    const htmlAttr = typeof options?.attribute === 'string'
+      ? options.attribute
+      : propName.toLowerCase();
+    attrs.add(htmlAttr);
+  }
+  return attrs;
+}
+
 describe('builder-ia skills', () => {
   it('should have 12 skill definitions', () => {
     expect(Object.keys(SKILLS)).toHaveLength(12);
@@ -113,6 +145,164 @@ describe('builder-ia skills', () => {
       const result = buildSkillsContext(skills);
       expect(result).toContain('Choix du type de graphique');
       expect(result).toContain('Bleu France');
+    });
+  });
+
+  // =========================================================================
+  // Skills ↔ Components alignment tests
+  // =========================================================================
+
+  describe('skills-component alignment', () => {
+
+    // Attributes that are standard HTML and not component-specific
+    const IGNORED_ATTRS = new Set(['id']);
+
+    /**
+     * Check that every HTML attribute of a component is mentioned in the skill content.
+     */
+    function assertAttributesCovered(
+      componentClass: typeof GouvSource,
+      skillId: string,
+      componentName: string,
+    ) {
+      const attrs = getHtmlAttributes(componentClass);
+      const content = SKILLS[skillId].content;
+
+      for (const attr of attrs) {
+        if (IGNORED_ATTRS.has(attr)) continue;
+        expect(
+          content.includes(attr),
+          `Skill "${skillId}" should document attribute "${attr}" from <${componentName}>`
+        ).toBe(true);
+      }
+    }
+
+    describe('attribute coverage', () => {
+      it('gouvSource skill covers all <gouv-source> attributes', () => {
+        assertAttributesCovered(GouvSource, 'gouvSource', 'gouv-source');
+      });
+
+      it('gouvQuery skill covers all <gouv-query> attributes', () => {
+        assertAttributesCovered(GouvQuery as unknown as typeof GouvSource, 'gouvQuery', 'gouv-query');
+      });
+
+      it('gouvKpi skill covers all <gouv-kpi> attributes', () => {
+        assertAttributesCovered(GouvKpi as unknown as typeof GouvSource, 'gouvKpi', 'gouv-kpi');
+      });
+
+      it('gouvDatalist skill covers all <gouv-datalist> attributes', () => {
+        assertAttributesCovered(GouvDatalist as unknown as typeof GouvSource, 'gouvDatalist', 'gouv-datalist');
+      });
+
+      it('gouvDsfrChart skill covers all <gouv-dsfr-chart> attributes', () => {
+        assertAttributesCovered(GouvDsfrChart as unknown as typeof GouvSource, 'gouvDsfrChart', 'gouv-dsfr-chart');
+      });
+    });
+
+    describe('chart types coverage', () => {
+      // These must match the DSFRChartType union in gouv-dsfr-chart.ts
+      const DSFR_CHART_TYPES = ['line', 'bar', 'pie', 'radar', 'gauge', 'scatter', 'bar-line', 'map', 'map-reg'];
+
+      it('gouvDsfrChart skill mentions all supported chart types', () => {
+        const content = SKILLS.gouvDsfrChart.content;
+        for (const type of DSFR_CHART_TYPES) {
+          expect(
+            content.includes(type),
+            `Skill "gouvDsfrChart" should mention chart type "${type}"`
+          ).toBe(true);
+        }
+      });
+
+      it('chartTypes skill mentions all supported chart types', () => {
+        const content = SKILLS.chartTypes.content;
+        for (const type of DSFR_CHART_TYPES) {
+          expect(
+            content.includes(type),
+            `Skill "chartTypes" should mention chart type "${type}"`
+          ).toBe(true);
+        }
+      });
+    });
+
+    describe('filter operators coverage', () => {
+      // Must match the FilterOperator type in gouv-query.ts
+      const FILTER_OPERATORS: FilterOperator[] = [
+        'eq', 'neq', 'gt', 'gte', 'lt', 'lte',
+        'contains', 'notcontains', 'in', 'notin',
+        'isnull', 'isnotnull',
+      ];
+
+      it('gouvQuery skill documents all filter operators', () => {
+        const content = SKILLS.gouvQuery.content;
+        for (const op of FILTER_OPERATORS) {
+          expect(
+            content.includes(op),
+            `Skill "gouvQuery" should document filter operator "${op}"`
+          ).toBe(true);
+        }
+      });
+    });
+
+    describe('aggregation functions coverage', () => {
+      // Must match the AggregateFunction type in gouv-query.ts
+      const AGG_FUNCTIONS: AggregateFunction[] = ['count', 'sum', 'avg', 'min', 'max'];
+
+      it('gouvQuery skill documents all aggregation functions', () => {
+        const content = SKILLS.gouvQuery.content;
+        for (const fn of AGG_FUNCTIONS) {
+          expect(
+            content.includes(fn),
+            `Skill "gouvQuery" should document aggregation function "${fn}"`
+          ).toBe(true);
+        }
+      });
+    });
+
+    describe('exported components coverage', () => {
+      // Map of exported component classes to their expected skill ID
+      const COMPONENT_SKILL_MAP: Record<string, string> = {
+        'GouvSource': 'gouvSource',
+        'GouvQuery': 'gouvQuery',
+        'GouvKpi': 'gouvKpi',
+        'GouvDatalist': 'gouvDatalist',
+        'GouvDsfrChart': 'gouvDsfrChart',
+      };
+
+      it('every data component has a corresponding skill', () => {
+        for (const [componentName, skillId] of Object.entries(COMPONENT_SKILL_MAP)) {
+          expect(
+            SKILLS[skillId],
+            `Component ${componentName} should have a corresponding skill "${skillId}"`
+          ).toBeDefined();
+        }
+      });
+    });
+
+    describe('DSFR palettes coverage', () => {
+      const DSFR_PALETTES = [
+        'categorical', 'sequentialAscending', 'sequentialDescending',
+        'divergentAscending', 'divergentDescending', 'neutral', 'default',
+      ];
+
+      it('dsfrColors skill documents all DSFR Chart palettes', () => {
+        const content = SKILLS.dsfrColors.content;
+        for (const palette of DSFR_PALETTES) {
+          expect(
+            content.includes(palette),
+            `Skill "dsfrColors" should document palette "${palette}"`
+          ).toBe(true);
+        }
+      });
+
+      it('gouvDsfrChart skill documents all DSFR Chart palettes', () => {
+        const content = SKILLS.gouvDsfrChart.content;
+        for (const palette of DSFR_PALETTES) {
+          expect(
+            content.includes(palette),
+            `Skill "gouvDsfrChart" should document palette "${palette}"`
+          ).toBe(true);
+        }
+      });
     });
   });
 });

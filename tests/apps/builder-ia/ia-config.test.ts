@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { toggleIAConfig, loadIAConfig, saveIAConfig, getIAConfig } from '../../../apps/builder-ia/src/ia/ia-config';
 import type { IAConfig } from '../../../apps/builder-ia/src/ia/ia-config';
+import * as toast from '../../../packages/shared/src/ui/toast';
 
 describe('builder-ia ia-config', () => {
   beforeEach(() => {
@@ -97,7 +98,7 @@ describe('builder-ia ia-config', () => {
       (document.getElementById('ia-api-url') as HTMLInputElement).value = 'https://test.api.com';
       (document.getElementById('ia-token') as HTMLInputElement).value = 'test-token';
 
-      vi.spyOn(window, 'alert').mockImplementation(() => {});
+      vi.spyOn(toast, 'toastSuccess').mockImplementation(() => {});
       saveIAConfig();
 
       const saved = JSON.parse(localStorage.getItem('gouv_widgets_ia_config')!);
@@ -105,10 +106,10 @@ describe('builder-ia ia-config', () => {
       expect(saved.token).toBe('test-token');
     });
 
-    it('should show confirmation alert', () => {
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    it('should show confirmation toast', () => {
+      const successSpy = vi.spyOn(toast, 'toastSuccess').mockImplementation(() => {});
       saveIAConfig();
-      expect(alertSpy).toHaveBeenCalledWith('Configuration sauvegardee !');
+      expect(successSpy).toHaveBeenCalledWith('Configuration sauvegardee !');
     });
   });
 

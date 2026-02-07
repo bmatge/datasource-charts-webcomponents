@@ -2,7 +2,7 @@
  * Manual table editor - DOM operations for the inline table in the manual source modal.
  */
 
-import { looksLikeNumber, toNumber } from '@gouv-widgets/shared';
+import { looksLikeNumber, toNumber, toastWarning } from '@gouv-widgets/shared';
 
 // ============================================================
 // Helpers
@@ -61,7 +61,7 @@ export function addTableColumn(): void {
 
 export function removeTableColumn(btn: HTMLElement): void {
   if (getColumnCount() <= 1) {
-    alert('Il faut au moins une colonne.');
+    toastWarning('Il faut au moins une colonne.');
     return;
   }
 
@@ -130,7 +130,7 @@ export function removeTableRow(btn: HTMLElement): void {
 
   const tbody = table.querySelector('tbody');
   if (!tbody || tbody.rows.length <= 1) {
-    alert('Il faut au moins une ligne.');
+    toastWarning('Il faut au moins une ligne.');
     return;
   }
 

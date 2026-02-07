@@ -5,12 +5,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@gouv-widgets/shared': resolve(__dirname, 'packages/shared/src'),
     },
   },
   test: {
     environment: 'jsdom',
     globals: true,
     include: ['tests/**/*.test.ts'],
+    pool: 'forks',
     server: {
       deps: {
         inline: [/lit/, /@lit/],

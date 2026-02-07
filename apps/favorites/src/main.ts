@@ -2,7 +2,7 @@
  * Favorites app - main entry point
  */
 
-import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
+import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, appHref, navigateTo } from '@gouv-widgets/shared';
 import { loadFavorites, saveFavorites, deleteFavorite, findFavorite } from './favorites-manager.js';
 import { getPreviewHTML } from './preview.js';
 
@@ -54,7 +54,7 @@ function renderContent(): void {
         <h2>Selectionnez un favori</h2>
         <p>Choisissez un favori dans la liste de gauche pour voir son apercu et son code.</p>
         ${favorites.length === 0 ? `
-          <a href="../../builder.html" class="fr-btn fr-btn--icon-left fr-icon-add-line">
+          <a href="${appHref('builder')}" class="fr-btn fr-btn--icon-left fr-icon-add-line">
             Creer un graphique
           </a>
         ` : ''}
@@ -129,7 +129,7 @@ function openInPlayground(id: string): void {
   const fav = findFavorite(favorites, id);
   if (fav) {
     sessionStorage.setItem('playground-code', fav.code);
-    window.location.href = '../../playground.html?from=favorites';
+    navigateTo('playground', { from: 'favorites' });
   }
 }
 
@@ -138,11 +138,11 @@ function openInBuilder(id: string): void {
   if (fav) {
     if (fav.builderState) {
       sessionStorage.setItem('builder-state', JSON.stringify(fav.builderState));
-      window.location.href = '../../builder.html?from=favorites';
+      navigateTo('builder', { from: 'favorites' });
     } else {
-      alert('Ce favori a ete cree avant la mise a jour. Il sera ouvert dans le Playground.');
+      toastInfo('Ce favori a ete cree avant la mise a jour. Il sera ouvert dans le Playground.');
       sessionStorage.setItem('playground-code', fav.code);
-      window.location.href = '../../playground.html?from=favorites';
+      navigateTo('playground', { from: 'favorites' });
     }
   }
 }

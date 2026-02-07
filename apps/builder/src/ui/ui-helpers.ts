@@ -4,7 +4,7 @@
  */
 
 import { state, FAVORITES_KEY } from '../state.js';
-import { loadFromStorage, saveToStorage } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, toastWarning, navigateTo } from '@gouv-widgets/shared';
 import type { Favorite } from '../state.js';
 
 /**
@@ -15,14 +15,14 @@ export function openInPlayground(): void {
   const code = codeEl?.textContent || '';
 
   if (!code || code === '// Le code sera g\u00e9n\u00e9r\u00e9 ici...' || code.startsWith('//')) {
-    alert('G\u00e9n\u00e9rez d\'abord un graphique avant de l\'ouvrir dans le Playground.');
+    toastWarning('G\u00e9n\u00e9rez d\'abord un graphique avant de l\'ouvrir dans le Playground.');
     return;
   }
 
   // Store the code in sessionStorage
   sessionStorage.setItem('playground-code', code);
   // Redirect to the playground
-  window.location.href = '../../playground.html?from=builder';
+  navigateTo('playground', { from: 'builder' });
 }
 
 /**
@@ -33,7 +33,7 @@ export function saveFavorite(): void {
   const code = codeEl?.textContent || '';
 
   if (!code || code === '// Le code sera g\u00e9n\u00e9r\u00e9 ici...' || code.startsWith('//')) {
-    alert('G\u00e9n\u00e9rez d\'abord un graphique avant de le sauvegarder en favori.');
+    toastWarning('G\u00e9n\u00e9rez d\'abord un graphique avant de le sauvegarder en favori.');
     return;
   }
 

@@ -4,7 +4,7 @@
  * and favorite state restoration.
  */
 
-import { loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, appHref } from '@gouv-widgets/shared';
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
@@ -39,7 +39,7 @@ export function loadSavedSources(): void {
       emptyMsg.innerHTML = `
         <p><i class="ri-database-2-line" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i></p>
         <p>Aucune source de donn\u00e9es enregistr\u00e9e</p>
-        <a href="../../sources.html" class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w">
+        <a href="${appHref('sources')}" class="fr-btn fr-btn--sm fr-btn--secondary fr-mt-1w">
           <i class="ri-add-line"></i> Ajouter une source
         </a>
       `;

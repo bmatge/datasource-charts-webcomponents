@@ -2,6 +2,8 @@
  * IA configuration management (Albert API settings)
  */
 
+import { toastSuccess } from '@gouv-widgets/shared';
+
 /** IA config shape */
 export interface IAConfig {
   apiUrl: string;
@@ -59,7 +61,7 @@ export function saveIAConfig(): void {
     systemPrompt: (document.getElementById('ia-system-prompt') as HTMLTextAreaElement).value,
   };
   localStorage.setItem(IA_CONFIG_KEY, JSON.stringify(config));
-  alert('Configuration sauvegardee !');
+  toastSuccess('Configuration sauvegardee !');
 }
 
 /**

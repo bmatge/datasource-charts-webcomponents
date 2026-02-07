@@ -3,7 +3,7 @@
  */
 
 import { state } from '../state.js';
-import { saveToStorage, loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { saveToStorage, loadFromStorage, STORAGE_KEYS, toastInfo, toastWarning, navigateTo } from '@gouv-widgets/shared';
 
 /**
  * Switch active tab in the preview panel (delegates to app-preview-panel component)
@@ -31,7 +31,7 @@ export function toggleSection(sectionId: string): void {
 export function copyCode(): void {
   const code = (document.getElementById('generated-code') as HTMLPreElement).textContent || '';
   navigator.clipboard.writeText(code).then(() => {
-    alert('Code copie dans le presse-papiers !');
+    toastInfo('Code copie dans le presse-papiers !');
   });
 }
 
@@ -42,14 +42,14 @@ export function openInPlayground(): void {
   const code = (document.getElementById('generated-code') as HTMLPreElement).textContent || '';
 
   if (!code || code.startsWith('// Le code sera genere') || code.startsWith('//')) {
-    alert("Generez d'abord un graphique avant de l'ouvrir dans le Playground.");
+    toastWarning("Generez d'abord un graphique avant de l'ouvrir dans le Playground.");
     return;
   }
 
   // Store code in sessionStorage
   sessionStorage.setItem('playground-code', code);
   // Redirect to the playground
-  window.location.href = '../../playground.html?from=builder-ia';
+  navigateTo('playground', { from: 'builder-ia' });
 }
 
 /** Favorites localStorage key */
@@ -72,7 +72,7 @@ export function saveFavorite(): void {
   const code = (document.getElementById('generated-code') as HTMLPreElement).textContent || '';
 
   if (!code || code.startsWith('// Le code sera genere') || code.startsWith('//')) {
-    alert("Generez d'abord un graphique avant de le sauvegarder en favori.");
+    toastWarning("Generez d'abord un graphique avant de le sauvegarder en favori.");
     return;
   }
 

@@ -1,0 +1,71 @@
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { appHref, navigateTo } from '../../packages/shared/src/ui/navigation';
+
+describe('navigation', () => {
+  const originalLocation = window.location;
+
+  beforeEach(() => {
+    delete (window as any).location;
+    (window as any).location = {
+      pathname: '/apps/builder/',
+      href: '',
+      assign: vi.fn(),
+    };
+  });
+
+  afterEach(() => {
+    (window as any).location = originalLocation;
+  });
+
+  describe('appHref', () => {
+    it('should return correct path from /apps/builder/', () => {
+      expect(appHref('playground')).toBe('../../playground.html');
+    });
+
+    it('should return correct path for builder-ia', () => {
+      expect(appHref('builder-ia')).toBe('../../builderIA.html');
+    });
+
+    it('should return correct path for favorites', () => {
+      expect(appHref('favorites')).toBe('../../favoris.html');
+    });
+
+    it('should return correct path for sources', () => {
+      expect(appHref('sources')).toBe('../../sources.html');
+    });
+
+    it('should return correct path for builder', () => {
+      expect(appHref('builder')).toBe('../../builder.html');
+    });
+
+    it('should append query params', () => {
+      expect(appHref('playground', { from: 'builder' })).toBe('../../playground.html?from=builder');
+    });
+
+    it('should use ./ prefix from root-level pages', () => {
+      (window as any).location.pathname = '/builder.html';
+      expect(appHref('playground')).toBe('./playground.html');
+    });
+
+    it('should use ../../ prefix from nested app pages', () => {
+      (window as any).location.pathname = '/apps/favorites/index.html';
+      expect(appHref('builder')).toBe('../../builder.html');
+    });
+
+    it('should return # for unknown app', () => {
+      expect(appHref('nonexistent' as any)).toBe('#');
+    });
+  });
+
+  describe('navigateTo', () => {
+    it('should set window.location.href', () => {
+      navigateTo('playground', { from: 'builder' });
+      expect(window.location.href).toBe('../../playground.html?from=builder');
+    });
+
+    it('should navigate without params', () => {
+      navigateTo('sources');
+      expect(window.location.href).toBe('../../sources.html');
+    });
+  });
+});
