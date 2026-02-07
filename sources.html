@@ -893,6 +893,22 @@
       localStorage.setItem(key, JSON.stringify(data));
     }
 
+    // Helper to use local proxy for CORS-restricted APIs
+    function getProxiedUrl(url) {
+      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isLocalDev) return url;
+
+      // Proxy for tabular-api.data.gouv.fr
+      if (url.includes('tabular-api.data.gouv.fr')) {
+        return url.replace('https://tabular-api.data.gouv.fr', '/tabular-proxy');
+      }
+      // Proxy for other data.gouv.fr APIs
+      if (url.includes('data.gouv.fr')) {
+        return url.replace(/https:\/\/([^/]+\.)?data\.gouv\.fr/, '/tabular-proxy');
+      }
+      return url;
+    }
+
     // ============================================================
     // ÉTAT DE L'APPLICATION
     // ============================================================
@@ -1188,8 +1204,8 @@
         }
       }
 
-      // Test the API
-      const response = await fetch(apiUrl, {
+      // Test the API (use proxy in local dev)
+      const response = await fetch(getProxiedUrl(apiUrl), {
         method,
         headers
       });
@@ -1365,22 +1381,6 @@
         switchExplorerTab('documents');
         await loadDocuments();
       }
-    }
-
-    // Helper to use local proxy for CORS-restricted APIs
-    function getProxiedUrl(url) {
-      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      if (!isLocalDev) return url;
-
-      // Proxy for tabular-api.data.gouv.fr
-      if (url.includes('tabular-api.data.gouv.fr')) {
-        return url.replace('https://tabular-api.data.gouv.fr', '/tabular-proxy');
-      }
-      // Proxy for other data.gouv.fr APIs
-      if (url.includes('data.gouv.fr')) {
-        return url.replace(/https:\/\/([^/]+\.)?data\.gouv\.fr/, '/tabular-proxy');
-      }
-      return url;
     }
 
     async function loadApiData() {
