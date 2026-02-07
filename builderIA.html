@@ -621,6 +621,8 @@ Sois concis. Utilise le français.</textarea>
     <!-- ============================================ -->
     <app-preview-panel slot="right"
       show-data-tab
+      show-save-button
+      show-playground-button
       tab-labels="Aperçu,Code,Données">
 
       <!-- Tab Aperçu -->
@@ -965,7 +967,72 @@ Note: Cette action recharge les données depuis l'API avec les nouveaux paramèt
         'Aide',
         'Suggestion'
       ]);
+
+      // Listen for save-favorite and open-playground events from preview panel
+      document.querySelector('app-preview-panel').addEventListener('save-favorite', saveFavorite);
+      document.querySelector('app-preview-panel').addEventListener('open-playground', openInPlayground);
     });
+
+    // ============================================================
+    // OUVRIR DANS LE PLAYGROUND
+    // ============================================================
+    function openInPlayground() {
+      const code = document.getElementById('generated-code').textContent;
+
+      if (!code || code.startsWith('// Le code sera généré') || code.startsWith('//')) {
+        alert('Générez d\'abord un graphique avant de l\'ouvrir dans le Playground.');
+        return;
+      }
+
+      // Stocker le code dans sessionStorage
+      sessionStorage.setItem('playground-code', code);
+      // Rediriger vers le playground
+      window.location.href = 'playground.html?from=builder-ia';
+    }
+
+    // ============================================================
+    // GESTION DES FAVORIS
+    // ============================================================
+    const FAVORITES_KEY = 'gouv-widgets-favorites';
+
+    function saveFavorite() {
+      const code = document.getElementById('generated-code').textContent;
+
+      if (!code || code.startsWith('// Le code sera généré') || code.startsWith('//')) {
+        alert('Générez d\'abord un graphique avant de le sauvegarder en favori.');
+        return;
+      }
+
+      const title = document.getElementById('preview-title').textContent || 'Mon graphique';
+      const name = prompt('Nom du favori :', title);
+      if (!name) return;
+
+      const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+
+      const favorite = {
+        id: 'fav-' + Date.now(),
+        name: name,
+        code: code,
+        chartType: state.chartConfig?.type || 'chart',
+        source: 'builder-ia',
+        createdAt: new Date().toISOString()
+      };
+
+      favorites.unshift(favorite);
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+
+      // Feedback visuel
+      const btn = document.querySelector('.preview-panel-save-btn');
+      if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="ri-check-line" aria-hidden="true"></i> Sauvegardé !';
+        btn.style.background = 'var(--background-contrast-success)';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.background = '';
+        }, 2000);
+      }
+    }
 
     // ============================================================
     // GESTION DES TABS

@@ -53,6 +53,12 @@ export class AppPreviewPanel extends LitElement {
   showSaveButton = false;
 
   /**
+   * Afficher le bouton Ouvrir dans le Playground
+   */
+  @property({ type: Boolean, attribute: 'show-playground-button' })
+  showPlaygroundButton = false;
+
+  /**
    * Labels personnalisés pour les onglets (séparés par des virgules)
    */
   @property({ type: String, attribute: 'tab-labels' })
@@ -162,6 +168,13 @@ export class AppPreviewPanel extends LitElement {
     }));
   }
 
+  private _handlePlaygroundClick() {
+    this.dispatchEvent(new CustomEvent('open-playground', {
+      bubbles: true,
+      composed: true
+    }));
+  }
+
   render() {
     const labels = this._getTabLabels();
     const [previewLabel, codeLabel, dataLabel] = labels;
@@ -190,9 +203,18 @@ export class AppPreviewPanel extends LitElement {
               ${dataLabel || 'Données'}
             </button>
           ` : nothing}
+          ${this.showPlaygroundButton ? html`
+            <button
+              class="preview-panel-action-btn"
+              @click="${this._handlePlaygroundClick}"
+              title="Ouvrir dans le Playground">
+              <i class="ri-play-circle-line" aria-hidden="true"></i>
+              <span>Playground</span>
+            </button>
+          ` : nothing}
           ${this.showSaveButton ? html`
             <button
-              class="preview-panel-save-btn"
+              class="preview-panel-action-btn preview-panel-save-btn"
               @click="${this._handleSaveClick}"
               title="Sauvegarder en favoris">
               <i class="ri-star-line" aria-hidden="true"></i>
@@ -262,9 +284,8 @@ export class AppPreviewPanel extends LitElement {
           font-weight: 600;
         }
 
-        /* Bouton Favoris */
-        .preview-panel-save-btn {
-          margin-left: auto;
+        /* Boutons d'action (Playground, Favoris) */
+        .preview-panel-action-btn {
           padding: 0.5rem 1rem;
           border: none;
           background: var(--background-action-low-blue-france);
@@ -281,11 +302,15 @@ export class AppPreviewPanel extends LitElement {
           transition: background 0.15s;
         }
 
-        .preview-panel-save-btn:hover {
+        .preview-panel-action-btn:first-of-type {
+          margin-left: auto;
+        }
+
+        .preview-panel-action-btn:hover {
           background: var(--background-action-low-blue-france-hover);
         }
 
-        .preview-panel-save-btn i {
+        .preview-panel-action-btn i {
           font-size: 1rem;
         }
 

@@ -130,6 +130,11 @@
         <button id="reset-btn" class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-refresh-line">
           Réinitialiser
         </button>
+        <span style="flex: 1;"></span>
+        <button id="save-btn" class="fr-btn fr-btn--sm fr-btn--secondary">
+          <i class="ri-star-line" aria-hidden="true"></i>
+          Favoris
+        </button>
       </div>
       <textarea id="code-editor"></textarea>
     </div>
@@ -1267,8 +1272,65 @@ ${code}
         }
       });
 
+      // Bouton sauvegarder en favoris
+      document.getElementById('save-btn').addEventListener('click', saveFavorite);
+
+      // Charger code depuis favoris si on vient de la page favoris
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('from') === 'favorites') {
+        const savedCode = sessionStorage.getItem('playground-code');
+        if (savedCode) {
+          editor.setValue(savedCode);
+          runCode();
+          sessionStorage.removeItem('playground-code');
+        }
+      }
+
       // Le resizer est maintenant géré par app-layout-builder
     });
+
+    // ============================================================
+    // GESTION DES FAVORIS
+    // ============================================================
+    const FAVORITES_KEY = 'gouv-widgets-favorites';
+
+    function saveFavorite() {
+      const code = editor.getValue();
+
+      if (!code || code.trim() === '') {
+        alert('Écrivez du code avant de le sauvegarder en favori.');
+        return;
+      }
+
+      const name = prompt('Nom du favori :', 'Mon code');
+      if (!name) return;
+
+      const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+
+      const favorite = {
+        id: 'fav-' + Date.now(),
+        name: name,
+        code: code,
+        chartType: 'playground',
+        source: 'playground',
+        createdAt: new Date().toISOString()
+      };
+
+      favorites.unshift(favorite);
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+
+      // Feedback visuel
+      const btn = document.getElementById('save-btn');
+      if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="ri-check-line" aria-hidden="true"></i> Sauvegardé !';
+        btn.style.background = 'var(--background-contrast-success)';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.background = '';
+        }, 2000);
+      }
+    }
 
     function loadExample(name) {
       if (examples[name]) {

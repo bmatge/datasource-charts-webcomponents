@@ -75,6 +75,11 @@ let AppHeader = class AppHeader extends LitElement {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
+                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this.basePath}favoris.html">
+                        Favoris
+                      </a>
+                    </li>
+                    <li>
                       <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
                         GitHub
                       </a>

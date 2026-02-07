@@ -55,6 +55,10 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
          */
         this.showSaveButton = false;
         /**
+         * Afficher le bouton Ouvrir dans le Playground
+         */
+        this.showPlaygroundButton = false;
+        /**
          * Labels personnalisés pour les onglets (séparés par des virgules)
          */
         this.tabLabels = 'Aperçu,Code,Données';
@@ -146,6 +150,12 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
             composed: true
         }));
     }
+    _handlePlaygroundClick() {
+        this.dispatchEvent(new CustomEvent('open-playground', {
+            bubbles: true,
+            composed: true
+        }));
+    }
     render() {
         const labels = this._getTabLabels();
         const [previewLabel, codeLabel, dataLabel] = labels;
@@ -173,9 +183,18 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
               ${dataLabel || 'Données'}
             </button>
           ` : nothing}
+          ${this.showPlaygroundButton ? html `
+            <button
+              class="preview-panel-action-btn"
+              @click="${this._handlePlaygroundClick}"
+              title="Ouvrir dans le Playground">
+              <i class="ri-play-circle-line" aria-hidden="true"></i>
+              <span>Playground</span>
+            </button>
+          ` : nothing}
           ${this.showSaveButton ? html `
             <button
-              class="preview-panel-save-btn"
+              class="preview-panel-action-btn preview-panel-save-btn"
               @click="${this._handleSaveClick}"
               title="Sauvegarder en favoris">
               <i class="ri-star-line" aria-hidden="true"></i>
@@ -245,9 +264,8 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
           font-weight: 600;
         }
 
-        /* Bouton Favoris */
-        .preview-panel-save-btn {
-          margin-left: auto;
+        /* Boutons d'action (Playground, Favoris) */
+        .preview-panel-action-btn {
           padding: 0.5rem 1rem;
           border: none;
           background: var(--background-action-low-blue-france);
@@ -264,11 +282,15 @@ let AppPreviewPanel = class AppPreviewPanel extends LitElement {
           transition: background 0.15s;
         }
 
-        .preview-panel-save-btn:hover {
+        .preview-panel-action-btn:first-of-type {
+          margin-left: auto;
+        }
+
+        .preview-panel-action-btn:hover {
           background: var(--background-action-low-blue-france-hover);
         }
 
-        .preview-panel-save-btn i {
+        .preview-panel-action-btn i {
           font-size: 1rem;
         }
 
@@ -434,6 +456,9 @@ __decorate([
 __decorate([
     property({ type: Boolean, attribute: 'show-save-button' })
 ], AppPreviewPanel.prototype, "showSaveButton", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'show-playground-button' })
+], AppPreviewPanel.prototype, "showPlaygroundButton", void 0);
 __decorate([
     property({ type: String, attribute: 'tab-labels' })
 ], AppPreviewPanel.prototype, "tabLabels", void 0);

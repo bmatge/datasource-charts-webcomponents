@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-widgets — Mes favoris</title>
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- DSFR Chart -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+
+  <!-- Composants gouv-widgets -->
+  <script type="module" src="dist/gouv-widgets.esm.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .favorites-layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Sidebar */
+    .favorites-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      background: var(--background-alt-grey);
+      border-right: 1px solid var(--border-default-grey);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .favorites-count {
+      background: var(--background-action-high-blue-france);
+      color: white;
+      padding: 0.125rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .favorites-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .favorite-item {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: var(--background-default-grey);
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .favorite-item:hover {
+      border-color: var(--border-action-high-blue-france);
+    }
+
+    .favorite-item.active {
+      border-color: var(--border-action-high-blue-france);
+      background: var(--background-contrast-info);
+    }
+
+    .favorite-item-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .favorite-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-mention-grey);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .favorite-item-type {
+      background: var(--background-contrast-grey);
+      padding: 0.125rem 0.375rem;
+      border-radius: 2px;
+    }
+
+    .empty-sidebar {
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--text-mention-grey);
+    }
+
+    .empty-sidebar i {
+      font-size: 2.5rem;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    /* Main content */
+    .favorites-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .content-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-default-grey);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .content-header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .content-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .content-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .preview-section {
+      flex: 1;
+      padding: 1.5rem;
+      overflow: auto;
+      background: var(--background-default-grey);
+    }
+
+    .preview-frame {
+      width: 100%;
+      min-height: 400px;
+      border: 1px solid var(--border-default-grey);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .code-section {
+      max-height: 300px;
+      overflow: auto;
+      border-top: 1px solid var(--border-default-grey);
+    }
+
+    .code-section pre {
+      margin: 0;
+      padding: 1rem;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: #2d2d2d;
+      color: #d4d4d4;
+      font-size: 0.8rem;
+    }
+
+    .empty-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-mention-grey);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .empty-content i {
+      font-size: 4rem;
+      opacity: 0.3;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-content h2 {
+      margin: 0 0 0.5rem;
+      color: var(--text-title-grey);
+    }
+
+    .empty-content p {
+      margin: 0 0 1.5rem;
+      max-width: 400px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .favorites-layout {
+        flex-direction: column;
+      }
+
+      .favorites-sidebar {
+        width: 100%;
+        max-height: 40vh;
+        border-right: none;
+        border-bottom: 1px solid var(--border-default-grey);
+      }
+    }
+
+    /* Modal de confirmation */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-content h3 {
+      margin: 0 0 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <app-header current-page="favoris" base-path=""></app-header>
+
+  <div class="favorites-layout">
+    <!-- Sidebar avec liste des favoris -->
+    <aside class="favorites-sidebar">
+      <div class="sidebar-header">
+        <h2>
+          <i class="ri-star-fill" aria-hidden="true"></i>
+          Mes favoris
+          <span class="favorites-count" id="favorites-count">0</span>
+        </h2>
+      </div>
+      <div class="favorites-list" id="favorites-list">
+        <!-- Liste dynamique -->
+      </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="favorites-content" id="favorites-content">
+      <!-- Contenu dynamique -->
+    </main>
+  </div>
+
+  <!-- Modal de confirmation de suppression -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-content">
+      <h3>Supprimer ce favori ?</h3>
+      <p>Cette action est irréversible. Le favori "<span id="delete-name"></span>" sera définitivement supprimé.</p>
+      <div class="modal-actions">
+        <button class="fr-btn fr-btn--secondary" onclick="closeDeleteModal()">Annuler</button>
+        <button class="fr-btn fr-btn--tertiary-no-outline" id="confirm-delete-btn">
+          <i class="ri-delete-bin-line" aria-hidden="true"></i>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer base-path=""></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <script>
+    // ============================================================
+    // GESTION DES FAVORIS
+    // ============================================================
+
+    const STORAGE_KEY = 'gouv-widgets-favorites';
+
+    // Charger les favoris depuis localStorage
+    function loadFavorites() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        console.error('Erreur chargement favoris:', e);
+        return [];
+      }
+    }
+
+    // Sauvegarder les favoris dans localStorage
+    function saveFavorites(favorites) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+      } catch (e) {
+        console.error('Erreur sauvegarde favoris:', e);
+      }
+    }
+
+    // État actuel
+    let favorites = loadFavorites();
+    let selectedId = null;
+
+    // Formater la date
+    function formatDate(isoDate) {
+      const date = new Date(isoDate);
+      return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    // Rendu de la sidebar
+    function renderSidebar() {
+      const listEl = document.getElementById('favorites-list');
+      const countEl = document.getElementById('favorites-count');
+
+      countEl.textContent = favorites.length;
+
+      if (favorites.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-sidebar">
+            <i class="ri-star-line"></i>
+            <p>Aucun favori enregistré</p>
+            <p class="fr-text--sm">Créez un graphique dans le Builder ou Playground et sauvegardez-le en favori.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = favorites.map(fav => `
+        <div class="favorite-item ${selectedId === fav.id ? 'active' : ''}"
+             data-id="${fav.id}"
+             onclick="selectFavorite('${fav.id}')">
+          <div class="favorite-item-name">${escapeHtml(fav.name)}</div>
+          <div class="favorite-item-meta">
+            <span class="favorite-item-type">${fav.chartType || 'chart'}</span>
+            <span>${formatDate(fav.createdAt)}</span>
+            <span>${fav.source || 'builder'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Rendu du contenu principal
+    function renderContent() {
+      const contentEl = document.getElementById('favorites-content');
+
+      if (!selectedId) {
+        contentEl.innerHTML = `
+          <div class="empty-content">
+            <i class="ri-bar-chart-box-line"></i>
+            <h2>Sélectionnez un favori</h2>
+            <p>Choisissez un favori dans la liste de gauche pour voir son aperçu et son code.</p>
+            ${favorites.length === 0 ? `
+              <a href="builder.html" class="fr-btn fr-btn--icon-left fr-icon-add-line">
+                Créer un graphique
+              </a>
+            ` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      const fav = favorites.find(f => f.id === selectedId);
+      if (!fav) {
+        selectedId = null;
+        renderContent();
+        return;
+      }
+
+      contentEl.innerHTML = `
+        <div class="content-header">
+          <h1>
+            <i class="ri-star-fill" style="color: var(--text-action-high-blue-france);" aria-hidden="true"></i>
+            ${escapeHtml(fav.name)}
+          </h1>
+          <div class="content-actions">
+            <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left ri-file-code-line"
+                    onclick="openInPlayground('${fav.id}')">
+              Playground
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left ri-tools-line"
+                    onclick="openInBuilder('${fav.id}')">
+              Builder
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--icon-left ri-file-copy-line"
+                    onclick="copyCode('${fav.id}')">
+              Copier le code
+            </button>
+            <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline"
+                    onclick="showDeleteModal('${fav.id}')"
+                    title="Supprimer">
+              <i class="ri-delete-bin-line" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+        <div class="content-body">
+          <div class="preview-section">
+            <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+          </div>
+          <div class="code-section">
+            <div class="code-header">
+              <span>Code HTML/JS</span>
+              <span class="fr-text--sm">${fav.source || 'builder'} - ${formatDate(fav.createdAt)}</span>
+            </div>
+            <pre id="code-display">${escapeHtml(fav.code)}</pre>
+          </div>
+        </div>
+      `;
+
+      // Charger l'aperçu dans l'iframe
+      setTimeout(() => {
+        const iframe = document.getElementById('preview-frame');
+        if (iframe) {
+          iframe.srcdoc = getPreviewHTML(fav.code);
+        }
+      }, 50);
+    }
+
+    // Template HTML pour l'iframe
+    function getPreviewHTML(code) {
+      return `<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+  <style>
+    body { padding: 1rem; font-family: Marianne, arial, sans-serif; }
+  </style>
+</head>
+<body>
+${code}
+</body>
+</html>`;
+    }
+
+    // Sélectionner un favori
+    function selectFavorite(id) {
+      selectedId = id;
+      renderSidebar();
+      renderContent();
+    }
+
+    // Ouvrir dans le playground
+    function openInPlayground(id) {
+      const fav = favorites.find(f => f.id === id);
+      if (fav) {
+        // Stocker temporairement le code pour le playground
+        sessionStorage.setItem('playground-code', fav.code);
+        window.location.href = 'playground.html?from=favorites';
+      }
+    }
+
+    // Ouvrir dans le builder avec restauration complète de l'état
+    function openInBuilder(id) {
+      const fav = favorites.find(f => f.id === id);
+      if (fav) {
+        if (fav.builderState) {
+          // Favori avec état complet - restauration complète
+          sessionStorage.setItem('builder-state', JSON.stringify(fav.builderState));
+          window.location.href = 'builder.html?from=favorites';
+        } else {
+          // Ancien favori sans état - ouvrir dans playground à la place
+          alert('Ce favori a été créé avant la mise à jour. Il sera ouvert dans le Playground.');
+          sessionStorage.setItem('playground-code', fav.code);
+          window.location.href = 'playground.html?from=favorites';
+        }
+      }
+    }
+
+    // Copier le code
+    function copyCode(id) {
+      const fav = favorites.find(f => f.id === id);
+      if (fav) {
+        navigator.clipboard.writeText(fav.code).then(() => {
+          // Feedback visuel
+          const btn = document.querySelector(`[onclick="copyCode('${id}')"]`);
+          if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="ri-check-line" aria-hidden="true"></i> Copié !';
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+          }
+        });
+      }
+    }
+
+    // Modal de suppression
+    let deleteTargetId = null;
+
+    function showDeleteModal(id) {
+      const fav = favorites.find(f => f.id === id);
+      if (fav) {
+        deleteTargetId = id;
+        document.getElementById('delete-name').textContent = fav.name;
+        document.getElementById('delete-modal').classList.add('active');
+      }
+    }
+
+    function closeDeleteModal() {
+      deleteTargetId = null;
+      document.getElementById('delete-modal').classList.remove('active');
+    }
+
+    function confirmDelete() {
+      if (deleteTargetId) {
+        favorites = favorites.filter(f => f.id !== deleteTargetId);
+        saveFavorites(favorites);
+
+        if (selectedId === deleteTargetId) {
+          selectedId = favorites.length > 0 ? favorites[0].id : null;
+        }
+
+        closeDeleteModal();
+        renderSidebar();
+        renderContent();
+      }
+    }
+
+    // Échapper HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+      // Sélectionner le premier favori par défaut
+      if (favorites.length > 0) {
+        selectedId = favorites[0].id;
+      }
+
+      renderSidebar();
+      renderContent();
+
+      // Bouton de confirmation de suppression
+      document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+
+      // Fermer modal en cliquant à l'extérieur
+      document.getElementById('delete-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'delete-modal') {
+          closeDeleteModal();
+        }
+      });
+    });
+
+    // Exposer les fonctions globalement
+    window.selectFavorite = selectFavorite;
+    window.openInPlayground = openInPlayground;
+    window.openInBuilder = openInBuilder;
+    window.copyCode = copyCode;
+    window.showDeleteModal = showDeleteModal;
+    window.closeDeleteModal = closeDeleteModal;
+  </script>
+</body>
+</html>
