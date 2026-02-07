@@ -29,7 +29,7 @@ import {
   exportToGrist,
 } from './connections/connection-manager.js';
 
-import { createGristTable, addColumnRow } from './connections/grist-explorer.js';
+import { createGristTable, addColumnRow, selectDocument, selectTable } from './connections/grist-explorer.js';
 
 import { parseJsonInput } from './parsers/json-parser.js';
 import { handleCsvFile, parseCsvText } from './parsers/csv-parser.js';
@@ -139,6 +139,8 @@ function openInBuilder(): void {
 (window as any).closeManualSourceModal = closeManualSourceModal;
 (window as any).switchSourceMode = switchSourceMode;
 (window as any).closeModal = closeModal;
+(window as any).selectDocument = selectDocument;
+(window as any).selectTable = selectTable;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ============================================================
