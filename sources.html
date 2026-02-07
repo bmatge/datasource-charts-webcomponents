@@ -448,6 +448,9 @@
             <button class="fr-btn fr-btn--sm fr-btn--secondary" id="save-favorite-btn" style="display: none;">
               <i class="ri-star-line"></i> Garder en favori
             </button>
+            <button class="fr-btn fr-btn--sm fr-btn--secondary" id="export-grist-btn" style="display: none;">
+              <i class="ri-upload-cloud-line"></i> Exporter vers Grist
+            </button>
             <button class="fr-btn fr-btn--sm fr-btn--secondary" id="refresh-btn">
               <i class="ri-refresh-line"></i> Rafraîchir
             </button>
@@ -665,6 +668,62 @@
   </div>
 
   <!-- ============================================ -->
+  <!-- MODAL : Exporter vers Grist -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="export-grist-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="ri-upload-cloud-line"></i> Exporter vers Grist</h3>
+        <button class="modal-close" onclick="closeModal('export-grist-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fr-alert fr-alert--info fr-alert--sm fr-mb-2w">
+          <p>Cette fonction va créer une nouvelle table dans votre document Grist avec les données de la source sélectionnée.</p>
+        </div>
+
+        <div class="fr-input-group">
+          <label class="fr-label" for="export-connection">
+            Connexion Grist
+            <span class="fr-hint-text">Sélectionnez une connexion avec clé API</span>
+          </label>
+          <select class="fr-select" id="export-connection">
+            <option value="">-- Sélectionner --</option>
+          </select>
+        </div>
+
+        <div class="fr-input-group fr-mt-2w" id="export-document-group" style="display: none;">
+          <label class="fr-label" for="export-document">
+            Document Grist
+          </label>
+          <select class="fr-select" id="export-document">
+            <option value="">-- Sélectionner --</option>
+          </select>
+        </div>
+
+        <div class="fr-input-group fr-mt-2w">
+          <label class="fr-label" for="export-table-name">
+            Nom de la nouvelle table
+          </label>
+          <input class="fr-input" type="text" id="export-table-name" placeholder="MaNouvelleTable">
+        </div>
+
+        <div id="export-preview" class="fr-mt-2w" style="display: none;">
+          <p class="fr-text--sm" style="color: var(--text-mention-grey);">
+            <i class="ri-database-2-line"></i> <span id="export-record-count">0</span> enregistrements,
+            <span id="export-column-count">0</span> colonnes
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--secondary" onclick="closeModal('export-grist-modal')">Annuler</button>
+        <button class="fr-btn" id="export-grist-confirm-btn" disabled>
+          <i class="ri-upload-cloud-line"></i> Créer la table
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
   <!-- MODAL : Créer une source manuelle -->
   <!-- ============================================ -->
   <div class="modal-overlay" id="manual-source-modal">
@@ -846,7 +905,8 @@
       documents: [],
       tables: [],
       tableData: [],
-      editingConnectionIndex: null  // Index de la connexion en cours d'édition (null = création)
+      editingConnectionIndex: null,  // Index de la connexion en cours d'édition (null = création)
+      previewedSource: null  // Source actuellement prévisualisée (pour export)
     };
 
     // ============================================================
@@ -867,6 +927,11 @@
       document.getElementById('refresh-btn').addEventListener('click', refreshCurrentView);
       document.getElementById('use-in-builder-btn').addEventListener('click', openInBuilder);
       document.getElementById('save-favorite-btn').addEventListener('click', saveAsFavorite);
+      document.getElementById('export-grist-btn').addEventListener('click', openExportGristModal);
+      document.getElementById('export-connection').addEventListener('change', loadExportDocuments);
+      document.getElementById('export-document').addEventListener('change', updateExportButton);
+      document.getElementById('export-table-name').addEventListener('input', updateExportButton);
+      document.getElementById('export-grist-confirm-btn').addEventListener('click', exportToGrist);
 
       // Tabs (only explorer tabs, not modal tabs)
       document.querySelectorAll('.explorer-tabs:not(#source-mode-tabs) .explorer-tab').forEach(tab => {
@@ -1261,12 +1326,16 @@
       state.selectedConnection = index;
       state.selectedDocument = null;
       state.selectedTable = null;
+      state.previewedSource = null;  // Reset previewed source
       renderConnections();
 
       const conn = state.connections[index];
       document.getElementById('explorer-title').textContent = conn.name;
       document.getElementById('explorer-empty').style.display = 'none';
       document.getElementById('explorer-content').style.display = 'block';
+
+      // Hide export button (only for local sources)
+      document.getElementById('export-grist-btn').style.display = 'none';
 
       // Hide/show appropriate tabs based on connection type
       const docTab = document.querySelector('[data-tab="documents"]');
@@ -2195,6 +2264,18 @@
 
       // Save as selected for builder
       localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+
+      // Store previewed source for export
+      state.previewedSource = source;
+
+      // Show export button for local sources (manual) if we have Grist connections with API key
+      const hasGristConnections = state.connections.some(c => c.type === 'grist' && c.apiKey);
+      const exportBtn = document.getElementById('export-grist-btn');
+      if (source.type === 'manual' && hasGristConnections) {
+        exportBtn.style.display = '';
+      } else {
+        exportBtn.style.display = 'none';
+      }
     }
 
     function saveCurrentAsSource() {
@@ -2219,6 +2300,182 @@
       };
 
       localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+    }
+
+    // ============================================================
+    // EXPORT VERS GRIST
+    // ============================================================
+    function openExportGristModal() {
+      if (!state.previewedSource) {
+        alert('Aucune source sélectionnée');
+        return;
+      }
+
+      // Populate connections dropdown (only Grist with API key)
+      const select = document.getElementById('export-connection');
+      select.innerHTML = '<option value="">-- Sélectionner --</option>';
+
+      state.connections.forEach((conn, index) => {
+        if (conn.type === 'grist' && conn.apiKey) {
+          select.innerHTML += `<option value="${index}">${escapeHtml(conn.name)}</option>`;
+        }
+      });
+
+      // Reset other fields
+      document.getElementById('export-document').innerHTML = '<option value="">-- Sélectionner --</option>';
+      document.getElementById('export-document-group').style.display = 'none';
+      document.getElementById('export-table-name').value = state.previewedSource.name.replace(/[^a-zA-Z0-9_]/g, '_');
+      document.getElementById('export-grist-confirm-btn').disabled = true;
+
+      // Show preview info
+      const source = state.previewedSource;
+      if (source.data && source.data.length > 0) {
+        document.getElementById('export-record-count').textContent = source.data.length;
+        document.getElementById('export-column-count').textContent = Object.keys(source.data[0]).length;
+        document.getElementById('export-preview').style.display = 'block';
+      } else {
+        document.getElementById('export-preview').style.display = 'none';
+      }
+
+      openModal('export-grist-modal');
+    }
+
+    async function loadExportDocuments() {
+      const connIndex = document.getElementById('export-connection').value;
+      const docSelect = document.getElementById('export-document');
+      const docGroup = document.getElementById('export-document-group');
+
+      if (!connIndex) {
+        docGroup.style.display = 'none';
+        docSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+        updateExportButton();
+        return;
+      }
+
+      const conn = state.connections[parseInt(connIndex)];
+
+      try {
+        docSelect.innerHTML = '<option value="">Chargement...</option>';
+        docGroup.style.display = 'block';
+
+        // Fetch documents from Grist
+        const docsUrl = getProxyUrl(conn.url, '/docs');
+        const response = await fetch(docsUrl, {
+          headers: { 'Authorization': `Bearer ${conn.apiKey}` }
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const docs = await response.json();
+
+        docSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+        docs.forEach(doc => {
+          docSelect.innerHTML += `<option value="${doc.id}">${escapeHtml(doc.name)}</option>`;
+        });
+
+      } catch (error) {
+        docSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+        console.error('Erreur chargement documents:', error);
+      }
+
+      updateExportButton();
+    }
+
+    function updateExportButton() {
+      const connIndex = document.getElementById('export-connection').value;
+      const docId = document.getElementById('export-document').value;
+      const tableName = document.getElementById('export-table-name').value.trim();
+
+      const btn = document.getElementById('export-grist-confirm-btn');
+      btn.disabled = !connIndex || !docId || !tableName;
+    }
+
+    async function exportToGrist() {
+      const source = state.previewedSource;
+      if (!source || !source.data || source.data.length === 0) {
+        alert('Aucune donnée à exporter');
+        return;
+      }
+
+      const connIndex = parseInt(document.getElementById('export-connection').value);
+      const docId = document.getElementById('export-document').value;
+      const tableName = document.getElementById('export-table-name').value.trim();
+
+      if (!connIndex && connIndex !== 0 || !docId || !tableName) {
+        alert('Veuillez remplir tous les champs');
+        return;
+      }
+
+      const conn = state.connections[connIndex];
+      const btn = document.getElementById('export-grist-confirm-btn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ri-loader-4-line"></i> Création...';
+
+      try {
+        // 1. Build columns from data
+        const firstRecord = source.data[0];
+        const columns = Object.keys(firstRecord).map(key => {
+          const value = firstRecord[key];
+          let type = 'Text';
+          if (typeof value === 'number') type = 'Numeric';
+          else if (typeof value === 'boolean') type = 'Bool';
+          return { id: key, fields: { type } };
+        });
+
+        // 2. Create table
+        const createTableUrl = getProxyUrl(conn.url, `/docs/${docId}/tables`);
+        const createResponse = await fetch(createTableUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${conn.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tables: [{ id: tableName, columns }]
+          })
+        });
+
+        if (!createResponse.ok) {
+          const error = await createResponse.json();
+          throw new Error(error.error || `Erreur création table: HTTP ${createResponse.status}`);
+        }
+
+        // 3. Insert records
+        btn.innerHTML = '<i class="ri-loader-4-line"></i> Insertion des données...';
+
+        const records = source.data.map(record => ({ fields: record }));
+
+        const insertUrl = getProxyUrl(conn.url, `/docs/${docId}/tables/${tableName}/records`);
+        const insertResponse = await fetch(insertUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${conn.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ records })
+        });
+
+        if (!insertResponse.ok) {
+          const error = await insertResponse.json();
+          throw new Error(error.error || `Erreur insertion: HTTP ${insertResponse.status}`);
+        }
+
+        alert(`Table "${tableName}" créée avec ${source.data.length} enregistrements !`);
+        closeModal('export-grist-modal');
+
+        // If we're viewing this connection, refresh
+        if (state.selectedConnection === connIndex && state.selectedDocument === docId) {
+          await loadTables();
+        }
+
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+        console.error('Erreur export Grist:', error);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-upload-cloud-line"></i> Créer la table';
+      }
     }
 
     // ============================================================
