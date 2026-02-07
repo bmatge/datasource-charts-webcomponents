@@ -668,6 +668,7 @@
     <app-preview-panel slot="right"
       show-data-tab
       show-save-button
+      show-playground-button
       tab-labels="Aperçu,Code généré,Données brutes">
 
       <!-- Onglet Aperçu -->
@@ -827,9 +828,30 @@
       loadSavedSources();
       checkSelectedSource();
 
-      // Listen for save-favorite event from preview panel
+      // Listen for save-favorite and open-playground events from preview panel
       document.querySelector('app-preview-panel').addEventListener('save-favorite', saveFavorite);
+      document.querySelector('app-preview-panel').addEventListener('open-playground', openInPlayground);
+
+      // Charger un favori si on vient de la page favoris
+      loadFavoriteState();
     });
+
+    // ============================================================
+    // OUVRIR DANS LE PLAYGROUND
+    // ============================================================
+    function openInPlayground() {
+      const code = document.getElementById('generated-code').textContent;
+
+      if (!code || code === '// Le code sera généré ici...' || code.startsWith('//')) {
+        alert('Générez d\'abord un graphique avant de l\'ouvrir dans le Playground.');
+        return;
+      }
+
+      // Stocker le code dans sessionStorage
+      sessionStorage.setItem('playground-code', code);
+      // Rediriger vers le playground
+      window.location.href = 'playground.html?from=builder';
+    }
 
     // ============================================================
     // GESTION DES FAVORIS
@@ -849,13 +871,36 @@
 
       const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
 
+      // Sauvegarder l'état complet (sans l'instance Chart)
+      const stateToSave = {
+        chartType: state.chartType,
+        labelField: state.labelField,
+        valueField: state.valueField,
+        valueField2: state.valueField2,
+        codeField: state.codeField,
+        aggregation: state.aggregation,
+        sortOrder: state.sortOrder,
+        limit: state.limit,
+        title: state.title,
+        subtitle: state.subtitle,
+        palette: state.palette,
+        color2: state.color2,
+        fields: state.fields,
+        data: state.data,
+        localData: state.localData,
+        savedSource: state.savedSource,
+        generationMode: state.generationMode,
+        refreshInterval: state.refreshInterval
+      };
+
       const favorite = {
         id: 'fav-' + Date.now(),
         name: name,
         code: code,
         chartType: state.chartType,
         source: 'builder',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        builderState: stateToSave
       };
 
       favorites.unshift(favorite);
@@ -871,6 +916,65 @@
           btn.innerHTML = originalHTML;
           btn.style.background = '';
         }, 2000);
+      }
+    }
+
+    // Charger un favori depuis la page favoris
+    function loadFavoriteState() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('from') !== 'favorites') return;
+
+      const savedState = sessionStorage.getItem('builder-state');
+      if (!savedState) return;
+
+      try {
+        const favoriteState = JSON.parse(savedState);
+        sessionStorage.removeItem('builder-state');
+
+        // Restaurer l'état
+        Object.assign(state, favoriteState);
+
+        // Mettre à jour l'UI
+        selectChartType(state.chartType);
+        document.getElementById('chart-title').value = state.title || '';
+        document.getElementById('chart-subtitle').value = state.subtitle || '';
+        document.getElementById('preview-title').textContent = state.title || 'Mon graphique';
+        document.getElementById('preview-subtitle').textContent = state.subtitle || '';
+        document.getElementById('chart-palette').value = state.palette || 'categorical';
+
+        // Mettre à jour les champs si disponibles
+        if (state.fields && state.fields.length > 0) {
+          populateFieldSelects();
+
+          // Sélectionner les champs sauvegardés
+          setTimeout(() => {
+            if (state.labelField) document.getElementById('label-field').value = state.labelField;
+            if (state.valueField) document.getElementById('value-field').value = state.valueField;
+            if (state.codeField) document.getElementById('code-field').value = state.codeField;
+            if (state.aggregation) document.getElementById('aggregation').value = state.aggregation;
+            if (state.sortOrder) document.getElementById('sort-order').value = state.sortOrder;
+            if (state.limit) document.getElementById('limit').value = state.limit;
+          }, 0);
+        }
+
+        // Regénérer le graphique (avec délai pour laisser le DOM se mettre à jour)
+        if (state.data && state.data.length > 0) {
+          setTimeout(() => {
+            renderChart();
+            generateCodeForLocalData();
+
+            // Notification
+            document.getElementById('fields-status').innerHTML = `
+              <span class="fr-badge fr-badge--success fr-badge--sm">Favori restauré</span>
+            `;
+
+            // Ouvrir les sections pertinentes
+            document.getElementById('section-chart-type').classList.remove('collapsed');
+            document.getElementById('section-fields').classList.remove('collapsed');
+          }, 100);
+        }
+      } catch (e) {
+        console.error('Erreur restauration favori:', e);
       }
     }
 
@@ -1039,10 +1143,10 @@
       const generationModeSection = document.getElementById('section-generation-mode');
       const dynamicWarning = document.getElementById('dynamic-warning');
 
-      if (source?.type === 'grist') {
+      if (source?.type === 'grist' || source?.type === 'api') {
         generationModeSection.style.display = 'block';
-        // Show warning if not public
-        dynamicWarning.style.display = source.isPublic ? 'none' : 'block';
+        // Show warning if Grist and not public
+        dynamicWarning.style.display = (source.type === 'grist' && !source.isPublic) ? 'block' : 'none';
       } else {
         generationModeSection.style.display = 'none';
       }
@@ -1406,8 +1510,14 @@
       renderChart();
 
       // Generate code based on mode
-      if (state.generationMode === 'dynamic' && state.savedSource?.type === 'grist') {
-        generateDynamicCode();
+      if (state.generationMode === 'dynamic') {
+        if (state.savedSource?.type === 'grist') {
+          generateDynamicCode();
+        } else if (state.savedSource?.type === 'api') {
+          generateDynamicCodeForApi();
+        } else {
+          generateCodeForLocalData();
+        }
       } else {
         generateCodeForLocalData();
       }
@@ -1718,6 +1828,118 @@ new Chart(document.getElementById('myChart'), {
   </gouv-source>
 
   <!-- Graphique (se met à jour automatiquement) -->
+  <gouv-chart
+    source="chart-data"
+    type="${chartType}"${indexAxisAttr}
+    label-field="${labelFieldPath}"
+    value-field="${valueFieldPath}"
+    aggregation="${state.aggregation}"
+    limit="${state.limit}"
+    sort-order="${state.sortOrder}"
+    ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
+    ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
+    selected-palette="${state.palette}"
+    height="400">
+  </gouv-chart>
+</div>`;
+
+      document.getElementById('generated-code').textContent = code;
+    }
+
+    function generateDynamicCodeForApi() {
+      const source = state.savedSource;
+      if (!source || source.type !== 'api') return;
+
+      // Get field paths
+      const labelFieldInfo = state.fields.find(f => f.name === state.labelField);
+      const valueFieldInfo = state.fields.find(f => f.name === state.valueField);
+
+      const labelFieldPath = labelFieldInfo?.fullPath || state.labelField;
+      const valueFieldPath = valueFieldInfo?.fullPath || state.valueField;
+
+      const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
+
+      // Determine chart type for gouv-chart
+      const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
+      const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
+
+      // Handle data path transform
+      const transformAttr = source.dataPath ? `\n    transform="${source.dataPath}"` : '';
+
+      // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
+      if (state.chartType === 'kpi') {
+        generateCodeForLocalData();
+        return;
+      }
+
+      // Handle map chart (needs gouv-dsfr-chart)
+      const isMap = state.chartType === 'map' || state.chartType === 'mapReg';
+
+      if (isMap) {
+        const mapPalette = state.palette.includes('sequential') || state.palette.includes('divergent')
+          ? state.palette
+          : 'sequentialAscending';
+
+        const code = `<!-- Carte dynamique generee avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+
+<!-- Dependances JS -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <!-- Source de donnees API -->
+  <gouv-source
+    id="map-data"
+    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
+  </gouv-source>
+
+  <!-- Carte (se met a jour automatiquement) -->
+  <gouv-dsfr-chart
+    source="map-data"
+    type="${state.chartType === 'mapReg' ? 'map-chart-reg' : 'map-chart'}"
+    code-field="${state.codeField}"
+    value-field="${valueFieldPath}"
+    aggregation="${state.aggregation}"
+    name="${state.title || 'Indicateur'}"
+    selected-palette="${mapPalette}">
+  </gouv-dsfr-chart>
+</div>`;
+
+        document.getElementById('generated-code').textContent = code;
+        return;
+      }
+
+      const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <!-- Source de donnees API -->
+  <gouv-source
+    id="chart-data"
+    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
+  </gouv-source>
+
+  <!-- Graphique (se met a jour automatiquement) -->
   <gouv-chart
     source="chart-data"
     type="${chartType}"${indexAxisAttr}
