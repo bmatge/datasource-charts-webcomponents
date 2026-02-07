@@ -427,10 +427,10 @@
       font-family: monospace;
     }
 
-    /* Onglets du bas */
+    /* Onglets */
     .vde-tabs {
       display: flex;
-      border-top: 1px solid var(--border-default-grey);
+      border-bottom: 1px solid var(--border-default-grey);
       background: var(--background-default-grey);
     }
 
@@ -459,17 +459,18 @@
       font-weight: 600;
     }
 
-    .vde-tab-content {
+    .vde-tab-panel {
       display: none;
-      padding: 1rem;
-      background: var(--background-alt-grey);
-      border-top: 1px solid var(--border-default-grey);
-      max-height: 300px;
+      flex: 1;
       overflow-y: auto;
     }
 
-    .vde-tab-content.active {
+    .vde-tab-panel.active {
       display: block;
+    }
+
+    .vde-tab-panel > .code-preview {
+      margin: 1rem;
     }
 
     .code-preview {

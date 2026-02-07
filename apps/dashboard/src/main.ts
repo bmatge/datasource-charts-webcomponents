@@ -148,12 +148,10 @@ function initEventListeners(): void {
       const tabName = (tab as HTMLElement).dataset.tab;
 
       document.querySelectorAll('.vde-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.vde-tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.vde-tab-panel').forEach(p => p.classList.remove('active'));
 
       tab.classList.add('active');
-      if (tabName !== 'preview') {
-        document.getElementById(`tab-${tabName}`)?.classList.add('active');
-      }
+      document.getElementById(`tab-${tabName}`)?.classList.add('active');
     });
   });
 

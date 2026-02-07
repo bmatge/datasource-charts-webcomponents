@@ -128,55 +128,59 @@
         </div>
       </div>
 
-      <!-- Preview -->
-      <div class="vde-preview">
-        <div class="vde-canvas">
-          <div class="dashboard-grid" id="dashboard-grid">
-            <!-- Ligne 1 -->
-            <div class="fr-grid-row fr-grid-row--gutters dashboard-row" data-row="0">
-              <div class="fr-col-12 fr-col-md-6">
-                <div class="drop-cell empty" data-row="0" data-col="0" data-colspan="6">
-                  <div class="drop-cell-placeholder">
-                    <i class="ri-add-circle-line"></i>
-                    <span>Glisser un widget ici</span>
-                  </div>
-                </div>
-              </div>
-              <div class="fr-col-12 fr-col-md-6">
-                <div class="drop-cell empty" data-row="0" data-col="1" data-colspan="6">
-                  <div class="drop-cell-placeholder">
-                    <i class="ri-add-circle-line"></i>
-                    <span>Glisser un widget ici</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button class="add-row-btn" id="add-row-btn">
-            <i class="ri-add-line"></i> Ajouter une ligne
-          </button>
-        </div>
-      </div>
-
-      <!-- Onglets bas -->
+      <!-- Onglets -->
       <div class="vde-tabs">
-        <button class="vde-tab active" data-tab="preview">
-          <i class="ri-eye-line"></i> Aperçu
+        <button class="vde-tab active" data-tab="design">
+          <i class="ri-layout-masonry-line"></i> Design
         </button>
         <button class="vde-tab" data-tab="code">
-          <i class="ri-code-line"></i> Code généré
+          <i class="ri-code-line"></i> Code genere
         </button>
         <button class="vde-tab" data-tab="json">
           <i class="ri-braces-line"></i> JSON
         </button>
       </div>
 
-      <div class="vde-tab-content" id="tab-preview"></div>
-      <div class="vde-tab-content" id="tab-code">
-        <pre class="code-preview" id="generated-code"><!-- Le code sera généré ici --></pre>
+      <!-- Design (grille) -->
+      <div class="vde-tab-panel active" id="tab-design">
+        <div class="vde-preview">
+          <div class="vde-canvas">
+            <div class="dashboard-grid" id="dashboard-grid">
+              <!-- Ligne 1 -->
+              <div class="fr-grid-row fr-grid-row--gutters dashboard-row" data-row="0">
+                <div class="fr-col-12 fr-col-md-6">
+                  <div class="drop-cell empty" data-row="0" data-col="0" data-colspan="6">
+                    <div class="drop-cell-placeholder">
+                      <i class="ri-add-circle-line"></i>
+                      <span>Glisser un widget ici</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="fr-col-12 fr-col-md-6">
+                  <div class="drop-cell empty" data-row="0" data-col="1" data-colspan="6">
+                    <div class="drop-cell-placeholder">
+                      <i class="ri-add-circle-line"></i>
+                      <span>Glisser un widget ici</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="add-row-btn" id="add-row-btn">
+              <i class="ri-add-line"></i> Ajouter une ligne
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="vde-tab-content" id="tab-json">
+
+      <!-- Code genere -->
+      <div class="vde-tab-panel" id="tab-code">
+        <pre class="code-preview" id="generated-code"><!-- Le code sera genere ici --></pre>
+      </div>
+
+      <!-- JSON -->
+      <div class="vde-tab-panel" id="tab-json">
         <pre class="code-preview" id="generated-json">{}</pre>
       </div>
     </main>
