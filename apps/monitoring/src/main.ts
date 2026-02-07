@@ -26,16 +26,24 @@ let sortDir: 'asc' | 'desc' = 'desc';
 // ---------------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const errorEl = document.getElementById('load-error');
+
   try {
     data = await fetchMonitoringData();
-  } catch {
-    // Use mock data in dev / when endpoint is not available
-    data = getMockData();
-    const errorEl = document.getElementById('load-error');
     if (errorEl) {
-      errorEl.textContent = 'Donnees de demonstration (endpoint non disponible)';
+      errorEl.className = 'fr-alert fr-alert--success fr-mb-2w';
+      errorEl.textContent = `Donnees reelles chargees (${data.entries.length} entrees)`;
       errorEl.style.display = 'block';
     }
+  } catch (err) {
+    data = getMockData();
+    const detail = err instanceof Error ? err.message : String(err);
+    if (errorEl) {
+      errorEl.className = 'fr-alert fr-alert--warning fr-mb-2w';
+      errorEl.innerHTML = `<strong>Donnees de demonstration</strong> — Impossible de charger les donnees reelles : <code>${escapeHtml(detail)}</code>`;
+      errorEl.style.display = 'block';
+    }
+    console.warn('[monitoring] fetch failed, using mock data:', detail);
   }
 
   filteredEntries = data.entries;
@@ -273,16 +281,26 @@ function setupEventListeners(): void {
 
   document.getElementById('btn-export')?.addEventListener('click', exportCsv);
   document.getElementById('btn-refresh')?.addEventListener('click', async () => {
+    const errEl = document.getElementById('load-error');
     try {
       data = await fetchMonitoringData();
       filteredEntries = data.entries;
-      renderKpis();
-      renderTable();
-    } catch {
+      if (errEl) {
+        errEl.className = 'fr-alert fr-alert--success fr-mb-2w';
+        errEl.textContent = `Donnees reelles chargees (${data.entries.length} entrees)`;
+        errEl.style.display = 'block';
+      }
+    } catch (err) {
       data = getMockData();
       filteredEntries = data.entries;
-      renderKpis();
-      renderTable();
+      const detail = err instanceof Error ? err.message : String(err);
+      if (errEl) {
+        errEl.className = 'fr-alert fr-alert--warning fr-mb-2w';
+        errEl.innerHTML = `<strong>Donnees de demonstration</strong> — ${escapeHtml(detail)}`;
+        errEl.style.display = 'block';
+      }
     }
+    renderKpis();
+    renderTable();
   });
 }
