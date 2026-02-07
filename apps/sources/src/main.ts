@@ -89,7 +89,7 @@ function saveManualSource(): void {
   state.sources.push(source);
   saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
   renderSources();
-  closeModal('source-modal');
+  closeModal('manual-source-modal');
   resetManualSourceModal();
 }
 
@@ -118,7 +118,7 @@ function resetManualSourceModal(): void {
 }
 
 function closeManualSourceModal(): void {
-  closeModal('source-modal');
+  closeModal('manual-source-modal');
   resetManualSourceModal();
 }
 
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---- Button listeners ----
   document.getElementById('add-connection-btn')?.addEventListener('click', () => openModal('connection-modal'));
-  document.getElementById('add-source-btn')?.addEventListener('click', () => openModal('source-modal'));
+  document.getElementById('add-source-btn')?.addEventListener('click', () => openModal('manual-source-modal'));
   document.getElementById('save-connection-btn')?.addEventListener('click', saveConnection);
   document.getElementById('save-source-btn')?.addEventListener('click', saveManualSource);
   document.getElementById('create-table-btn')?.addEventListener('click', () => openModal('create-table-modal'));
