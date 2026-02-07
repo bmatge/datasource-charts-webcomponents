@@ -12,7 +12,7 @@ function colClassFor(columns: number): string {
   return colSize === 12 ? 'fr-col-12' : `fr-col-12 fr-col-md-${colSize}`;
 }
 
-function buildRowControls(rowIdx: number, columns: number): string {
+function buildRowControls(rowIdx: number, columns: number, totalRows: number): string {
   return `
     <div class="row-controls" data-row="${rowIdx}">
       <span class="row-label">Ligne ${rowIdx + 1}</span>
@@ -27,7 +27,7 @@ function buildRowControls(rowIdx: number, columns: number): string {
           <i class="ri-add-line"></i>
         </button>
         <button class="row-control-btn row-control-btn--danger" onclick="deleteRow(${rowIdx})"
-                title="Supprimer la ligne">
+                title="Supprimer la ligne" ${totalRows <= 1 ? 'disabled' : ''}>
           <i class="ri-delete-bin-line"></i>
         </button>
       </div>
@@ -52,8 +52,9 @@ export function addRow(): void {
   row.dataset.row = String(rowIndex);
 
   // Insert row controls
+  const totalRows = rowIndex + 1;
   const tmp = document.createElement('div');
-  tmp.innerHTML = buildRowControls(rowIndex, defaultColumns);
+  tmp.innerHTML = buildRowControls(rowIndex, defaultColumns, totalRows);
   row.appendChild(tmp.firstElementChild!);
 
   for (let i = 0; i < defaultColumns; i++) {
@@ -88,7 +89,7 @@ export function resetGrid(): void {
 
   grid.innerHTML = `
     <div class="fr-grid-row ${state.dashboard.layout.gap} dashboard-row" data-row="0">
-      ${buildRowControls(0, columns)}
+      ${buildRowControls(0, columns, 1)}
       ${Array(columns).fill(0).map((_, i) => `
         <div class="${cc}">
           <div class="drop-cell empty" data-row="0" data-col="${i}">
@@ -117,6 +118,13 @@ export function rebuildGrid(): void {
     }
   }
 
+  // Always show at least one row
+  if (maxRow < 0) {
+    const defaultColumns = state.dashboard.layout.columns || 2;
+    setRowColumns(state.dashboard, 0, defaultColumns);
+    maxRow = 0;
+  }
+
   grid.innerHTML = '';
 
   for (let rowIdx = 0; rowIdx <= maxRow; rowIdx++) {
@@ -129,7 +137,7 @@ export function rebuildGrid(): void {
 
     // Row controls
     const tmp = document.createElement('div');
-    tmp.innerHTML = buildRowControls(rowIdx, columns);
+    tmp.innerHTML = buildRowControls(rowIdx, columns, maxRow + 1);
     row.appendChild(tmp.firstElementChild!);
 
     for (let colIdx = 0; colIdx < columns; colIdx++) {
@@ -163,9 +171,6 @@ export function rebuildGrid(): void {
     grid.appendChild(row);
   }
 
-  // Always add an empty row at the end for dropping new widgets
-  addRow();
-
   initDropZones();
 }
 
@@ -198,6 +203,11 @@ export function removeColumnFromRow(rowIndex: number): void {
 }
 
 export function deleteRow(rowIndex: number): void {
+  // Count total rows
+  const grid = document.getElementById('dashboard-grid');
+  const totalRows = grid?.querySelectorAll('.dashboard-row').length ?? 0;
+  if (totalRows <= 1) return;
+
   const widgetsInRow = state.dashboard.widgets.filter(w => w.position.row === rowIndex);
 
   if (widgetsInRow.length > 0) {
