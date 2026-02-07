@@ -5,6 +5,7 @@
 import { escapeHtml } from '@gouv-widgets/shared';
 import {
   fetchMonitoringData,
+  triggerRefresh,
   getMockData,
   extractDomain,
   extractPath,
@@ -281,7 +282,14 @@ function setupEventListeners(): void {
 
   document.getElementById('btn-export')?.addEventListener('click', exportCsv);
   document.getElementById('btn-refresh')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-refresh') as HTMLButtonElement;
     const errEl = document.getElementById('load-error');
+    btn.disabled = true;
+    btn.textContent = 'Mise a jour...';
+
+    // Trigger server-side parsing then fetch fresh data
+    await triggerRefresh();
+
     try {
       data = await fetchMonitoringData();
       filteredEntries = data.entries;
@@ -302,5 +310,7 @@ function setupEventListeners(): void {
     }
     renderKpis();
     renderTable();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ri-refresh-line"></i> Actualiser';
   });
 }

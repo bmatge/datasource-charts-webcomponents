@@ -25,6 +25,7 @@ export interface MonitoringData {
 }
 
 const DATA_URL = 'https://chartsbuilder.matge.com/public/monitoring-data.json';
+const REFRESH_URL = 'https://chartsbuilder.matge.com/api/refresh-monitoring';
 
 export async function fetchMonitoringData(): Promise<MonitoringData> {
   const response = await fetch(`${DATA_URL}?_=${Date.now()}`, { cache: 'no-cache' });
@@ -34,6 +35,13 @@ export async function fetchMonitoringData(): Promise<MonitoringData> {
     throw new Error(`Le fichier monitoring-data.json n'existe pas encore sur le serveur (reponse ${ct || 'text/html'}). Lancez scripts/parse-beacon-logs.js pour le generer.`);
   }
   return response.json();
+}
+
+/** Trigger server-side log parsing, then wait for it to complete */
+export async function triggerRefresh(): Promise<void> {
+  await fetch(REFRESH_URL, { mode: 'no-cors' }).catch(() => {});
+  // Wait for the entrypoint to detect the trigger and run the parser (~3s max)
+  await new Promise((r) => setTimeout(r, 4000));
 }
 
 /** Extract domain from a full URL */

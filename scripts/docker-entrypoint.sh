@@ -1,15 +1,27 @@
 #!/bin/sh
 # Docker entrypoint: periodic beacon log parsing + nginx
-# Runs parse-beacon-logs.sh every 5 minutes in background, then starts nginx
+# Parses beacon logs every 5 minutes OR immediately when triggered via
+# /api/refresh-monitoring (nginx writes to /tmp/beacon-refresh as trigger)
 
 PARSE_SCRIPT="/usr/local/bin/parse-beacon-logs.sh"
+TRIGGER="/tmp/beacon-refresh"
 INTERVAL=300  # 5 minutes
+CHECK=3       # check trigger every 3 seconds
 
-# Background loop: parse beacon logs periodically
+# Background loop: parse periodically or on trigger
 (
+  last_parse=0
   while true; do
-    sleep "$INTERVAL"
-    sh "$PARSE_SCRIPT" 2>&1
+    now=$(date +%s)
+    elapsed=$((now - last_parse))
+
+    if [ -s "$TRIGGER" ] || [ "$elapsed" -ge "$INTERVAL" ]; then
+      : > "$TRIGGER" 2>/dev/null  # truncate trigger
+      sh "$PARSE_SCRIPT" 2>&1
+      last_parse=$(date +%s)
+    fi
+
+    sleep "$CHECK"
   done
 ) &
 
