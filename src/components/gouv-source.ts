@@ -85,7 +85,10 @@ export class GouvSource extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     sendWidgetBeacon('gouv-source');
-    this._fetchData();
+    // _fetchData() is called by updated() on the first Lit render cycle
+    // when url/params/transform change from defaults. Calling it here too
+    // caused a double-fetch where the first was immediately aborted
+    // (NS_BINDING_ABORTED in Firefox).
     this._setupRefresh();
   }
 
