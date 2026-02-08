@@ -650,13 +650,16 @@ l(er, "getByPathOrDefault");
 const jt = "https://chartsbuilder.matge.com/beacon", at = /* @__PURE__ */ new Set();
 function fe(s, e) {
   const t = `${s}:${e || ""}`;
-  if (at.has(t) || (at.add(t), typeof window > "u" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
+  if (at.has(t) || (at.add(t), typeof window > "u"))
     return;
-  const r = new URLSearchParams();
-  r.set("c", s), e && r.set("t", e);
-  const i = `${jt}?${r.toString()}`;
+  const r = window.location.hostname;
+  if (r === "localhost" || r === "127.0.0.1" || r === "chartsbuilder.matge.com")
+    return;
+  const i = new URLSearchParams();
+  i.set("c", s), e && i.set("t", e);
+  const n = `${jt}?${i.toString()}`;
   try {
-    fetch(i, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
+    fetch(n, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
     });
   } catch {
   }
@@ -2266,7 +2269,7 @@ let pe = (K = class extends w {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--tertiary-no-outline ri-book-open-line" href="${this._base}docs/guide.html">
+                      <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-book-2-line" href="${this._base}docs/guide.html">
                         Guide
                       </a>
                     </li>

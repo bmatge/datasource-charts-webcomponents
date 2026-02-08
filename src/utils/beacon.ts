@@ -17,11 +17,13 @@ export function sendWidgetBeacon(component: string, subtype?: string): void {
   if (sent.has(key)) return;
   sent.add(key);
 
-  // Skip in dev mode
+  // Skip in dev mode and on the app itself (only track external deployments)
+  if (typeof window === 'undefined') return;
+  const host = window.location.hostname;
   if (
-    typeof window === 'undefined' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === 'chartsbuilder.matge.com'
   ) {
     return;
   }
