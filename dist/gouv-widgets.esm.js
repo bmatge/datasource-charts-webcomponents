@@ -2266,6 +2266,11 @@ let pe = (K = class extends w {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
+                      <a class="fr-btn fr-btn--tertiary-no-outline ri-book-open-line" href="${this._base}docs/guide.html">
+                        Guide
+                      </a>
+                    </li>
+                    <li>
                       <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
                         Favoris${this._favCount > 0 ? d` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : b}
                       </a>
