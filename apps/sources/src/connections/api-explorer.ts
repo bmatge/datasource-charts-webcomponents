@@ -5,11 +5,13 @@
 import {
   escapeHtml,
   getProxiedUrl,
+  saveToStorage,
   STORAGE_KEYS,
 } from '@gouv-widgets/shared';
 
 import { state } from '../state.js';
 import type { Source } from '../state.js';
+import { renderSources } from './connection-manager.js';
 
 // ============================================================
 // Load API Data (with pagination)
@@ -194,4 +196,14 @@ export function saveApiAsSource(): void {
   };
 
   localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+
+  // Auto-save to sources list (upsert)
+  const idx = state.sources.findIndex((s) => s.id === source.id);
+  if (idx >= 0) {
+    state.sources[idx] = source;
+  } else {
+    state.sources.push(source);
+  }
+  saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+  renderSources();
 }

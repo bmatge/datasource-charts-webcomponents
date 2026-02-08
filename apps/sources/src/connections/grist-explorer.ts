@@ -5,6 +5,7 @@
 import {
   escapeHtml,
   getProxyUrl,
+  saveToStorage,
   STORAGE_KEYS,
   toastWarning,
   toastSuccess,
@@ -13,7 +14,7 @@ import {
 
 import { state } from '../state.js';
 import type { GristDocument, GristRecord, Source } from '../state.js';
-import { switchExplorerTab } from './connection-manager.js';
+import { switchExplorerTab, renderSources } from './connection-manager.js';
 
 // ============================================================
 // Grist Fetch helper
@@ -351,6 +352,16 @@ export function saveCurrentAsSource(): void {
   };
 
   localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));
+
+  // Auto-save to sources list (upsert)
+  const idx = state.sources.findIndex((s) => s.id === source.id);
+  if (idx >= 0) {
+    state.sources[idx] = source;
+  } else {
+    state.sources.push(source);
+  }
+  saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+  renderSources();
 }
 
 // ============================================================
