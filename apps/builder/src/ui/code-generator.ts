@@ -16,6 +16,48 @@ import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
 import { updateAccessibleTable } from './accessible-table.js';
 
+const ODS_PAGE_SIZE = 100;
+const ODS_MAX_PAGES = 10;
+
+/**
+ * Fetch all results from an ODS API URL, handling pagination automatically.
+ * ODS APIs cap at 100 records per request. When the URL requests more,
+ * this function uses offset-based pagination to accumulate all results.
+ */
+async function fetchOdsResults(baseUrl: string): Promise<Record<string, unknown>[]> {
+  const url = new URL(baseUrl);
+  const requestedLimit = parseInt(url.searchParams.get('limit') || '100', 10);
+
+  if (requestedLimit <= ODS_PAGE_SIZE) {
+    const response = await fetch(baseUrl);
+    const json = await response.json();
+    return json.results || [];
+  }
+
+  let allResults: Record<string, unknown>[] = [];
+  let offset = 0;
+
+  for (let page = 0; page < ODS_MAX_PAGES; page++) {
+    const remaining = requestedLimit - allResults.length;
+    if (remaining <= 0) break;
+
+    const pageUrl = new URL(baseUrl);
+    pageUrl.searchParams.set('limit', String(Math.min(ODS_PAGE_SIZE, remaining)));
+    pageUrl.searchParams.set('offset', String(offset));
+
+    const response = await fetch(pageUrl.toString());
+    const json = await response.json();
+    const pageResults = (json.results || []) as Record<string, unknown>[];
+    allResults = allResults.concat(pageResults);
+
+    if (pageResults.length < ODS_PAGE_SIZE) break;
+    if (typeof json.total_count === 'number' && allResults.length >= json.total_count) break;
+    offset += pageResults.length;
+  }
+
+  return allResults;
+}
+
 /** Maps builder chart types to DSFR Chart element tags */
 const DSFR_TAG_MAP: Record<string, string> = {
   bar: 'bar-chart',
@@ -200,9 +242,7 @@ export async function generateChart(): Promise<void> {
       }
       const apiUrl = `${state.apiUrl}?${params}`;
       try {
-        const response = await fetch(apiUrl);
-        const json = await response.json();
-        state.data = json.results || [];
+        state.data = await fetchOdsResults(apiUrl);
         state.localData = state.data as Record<string, unknown>[];
         renderChart();
         generateCode(apiUrl);
@@ -263,9 +303,7 @@ export async function generateChart(): Promise<void> {
   const apiUrl = `${state.apiUrl}?${params}`;
 
   try {
-    const response = await fetch(apiUrl);
-    const json = await response.json();
-    state.data = json.results || [];
+    state.data = await fetchOdsResults(apiUrl);
 
     // Update raw data view
     const rawDataEl = document.getElementById('raw-data');

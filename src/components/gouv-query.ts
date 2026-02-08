@@ -11,6 +11,12 @@ import {
   getDataCache
 } from '../utils/data-bridge.js';
 
+/** ODS API maximum records per request */
+const ODS_PAGE_SIZE = 100;
+
+/** Maximum pages to fetch for ODS pagination (safety limit) */
+const ODS_MAX_PAGES = 10;
+
 /**
  * Types d'API supportés
  */
@@ -579,35 +585,11 @@ export class GouvQuery extends LitElement {
     dispatchDataLoading(this.id);
 
     try {
-      const url = this._buildApiUrl();
-
-      const response = await fetch(url, {
-        signal: this._abortController.signal
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (this.apiType === 'opendatasoft') {
+        await this._fetchFromOdsWithPagination();
+      } else {
+        await this._fetchSinglePage();
       }
-
-      const json = await response.json();
-
-      // Appliquer la transformation si spécifiée
-      let data = this.transform ? getByPath(json, this.transform) : json;
-
-      // Normaliser en tableau
-      if (!Array.isArray(data)) {
-        // Pour OpenDataSoft, les résultats sont dans 'results'
-        if (this.apiType === 'opendatasoft' && json.results) {
-          data = json.results;
-        } else if (this.apiType === 'tabular' && json.data) {
-          data = json.data;
-        } else {
-          data = [data];
-        }
-      }
-
-      this._data = data;
-      dispatchDataLoaded(this.id, this._data);
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
         return;
@@ -619,6 +601,87 @@ export class GouvQuery extends LitElement {
     } finally {
       this._loading = false;
     }
+  }
+
+  /**
+   * Fetch single page for tabular/generic API types
+   */
+  private async _fetchSinglePage(): Promise<void> {
+    const url = this._buildApiUrl();
+
+    const response = await fetch(url, {
+      signal: this._abortController!.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const json = await response.json();
+
+    let data = this.transform ? getByPath(json, this.transform) : json;
+
+    if (!Array.isArray(data)) {
+      if (this.apiType === 'tabular' && json.data) {
+        data = json.data;
+      } else {
+        data = [data];
+      }
+    }
+
+    this._data = data;
+    dispatchDataLoaded(this.id, this._data);
+  }
+
+  /**
+   * Fetch from ODS API with automatic pagination via offset.
+   * ODS APIs limit to 100 records per request. When the requested limit
+   * exceeds 100 (e.g. for department maps needing 102-108 records),
+   * this method fetches multiple pages and accumulates the results.
+   */
+  private async _fetchFromOdsWithPagination(): Promise<void> {
+    const requestedLimit = this.limit > 0 ? this.limit : ODS_PAGE_SIZE;
+    const pageSize = Math.min(requestedLimit, ODS_PAGE_SIZE);
+    let allResults: unknown[] = [];
+    let offset = 0;
+    let totalCount = Infinity;
+
+    for (let page = 0; page < ODS_MAX_PAGES; page++) {
+      const remaining = requestedLimit - allResults.length;
+      if (remaining <= 0) break;
+
+      const url = this._buildOpenDataSoftUrl(
+        Math.min(pageSize, remaining),
+        offset
+      );
+
+      const response = await fetch(url, {
+        signal: this._abortController!.signal
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      const pageResults = json.results || [];
+      allResults = allResults.concat(pageResults);
+
+      if (typeof json.total_count === 'number') {
+        totalCount = json.total_count;
+      }
+
+      // Stop if we've fetched all available records or got fewer than requested
+      if (allResults.length >= totalCount || pageResults.length < pageSize) {
+        break;
+      }
+
+      offset += pageResults.length;
+    }
+
+    // Apply transform if specified
+    this._data = this.transform ? getByPath(allResults, this.transform) as unknown[] : allResults;
+    dispatchDataLoaded(this.id, this._data);
   }
 
   /**
@@ -635,9 +698,12 @@ export class GouvQuery extends LitElement {
   }
 
   /**
-   * Construit une URL OpenDataSoft
+   * Construit une URL OpenDataSoft.
+   * When called from the pagination loop, limitOverride and offsetOverride
+   * control the per-page limit and offset. When called without overrides
+   * (e.g. from _buildApiUrl for non-paginated paths), caps limit at ODS_PAGE_SIZE.
    */
-  private _buildOpenDataSoftUrl(): string {
+  private _buildOpenDataSoftUrl(limitOverride?: number, offsetOverride?: number): string {
     const base = this.baseUrl || 'https://data.opendatasoft.com';
     const url = new URL(`${base}/api/explore/v2.1/catalog/datasets/${this.datasetId}/records`);
 
@@ -660,8 +726,14 @@ export class GouvQuery extends LitElement {
       url.searchParams.set('order_by', sortExpr);
     }
 
-    if (this.limit > 0) {
-      url.searchParams.set('limit', String(this.limit));
+    if (limitOverride !== undefined) {
+      url.searchParams.set('limit', String(limitOverride));
+    } else if (this.limit > 0) {
+      url.searchParams.set('limit', String(Math.min(this.limit, ODS_PAGE_SIZE)));
+    }
+
+    if (offsetOverride && offsetOverride > 0) {
+      url.searchParams.set('offset', String(offsetOverride));
     }
 
     return url.toString();
