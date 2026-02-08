@@ -12,6 +12,54 @@ import { generateCode } from './code-generator.js';
 const Chart = (window as unknown as Record<string, unknown>).Chart as unknown;
 
 /**
+ * Apply a where filter to data (same syntax as gouv-query: "field:op:value")
+ * Multiple filters separated by comma (AND logic).
+ */
+function applyWhereFilter(data: Record<string, unknown>[], where: string): Record<string, unknown>[] {
+  const parts = where.split(',').map(p => p.trim()).filter(Boolean);
+
+  return data.filter(record => {
+    return parts.every(part => {
+      const segments = part.split(':');
+      if (segments.length < 2) return true;
+      const field = segments[0];
+      const op = segments[1];
+      const rawValue = segments.slice(2).join(':');
+      const itemValue = record[field];
+
+      switch (op) {
+        case 'eq':
+          return String(itemValue) === rawValue || Number(itemValue) === Number(rawValue);
+        case 'neq':
+          return String(itemValue) !== rawValue && Number(itemValue) !== Number(rawValue);
+        case 'gt':
+          return Number(itemValue) > Number(rawValue);
+        case 'gte':
+          return Number(itemValue) >= Number(rawValue);
+        case 'lt':
+          return Number(itemValue) < Number(rawValue);
+        case 'lte':
+          return Number(itemValue) <= Number(rawValue);
+        case 'contains':
+          return String(itemValue).toLowerCase().includes(rawValue.toLowerCase());
+        case 'notcontains':
+          return !String(itemValue).toLowerCase().includes(rawValue.toLowerCase());
+        case 'in':
+          return rawValue.split('|').some(v => String(itemValue) === v || Number(itemValue) === Number(v));
+        case 'notin':
+          return !rawValue.split('|').some(v => String(itemValue) === v || Number(itemValue) === Number(v));
+        case 'isnull':
+          return itemValue === null || itemValue === undefined;
+        case 'isnotnull':
+          return itemValue !== null && itemValue !== undefined;
+        default:
+          return true;
+      }
+    });
+  });
+}
+
+/**
  * Format a KPI value with optional unit (local version that supports unit appending)
  */
 function formatKPIValueLocal(value: number, unit?: string): string {
@@ -53,17 +101,27 @@ export function applyChartConfig(config: ChartConfig): void {
     return;
   }
 
+  // Apply where filter if specified
+  let workingData = state.localData;
+  if (config.where) {
+    workingData = applyWhereFilter(state.localData, config.where);
+    if (workingData.length === 0) {
+      addMessage('assistant', `Aucun enregistrement ne correspond au filtre "${config.where}". Verifiez les noms de champs et les valeurs.`);
+      return;
+    }
+  }
+
   // For KPI, aggregate all values into a single result
   if (config.type === 'kpi') {
     let kpiValue: number;
-    const values = state.localData.map(r => parseFloat(String(r[config.valueField])) || 0);
+    const values = workingData.map(r => parseFloat(String(r[config.valueField])) || 0);
 
     switch (config.aggregation) {
       case 'sum':
         kpiValue = values.reduce((a, b) => a + b, 0);
         break;
       case 'count':
-        kpiValue = state.localData.length;
+        kpiValue = workingData.length;
         break;
       case 'min':
         kpiValue = Math.min(...values);
@@ -87,7 +145,7 @@ export function applyChartConfig(config: ChartConfig): void {
   const isMap = config.type === 'map';
   const codeField = config.codeField || config.labelField;
 
-  state.localData.forEach(record => {
+  workingData.forEach(record => {
     const label = isMap
       ? String(record[codeField!] || 'N/A')
       : String(record[config.labelField!] || 'N/A');

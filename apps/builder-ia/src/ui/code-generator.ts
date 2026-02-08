@@ -7,6 +7,36 @@ import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
 
 /**
+ * Convert where filter syntax "field:op:value" to ODSQL WHERE clause.
+ * Example: "code_departement:eq:48, prix:gte:100" -> "code_departement='48' AND prix>=100"
+ */
+function whereToOdsql(where: string): string {
+  const parts = where.split(',').map(p => p.trim()).filter(Boolean);
+  const clauses = parts.map(part => {
+    const segments = part.split(':');
+    if (segments.length < 2) return '';
+    const field = segments[0];
+    const op = segments[1];
+    const value = segments.slice(2).join(':');
+    const isNum = !isNaN(Number(value)) && value !== '';
+    const quoted = isNum ? value : `'${value}'`;
+
+    switch (op) {
+      case 'eq': return `${field}=${quoted}`;
+      case 'neq': return `${field}!=${quoted}`;
+      case 'gt': return `${field}>${quoted}`;
+      case 'gte': return `${field}>=${quoted}`;
+      case 'lt': return `${field}<${quoted}`;
+      case 'lte': return `${field}<=${quoted}`;
+      case 'contains': return `${field} like '%${value}%'`;
+      case 'in': return `${field} in (${value.split('|').map(v => isNaN(Number(v)) ? `'${v}'` : v).join(',')})`;
+      default: return '';
+    }
+  }).filter(Boolean);
+  return clauses.join(' AND ');
+}
+
+/**
  * Format a KPI value with optional unit (for generated code templates)
  */
 function formatKPIValueLocal(value: number, unit?: string): string {
@@ -73,6 +103,9 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
       : `${config.aggregation}(${config.valueField}) as value`;
 
     const params = new URLSearchParams({ select: valueExpr });
+    if (config.where) {
+      params.set('where', whereToOdsql(config.where));
+    }
     const apiUrl = `${state.source.url}?${params}`;
 
     return `<!-- KPI genere avec gouv-widgets Builder IA -->
@@ -303,6 +336,9 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
       group_by: config.codeField!,
       limit: '200',
     });
+    if (config.where) {
+      params.set('where', whereToOdsql(config.where));
+    }
 
     const apiUrl = `${state.source.url}?${params}`;
 
@@ -419,6 +455,9 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
     order_by: `value ${config.sortOrder || 'desc'}`,
     limit: (config.limit || 10).toString(),
   });
+  if (config.where) {
+    params.set('where', whereToOdsql(config.where));
+  }
 
   const apiUrl = `${state.source!.url}?${params}`;
 

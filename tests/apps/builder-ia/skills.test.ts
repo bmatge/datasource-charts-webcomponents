@@ -126,6 +126,26 @@ describe('builder-ia skills', () => {
       const ids = result.map(s => s.id);
       expect(ids).toContain('gouvDsfrChart');
     });
+
+    it('should auto-include gouvQuery for KPI with filtering context', () => {
+      const result = getRelevantSkills('kpi prix moyen dans le departement 48', null);
+      const ids = result.map(s => s.id);
+      expect(ids).toContain('gouvQuery');
+      expect(ids).toContain('gouvKpi');
+    });
+
+    it('should auto-include gouvQuery for chart with region filter', () => {
+      const result = getRelevantSkills('graphique barres pour la region IDF', null);
+      const ids = result.map(s => s.id);
+      expect(ids).toContain('gouvQuery');
+      expect(ids).toContain('gouvDsfrChart');
+    });
+
+    it('should match gouvQuery for "departement" keyword', () => {
+      const result = getRelevantSkills('filtre par departement', null);
+      const ids = result.map(s => s.id);
+      expect(ids).toContain('gouvQuery');
+    });
   });
 
   describe('buildSkillsContext', () => {

@@ -66,7 +66,7 @@ Composant invisible qui recupere des donnees depuis une API REST et les distribu
     id: 'gouvQuery',
     name: 'gouv-query',
     description: 'Filtrage, agregation et tri declaratif des donnees',
-    trigger: ['filtre', 'filtrer', 'grouper', 'agreger', 'trier', 'transformer', 'query', 'requete', 'top', 'moyenne', 'somme', 'compter', 'seulement', 'uniquement', 'plus de', 'moins de'],
+    trigger: ['filtre', 'filtrer', 'grouper', 'agreger', 'trier', 'transformer', 'query', 'requete', 'top', 'moyenne', 'somme', 'compter', 'seulement', 'uniquement', 'plus de', 'moins de', 'departement', 'region', 'dans le', 'pour le'],
     content: `## <gouv-query> - Transformation de donnees
 
 Composant invisible intermediaire entre <gouv-source> et les visualisations.
@@ -626,6 +626,14 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     }
     if (!relevant.find(s => s.id === 'gouvDsfrChart')) {
       relevant.push(SKILLS.gouvDsfrChart);
+    }
+  }
+
+  // Auto-include gouvQuery when visualization + filtering context detected
+  if (lowerMsg.match(/kpi|indicateur|graphique|chart|barres|camembert/) &&
+      lowerMsg.match(/departement|region|filtre|uniquement|seulement|dans le|pour le|ou\b|quand/)) {
+    if (!relevant.find(s => s.id === 'gouvQuery')) {
+      relevant.push(SKILLS.gouvQuery);
     }
   }
 

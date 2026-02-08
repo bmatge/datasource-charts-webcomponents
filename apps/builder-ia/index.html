@@ -110,6 +110,7 @@ Pour creer un graphique dans l'apercu, genere un bloc JSON :
     "valueField2": "champ_serie2",
     "codeField": "code_departement",
     "aggregation": "sum|avg|count|min|max",
+    "where": "champ:operateur:valeur",
     "limit": 10,
     "sortOrder": "desc|asc",
     "title": "Titre",
@@ -121,6 +122,12 @@ Pour creer un graphique dans l'apercu, genere un bloc JSON :
   }
 }
 ```
+
+## Filtrage (attribut where de createChart)
+Format: "champ:operateur:valeur" (multiples filtres separes par virgule = ET logique)
+Operateurs: eq, neq, gt, gte, lt, lte, contains, in (separateur |)
+Exemples: "code_departement:eq:48", "prix:gte:100", "region:in:IDF|OCC|BRE"
+Le filtre s'applique AVANT l'agregation. Utilise les noms de champs de la source (PAS de champ__fonction).
 
 ## Composants gouv-widgets disponibles
 Tu peux aussi proposer du code HTML declaratif avec ces composants :

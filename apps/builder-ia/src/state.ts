@@ -36,6 +36,7 @@ export interface ChartConfig {
   variant?: 'info' | 'success' | 'warning' | 'error';
   unit?: string;
   palette?: string;
+  where?: string;
   data2?: AggregatedResult[];
 }
 
