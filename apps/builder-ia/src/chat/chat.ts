@@ -176,10 +176,13 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   // Build available skills list for the system prompt
   const skillsList = Object.values(SKILLS).map(s => `- ${s.name}: ${s.description}`).join('\n');
 
+  const actionReminder = `\n\n---\nRAPPEL IMPORTANT: Pour afficher un graphique ou KPI dans l'apercu, genere TOUJOURS un SEUL bloc \`\`\`json avec {"action": "createChart", "config": {...}}. Utilise config.where pour filtrer (ex: "code_departement:eq:48"). Les composants HTML (gouv-source, gouv-query, etc.) sont UNIQUEMENT pour le code embarquable dans l'onglet Code, PAS pour l'apercu.`;
+
   const systemPromptWithSkills = config.systemPrompt +
     `\n\nSKILLS DISPONIBLES (seront injectes si pertinents):\n${skillsList}` +
     dataContext +
-    skillsContext;
+    skillsContext +
+    actionReminder;
 
   const messages = [
     { role: 'system', content: systemPromptWithSkills },

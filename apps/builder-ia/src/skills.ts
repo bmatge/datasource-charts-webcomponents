@@ -646,6 +646,6 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
 export function buildSkillsContext(relevantSkills: Skill[]): string {
   if (relevantSkills.length === 0) return '';
 
-  return '\n\n---\nCONNAISSANCES DISPONIBLES:\n' +
+  return '\n\n---\nCONNAISSANCES DISPONIBLES (reference pour le code embarquable, PAS pour l\'action createChart):\n' +
     relevantSkills.map(s => s.content).join('\n\n');
 }
