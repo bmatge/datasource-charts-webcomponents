@@ -113,6 +113,24 @@ describe('GouvQuery', () => {
       const filter = { field: 'name', operator: 'isnotnull' as const };
       expect((query as any)._matchesFilter(testItem, filter)).toBe(true);
     });
+
+    it('eq matches with type coercion (string "84" == number 84)', () => {
+      const item = { code_region: '84', name: 'Auvergne-Rhone-Alpes' };
+      const filter = { field: 'code_region', operator: 'eq' as const, value: 84 };
+      expect((query as any)._matchesFilter(item, filter)).toBe(true);
+    });
+
+    it('eq matches with type coercion (number 84 == string "84")', () => {
+      const item = { code_region: 84, name: 'Auvergne-Rhone-Alpes' };
+      const filter = { field: 'code_region', operator: 'eq' as const, value: '84' };
+      expect((query as any)._matchesFilter(item, filter)).toBe(true);
+    });
+
+    it('neq rejects with type coercion (string "84" == number 84)', () => {
+      const item = { code_region: '84', name: 'Auvergne-Rhone-Alpes' };
+      const filter = { field: 'code_region', operator: 'neq' as const, value: 84 };
+      expect((query as any)._matchesFilter(item, filter)).toBe(false);
+    });
   });
 
   describe('Aggregation parsing', () => {

@@ -19,6 +19,61 @@ import { renderChart } from './chart-renderer.js';
 import { updateAccessibleTable } from './accessible-table.js';
 
 /**
+ * Convert gouv-query filter format (field:operator:value) to ODSQL where clause.
+ */
+function filterToOdsql(filterExpr: string): string {
+  const opMap: Record<string, string> = {
+    eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=',
+  };
+  return filterExpr.split(',').map(p => p.trim()).filter(Boolean).map(part => {
+    const segs = part.split(':');
+    if (segs.length < 3) return '';
+    const field = segs[0];
+    const op = segs[1];
+    const val = segs.slice(2).join(':');
+    if (op === 'contains') return `${field} like "%${val}%"`;
+    if (op === 'notcontains') return `NOT ${field} like "%${val}%"`;
+    if (op === 'in') return `${field} in (${val.split('|').map(v => `"${v}"`).join(', ')})`;
+    if (op === 'notin') return `NOT ${field} in (${val.split('|').map(v => `"${v}"`).join(', ')})`;
+    if (op === 'isnull') return `${field} is null`;
+    if (op === 'isnotnull') return `${field} is not null`;
+    const sqlOp = opMap[op];
+    if (!sqlOp) return '';
+    return `${field} ${sqlOp} "${val}"`;
+  }).filter(Boolean).join(' AND ');
+}
+
+/**
+ * Apply gouv-query style filter (field:operator:value) to local data rows.
+ */
+function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): Record<string, unknown>[] {
+  const filters = filterExpr.split(',').map(p => p.trim()).filter(Boolean).map(part => {
+    const segs = part.split(':');
+    if (segs.length < 2) return null;
+    return { field: segs[0], op: segs[1], value: segs.slice(2).join(':') };
+  }).filter(Boolean) as { field: string; op: string; value: string }[];
+
+  return data.filter(row => filters.every(f => {
+    const v = row[f.field];
+    switch (f.op) {
+      // eslint-disable-next-line eqeqeq
+      case 'eq': return v == f.value;
+      // eslint-disable-next-line eqeqeq
+      case 'neq': return v != f.value;
+      case 'gt': return Number(v) > Number(f.value);
+      case 'gte': return Number(v) >= Number(f.value);
+      case 'lt': return Number(v) < Number(f.value);
+      case 'lte': return Number(v) <= Number(f.value);
+      case 'contains': return String(v).toLowerCase().includes(f.value.toLowerCase());
+      case 'notcontains': return !String(v).toLowerCase().includes(f.value.toLowerCase());
+      case 'isnull': return v === null || v === undefined;
+      case 'isnotnull': return v !== null && v !== undefined;
+      default: return true;
+    }
+  }));
+}
+
+/**
  * Main orchestrator: reads form state, validates, routes to correct code gen path.
  */
 export async function generateChart(): Promise<void> {
@@ -87,6 +142,12 @@ export async function generateChart(): Promise<void> {
     });
   }
 
+  // Apply advanced mode filter to API request
+  if (state.advancedMode && state.queryFilter) {
+    const odsql = filterToOdsql(state.queryFilter);
+    if (odsql) params.set('where', odsql);
+  }
+
   const apiUrl = `${state.apiUrl}?${params}`;
 
   try {
@@ -125,8 +186,14 @@ export function generateChartFromLocalData(): void {
   const isMap = state.chartType === 'map';
   const groupField = isMap ? state.codeField : state.labelField;
 
-  if (state.localData) {
-    state.localData.forEach(record => {
+  // Apply advanced mode filter to local data
+  let filteredLocal = state.localData || [];
+  if (state.advancedMode && state.queryFilter) {
+    filteredLocal = applyLocalFilter(filteredLocal as Record<string, unknown>[], state.queryFilter);
+  }
+
+  if (filteredLocal) {
+    filteredLocal.forEach(record => {
       const rawGroupKey = record[groupField] as string | number | null;
       // For maps, skip records with invalid codes
       if (isMap && (rawGroupKey === null || rawGroupKey === undefined || rawGroupKey === '')) {

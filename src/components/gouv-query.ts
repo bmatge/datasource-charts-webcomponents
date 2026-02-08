@@ -406,9 +406,11 @@ export class GouvQuery extends LitElement {
 
     switch (filter.operator) {
       case 'eq':
-        return value === filter.value;
+        // eslint-disable-next-line eqeqeq
+        return value == filter.value;
       case 'neq':
-        return value !== filter.value;
+        // eslint-disable-next-line eqeqeq
+        return value != filter.value;
       case 'gt':
         return Number(value) > Number(filter.value);
       case 'gte':
