@@ -130,6 +130,7 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
     this._data = Array.isArray(data) ? data : [];
   }
 
+
   // --- Data processing ---
 
   private _processData(): { x: string; y: string; y2?: string } {
@@ -200,9 +201,10 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
     return attrs;
   }
 
-  private _getTypeSpecificAttributes(): Record<string, string> {
+  private _getTypeSpecificAttributes(): { attrs: Record<string, string>; deferred: Record<string, string> } {
     const { x, y, y2 } = this._processData();
     const attrs: Record<string, string> = {};
+    const deferred: Record<string, string> = {};
 
     switch (this.type) {
       case 'gauge': {
@@ -219,9 +221,26 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
         if (this.unitTooltipBar) attrs['unit-tooltip-bar'] = this.unitTooltipBar;
         break;
       case 'map':
-      case 'map-reg':
+      case 'map-reg': {
         attrs['data'] = this._processMapData();
+        // Compute national/regional average for the sidebar value.
+        // These go in `deferred` because the DSFR Chart Vue component
+        // overwrites props set before mount with defaults.
+        if (this._data.length > 0) {
+          let total = 0;
+          let count = 0;
+          for (const record of this._data) {
+            const v = Number(getByPath(record, this.valueField));
+            if (!isNaN(v)) { total += v; count++; }
+          }
+          if (count > 0) {
+            const avg = Math.round((total / count) * 100) / 100;
+            deferred['value'] = String(avg);
+          }
+        }
+        deferred['date'] = new Date().toISOString().split('T')[0];
         break;
+      }
       default:
         attrs['x'] = x;
         attrs['y'] = y;
@@ -240,7 +259,7 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       attrs['highlight'] = this.mapHighlight;
     }
 
-    return attrs;
+    return { attrs, deferred };
   }
 
   /**
@@ -257,12 +276,23 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
     return `Graphique ${typeName}, ${count} valeurs`;
   }
 
-  private _createChartElement(tagName: string, attributes: Record<string, string>) {
+  private _createChartElement(tagName: string, attributes: Record<string, string>, deferred: Record<string, string> = {}) {
     const el = document.createElement(tagName);
     for (const [key, value] of Object.entries(attributes)) {
       if (value !== undefined && value !== '') {
         el.setAttribute(key, value);
       }
+    }
+
+    // DSFR Chart components are Vue-based web components that overwrite certain
+    // attributes (value, date) with default prop values on mount.
+    // We re-apply deferred attributes after Vue has mounted.
+    if (Object.keys(deferred).length > 0) {
+      setTimeout(() => {
+        for (const [key, value] of Object.entries(deferred)) {
+          el.setAttribute(key, value);
+        }
+      }, 500);
     }
 
     const wrapper = document.createElement('div');
@@ -279,12 +309,13 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       return html`<p class="fr-text--sm fr-text--error">Type de graphique non supporté: ${this.type}</p>`;
     }
 
+    const { attrs: typeAttrs, deferred } = this._getTypeSpecificAttributes();
     const allAttrs = {
       ...this._getCommonAttributes(),
-      ...this._getTypeSpecificAttributes(),
+      ...typeAttrs,
     };
 
-    const wrapper = this._createChartElement(tagName, allAttrs);
+    const wrapper = this._createChartElement(tagName, allAttrs, deferred);
 
     // Replace previous chart wrapper if any
     const container = this.querySelector('.gouv-dsfr-chart__wrapper');

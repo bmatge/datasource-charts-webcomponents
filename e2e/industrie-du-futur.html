@@ -602,10 +602,17 @@
       createDSFRChart('map-brut-container', 'map-chart', {
         data: JSON.stringify(mapData),
         name: 'Beneficiaires par departement',
-        date: today,
-        'value-nat': String(avgValue),
         'selected-palette': 'sequentialAscending',
       });
+      // DSFR Chart Vue components overwrite value/date with defaults on mount.
+      // Re-apply after Vue has mounted.
+      const mapEl = document.querySelector('#map-brut-container map-chart');
+      setTimeout(() => {
+        if (mapEl) {
+          mapEl.setAttribute('value', String(avgValue));
+          mapEl.setAttribute('date', today);
+        }
+      }, 500);
       markLoaded();
     }
 

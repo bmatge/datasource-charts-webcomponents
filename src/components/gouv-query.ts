@@ -7,7 +7,8 @@ import {
   dispatchDataError,
   dispatchDataLoading,
   clearDataCache,
-  subscribeToSource
+  subscribeToSource,
+  getDataCache
 } from '../utils/data-bridge.js';
 
 /**
@@ -297,6 +298,14 @@ export class GouvQuery extends LitElement {
     // Se désabonner de l'ancienne source
     if (this._unsubscribe) {
       this._unsubscribe();
+    }
+
+    // Vérifier le cache avant de s'abonner (évite une race condition
+    // si la source a déjà émis ses données avant l'abonnement)
+    const cachedData = getDataCache(this.source);
+    if (cachedData !== undefined) {
+      this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];
+      this._processClientSide();
     }
 
     // S'abonner à la nouvelle source
