@@ -33,6 +33,7 @@ coverage/
 # Test results (Playwright)
 test-results/
 playwright-report/
+e2e/screenshots
 
 # Temporary files
 *.tmp
