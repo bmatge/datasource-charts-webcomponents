@@ -63,7 +63,7 @@ export function generateHTMLCode(): string {
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
   <!-- gouv-widgets -->
-  <script type="module" src="https://cdn.jsdelivr.net/gh/AubertMusic/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+  <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 </head>
 <body>
   <div class="fr-container fr-my-4w">

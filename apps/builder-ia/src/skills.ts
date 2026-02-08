@@ -381,7 +381,7 @@ name='["Serie A","Serie B"]'
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/gouv-widgets/dist/gouv-widgets.esm.js"><\/script>
+<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 \`\`\``,
   },
 

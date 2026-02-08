@@ -579,7 +579,7 @@ ${state.advancedMode ? '<!-- Mode avanc\u00e9 activ\u00e9 : filtrage et agr\u00e
 
 <!-- D\u00e9pendances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -661,7 +661,7 @@ export function generateDynamicCodeForApi(): void {
 
 <!-- Dependances JS -->
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -707,7 +707,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 
 <!-- Dependances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.umd.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}

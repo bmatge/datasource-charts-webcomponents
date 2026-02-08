@@ -805,7 +805,7 @@ loadDashboard();
 -->
 
 <!-- Composants gouv-widgets -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 
 <!-- DSFR Chart (requis par gouv-dsfr-chart) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
@@ -877,7 +877,7 @@ loadDashboard();
   Affichage d'indicateurs cles avec calculs automatiques
 -->
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>Indicateurs cles (KPI)</h2>
@@ -951,7 +951,7 @@ loadDashboard();
   Tableau de donnees avec filtres, recherche, tri et export
 -->
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>Liste des sites suivis</h2>
@@ -993,7 +993,7 @@ loadDashboard();
   Combine KPIs, graphiques et tableau de donnees
 -->
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/bmatge/datasource-charts-webcomponents@v0.2.0/dist/gouv-widgets.esm.js"><\/script>
+<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
