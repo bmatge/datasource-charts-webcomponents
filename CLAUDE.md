@@ -57,6 +57,7 @@ npm run dev --workspace=@gouv-widgets/app-dashboard
 npm run dev --workspace=@gouv-widgets/app-sources
 npm run dev --workspace=@gouv-widgets/app-playground
 npm run dev --workspace=@gouv-widgets/app-favorites
+npm run dev --workspace=@gouv-widgets/app-monitoring
 ```
 
 ## Conventions de code
@@ -118,8 +119,16 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 - Tauri : proxy distant via detection `window.__TAURI__`
 - Configurable via `VITE_PROXY_URL`
 
+## Beacon de tracking
+
+Chaque composant `gouv-*` envoie un beacon fire-and-forget a l'initialisation (`connectedCallback`) via `sendWidgetBeacon()` dans `src/utils/beacon.ts`. Le beacon transmet le nom du composant et le type de graphique au proxy nginx qui les enregistre dans `beacon.log`. Un script periodique (`scripts/parse-beacon-logs.sh`) transforme ces logs en `monitoring-data.json` consomme par l'app monitoring.
+
+- Deduplication par `Set` en memoire (1 beacon par composant+type par page)
+- Skip en dev (localhost/127.0.0.1)
+- Utilise `fetch()` avec `mode: 'no-cors'` (pas `navigator.sendBeacon()` qui cause des erreurs CORS)
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
 - Toujours lancer `npm run build` apres modification des composants
-- Docker : `docker build -t gouv-widgets . && docker run -p 8080:80 gouv-widgets`
+- Docker : `docker compose up -d --build` (utilise un volume `beacon-logs` pour persister les donnees de monitoring entre redemarrages)

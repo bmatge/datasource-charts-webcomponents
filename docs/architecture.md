@@ -2,7 +2,7 @@
 
 ## 1. Vue d'ensemble
 
-gouv-widgets est un monorepo TypeScript gere par npm workspaces. Il fournit une bibliotheque de Web Components de dataviz conformes au DSFR (Design System de l'Etat) ainsi que cinq applications web autonomes pour la creation, la gestion et la visualisation de graphiques.
+gouv-widgets est un monorepo TypeScript gere par npm workspaces. Il fournit une bibliotheque de Web Components de dataviz conformes au DSFR (Design System de l'Etat) ainsi que sept applications web autonomes pour la creation, la gestion et la visualisation de graphiques.
 
 Le monorepo se decompose en trois niveaux :
 
@@ -45,6 +45,7 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
       aggregations.ts           Fonctions d'aggregation (sum, avg, count, etc.)
       formatters.ts             Formatage des valeurs (nombres, dates, etc.)
       json-path.ts              Acces par chemin dans les objets JSON
+      beacon.ts                 Beacon de tracking des widgets deployes
   dist/                         Build output (ESM + UMD)
 
   packages/
@@ -71,9 +72,14 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
     sources/                    @gouv-widgets/app-sources -- Gestionnaire de sources de donnees
     builder-ia/                 @gouv-widgets/app-builder-ia -- Generateur IA (Albert)
     builder/                    @gouv-widgets/app-builder -- Generateur visuel de graphiques
+    dashboard/                  @gouv-widgets/app-dashboard -- Editeur visuel de tableaux de bord
+    monitoring/                 @gouv-widgets/app-monitoring -- Suivi des widgets deployes
 
   tests/                        Tests Vitest
-  scripts/                      Scripts de build (build-app.js)
+  scripts/                      Scripts de build et monitoring
+    build-app.js                Assemblage de app-dist/ pour Tauri/Docker
+    parse-beacon-logs.sh        Parsing des beacon logs nginx -> JSON
+    docker-entrypoint.sh        Entrypoint Docker (parse periodique + nginx)
   src-tauri/                    Application desktop Tauri
   demo/                         Pages de demonstration
   app-dist/                     Sortie assemblee pour Tauri
@@ -140,7 +146,27 @@ Favorites
 
 Les graphiques enregistres comme favoris sont serialises dans `localStorage` sous la cle `gouv-widgets-favorites`.
 
-### 3.4 Communication intra-composants
+### 3.4 Monitoring des widgets deployes
+
+```
+Sites tiers (gouv.fr, codepen, etc.)
+    |
+    |-- sendWidgetBeacon('gouv-dsfr-chart', 'bar')   (fetch no-cors)
+    v
+chartsbuilder.matge.com/beacon                       (nginx return 204, log beacon.log)
+    |
+    |-- parse-beacon-logs.sh (cron 5min ou trigger /api/refresh-monitoring)
+    v
+monitoring-data.json                                  (JSON agrege)
+    |
+    |-- fetch depuis l'app monitoring
+    v
+apps/monitoring/                                      (tableau de bord DSFR)
+```
+
+Les beacon logs sont persistes via un volume Docker (`beacon-logs:/var/log/nginx`) et restaures au redemarrage du conteneur.
+
+### 3.5 Communication intra-composants
 
 A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-chart>`, `<gouv-kpi>`, `<gouv-query>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
 
@@ -224,7 +250,7 @@ Le fichier `vite.config.ts` racine configure Vite en mode `lib` :
 
 Chaque application dans `apps/` possede son propre `vite.config.ts`. Le build produit un dossier `apps/{app}/dist/` contenant du HTML/JS/CSS statique.
 
-L'ordre de build dans `build:apps` est : favorites, playground, sources, builder-ia, builder.
+L'ordre de build dans `build:apps` est : favorites, playground, sources, builder-ia, builder, dashboard, monitoring.
 
 ### 5.4 Assemblage pour Tauri (`scripts/build-app.js`)
 
@@ -241,6 +267,8 @@ app-dist/
     sources/              Build de l'app sources
     builder-ia/           Build de l'app builder-ia
     builder/              Build de l'app builder
+    dashboard/            Build de l'app dashboard
+    monitoring/           Build de l'app monitoring
   favoris.html            Redirection -> apps/favorites/index.html
   builder.html            Redirection -> apps/builder/index.html
   builderIA.html          Redirection -> apps/builder-ia/index.html
@@ -322,6 +350,7 @@ tests/
   apps/                        Tests des applications
     builder/
     builder-ia/
+    dashboard/
     favorites/
     playground/
     sources/
