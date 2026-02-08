@@ -1,107 +1,171 @@
 /**
  * Playground examples data
  *
- * Each entry is a template literal string containing HTML + JS code
- * that can be loaded into the playground editor.
+ * 20 exemples organises en 2 modes de construction x 10 types de visualisation.
  *
- * Les exemples gouv-widgets utilisent le dataset "industrie-du-futur"
- * de data.economie.gouv.fr, en coherence avec la documentation utilisateur
- * (docs/guide.html > Integration rapide).
+ * Mode direct  : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
+ * Mode requete : gouv-source → gouv-query → composant
+ *
+ * Sources de donnees alternees :
+ *  - API 1 : Fiscalite locale des particuliers (data.economie.gouv.fr)
+ *  - API 2 : Registre des elus municipaux (tabular-api.data.gouv.fr)
+ *  - API 3 : Industrie du futur (data.economie.gouv.fr)
  */
 export const examples: Record<string, string> = {
 
-  // ---------------------------------------------------------
-  // COMPOSANTS gouv-widgets
-  // Exemples alignes avec la documentation utilisateur
-  // ---------------------------------------------------------
+  // =====================================================================
+  // MODE DIRECT — gouv-source → composant
+  // Les donnees de la source sont transmises directement au composant
+  // de visualisation, sans transformation intermediaire.
+  // =====================================================================
 
-  'gouv-bar': `<!--
-  EXEMPLE : Source + Query + Graphique en barres
-
-  Charge les donnees depuis l'API OpenDataSoft (industrie-du-futur),
-  les regroupe par region avec une somme des beneficiaires,
-  et affiche un graphique en barres conforme DSFR.
-
-  C'est l'exemple de reference de la documentation
-  (Guide > Integration rapide).
+  'direct-bar': `<!--
+  Barres — Taux de taxe fonciere par commune
+  Mode direct : gouv-source → gouv-dsfr-chart (bar)
+  Source : Fiscalite locale des particuliers
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Beneficiaires Industrie du futur par region</h2>
+  <h2>Taux de taxe fonciere par commune</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
   </p>
 
-  <!-- Source de donnees -->
   <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
     transform="results">
   </gouv-source>
 
-  <!-- Filtrage et agregation -->
-  <gouv-query id="query-result" source="data"
-    group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc"
-    limit="10">
-  </gouv-query>
-
-  <!-- Graphique DSFR -->
-  <gouv-dsfr-chart source="query-result"
+  <gouv-dsfr-chart source="data"
     type="bar"
-    label-field="nom_region"
-    value-field="nombre_beneficiaires"
-    title="Beneficiaires par region"
-    palette="categorical">
+    label-field="libcom"
+    value-field="taux_global_tfb"
+    unit-tooltip="%"
+    selected-palette="categorical">
   </gouv-dsfr-chart>
 </div>`,
 
-  'gouv-pie': `<!--
-  EXEMPLE : Source + Query + Camembert
-
-  Meme source de donnees que l'exemple en barres,
-  affichee en graphique circulaire.
+  'direct-line': `<!--
+  Courbe — Beneficiaires Industrie du futur par departement
+  Mode direct : gouv-source → gouv-dsfr-chart (line)
+  Source : Industrie du futur
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Repartition des beneficiaires par region</h2>
+  <h2>Beneficiaires Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
   <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
     transform="results">
   </gouv-source>
 
-  <gouv-query id="query-result" source="data"
-    group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc"
-    limit="8">
-  </gouv-query>
+  <gouv-dsfr-chart source="data"
+    type="line"
+    label-field="nom_departement"
+    value-field="nombre_beneficiaires"
+    selected-palette="default">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'direct-pie': `<!--
+  Camembert — Poids demographique par commune
+  Mode direct : gouv-source → gouv-dsfr-chart (pie)
+  Source : Fiscalite locale des particuliers
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Poids demographique par commune</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
+    transform="results">
+  </gouv-source>
 
   <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="query-result"
+    <gouv-dsfr-chart source="data"
       type="pie"
-      label-field="nom_region"
-      value-field="nombre_beneficiaires"
-      title="Repartition par region"
-      palette="categorical">
+      label-field="libcom"
+      value-field="mpoid"
+      selected-palette="categorical">
     </gouv-dsfr-chart>
   </div>
 </div>`,
 
-  'gouv-line': `<!--
-  EXEMPLE : Source + Query + Graphique en lignes
-
-  Meme source de donnees, affichee en courbe.
+  'direct-radar': `<!--
+  Radar — Beneficiaires par region
+  Mode direct : gouv-source → gouv-dsfr-chart (radar)
+  Source : Industrie du futur
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Beneficiaires par region (courbe)</h2>
+  <h2>Profil des beneficiaires par region</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : data.economie.gouv.fr — Industrie du futur
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
+    transform="results">
+  </gouv-source>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <gouv-dsfr-chart source="data"
+      type="radar"
+      label-field="nom_region"
+      value-field="nombre_beneficiaires"
+      selected-palette="default">
+    </gouv-dsfr-chart>
+  </div>
+</div>`,
+
+  'direct-gauge': `<!--
+  Jauge — Taux de taxe fonciere d'une commune
+  Mode direct : gouv-source → gouv-dsfr-chart (gauge)
+  Source : Fiscalite locale des particuliers (1 enregistrement)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Taux de taxe fonciere</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
+    transform="results">
+  </gouv-source>
+
+  <div style="max-width: 300px; margin: 0 auto;">
+    <gouv-dsfr-chart source="data"
+      type="gauge"
+      value-field="taux_global_tfb">
+    </gouv-dsfr-chart>
+  </div>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      La jauge utilise la valeur du premier enregistrement.
+      Ici le taux de taxe fonciere (0-100%) est naturellement adapte.
+    </p>
+  </div>
+</div>`,
+
+  'direct-scatter': `<!--
+  Nuage de points — Investissement vs participation de l'Etat
+  Mode direct : gouv-source → gouv-dsfr-chart (scatter)
+  Source : Industrie du futur
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Investissement vs participation de l'Etat</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
   <gouv-source id="data"
@@ -109,32 +173,80 @@ export const examples: Record<string, string> = {
     transform="results">
   </gouv-source>
 
-  <gouv-query id="query-result" source="data"
-    group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc">
-  </gouv-query>
-
-  <gouv-dsfr-chart source="query-result"
-    type="line"
-    label-field="nom_region"
-    value-field="nombre_beneficiaires"
-    title="Beneficiaires par region"
-    palette="default">
+  <gouv-dsfr-chart source="data"
+    type="scatter"
+    label-field="montant_investissement"
+    value-field="montant_participation_etat"
+    selected-palette="categorical">
   </gouv-dsfr-chart>
 </div>`,
 
-  'gouv-kpi': `<!--
-  EXEMPLE : Indicateurs cles (KPI)
+  'direct-barline': `<!--
+  Barres + ligne — Investissement et participation par departement
+  Mode direct : gouv-source → gouv-dsfr-chart (bar-line)
+  Source : Industrie du futur
+  Utilise value-field (barres) et value-field-2 (ligne)
+-->
 
-  Affiche des chiffres cles calcules depuis l'API :
-  somme, moyenne, maximum, comptage.
+<div class="fr-container fr-my-4w">
+  <h2>Investissement et participation de l'Etat</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
+    transform="results">
+  </gouv-source>
+
+  <gouv-dsfr-chart source="data"
+    type="bar-line"
+    label-field="nom_departement"
+    value-field="montant_investissement"
+    value-field-2="montant_participation_etat"
+    name='["Investissement", "Participation Etat"]'
+    unit-tooltip="EUR"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'direct-map': `<!--
+  Carte — Beneficiaires par departement
+  Mode direct : gouv-source → gouv-dsfr-chart (map)
+  Source : Industrie du futur
+  Utilise code-field pour les codes departement
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Beneficiaires Industrie du futur par departement</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-dsfr-chart source="data"
+    type="map"
+    code-field="code_departement"
+    value-field="nombre_beneficiaires"
+    selected-palette="sequentialAscending">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'direct-kpi': `<!--
+  KPI — Indicateurs cles Industrie du futur
+  Mode direct : gouv-source → gouv-kpi (x4)
+  Source : Industrie du futur
+  Chaque KPI calcule une agregation sur les donnees brutes
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Indicateurs cles — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
   <gouv-source id="data"
@@ -143,327 +255,408 @@ export const examples: Record<string, string> = {
   </gouv-source>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-    <gouv-kpi
-      source="data"
+    <gouv-kpi source="data"
       valeur="sum:nombre_beneficiaires"
       label="Total beneficiaires"
       format="nombre">
     </gouv-kpi>
 
-    <gouv-kpi
-      source="data"
+    <gouv-kpi source="data"
       valeur="avg:nombre_beneficiaires"
-      label="Moyenne"
-      format="nombre">
+      label="Moyenne par enregistrement"
+      format="decimal">
     </gouv-kpi>
 
-    <gouv-kpi
-      source="data"
-      valeur="max:nombre_beneficiaires"
-      label="Maximum"
+    <gouv-kpi source="data"
+      valeur="max:montant_investissement"
+      label="Investissement max"
+      format="euro"
       couleur="vert">
     </gouv-kpi>
 
-    <gouv-kpi
-      source="data"
+    <gouv-kpi source="data"
       valeur="count"
       label="Enregistrements"
       format="nombre">
     </gouv-kpi>
   </div>
-
-  <div class="fr-callout fr-mt-4w">
-    <p class="fr-callout__title">Expressions de calcul</p>
-    <ul>
-      <li><code>champ</code> — Valeur directe</li>
-      <li><code>avg:champ</code> — Moyenne</li>
-      <li><code>sum:champ</code> — Somme</li>
-      <li><code>min:champ</code> / <code>max:champ</code> — Min/Max</li>
-      <li><code>count</code> — Comptage total</li>
-      <li><code>count:champ:valeur</code> — Comptage conditionnel</li>
-    </ul>
-  </div>
 </div>`,
 
-  'gouv-datalist': `<!--
-  EXEMPLE : Tableau de donnees
-
-  Affiche les donnees brutes dans un tableau avec
-  recherche, filtres, tri et export CSV.
+  'direct-datalist': `<!--
+  Tableau — Registre des elus municipaux
+  Mode direct : gouv-source → gouv-datalist
+  Source : Registre des elus municipaux (tabular-api)
+  Affiche un tableau avec recherche, filtres, tri et export
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Donnees Industrie du futur</h2>
+  <h2>Registre des elus municipaux</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
   </p>
 
   <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=50"
+    transform="data">
   </gouv-source>
 
-  <gouv-datalist
-    source="data"
-    colonnes="nom_region:Region, nombre_beneficiaires:Beneficiaires"
+  <gouv-datalist source="data"
+    colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction, Libelle du departement:Departement, Libelle de la categorie socio-professionnelle:Categorie"
     recherche="true"
-    filtres="nom_region"
-    tri="nombre_beneficiaires:desc"
+    filtres="Libelle du departement"
+    tri="Nom de l'elu:asc"
     pagination="10"
     export="csv">
   </gouv-datalist>
 </div>`,
 
-  'gouv-dashboard': `<!--
-  EXEMPLE : Dashboard complet
+  // =====================================================================
+  // MODE AVEC REQUETE — gouv-source → gouv-query → composant
+  // Les donnees passent par gouv-query qui les filtre, regroupe
+  // et/ou agrege avant de les transmettre au composant de visualisation.
+  // =====================================================================
 
-  Combine KPIs, graphiques (barres + camembert) et tableau
-  dans un tableau de bord unifie.
+  'query-bar': `<!--
+  Barres — Beneficiaires agreges par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (bar)
+  Source : Industrie du futur
+  gouv-query regroupe par region et somme les beneficiaires
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Tableau de bord — Industrie du futur</h2>
+  <h2>Beneficiaires Industrie du futur par region</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Dataset industrie-du-futur
+    Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <!-- Source de donnees partagee -->
   <gouv-source id="data"
     url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
     transform="results">
   </gouv-source>
 
-  <gouv-query id="query-result" source="data"
+  <gouv-query id="q-bar" source="data"
     group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc"
+    aggregate="nombre_beneficiaires:sum:beneficiaires"
+    order-by="beneficiaires:desc"
     limit="10">
   </gouv-query>
 
-  <!-- KPIs -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-    <gouv-kpi source="data" valeur="sum:nombre_beneficiaires" label="Total beneficiaires" format="nombre"></gouv-kpi>
-    <gouv-kpi source="data" valeur="avg:nombre_beneficiaires" label="Moyenne" format="nombre"></gouv-kpi>
-    <gouv-kpi source="data" valeur="count" label="Enregistrements" format="nombre"></gouv-kpi>
+  <gouv-dsfr-chart source="q-bar"
+    type="bar"
+    label-field="nom_region"
+    value-field="beneficiaires"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'query-line': `<!--
+  Courbe — Taux moyen de taxe fonciere par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (line)
+  Source : Fiscalite locale des particuliers
+  gouv-query calcule la moyenne du taux TFB par region
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Taux moyen de taxe fonciere par region</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-line" source="data"
+    group-by="libreg"
+    aggregate="taux_global_tfb:avg:taux_moyen"
+    order-by="taux_moyen:desc">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="q-line"
+    type="line"
+    label-field="libreg"
+    value-field="taux_moyen"
+    unit-tooltip="%"
+    selected-palette="default">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'query-pie': `<!--
+  Camembert — Elus par categorie socio-professionnelle
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
+  Source : Registre des elus municipaux (tabular-api)
+  gouv-query regroupe par categorie et compte le nombre d'elus
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Elus par categorie socio-professionnelle</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="q-pie" source="data"
+    group-by="Libelle de la categorie socio-professionnelle"
+    aggregate="Code sexe:count:nombre"
+    order-by="nombre:desc"
+    limit="8">
+  </gouv-query>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <gouv-dsfr-chart source="q-pie"
+      type="pie"
+      label-field="Libelle de la categorie socio-professionnelle"
+      value-field="nombre"
+      selected-palette="categorical">
+    </gouv-dsfr-chart>
+  </div>
+</div>`,
+
+  'query-radar': `<!--
+  Radar — Investissement moyen par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (radar)
+  Source : Industrie du futur
+  gouv-query calcule l'investissement moyen par region
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Investissement moyen par region</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-radar" source="data"
+    group-by="nom_region"
+    aggregate="montant_investissement:avg:investissement"
+    limit="6">
+  </gouv-query>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <gouv-dsfr-chart source="q-radar"
+      type="radar"
+      label-field="nom_region"
+      value-field="investissement"
+      selected-palette="default">
+    </gouv-dsfr-chart>
+  </div>
+</div>`,
+
+  'query-gauge': `<!--
+  Jauge — Taux moyen TFB le plus eleve par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (gauge)
+  Source : Fiscalite locale des particuliers
+  gouv-query calcule la moyenne par region et prend le max (limit=1)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Region au taux moyen TFB le plus eleve</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-gauge" source="data"
+    group-by="libreg"
+    aggregate="taux_global_tfb:avg:taux_moyen"
+    order-by="taux_moyen:desc"
+    limit="1">
+  </gouv-query>
+
+  <div style="max-width: 300px; margin: 0 auto;">
+    <gouv-dsfr-chart source="q-gauge"
+      type="gauge"
+      value-field="taux_moyen">
+    </gouv-dsfr-chart>
+  </div>
+</div>`,
+
+  'query-scatter': `<!--
+  Nuage de points — TFB vs TH moyens par departement
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (scatter)
+  Source : Fiscalite locale des particuliers
+  gouv-query calcule les moyennes TFB et TH par departement
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Taux TFB vs TH par departement</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-scatter" source="data"
+    group-by="libdep"
+    aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+    limit="30">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="q-scatter"
+    type="scatter"
+    label-field="tfb"
+    value-field="th"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'query-barline': `<!--
+  Barres + ligne — TFB et TH moyens par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (bar-line)
+  Source : Fiscalite locale des particuliers
+  gouv-query calcule les moyennes TFB (barres) et TH (ligne) par region
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Taux moyens TFB et TH par region</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-barline" source="data"
+    group-by="libreg"
+    aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+    order-by="tfb:desc">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="q-barline"
+    type="bar-line"
+    label-field="libreg"
+    value-field="tfb"
+    value-field-2="th"
+    name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
+    unit-tooltip="%"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'query-map': `<!--
+  Carte — Taux TFB moyen par departement
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (map)
+  Source : Fiscalite locale des particuliers
+  gouv-query calcule la moyenne TFB par departement (code dep)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Taux moyen de taxe fonciere par departement</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-query id="q-map" source="data"
+    group-by="dep"
+    aggregate="taux_global_tfb:avg:taux">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="q-map"
+    type="map"
+    code-field="dep"
+    value-field="taux"
+    selected-palette="sequentialAscending">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'query-kpi': `<!--
+  KPI — Statistiques des elus avec filtre
+  Mode requete : gouv-source → gouv-query (filtre) → gouv-kpi
+  Source : Registre des elus municipaux (tabular-api)
+  Combine des KPI sur les donnees brutes et sur un sous-ensemble filtre
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Statistiques des elus municipaux</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    transform="data">
+  </gouv-source>
+
+  <!-- Filtre : uniquement les Maires -->
+  <gouv-query id="q-maires" source="data"
+    filter="Libelle de la fonction:contains:Maire">
+  </gouv-query>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    <gouv-kpi source="data"
+      valeur="count"
+      label="Total des elus"
+      format="nombre">
+    </gouv-kpi>
+
+    <gouv-kpi source="q-maires"
+      valeur="count"
+      label="Dont Maires"
+      format="nombre"
+      couleur="bleu">
+    </gouv-kpi>
   </div>
 
-  <!-- Graphiques -->
-  <div class="fr-grid-row fr-grid-row--gutters" style="margin-bottom: 2rem;">
-    <div class="fr-col-12 fr-col-md-6">
-      <h3>Par region (barres)</h3>
-      <gouv-dsfr-chart source="query-result"
-        type="bar"
-        label-field="nom_region"
-        value-field="nombre_beneficiaires"
-        title="Beneficiaires par region"
-        palette="categorical">
-      </gouv-dsfr-chart>
-    </div>
-    <div class="fr-col-12 fr-col-md-6">
-      <h3>Repartition (camembert)</h3>
-      <gouv-dsfr-chart source="query-result"
-        type="pie"
-        label-field="nom_region"
-        value-field="nombre_beneficiaires"
-        title="Repartition par region"
-        palette="categorical">
-      </gouv-dsfr-chart>
-    </div>
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Le filtre <code>Libelle de la fonction:contains:Maire</code>
+      isole un sous-ensemble, chaque KPI souscrit a sa propre source.
+    </p>
   </div>
+</div>`,
 
-  <!-- Tableau -->
-  <h3>Detail des donnees</h3>
-  <gouv-datalist
-    source="data"
-    colonnes="nom_region:Region, nombre_beneficiaires:Beneficiaires"
+  'query-datalist': `<!--
+  Tableau — Elus filtres par region
+  Mode requete : gouv-source → gouv-query (filtre) → gouv-datalist
+  Source : Registre des elus municipaux (tabular-api)
+  gouv-query filtre les elus d'une region specifique
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Elus municipaux — Ile-de-France</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="q-datalist" source="data"
+    filter="Libelle de la region:contains:Ile">
+  </gouv-query>
+
+  <gouv-datalist source="q-datalist"
+    colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction, Libelle du departement:Departement"
     recherche="true"
-    filtres="nom_region"
-    tri="nombre_beneficiaires:desc"
+    tri="Nom de l'elu:asc"
     pagination="10"
     export="csv">
   </gouv-datalist>
 </div>`,
 
-  // ---------------------------------------------------------
-  // DSFR CHART NATIFS
-  // Format officiel avec x="[[...]]" et y="[[...]]"
-  // ---------------------------------------------------------
-  'dsfr-bar': `<!--
-  EXEMPLE : DSFR Bar Chart (natif)
-
-  Utilise le composant officiel bar-chart de @gouvfr/dsfr-chart
-  Les donnees sont au format JSON stringifie : x="[[...]]" y="[[...]]"
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Score RGAA par ministere</h2>
-  <p class="fr-text--sm fr-text--light">Conformite accessibilite en pourcentage</p>
-
-  <!-- Bar chart vertical -->
-  <bar-chart
-    x='[["Economie", "Education", "Interieur", "Sante", "Culture"]]'
-    y="[[87, 92, 78, 85, 91]]"
-    name='["Score RGAA"]'
-    selected-palette="categorical"
-    unit-tooltip="%">
-  </bar-chart>
-
-  <h3 class="fr-mt-4w">Barres horizontales</h3>
-  <bar-chart
-    x='[["Economie", "Education", "Interieur", "Sante", "Culture"]]'
-    y="[[87, 92, 78, 85, 91]]"
-    name='["Score RGAA"]'
-    selected-palette="sequentialAscending"
-    horizontal="true"
-    unit-tooltip="%">
-  </bar-chart>
-</div>`,
-
-  'dsfr-line': `<!--
-  EXEMPLE : DSFR Line Chart (natif)
-
-  Graphique en ligne avec evolution temporelle
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Evolution du score RGAA</h2>
-  <p class="fr-text--sm fr-text--light">Progression sur 4 ans</p>
-
-  <line-chart
-    x='[["2021", "2022", "2023", "2024"]]'
-    y="[[65, 72, 78, 85]]"
-    name='["Score RGAA"]'
-    selected-palette="default"
-    unit-tooltip="%">
-  </line-chart>
-
-  <h3 class="fr-mt-4w">Plusieurs series</h3>
-  <line-chart
-    x='[["2021", "2022", "2023", "2024"], ["2021", "2022", "2023", "2024"]]'
-    y="[[65, 72, 78, 85], [70, 75, 82, 91]]"
-    name='["RGAA", "DSFR"]'
-    selected-palette="categorical"
-    unit-tooltip="%">
-  </line-chart>
-</div>`,
-
-  'dsfr-pie': `<!--
-  EXEMPLE : DSFR Pie Chart (natif)
-
-  Diagramme circulaire / camembert
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Repartition par statut</h2>
-
-  <div style="max-width: 400px; margin: 0 auto;">
-    <pie-chart
-      x='[["Actifs", "Inactifs", "En maintenance"]]'
-      y="[[75, 15, 10]]"
-      selected-palette="categorical"
-      unit-tooltip="%">
-    </pie-chart>
-  </div>
-
-  <h3 class="fr-mt-4w">Variante donut (fill=false par defaut)</h3>
-  <div style="max-width: 400px; margin: 0 auto;">
-    <pie-chart
-      x='[["Conformes", "Partiels", "Non conformes"]]'
-      y="[[60, 30, 10]]"
-      selected-palette="sequentialDescending"
-      unit-tooltip="%">
-    </pie-chart>
-  </div>
-</div>`,
-
-  'dsfr-gauge': `<!--
-  EXEMPLE : DSFR Gauge Chart (natif)
-
-  ATTENTION : Utiliser percent/init/target, PAS value !
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Jauges de conformite</h2>
-  <p class="fr-text--sm fr-text--light">Progression vers l'objectif 100%</p>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-    <div>
-      <p><strong>Score RGAA</strong></p>
-      <!-- percent = valeur actuelle, init = minimum, target = maximum -->
-      <gauge-chart percent="82" init="0" target="100"></gauge-chart>
-    </div>
-    <div>
-      <p><strong>Score DSFR</strong></p>
-      <gauge-chart percent="91" init="0" target="100"></gauge-chart>
-    </div>
-    <div>
-      <p><strong>Performance</strong></p>
-      <gauge-chart percent="65" init="0" target="100"></gauge-chart>
-    </div>
-  </div>
-
-  <div class="fr-callout fr-callout--brown-caramel fr-mt-4w">
-    <p class="fr-callout__text">
-      <strong>Important :</strong> Ne pas utiliser l'attribut <code>value</code>.
-      Utiliser <code>percent</code> + <code>init</code> + <code>target</code>.
-    </p>
-  </div>
-</div>`,
-
-  'dsfr-radar': `<!--
-  EXEMPLE : DSFR Radar Chart (natif)
-
-  Graphique radar pour comparaisons multi-criteres
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Profil de conformite</h2>
-  <p class="fr-text--sm fr-text--light">Evaluation multi-criteres</p>
-
-  <div style="max-width: 500px; margin: 0 auto;">
-    <radar-chart
-      x='[["RGAA", "DSFR", "Performance", "SEO", "Securite"]]'
-      y="[[85, 90, 75, 80, 95]]"
-      name='["Site principal"]'
-      selected-palette="default">
-    </radar-chart>
-  </div>
-
-  <h3 class="fr-mt-4w">Comparaison de plusieurs sites</h3>
-  <div style="max-width: 500px; margin: 0 auto;">
-    <radar-chart
-      x='[["RGAA", "DSFR", "Performance", "SEO", "Securite"], ["RGAA", "DSFR", "Performance", "SEO", "Securite"]]'
-      y="[[85, 90, 75, 80, 95], [70, 85, 90, 75, 80]]"
-      name='["Site A", "Site B"]'
-      selected-palette="categorical">
-    </radar-chart>
-  </div>
-</div>`,
-
-  'dsfr-map': `<!--
-  EXEMPLE : DSFR Map Chart (natif)
-
-  Carte de France avec donnees par departement
-  Utilise le composant map-chart de @gouvfr/dsfr-chart
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Taux de conformite RGAA par departement</h2>
-  <p class="fr-text--sm fr-text--light">Donnees fictives pour demonstration</p>
-
-  <map-chart
-    data='{"01": 85, "02": 72, "03": 91, "04": 65, "05": 78, "06": 88, "07": 70, "08": 83, "09": 67, "10": 75, "11": 82, "12": 89, "13": 94, "14": 71, "15": 68, "16": 77, "17": 86, "18": 73, "19": 80, "21": 92, "22": 69, "23": 64, "24": 76, "25": 81, "26": 87, "27": 74, "28": 79, "29": 90, "30": 84, "31": 93, "32": 66, "33": 95, "34": 88, "35": 82, "36": 71, "37": 85, "38": 91, "39": 69, "40": 77, "41": 73, "42": 86, "43": 68, "44": 92, "45": 80, "46": 65, "47": 74, "48": 62, "49": 83, "50": 70, "51": 78, "52": 67, "53": 75, "54": 84, "55": 66, "56": 81, "57": 87, "58": 72, "59": 96, "60": 79, "61": 71, "62": 85, "63": 88, "64": 76, "65": 69, "66": 82, "67": 93, "68": 90, "69": 97, "70": 68, "71": 77, "72": 74, "73": 86, "74": 91, "75": 98, "76": 83, "77": 80, "78": 89, "79": 73, "80": 76, "81": 70, "82": 67, "83": 84, "84": 78, "85": 81, "86": 75, "87": 72, "88": 69, "89": 79, "90": 66, "91": 87, "92": 94, "93": 85, "94": 88, "95": 82, "2A": 71, "2B": 68}'
-    name="Score RGAA"
-    date="2024-01-15"
-    value-nat="79"
-    selected-palette="sequentialAscending">
-  </map-chart>
-
-  <div class="fr-callout fr-callout--blue-ecume fr-mt-4w">
-    <p class="fr-callout__text">
-      <strong>Format des donnees :</strong> L'attribut <code>data</code> attend un objet JSON
-      ou les cles sont les codes departement (ex: "75", "2A") et les valeurs les donnees a afficher.
-    </p>
-  </div>
-</div>`,
 };

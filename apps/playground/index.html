@@ -40,25 +40,33 @@
   <div class="example-selector">
     <label for="example-select">Charger un exemple :</label>
     <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
-      <optgroup label="Composants gouv-widgets">
-        <option value="gouv-bar">Source + Query + Barres</option>
-        <option value="gouv-pie">Source + Camembert</option>
-        <option value="gouv-line">Source + Lignes</option>
-        <option value="gouv-kpi">Indicateurs KPI</option>
-        <option value="gouv-datalist">Tableau de donnees</option>
-        <option value="gouv-dashboard">Dashboard complet</option>
+      <optgroup label="Mode direct (gouv-source)">
+        <option value="direct-bar">Barres — Fiscalite locale</option>
+        <option value="direct-line">Courbe — Industrie du futur</option>
+        <option value="direct-pie">Camembert — Poids demographique</option>
+        <option value="direct-radar">Radar — Beneficiaires</option>
+        <option value="direct-gauge">Jauge — Taxe fonciere</option>
+        <option value="direct-scatter">Nuage — Investissement</option>
+        <option value="direct-barline">Barres + ligne — Investissements</option>
+        <option value="direct-map">Carte — Beneficiaires</option>
+        <option value="direct-kpi">KPI — Industrie du futur</option>
+        <option value="direct-datalist">Tableau — Elus municipaux</option>
       </optgroup>
-      <optgroup label="DSFR Chart natifs">
-        <option value="dsfr-bar">DSFR Bar Chart</option>
-        <option value="dsfr-line">DSFR Line Chart</option>
-        <option value="dsfr-pie">DSFR Pie Chart</option>
-        <option value="dsfr-gauge">DSFR Gauge Chart</option>
-        <option value="dsfr-radar">DSFR Radar Chart</option>
-        <option value="dsfr-map">DSFR Map Chart (carte)</option>
+      <optgroup label="Avec requete (gouv-query)">
+        <option value="query-bar">Barres — Beneficiaires agreges</option>
+        <option value="query-line">Courbe — Taux moyen TFB</option>
+        <option value="query-pie">Camembert — Elus par categorie</option>
+        <option value="query-radar">Radar — Investissement moyen</option>
+        <option value="query-gauge">Jauge — Taux moyen regional</option>
+        <option value="query-scatter">Nuage — TFB vs TH</option>
+        <option value="query-barline">Barres + ligne — TFB et TH</option>
+        <option value="query-map">Carte — Taux TFB</option>
+        <option value="query-kpi">KPI — Statistiques des elus</option>
+        <option value="query-datalist">Tableau — Elus filtres</option>
       </optgroup>
     </select>
-    <a href="../../docs/guide.html" class="fr-link fr-link--sm fr-ml-2w" style="white-space: nowrap;">
-      <i class="ri-book-open-line fr-mr-1v" aria-hidden="true"></i>Guide utilisateur
+    <a href="../../docs/guide.html#exemples" class="fr-link fr-link--sm fr-ml-2w" style="white-space: nowrap;">
+      <i class="ri-book-open-line fr-mr-1v" aria-hidden="true"></i>Guide et exemples
     </a>
   </div>
 

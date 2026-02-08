@@ -148,6 +148,21 @@
               <li class="fr-sidemenu__item">
                 <a class="fr-sidemenu__link" href="#integration" data-guide-link>Integration rapide</a>
               </li>
+              <li class="fr-sidemenu__item">
+                <button class="fr-sidemenu__btn" aria-expanded="false" aria-controls="guide-exemples">
+                  Exemples d'implementations
+                </button>
+                <div class="fr-collapse" id="guide-exemples">
+                  <ul class="fr-sidemenu__list">
+                    <li class="fr-sidemenu__item">
+                      <a class="fr-sidemenu__link" href="#exemples-direct" data-guide-link>Mode direct</a>
+                    </li>
+                    <li class="fr-sidemenu__item">
+                      <a class="fr-sidemenu__link" href="#exemples-query" data-guide-link>Avec requete</a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
@@ -499,8 +514,8 @@
   &lt;!-- Filtrage et agregation --&gt;
   &lt;gouv-query id="query-result" source="data"
     group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc"
+    aggregate="nombre_beneficiaires:sum:beneficiaires"
+    order-by="beneficiaires:desc"
     limit="10"&gt;
   &lt;/gouv-query&gt;
 
@@ -508,9 +523,8 @@
   &lt;gouv-dsfr-chart source="query-result"
     type="bar"
     label-field="nom_region"
-    value-field="nombre_beneficiaires"
-    title="Beneficiaires Industrie du futur par region"
-    palette="categorical"&gt;
+    value-field="beneficiaires"
+    selected-palette="categorical"&gt;
   &lt;/gouv-dsfr-chart&gt;
 &lt;/body&gt;
 &lt;/html&gt;</pre>
@@ -520,6 +534,315 @@
             <li>Les regroupe par region avec une somme des beneficiaires</li>
             <li>Affiche un graphique en barres conforme DSFR</li>
           </ol>
+        </section>
+
+        <!-- Exemples d'implementations -->
+        <section id="exemples">
+          <h2>Exemples d'implementations</h2>
+          <p>
+            20 exemples prets a l'emploi, organises en deux modes de construction.
+            Chaque exemple est disponible dans le <a href="../apps/playground/index.html">Playground</a>
+            pour le tester et le modifier en temps reel.
+          </p>
+          <p>Trois sources de donnees publiques sont utilisees en alternance :</p>
+          <ul>
+            <li><strong>Fiscalite locale</strong> — Taux de taxes foncieres et d'habitation par commune (data.economie.gouv.fr)</li>
+            <li><strong>Elus municipaux</strong> — Repertoire national des elus (tabular-api.data.gouv.fr)</li>
+            <li><strong>Industrie du futur</strong> — Beneficiaires et investissements par region (data.economie.gouv.fr)</li>
+          </ul>
+
+          <!-- Mode direct -->
+          <h3 id="exemples-direct">Mode direct : gouv-source &rarr; composant</h3>
+          <p>Les donnees de la source sont transmises directement au composant de visualisation, sans transformation intermediaire.</p>
+
+          <h4 id="ex-direct-bar">Barres — Taux de taxe fonciere par commune</h4>
+          <p>Graphique en barres affichant les taux de taxe fonciere de 15 communes.
+            <a href="../apps/playground/index.html?example=direct-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../fiscalite-locale-des-particuliers/records?limit=15"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="bar"
+  label-field="libcom" value-field="taux_global_tfb"
+  unit-tooltip="%" selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-line">Courbe — Beneficiaires Industrie du futur</h4>
+          <p>Courbe du nombre de beneficiaires par departement.
+            <a href="../apps/playground/index.html?example=direct-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../industrie-du-futur/records?limit=20"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="line"
+  label-field="nom_departement" value-field="nombre_beneficiaires"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-pie">Camembert — Poids demographique</h4>
+          <p>Diagramme circulaire du poids demographique par commune.
+            <a href="../apps/playground/index.html?example=direct-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../fiscalite-locale-des-particuliers/records?limit=8"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="pie"
+  label-field="libcom" value-field="mpoid"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-radar">Radar — Beneficiaires par region</h4>
+          <p>Graphique radar montrant le profil des beneficiaires.
+            <a href="../apps/playground/index.html?example=direct-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../industrie-du-futur/records?limit=6"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="radar"
+  label-field="nom_region" value-field="nombre_beneficiaires"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-gauge">Jauge — Taux de taxe fonciere</h4>
+          <p>Jauge affichant le taux de taxe fonciere d'une commune (1 enregistrement).
+            <a href="../apps/playground/index.html?example=direct-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../fiscalite-locale-des-particuliers/records?limit=1"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="gauge"
+  value-field="taux_global_tfb"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-scatter">Nuage — Investissement vs participation</h4>
+          <p>Nuage de points croisant investissement et participation de l'Etat.
+            <a href="../apps/playground/index.html?example=direct-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="scatter"
+  label-field="montant_investissement"
+  value-field="montant_participation_etat"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-barline">Barres + ligne — Investissements</h4>
+          <p>Combine barres (investissement) et ligne (participation Etat) via <code>value-field-2</code>.
+            <a href="../apps/playground/index.html?example=direct-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../industrie-du-futur/records?limit=15"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="bar-line"
+  label-field="nom_departement"
+  value-field="montant_investissement"
+  value-field-2="montant_participation_etat"
+  name='["Investissement", "Participation Etat"]'&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-map">Carte — Beneficiaires par departement</h4>
+          <p>Carte de France coloree par nombre de beneficiaires, via <code>code-field</code>.
+            <a href="../apps/playground/index.html?example=direct-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/.../industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="data" type="map"
+  code-field="code_departement" value-field="nombre_beneficiaires"
+  selected-palette="sequentialAscending"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-direct-kpi">KPI — Indicateurs Industrie du futur</h4>
+          <p>Quatre indicateurs cles calcules directement depuis les donnees brutes.
+            <a href="../apps/playground/index.html?example=direct-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data" url="..." transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-kpi source="data" valeur="sum:nombre_beneficiaires"
+  label="Total beneficiaires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="data" valeur="avg:nombre_beneficiaires"
+  label="Moyenne" format="decimal"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="data" valeur="max:montant_investissement"
+  label="Investissement max" format="euro" couleur="vert"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="data" valeur="count"
+  label="Enregistrements" format="nombre"&gt;&lt;/gouv-kpi&gt;</pre>
+
+          <h4 id="ex-direct-datalist">Tableau — Registre des elus</h4>
+          <p>Tableau interactif avec recherche, filtres, tri et export CSV.
+            <a href="../apps/playground/index.html?example=direct-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?__pageSize=50"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-datalist source="data"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
+  recherche="true" filtres="Libelle du departement"
+  tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+
+          <!-- Mode avec requete -->
+          <h3 id="exemples-query">Avec requete : gouv-source &rarr; gouv-query &rarr; composant</h3>
+          <p>Les donnees passent par <code>gouv-query</code> qui les filtre, regroupe et/ou agrege avant de les transmettre au composant de visualisation.</p>
+
+          <h4 id="ex-query-bar">Barres — Beneficiaires agreges par region</h4>
+          <p>Regroupe par region et somme les beneficiaires avec <code>group-by</code> + <code>aggregate</code>.
+            <a href="../apps/playground/index.html?example=query-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data" url="..." transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-bar" source="data"
+  group-by="nom_region"
+  aggregate="nombre_beneficiaires:sum:beneficiaires"
+  order-by="beneficiaires:desc" limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-bar" type="bar"
+  label-field="nom_region" value-field="beneficiaires"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-line">Courbe — Taux moyen TFB par region</h4>
+          <p>Calcule la moyenne du taux de taxe fonciere par region.
+            <a href="../apps/playground/index.html?example=query-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data" url="..." transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-line" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:taux_moyen"
+  order-by="taux_moyen:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-line" type="line"
+  label-field="libreg" value-field="taux_moyen" unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-pie">Camembert — Elus par categorie socio-pro</h4>
+          <p>Compte les elus par categorie socio-professionnelle via <code>count</code>.
+            <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?__pageSize=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-pie" source="data"
+  group-by="Libelle de la categorie socio-professionnelle"
+  aggregate="Code sexe:count:nombre"
+  order-by="nombre:desc" limit="8"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-pie" type="pie"
+  label-field="Libelle de la categorie socio-professionnelle"
+  value-field="nombre"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-radar">Radar — Investissement moyen par region</h4>
+          <p>Calcule l'investissement moyen par region (limite a 6 pour lisibilite).
+            <a href="../apps/playground/index.html?example=query-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-query id="q-radar" source="data"
+  group-by="nom_region"
+  aggregate="montant_investissement:avg:investissement"
+  limit="6"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-radar" type="radar"
+  label-field="nom_region" value-field="investissement"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-gauge">Jauge — Taux moyen TFB regional</h4>
+          <p>Calcule la moyenne par region, trie par taux decroissant et prend le premier (limit=1).
+            <a href="../apps/playground/index.html?example=query-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-query id="q-gauge" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:taux_moyen"
+  order-by="taux_moyen:desc" limit="1"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-gauge" type="gauge"
+  value-field="taux_moyen"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-scatter">Nuage — TFB vs TH par departement</h4>
+          <p>Double agregation : moyenne TFB (axe X) et TH (axe Y) par departement.
+            <a href="../apps/playground/index.html?example=query-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-query id="q-scatter" source="data"
+  group-by="libdep"
+  aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+  limit="30"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-scatter" type="scatter"
+  label-field="tfb" value-field="th"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-barline">Barres + ligne — TFB et TH par region</h4>
+          <p>Barres pour le TFB moyen et ligne pour le TH moyen, combines via <code>value-field-2</code>.
+            <a href="../apps/playground/index.html?example=query-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-query id="q-barline" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+  order-by="tfb:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-barline" type="bar-line"
+  label-field="libreg" value-field="tfb" value-field-2="th"
+  name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
+  unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-map">Carte — Taux TFB par departement</h4>
+          <p>Moyenne du taux TFB par code departement, affichee sur la carte de France.
+            <a href="../apps/playground/index.html?example=query-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-query id="q-map" source="data"
+  group-by="dep"
+  aggregate="taux_global_tfb:avg:taux"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q-map" type="map"
+  code-field="dep" value-field="taux"
+  selected-palette="sequentialAscending"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-query-kpi">KPI — Statistiques des elus avec filtre</h4>
+          <p>Filtre les Maires et compare le sous-ensemble au total via deux KPI distincts.
+            <a href="../apps/playground/index.html?example=query-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data" url="..." transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-maires" source="data"
+  filter="Libelle de la fonction:contains:Maire"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-kpi source="data" valeur="count"
+  label="Total des elus" format="nombre"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="q-maires" valeur="count"
+  label="Dont Maires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;</pre>
+
+          <h4 id="ex-query-datalist">Tableau — Elus filtres par region</h4>
+          <p>Filtre les elus d'Ile-de-France et affiche le resultat dans un tableau interactif.
+            <a href="../apps/playground/index.html?example=query-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
+          </p>
+<pre>&lt;gouv-source id="data" url="..." transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-datalist" source="data"
+  filter="Libelle de la region:contains:Ile"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-datalist source="q-datalist"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
+  recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+
         </section>
 
         <!-- Ressources -->

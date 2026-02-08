@@ -96,8 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   editor = initEditor('code-editor');
 
-  // Load first example (skip confirm since editor is empty)
-  loadExample('gouv-bar', true);
+  // Load example from URL param, favorites, or default
+  const exampleParam = new URLSearchParams(window.location.search).get('example');
+  if (exampleParam && examples[exampleParam]) {
+    // Select the matching option in the dropdown
+    const select = document.getElementById('example-select') as HTMLSelectElement;
+    if (select) select.value = exampleParam;
+    loadExample(exampleParam, true);
+  } else {
+    loadExample('direct-bar', true);
+  }
 
   // Event listeners
   document.getElementById('run-btn')?.addEventListener('click', runCode);
