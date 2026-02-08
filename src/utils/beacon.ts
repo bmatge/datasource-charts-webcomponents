@@ -33,11 +33,11 @@ export function sendWidgetBeacon(component: string, subtype?: string): void {
   const url = `${BEACON_URL}?${params.toString()}`;
 
   try {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(url);
-    } else {
-      fetch(url, { method: 'GET', keepalive: true, mode: 'no-cors' }).catch(() => {});
-    }
+    // Use fetch with no-cors instead of navigator.sendBeacon().
+    // sendBeacon uses credentials:"include" which requires a specific
+    // Access-Control-Allow-Origin (not "*"), causing NS_BINDING_ABORTED.
+    // fetch with mode:"no-cors" skips CORS checks entirely.
+    fetch(url, { method: 'GET', keepalive: true, mode: 'no-cors' }).catch(() => {});
   } catch {
     // Silently ignore beacon failures - never impact widget functionality
   }
