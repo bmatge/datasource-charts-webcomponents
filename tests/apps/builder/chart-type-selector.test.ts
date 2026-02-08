@@ -45,11 +45,6 @@ function buildDOM(): void {
       <select id="label-field"></select>
     </div>
 
-    <!-- Limit input inside a .fr-input-group wrapper -->
-    <div class="fr-input-group" style="display: block;">
-      <input id="limit" type="number" />
-    </div>
-
     <!-- Sort order inside a .fr-select-group wrapper -->
     <div class="fr-select-group" style="display: block;">
       <select id="sort-order"></select>
@@ -265,48 +260,7 @@ describe('selectChartType', () => {
   });
 
   // -----------------------------------------------------------
-  // 8. Hiding limit for single-value types and map
-  // -----------------------------------------------------------
-  describe('limit visibility', () => {
-    it('should hide limit for kpi', () => {
-      selectChartType('kpi');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('none');
-    });
-
-    it('should hide limit for gauge', () => {
-      selectChartType('gauge');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('none');
-    });
-
-    it('should hide limit for map', () => {
-      selectChartType('map');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('none');
-    });
-
-    it('should show limit for bar', () => {
-      selectChartType('bar');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('block');
-    });
-
-    it('should show limit for line', () => {
-      selectChartType('line');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('block');
-    });
-
-    it('should show limit for scatter', () => {
-      selectChartType('scatter');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('block');
-    });
-  });
-
-  // -----------------------------------------------------------
-  // 9. Hiding sort for kpi/gauge/map/radar/scatter
+  // 8. Hiding sort for kpi/gauge/map/radar/scatter
   // -----------------------------------------------------------
   describe('sort order visibility', () => {
     const hiddenSortTypes: ChartType[] = ['kpi', 'gauge', 'map', 'radar', 'scatter'];
@@ -463,11 +417,6 @@ describe('selectChartType', () => {
       expect(group.style.display).toBe('none');
     });
 
-    it('should show limit for datalist', () => {
-      selectChartType('datalist');
-      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
-      expect(group.style.display).toBe('block');
-    });
 
     it('should show sort order for datalist', () => {
       selectChartType('datalist');

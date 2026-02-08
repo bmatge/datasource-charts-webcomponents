@@ -141,22 +141,21 @@ function renderContent(): void {
         ${escapeHtml(fav.name)}
       </h1>
       <div class="content-actions">
-        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left ri-file-code-line"
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-code-s-slash-line"
                 onclick="openInPlayground('${fav.id}')">
           Playground
         </button>
-        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left ri-tools-line"
+        <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-tools-line"
                 onclick="openInBuilder('${fav.id}')">
           Builder
         </button>
-        <button class="fr-btn fr-btn--sm fr-btn--icon-left ri-file-copy-line"
+        <button class="fr-btn fr-btn--sm fr-btn--icon-left fr-icon-clipboard-line"
                 onclick="copyCode('${fav.id}')">
           Copier le code
         </button>
-        <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline"
+        <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline fr-icon-delete-line"
                 onclick="showDeleteModal('${fav.id}')"
                 title="Supprimer">
-          <i class="ri-delete-bin-line" aria-hidden="true"></i>
         </button>
       </div>
     </div>

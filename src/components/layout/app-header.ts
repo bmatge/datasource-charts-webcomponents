@@ -110,7 +110,7 @@ export class AppHeader extends LitElement {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--tertiary-no-outline ri-book-open-line" href="${this._base}docs/guide.html">
+                      <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-book-2-line" href="${this._base}docs/guide.html">
                         Guide
                       </a>
                     </li>

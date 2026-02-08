@@ -15,7 +15,7 @@ function getOrCreateContainer(): HTMLElement {
     container.id = CONTAINER_ID;
     container.setAttribute('aria-live', 'polite');
     container.style.cssText =
-      'position:fixed;top:1rem;right:1rem;z-index:10000;display:flex;flex-direction:column;gap:0.5rem;max-width:400px;';
+      'position:fixed;top:5rem;right:1rem;z-index:10000;display:flex;flex-direction:column;gap:0.5rem;max-width:400px;';
     document.body.appendChild(container);
   }
   return container;
