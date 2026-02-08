@@ -26,19 +26,23 @@ const ODS_MAX_PAGES = 10;
  */
 async function fetchOdsResults(baseUrl: string): Promise<Record<string, unknown>[]> {
   const url = new URL(baseUrl);
-  const requestedLimit = parseInt(url.searchParams.get('limit') || '100', 10);
+  const requestedLimit = parseInt(url.searchParams.get('limit') || '0', 10);
 
-  if (requestedLimit <= ODS_PAGE_SIZE) {
+  // limit <= 0 means "fetch all" with auto-pagination
+  // limit <= 100 means single page (no pagination needed)
+  if (requestedLimit > 0 && requestedLimit <= ODS_PAGE_SIZE) {
     const response = await fetch(baseUrl);
     const json = await response.json();
     return json.results || [];
   }
 
+  const effectiveLimit = requestedLimit > 0 ? requestedLimit : ODS_MAX_PAGES * ODS_PAGE_SIZE;
   let allResults: Record<string, unknown>[] = [];
   let offset = 0;
+  let totalCount = -1;
 
   for (let page = 0; page < ODS_MAX_PAGES; page++) {
-    const remaining = requestedLimit - allResults.length;
+    const remaining = effectiveLimit - allResults.length;
     if (remaining <= 0) break;
 
     const pageUrl = new URL(baseUrl);
@@ -50,9 +54,18 @@ async function fetchOdsResults(baseUrl: string): Promise<Record<string, unknown>
     const pageResults = (json.results || []) as Record<string, unknown>[];
     allResults = allResults.concat(pageResults);
 
+    if (typeof json.total_count === 'number') totalCount = json.total_count;
+
     if (pageResults.length < ODS_PAGE_SIZE) break;
-    if (typeof json.total_count === 'number' && allResults.length >= json.total_count) break;
+    if (totalCount >= 0 && allResults.length >= totalCount) break;
     offset += pageResults.length;
+  }
+
+  // Verify total_count coherence
+  if (totalCount >= 0 && allResults.length < totalCount && allResults.length < effectiveLimit) {
+    console.warn(
+      `fetchOdsResults: pagination incomplete - ${allResults.length}/${totalCount} resultats`
+    );
   }
 
   return allResults;
@@ -703,6 +716,98 @@ datalist.onSourceData(data);
 }
 
 /**
+ * Parse an ODS explore v2.1 API URL to extract base URL and dataset ID.
+ * Returns null if the URL is not a recognized ODS pattern.
+ */
+function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | null {
+  const match = url.match(/^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/);
+  return match ? { baseUrl: match[1], datasetId: match[2] } : null;
+}
+
+/**
+ * Generate a <gouv-query api-type="opendatasoft"> element for ODS sources.
+ * Uses server-side aggregation (ODSQL) with automatic pagination,
+ * bypassing gouv-source entirely.
+ */
+function generateOdsQueryCode(
+  odsInfo: { baseUrl: string; datasetId: string },
+  labelFieldPath: string,
+  valueFieldPath: string
+): { queryElement: string; chartSource: string; labelField: string; valueField: string } {
+  const attrs: string[] = [];
+  attrs.push('api-type="opendatasoft"');
+  attrs.push(`base-url="${odsInfo.baseUrl}"`);
+  attrs.push(`dataset-id="${odsInfo.datasetId}"`);
+
+  // Group by
+  const groupByField = state.advancedMode && state.queryGroupBy ? state.queryGroupBy : labelFieldPath;
+  if (groupByField) {
+    attrs.push(`group-by="${groupByField}"`);
+  }
+
+  // Build ODSQL select clause with aggregation
+  let resultValueField: string;
+  let selectParts: string[] = [];
+  if (groupByField) selectParts.push(groupByField);
+
+  if (state.advancedMode && state.queryAggregate) {
+    // Advanced mode: parse custom aggregation expressions
+    const aggParts = state.queryAggregate.split(',').map(a => a.trim());
+    for (const agg of aggParts) {
+      const segs = agg.split(':');
+      if (segs.length >= 2) {
+        const field = segs[0];
+        const func = segs[1];
+        const alias = segs[2] || `${field}__${func}`;
+        selectParts.push(`${func}(${field}) as ${alias}`);
+      }
+    }
+    const firstAgg = aggParts[0].split(':');
+    resultValueField = firstAgg[2] || `${firstAgg[0]}__${firstAgg[1]}`;
+  } else {
+    // Standard mode: use form aggregation
+    if (state.aggregation === 'count') {
+      selectParts.push('count(*) as count');
+      resultValueField = 'count';
+    } else {
+      const alias = `${valueFieldPath}__${state.aggregation}`;
+      selectParts.push(`${state.aggregation}(${valueFieldPath}) as ${alias}`);
+      resultValueField = alias;
+    }
+  }
+  attrs.push(`select="${escapeHtml(selectParts.join(', '))}"`);
+
+  // Where / filter
+  if (state.advancedMode && state.queryFilter) {
+    const odsql = filterToOdsql(state.queryFilter);
+    if (odsql) attrs.push(`where="${escapeHtml(odsql)}"`);
+  }
+
+  // Order by (ODSQL syntax: "field DESC")
+  if (state.sortOrder && state.sortOrder !== 'none') {
+    attrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
+  }
+
+  // No explicit limit: gouv-query api-type="opendatasoft" with limit=0
+  // (default) fetches ALL available records with automatic pagination
+  // (pages of 100, using total_count from API response to detect completion)
+
+  const queryElement = `
+  <!-- Requete ODS avec agregation serveur et pagination automatique -->
+  <gouv-query
+    id="query-data"
+    ${attrs.join('\n    ')}>
+  </gouv-query>`;
+
+  return {
+    queryElement,
+    chartSource: 'query-data',
+    labelField: groupByField,
+    valueField: resultValueField,
+  };
+}
+
+/**
  * Generate gouv-query HTML for dynamic mode.
  * Always generates a <gouv-query> to handle aggregation, sorting and filtering.
  * Returns { queryElement, chartSource, labelField, valueField }.
@@ -958,9 +1063,38 @@ export function generateDynamicCodeForApi(): void {
     return;
   }
 
-  // Generate gouv-query for aggregation, sorting, filtering
-  const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField } =
-    generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
+  // Detect ODS API source for server-side aggregation with pagination
+  const odsInfo = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
+
+  let queryElement: string;
+  let chartSource: string;
+  let queryLabelField: string;
+  let queryValueField: string;
+  let sourceElement: string;
+
+  if (odsInfo) {
+    // ODS source: use gouv-query with api-type="opendatasoft" for
+    // server-side aggregation and automatic pagination (limit > 100)
+    const result = generateOdsQueryCode(odsInfo, labelFieldPath, valueFieldPath);
+    queryElement = result.queryElement;
+    chartSource = result.chartSource;
+    queryLabelField = result.labelField;
+    queryValueField = result.valueField;
+    sourceElement = ''; // No gouv-source needed, gouv-query fetches directly
+  } else {
+    // Non-ODS source: use gouv-source + gouv-query (generic, client-side)
+    const result = generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
+    queryElement = result.queryElement;
+    chartSource = result.chartSource;
+    queryLabelField = result.labelField;
+    queryValueField = result.valueField;
+    sourceElement = `
+  <!-- Source de donnees API -->
+  <gouv-source
+    id="chart-data"
+    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
+  </gouv-source>`;
+  }
 
   // Map palette
   const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
@@ -987,13 +1121,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-
-  <!-- Source de donnees API -->
-  <gouv-source
-    id="chart-data"
-    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
-  </gouv-source>
-${queryElement}
+${sourceElement}${queryElement}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
     source="${chartSource}"

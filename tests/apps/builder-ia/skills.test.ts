@@ -39,11 +39,13 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 12 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(12);
+  it('should have 14 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(14);
   });
 
   it('should have expected skill IDs', () => {
+    expect(SKILLS).toHaveProperty('createChartAction');
+    expect(SKILLS).toHaveProperty('reloadDataAction');
     expect(SKILLS).toHaveProperty('gouvSource');
     expect(SKILLS).toHaveProperty('gouvQuery');
     expect(SKILLS).toHaveProperty('gouvKpi');
@@ -55,7 +57,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('odsApiVersions');
     expect(SKILLS).toHaveProperty('chartTypes');
     expect(SKILLS).toHaveProperty('dsfrColors');
-    expect(SKILLS).toHaveProperty('apiQuery');
+    expect(SKILLS).toHaveProperty('troubleshooting');
   });
 
   it('each skill should have required properties', () => {

@@ -466,6 +466,58 @@ describe('GouvQuery', () => {
       expect(secondCallUrl).toContain('offset=100');
       expect(secondCallUrl).toContain('limit=10');
     });
+
+    it('fetches all records when limit=0 (default), using total_count', async () => {
+      query.limit = 0; // No explicit limit = fetch all
+
+      // Page 1: 100 results, total_count=108
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i), value: i })),
+          total_count: 108
+        })
+      });
+      // Page 2: 8 results
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 8 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
+          total_count: 108
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(query.getData()).toHaveLength(108);
+      // Verify first page URL has limit=100 (not 200 or anything > 100)
+      const firstCallUrl = mockFetch.mock.calls[0][0] as string;
+      expect(firstCallUrl).toContain('limit=100');
+      expect(firstCallUrl).not.toContain('limit=200');
+    });
+
+    it('warns on incomplete pagination', async () => {
+      query.limit = 50;
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // API says 80 results exist but we only asked for 50
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 50 }, (_, i) => ({ dep: String(i), value: i })),
+          total_count: 80
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      // Should NOT warn: we got what we asked for (50), even though total_count is 80
+      expect(warnSpy).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
   });
 
   describe('Tabular API URL building', () => {

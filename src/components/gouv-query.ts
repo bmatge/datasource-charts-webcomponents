@@ -635,16 +635,21 @@ export class GouvQuery extends LitElement {
 
   /**
    * Fetch from ODS API with automatic pagination via offset.
-   * ODS APIs limit to 100 records per request. When the requested limit
-   * exceeds 100 (e.g. for department maps needing 102-108 records),
-   * this method fetches multiple pages and accumulates the results.
+   * ODS APIs limit to 100 records per request.
+   *
+   * - limit > 0: fetch exactly that many records (paginated in chunks of 100)
+   * - limit = 0 (default): fetch ALL available records using total_count
+   *
+   * After fetching, verifies that the number of results received matches
+   * total_count from the API response to detect incomplete data.
    */
   private async _fetchFromOdsWithPagination(): Promise<void> {
-    const requestedLimit = this.limit > 0 ? this.limit : ODS_PAGE_SIZE;
-    const pageSize = Math.min(requestedLimit, ODS_PAGE_SIZE);
+    const fetchAll = this.limit <= 0;
+    const requestedLimit = fetchAll ? ODS_MAX_PAGES * ODS_PAGE_SIZE : this.limit;
+    const pageSize = ODS_PAGE_SIZE;
     let allResults: unknown[] = [];
     let offset = 0;
-    let totalCount = Infinity;
+    let totalCount = -1;
 
     for (let page = 0; page < ODS_MAX_PAGES; page++) {
       const remaining = requestedLimit - allResults.length;
@@ -671,12 +676,23 @@ export class GouvQuery extends LitElement {
         totalCount = json.total_count;
       }
 
-      // Stop if we've fetched all available records or got fewer than requested
-      if (allResults.length >= totalCount || pageResults.length < pageSize) {
+      // Stop if we've fetched all available records or got fewer than page size
+      if (
+        (totalCount >= 0 && allResults.length >= totalCount) ||
+        pageResults.length < pageSize
+      ) {
         break;
       }
 
       offset += pageResults.length;
+    }
+
+    // Verify: warn if we received fewer results than total_count indicates
+    if (totalCount >= 0 && allResults.length < totalCount && allResults.length < requestedLimit) {
+      console.warn(
+        `gouv-query[${this.id}]: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
+        `(limite de securite: ${ODS_MAX_PAGES} pages de ${ODS_PAGE_SIZE})`
+      );
     }
 
     // Apply transform if specified

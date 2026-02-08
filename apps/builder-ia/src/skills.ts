@@ -1,5 +1,13 @@
 /**
  * AI Skills - knowledge modules injected into the prompt based on context
+ *
+ * Each skill is a self-contained knowledge block that can be consumed by:
+ * - The builder-IA chat (injected into the Albert API system prompt)
+ * - External AI tools via MCP server
+ *
+ * IMPORTANT: when adding/modifying an attribute, chart type, filter operator
+ * or aggregation function in a gouv-* component, update the corresponding skill.
+ * Tests in tests/apps/builder-ia/skills.test.ts verify alignment automatically.
  */
 
 import type { Source } from './state.js';
@@ -17,6 +25,156 @@ export interface Skill {
 export const SKILLS: Record<string, Skill> = {
 
   // ---------------------------------------------------------------------------
+  // Action builder-IA : createChart
+  // ---------------------------------------------------------------------------
+
+  createChartAction: {
+    id: 'createChartAction',
+    name: 'Action createChart',
+    description: "Specification de l'action JSON pour creer un graphique dans le builder-IA",
+    trigger: ['createchart', 'creer un graphique', 'apercu', 'preview'],
+    content: `## Action createChart (builder-IA uniquement)
+
+Cette action genere un graphique interactif dans l'apercu du builder-IA.
+Elle est distincte du code embarquable HTML (voir skills composants gouv-widgets).
+
+### Format
+\`\`\`json
+{
+  "action": "createChart",
+  "config": {
+    "type": "bar",
+    "labelField": "nom_region",
+    "valueField": "population",
+    "aggregation": "sum",
+    "where": "status:eq:active",
+    "limit": 10,
+    "sortOrder": "desc",
+    "title": "Titre du graphique",
+    "subtitle": "Sous-titre",
+    "color": "#000091",
+    "palette": "categorical"
+  }
+}
+\`\`\`
+
+### Proprietes de config
+| Propriete | Type | Requis | Description |
+|-----------|------|--------|-------------|
+| type | String | oui | Type de visualisation (voir ci-dessous) |
+| labelField | String | selon type | Champ pour les labels / axe X |
+| valueField | String | oui | Champ pour les valeurs / axe Y |
+| valueField2 | String | non | 2e serie (bar-line, comparaisons) |
+| codeField | String | non | Champ code departement/region (map, map-reg) |
+| aggregation | String | non | Fonction : sum, avg, count, min, max |
+| where | String | non | Filtre pre-agregation (voir syntaxe ci-dessous) |
+| limit | Number | non | Nombre max de resultats |
+| sortOrder | String | non | Tri : "asc" ou "desc" |
+| title | String | non | Titre affiche |
+| subtitle | String | non | Sous-titre affiche |
+| color | String | non | Couleur primaire hex (defaut: #000091) |
+| color2 | String | non | Couleur secondaire hex (bar-line) |
+| variant | String | non | Style KPI : info, success, warning, error |
+| unit | String | non | Unite affichee : EUR, %, ou texte libre |
+| palette | String | non | Palette DSFR pour les cartes |
+| colonnes | String | non | Colonnes datalist : "champ:Label, champ2:Label2" |
+| pagination | Number | non | Lignes par page (datalist) |
+
+### Types valides et champs requis
+| Type | labelField | valueField | Cas d'usage |
+|------|-----------|------------|-------------|
+| bar | oui | oui | Comparer des categories (5-15) |
+| line | oui | oui | Evolution temporelle, tendances |
+| pie | oui | oui | Parts d'un tout (max 5-7 segments) |
+| radar | oui | oui | Profils multicriteres |
+| scatter | oui | oui | Correlation entre 2 variables numeriques |
+| bar-line | oui | oui (+valueField2) | 2 metriques : barres + ligne |
+| gauge | non | oui | Progression 0-100% |
+| kpi | non | oui | Indicateur chiffre cle unique |
+| map | non (codeField) | oui | Donnees par departement francais |
+| map-reg | non (codeField) | oui | Donnees par region francaise |
+| datalist | non | non (colonnes) | Tableau de donnees filtrable |
+
+IMPORTANT :
+- \`doughnut\` = \`pie\` (le composant pie est un anneau par defaut)
+- \`horizontalBar\` = \`bar\` (le renderer le convertit automatiquement)
+- Pour KPI et gauge : PAS de labelField
+- Pour map/map-reg : utiliser codeField (pas labelField)
+
+### Syntaxe du filtre (config.where)
+Format : \`"champ:operateur:valeur"\`
+Multiples filtres : virgule = ET logique \`"champ1:op:val, champ2:op:val"\`
+Operateurs : eq, neq, gt, gte, lt, lte, contains, in (separateur |)
+Le filtre s'applique AVANT l'agregation. Utiliser les noms de champs bruts de la source.
+
+### Exemples
+\`\`\`json
+{"action":"createChart","config":{"type":"kpi","valueField":"prix","aggregation":"avg","where":"code_departement:eq:48","title":"Prix moyen dept 48","unit":"EUR"}}
+\`\`\`
+\`\`\`json
+{"action":"createChart","config":{"type":"bar","labelField":"region","valueField":"population","aggregation":"sum","limit":5,"sortOrder":"desc","title":"Top 5 regions"}}
+\`\`\`
+\`\`\`json
+{"action":"createChart","config":{"type":"map","codeField":"code_dept","valueField":"score","palette":"sequentialAscending","title":"Score par departement"}}
+\`\`\`
+\`\`\`json
+{"action":"createChart","config":{"type":"datalist","colonnes":"nom:Nom, email:Email, ville:Ville","pagination":20,"title":"Liste des contacts"}}
+\`\`\`
+
+Genere TOUJOURS UN SEUL bloc JSON par reponse.`,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Action builder-IA : reloadData
+  // ---------------------------------------------------------------------------
+
+  reloadDataAction: {
+    id: 'reloadDataAction',
+    name: 'Action reloadData',
+    description: "Recharger les donnees de la source avec des parametres ODSQL",
+    trigger: ['recharger', 'reloaddata', 'nouveaux parametres', 'refiltrer'],
+    content: `## Action reloadData (builder-IA uniquement)
+
+Recharge les donnees depuis l'API source avec de nouveaux parametres ODSQL.
+Utile quand l'utilisateur veut modifier le jeu de donnees avant de creer un graphique.
+
+### Format
+\`\`\`json
+{
+  "action": "reloadData",
+  "query": {
+    "where": "condition ODSQL",
+    "select": "champs a selectionner",
+    "group_by": "champ de groupement",
+    "order_by": "champ ASC|DESC",
+    "limit": 100
+  },
+  "reason": "Explication pour l'utilisateur"
+}
+\`\`\`
+
+### Proprietes de query
+| Propriete | Type | Description |
+|-----------|------|-------------|
+| select | String | Champs a retourner, avec aliases : \`"region, avg(prix) as prix_moyen"\` |
+| where | String | Filtre ODSQL : \`"population > 10000"\` ou \`"nom like 'Paris%'"\` |
+| group_by | String | Groupement : \`"region"\` |
+| order_by | String | Tri : \`"population DESC"\` |
+| limit | Number | Nombre max de resultats (defaut API : 10, max : 100 par requete) |
+
+### Exemples
+\`\`\`json
+{"action":"reloadData","query":{"order_by":"valeur DESC","limit":10},"reason":"Top 10 par valeur"}
+\`\`\`
+\`\`\`json
+{"action":"reloadData","query":{"where":"prix > 50","select":"region, avg(prix) as prix_moyen","group_by":"region"},"reason":"Prix moyen par region (> 50)"}
+\`\`\`
+
+IMPORTANT : la syntaxe \`query\` est de l'ODSQL (operateurs SQL), a ne pas confondre
+avec la syntaxe \`config.where\` de createChart qui utilise le format "champ:operateur:valeur".`,
+  },
+
+  // ---------------------------------------------------------------------------
   // Composants gouv-widgets
   // ---------------------------------------------------------------------------
 
@@ -27,38 +185,57 @@ export const SKILLS: Record<string, Skill> = {
     trigger: ['source', 'charger', 'connecter', 'rafraichir', 'url', 'api', 'donnees'],
     content: `## <gouv-source> - Connexion aux donnees
 
-Composant invisible qui recupere des donnees depuis une API REST et les distribue aux autres composants.
+Composant invisible qui recupere des donnees depuis une API REST et les distribue
+aux autres composants via un systeme de bus evenementiel (data-bridge).
+
+### Format des donnees
+gouv-source attend une reponse JSON. L'attribut \`transform\` permet d'extraire le
+tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets plats :
+\`[{"region": "IDF", "population": 12000000}, {"region": "OCC", "population": 6000000}]\`
 
 ### Attributs
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | String | Identifiant unique (requis). Les autres composants s'y abonnent. |
-| url | String | URL de l'API (GET par defaut) |
-| method | String | Methode HTTP : GET ou POST |
-| headers | String | En-tetes HTTP en JSON : \`{"Authorization": "Bearer xxx"}\` |
-| params | String | Parametres query ou body POST en JSON |
-| transform | String | Chemin JSONPath pour extraire les donnees : \`"data.items"\` ou \`"results"\` |
-| refresh | Number | Rafraichissement auto en secondes (0 = desactive) |
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| id | String | - | oui | Identifiant unique. Les autres composants s'y abonnent via \`source="cet-id"\`. |
+| url | String | \`""\` | oui | URL de l'API (GET par defaut) |
+| method | String | \`"GET"\` | non | Methode HTTP : GET ou POST |
+| headers | String | \`""\` | non | En-tetes HTTP en JSON : \`'{"Authorization": "Bearer xxx"}'\` |
+| params | String | \`""\` | non | Parametres query (GET) ou body (POST) en JSON |
+| transform | String | \`""\` | non | Chemin JSONPath vers les donnees : \`"results"\`, \`"data.items"\`, \`"records"\` |
+| refresh | Number | \`0\` | non | Rafraichissement auto en secondes (0 = desactive) |
 
 ### Evenements emis
-- \`gouv-data-loaded\` : donnees chargees
+- \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)
 - \`gouv-data-loading\` : chargement en cours
-- \`gouv-data-error\` : erreur
+- \`gouv-data-error\` : erreur (detail : objet Error)
 
 ### Methodes publiques
-- \`reload()\` : force le rechargement
-- \`getData()\` : retourne les donnees actuelles
+- \`reload()\` : force le rechargement des donnees
+- \`getData()\` : retourne les donnees actuelles (tableau d'objets)
 
 ### Exemples
 \`\`\`html
-<!-- API OpenDataSoft -->
-<gouv-source id="prix" url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/mon-dataset/records" transform="results"></gouv-source>
+<!-- API OpenDataSoft v2.1 -->
+<gouv-source id="prix"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/mon-dataset/records"
+  transform="results">
+</gouv-source>
 
-<!-- API avec authentification et refresh -->
-<gouv-source id="api-privee" url="https://mon-api.gouv.fr/data" method="POST" headers='{"Authorization": "Bearer TOKEN"}' params='{"limit": 100}' transform="data.items" refresh="60"></gouv-source>
+<!-- API avec authentification et refresh toutes les 60s -->
+<gouv-source id="api-privee"
+  url="https://mon-api.gouv.fr/data"
+  method="POST"
+  headers='{"Authorization": "Bearer TOKEN"}'
+  params='{"limit": 100}'
+  transform="data.items"
+  refresh="60">
+</gouv-source>
 
 <!-- API Tabular data.gouv.fr -->
-<gouv-source id="communes" url="https://tabular-api.data.gouv.fr/api/resources/RESOURCE_ID/data/?page_size=50" transform="data"></gouv-source>
+<gouv-source id="communes"
+  url="https://tabular-api.data.gouv.fr/api/resources/RESOURCE_ID/data/?page_size=50"
+  transform="data">
+</gouv-source>
 \`\`\``,
   },
 
@@ -71,62 +248,112 @@ Composant invisible qui recupere des donnees depuis une API REST et les distribu
 
 Composant invisible intermediaire entre <gouv-source> et les visualisations.
 Filtre, groupe, agrege et trie les donnees de facon declarative.
+Peut s'enchainer : un gouv-query peut etre la source d'un autre gouv-query.
+
+### Format des donnees
+Entree : tableau d'objets plats (fourni par gouv-source ou un autre gouv-query).
+Sortie : tableau d'objets plats, transforme selon les attributs.
+Apres agregation, les champs sont nommes automatiquement : \`champ__fonction\`
+(ex: \`population__sum\`, \`prix__avg\`).
 
 ### 3 modes (attribut api-type)
-- **generic** (defaut) : traitement client-side des donnees d'une gouv-source existante
-- **opendatasoft** : requete serveur vers API OpenDataSoft (ODSQL)
-- **tabular** : requete serveur vers API Tabular data.gouv.fr
+| Mode | Description | Source des donnees |
+|------|-------------|-------------------|
+| generic (defaut) | Traitement client-side | Attribut \`source\` -> ID d'une gouv-source ou gouv-query |
+| opendatasoft | Requete serveur ODSQL | Attributs \`base-url\` + \`dataset-id\` |
+| tabular | Requete serveur Tabular API | Attributs \`base-url\` + \`resource\` |
 
 ### Attributs
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | String | Identifiant unique (requis) |
-| api-type | String | Mode : generic (defaut), opendatasoft, tabular |
-| source | String | ID de la gouv-source (mode generic) |
-| base-url | String | URL de base API (opendatasoft/tabular) |
-| dataset-id | String | ID du dataset (opendatasoft/tabular) |
-| resource | String | ID ressource (tabular uniquement) |
-| select | String | Clause SELECT ODSQL (opendatasoft) |
-| where | String | Filtres (voir operateurs ci-dessous) |
-| filter | String | Alias pour where |
-| group-by | String | Champs de groupement (virgule) |
-| aggregate | String | Agregations : \`"champ:fonction"\` |
-| order-by | String | Tri : \`"champ:direction"\` |
-| limit | Number | Limite de resultats (0 = illimite) |
-| transform | String | Chemin JSONPath dans la reponse API |
-| refresh | Number | Rafraichissement en secondes |
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| id | String | - | oui | Identifiant unique |
+| api-type | String | \`"generic"\` | non | Mode : generic, opendatasoft, tabular |
+| source | String | \`""\` | mode generic | ID de la gouv-source ou gouv-query parente |
+| base-url | String | \`""\` | mode ods/tabular | URL de base de l'API |
+| dataset-id | String | \`""\` | mode ods | Identifiant du dataset OpenDataSoft |
+| resource | String | \`""\` | mode tabular | Identifiant de la ressource Tabular |
+| select | String | \`""\` | non | Clause SELECT ODSQL (mode opendatasoft) |
+| where | String | \`""\` | non | Filtres (voir syntaxe ci-dessous) |
+| filter | String | \`""\` | non | Alias de where (compatibilite) |
+| group-by | String | \`""\` | non | Champs de groupement (separes par virgule) |
+| aggregate | String | \`""\` | non | Agregations : \`"champ:fonction"\` ou \`"champ:fonction:alias"\` |
+| order-by | String | \`""\` | non | Tri : \`"champ:asc"\` ou \`"champ:desc"\` |
+| limit | Number | \`0\` | non | Limite de resultats (0 = illimite) |
+| transform | String | \`""\` | non | Chemin JSONPath dans la reponse API |
+| refresh | Number | \`0\` | non | Rafraichissement en secondes (0 = desactive) |
 
 ### Operateurs de filtre (mode generic/tabular)
 Format : \`"champ:operateur:valeur"\`
-- eq, neq, gt, gte, lt, lte
-- contains, notcontains (insensible a la casse)
-- in, notin (separateur |) : \`"region:in:IDF|OCC|BRE"\`
-- isnull, isnotnull
-
-Filtres multiples separes par virgule (logique ET) :
+Multiples filtres separes par virgule (logique ET) :
 \`where="population:gte:10000, region:in:IDF|OCC"\`
+
+| Operateur | Description | Exemple |
+|-----------|-------------|---------|
+| eq | Egal | \`"status:eq:active"\` |
+| neq | Different | \`"type:neq:brouillon"\` |
+| gt | Strictement superieur | \`"prix:gt:100"\` |
+| gte | Superieur ou egal | \`"population:gte:10000"\` |
+| lt | Strictement inferieur | \`"score:lt:50"\` |
+| lte | Inferieur ou egal | \`"age:lte:30"\` |
+| contains | Contient (insensible a la casse) | \`"nom:contains:paris"\` |
+| notcontains | Ne contient pas | \`"email:notcontains:spam"\` |
+| in | Dans la liste (separateur \\|) | \`"region:in:IDF\\|OCC\\|BRE"\` |
+| notin | Pas dans la liste | \`"status:notin:archive\\|supprime"\` |
+| isnull | Est vide/null | \`"email:isnull"\` |
+| isnotnull | N'est pas vide | \`"telephone:isnotnull"\` |
 
 ### Fonctions d'agregation
 Format : \`"champ:fonction"\` ou \`"champ:fonction:alias"\`
-Fonctions : count, sum, avg, min, max
-Nommage auto : \`champ__fonction\` (ex: population__sum)
+Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
+
+| Fonction | Description | Exemple |
+|----------|-------------|---------|
+| count | Nombre d'elements | \`"id:count"\` |
+| sum | Somme | \`"montant:sum"\` |
+| avg | Moyenne | \`"prix:avg"\` |
+| min | Minimum | \`"temperature:min"\` |
+| max | Maximum | \`"score:max"\` |
 
 ### Exemples
 \`\`\`html
-<!-- Filtrer et trier -->
-<gouv-query id="filtered" source="raw-data" where="population:gt:5000" order-by="nom:asc" limit="10"></gouv-query>
+<!-- Mode generic : filtrer et trier -->
+<gouv-query id="filtered" source="raw-data"
+  where="population:gt:5000"
+  order-by="nom:asc"
+  limit="10">
+</gouv-query>
 
-<!-- Grouper et agreger -->
-<gouv-query id="stats" source="communes" group-by="region" aggregate="population:sum, population:count" order-by="population__sum:desc" limit="10"></gouv-query>
+<!-- Mode generic : grouper et agreger -->
+<gouv-query id="stats" source="communes"
+  group-by="region"
+  aggregate="population:sum, population:count"
+  order-by="population__sum:desc"
+  limit="10">
+</gouv-query>
 
-<!-- Requete OpenDataSoft serveur -->
-<gouv-query id="ods" api-type="opendatasoft" dataset-id="mon-dataset" base-url="https://data.opendatasoft.com" select="sum(population) as total, region" where="population > 5000" group-by="region" order-by="total:desc" limit="15"></gouv-query>
+<!-- Mode opendatasoft : requete serveur ODSQL -->
+<gouv-query id="ods" api-type="opendatasoft"
+  dataset-id="mon-dataset"
+  base-url="https://data.opendatasoft.com"
+  select="sum(population) as total, region"
+  where="population > 5000"
+  group-by="region"
+  order-by="total:desc"
+  limit="15">
+</gouv-query>
 
-<!-- Requete Tabular API -->
-<gouv-query id="tab" api-type="tabular" resource="RESOURCE_ID" group-by="departement" aggregate="population:sum" order-by="population__sum:desc"></gouv-query>
-\`\`\`
+<!-- Mode tabular : requete serveur data.gouv.fr -->
+<gouv-query id="tab" api-type="tabular"
+  resource="RESOURCE_ID"
+  group-by="departement"
+  aggregate="population:sum"
+  order-by="population__sum:desc">
+</gouv-query>
 
-Un gouv-query peut etre la source d'un autre gouv-query (chainabilite).`,
+<!-- Chainabilite : un query comme source d'un autre -->
+<gouv-query id="actifs" source="raw" where="status:eq:active"></gouv-query>
+<gouv-query id="top5" source="actifs" group-by="region" aggregate="montant:sum" order-by="montant__sum:desc" limit="5"></gouv-query>
+\`\`\``,
   },
 
   gouvKpi: {
@@ -137,38 +364,71 @@ Un gouv-query peut etre la source d'un autre gouv-query (chainabilite).`,
     content: `## <gouv-kpi> - Indicateur chiffre cle
 
 Affiche une valeur numerique mise en avant avec formatage, couleur conditionnelle, icone et tendance.
+Se connecte a une gouv-source ou gouv-query via l'attribut \`source\`.
+
+### Format des donnees
+Attend un tableau d'objets. L'attribut \`valeur\` determine comment extraire/agreger la donnee :
+- Valeur directe d'un champ : \`valeur="score"\` (prend le 1er enregistrement)
+- Agregation sur tout le tableau : \`valeur="avg:score"\`, \`valeur="sum:montant"\`
 
 ### Attributs
-| Attribut | Type | Description |
-|----------|------|-------------|
-| source | String | ID de la gouv-source ou gouv-query |
-| valeur | String | Expression : \`"champ"\`, \`"avg:champ"\`, \`"sum:champ"\`, \`"min:champ"\`, \`"max:champ"\`, \`"count:champ:valeur"\` |
-| label | String | Libelle sous la valeur |
-| description | String | Description pour accessibilite |
-| icone | String | Classe Remix Icon : \`ri-global-line\`, \`ri-money-euro-circle-line\`, etc. |
-| format | String | nombre (defaut), pourcentage, euro, decimal |
-| tendance | String | Expression de tendance (ex: \`"+3.2"\`) |
-| couleur | String | Forcer : vert, orange, rouge, bleu |
-| seuil-vert | Number | Seuil au-dessus duquel couleur = vert |
-| seuil-orange | Number | Seuil au-dessus duquel couleur = orange (en-dessous = rouge) |
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la gouv-source ou gouv-query |
+| valeur | String | \`""\` | oui | Expression : \`"champ"\`, \`"avg:champ"\`, \`"sum:champ"\`, \`"min:champ"\`, \`"max:champ"\`, \`"count:champ:valeur"\` |
+| label | String | \`""\` | non | Libelle sous la valeur |
+| description | String | \`""\` | non | Description pour accessibilite (sr-only) |
+| icone | String | \`""\` | non | Classe Remix Icon : \`ri-global-line\`, \`ri-money-euro-circle-line\`, etc. |
+| format | String | \`"nombre"\` | non | Format : nombre, pourcentage, euro, decimal |
+| tendance | String | \`""\` | non | Expression de tendance : valeur fixe (\`"+3.2"\`) ou agregation |
+| couleur | String | \`""\` | non | Forcer la couleur : vert, orange, rouge, bleu |
+| seuil-vert | Number | - | non | Seuil au-dessus duquel couleur = vert |
+| seuil-orange | Number | - | non | Seuil au-dessus duquel couleur = orange (en-dessous = rouge) |
+
+### Logique des couleurs
+1. Si \`couleur\` est defini : applique cette couleur directement
+2. Si \`seuil-vert\` et \`seuil-orange\` sont definis : couleur automatique selon la valeur
+   - valeur >= seuil-vert -> vert (success)
+   - valeur >= seuil-orange -> orange (warning)
+   - valeur < seuil-orange -> rouge (error)
+3. Sinon : bleu par defaut (info)
 
 ### Expressions d'agregation (attribut valeur)
-- \`"score_rgaa"\` : valeur directe du champ
-- \`"avg:score"\` : moyenne
-- \`"sum:montant"\` : somme
-- \`"count:status:active"\` : compte les items ou status = "active"
-- \`"min:prix"\`, \`"max:prix"\` : extremes
+| Expression | Description | Exemple |
+|-----------|-------------|---------|
+| \`"champ"\` | Valeur directe du 1er enregistrement | \`valeur="score_rgaa"\` |
+| \`"avg:champ"\` | Moyenne de tous les enregistrements | \`valeur="avg:score"\` |
+| \`"sum:champ"\` | Somme | \`valeur="sum:montant"\` |
+| \`"min:champ"\` | Minimum | \`valeur="min:prix"\` |
+| \`"max:champ"\` | Maximum | \`valeur="max:prix"\` |
+| \`"count:champ:valeur"\` | Nombre d'items ou champ = valeur | \`valeur="count:status:active"\` |
 
 ### Exemples
 \`\`\`html
-<!-- KPI simple -->
-<gouv-kpi source="stats" valeur="sum:montant" label="CA total" format="euro" icone="ri-money-euro-circle-line"></gouv-kpi>
+<!-- KPI simple avec somme et unite -->
+<gouv-kpi source="stats"
+  valeur="sum:montant"
+  label="CA total"
+  format="euro"
+  icone="ri-money-euro-circle-line">
+</gouv-kpi>
 
 <!-- KPI avec seuils de couleur automatiques -->
-<gouv-kpi source="audit" valeur="avg:score_rgaa" label="Score RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+<gouv-kpi source="audit"
+  valeur="avg:score_rgaa"
+  label="Score RGAA moyen"
+  format="pourcentage"
+  seuil-vert="80"
+  seuil-orange="50">
+</gouv-kpi>
 
 <!-- KPI avec couleur forcee et tendance -->
-<gouv-kpi source="data" valeur="count:status:active" label="Sites actifs" couleur="bleu" tendance="+12"></gouv-kpi>
+<gouv-kpi source="data"
+  valeur="count:status:active"
+  label="Sites actifs"
+  couleur="bleu"
+  tendance="+12">
+</gouv-kpi>
 \`\`\``,
   },
 
@@ -180,62 +440,109 @@ Affiche une valeur numerique mise en avant avec formatage, couleur conditionnell
     content: `## <gouv-dsfr-chart> - Graphiques DSFR
 
 Wrapper connectant les composants DSFR Chart officiels au systeme gouv-source/gouv-query.
+Se connecte a une source via l'attribut \`source\`. Genere automatiquement le format
+JSON imbrique attendu par les composants DSFR Chart natifs.
+
+### Format des donnees
+Attend un tableau d'objets plats depuis la source :
+\`[{"region": "IDF", "population": 12000000}, {"region": "OCC", "population": 6000000}]\`
+
+Les champs \`label-field\` et \`value-field\` indiquent quels champs utiliser pour
+les labels (axe X) et les valeurs (axe Y). Le composant transforme automatiquement
+ce tableau en format DSFR Chart (tableaux imbriques x/y).
 
 ### Types supportes
-line, bar, pie, radar, scatter, gauge, bar-line, map, map-reg
+| Type | Composant DSFR | Description |
+|------|---------------|-------------|
+| bar | bar-chart | Barres verticales (ou horizontales avec \`horizontal\`) |
+| line | line-chart | Courbes / lignes |
+| pie | pie-chart | Anneau (defaut) ou camembert plein (avec \`fill\`) |
+| radar | radar-chart | Diagramme radar |
+| scatter | scatter-chart | Nuage de points |
+| gauge | gauge-chart | Jauge circulaire 0-100% |
+| bar-line | bar-chart + line-chart | Combine barres et ligne (2 series) |
+| map | map-chart | Carte par departement francais |
+| map-reg | map-chart-reg | Carte par region francaise |
 
 ### Attributs
-| Attribut | Type | Description |
-|----------|------|-------------|
-| source | String | ID de la source ou query |
-| type | String | Type de graphique (voir ci-dessus) |
-| label-field | String | Chemin vers les labels dans les donnees |
-| value-field | String | Chemin vers les valeurs |
-| value-field-2 | String | 2e serie de valeurs (bar-line uniquement) |
-| name | String | Noms des series JSON : \`'["Serie 1","Serie 2"]'\` |
-| selected-palette | String | Palette de couleurs (voir ci-dessous) |
-| unit-tooltip | String | Unite dans les tooltips (%, euro, etc.) |
-| unit-tooltip-bar | String | Unite des barres (bar-line) |
-| horizontal | Boolean | Barres horizontales (type bar) |
-| stacked | Boolean | Barres empilees (type bar) |
-| fill | Boolean | true=camembert plein, false=anneau (type pie) |
-| highlight-index | String | Indices a mettre en avant : \`"[0, 2]"\` |
-| x-min / x-max | String | Limites axe X |
-| y-min / y-max | String | Limites axe Y |
-| gauge-value | Number | Valeur pour jauge (0-100) |
-| code-field | String | Champ code departement/region (map/map-reg, prioritaire sur label-field) |
-| map-highlight | String | Departements a surligner |
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la source ou query |
+| type | String | \`"bar"\` | oui | Type de graphique (voir tableau ci-dessus) |
+| label-field | String | \`""\` | selon type | Chemin vers les labels dans les donnees |
+| value-field | String | \`""\` | oui (sauf gauge) | Chemin vers les valeurs |
+| value-field-2 | String | \`""\` | non | 2e serie de valeurs (bar-line) |
+| name | String | \`""\` | non | Noms des series en JSON : \`'["Serie 1","Serie 2"]'\` |
+| selected-palette | String | \`"categorical"\` | non | Palette : categorical, sequentialAscending, sequentialDescending, divergentAscending, divergentDescending, neutral, default |
+| unit-tooltip | String | \`""\` | non | Unite dans les info-bulles : %, EUR, etc. |
+| unit-tooltip-bar | String | \`""\` | non | Unite des barres dans un bar-line |
+| horizontal | Boolean | \`false\` | non | Barres horizontales (type bar uniquement) |
+| stacked | Boolean | \`false\` | non | Barres empilees (type bar uniquement) |
+| fill | Boolean | \`false\` | non | Camembert plein au lieu d'anneau (type pie) |
+| highlight-index | String | \`""\` | non | Indices a mettre en avant : \`"[0, 2]"\` |
+| x-min | String | \`""\` | non | Limite min axe X |
+| x-max | String | \`""\` | non | Limite max axe X |
+| y-min | String | \`""\` | non | Limite min axe Y |
+| y-max | String | \`""\` | non | Limite max axe Y |
+| gauge-value | Number | \`null\` | type gauge | Valeur de la jauge (0-100) |
+| code-field | String | \`""\` | type map/map-reg | Champ contenant le code departement ou region (prioritaire sur label-field) |
+| map-highlight | String | \`""\` | non | Departements/regions a surligner |
 
-### Palettes DSFR Chart
-- **categorical** (defaut) : couleurs distinctes pour comparer des groupes
-- **sequentialAscending** : gradient clair -> fonce (cartes, classements)
-- **sequentialDescending** : gradient fonce -> clair
-- **divergentAscending** / **divergentDescending** : echelles divergentes
-- **neutral** : neutre avec mise en avant possible
-- **default** : bleu France seul
+### Attributs par type de graphique
+| Type | Attributs essentiels | Attributs optionnels |
+|------|---------------------|---------------------|
+| bar | source, type, label-field, value-field | horizontal, stacked, highlight-index, selected-palette |
+| line | source, type, label-field, value-field | x-min, x-max, y-min, y-max, value-field-2 |
+| pie | source, type, label-field, value-field | fill (false=anneau, true=camembert plein) |
+| radar | source, type, label-field, value-field | value-field-2, name |
+| scatter | source, type, label-field, value-field | x-min, x-max, y-min, y-max |
+| gauge | source, type, gauge-value | - |
+| bar-line | source, type, label-field, value-field, value-field-2 | name, unit-tooltip, unit-tooltip-bar |
+| map | source, type, code-field, value-field | selected-palette, map-highlight |
+| map-reg | source, type, code-field, value-field | selected-palette, map-highlight |
 
 ### Exemples
 \`\`\`html
 <!-- Barres verticales -->
-<gouv-dsfr-chart source="stats" type="bar" label-field="region" value-field="population" selected-palette="categorical"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="stats" type="bar"
+  label-field="region" value-field="population"
+  selected-palette="categorical">
+</gouv-dsfr-chart>
 
 <!-- Barres horizontales empilees -->
-<gouv-dsfr-chart source="data" type="bar" label-field="categorie" value-field="valeur" horizontal stacked></gouv-dsfr-chart>
+<gouv-dsfr-chart source="data" type="bar"
+  label-field="categorie" value-field="valeur"
+  horizontal stacked>
+</gouv-dsfr-chart>
 
 <!-- Combine barres + ligne -->
-<gouv-dsfr-chart source="data" type="bar-line" label-field="mois" value-field="ca" value-field-2="objectif" name='["CA","Objectif"]' unit-tooltip="EUR" unit-tooltip-bar="EUR"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="data" type="bar-line"
+  label-field="mois" value-field="ca" value-field-2="objectif"
+  name='["CA","Objectif"]'
+  unit-tooltip="EUR" unit-tooltip-bar="EUR">
+</gouv-dsfr-chart>
 
-<!-- Camembert (donut) -->
-<gouv-dsfr-chart source="repartition" type="pie" label-field="categorie" value-field="montant" unit-tooltip="%"></gouv-dsfr-chart>
+<!-- Anneau (defaut de pie) -->
+<gouv-dsfr-chart source="repartition" type="pie"
+  label-field="categorie" value-field="montant"
+  unit-tooltip="%">
+</gouv-dsfr-chart>
 
 <!-- Camembert plein -->
-<gouv-dsfr-chart source="repartition" type="pie" label-field="categorie" value-field="montant" fill></gouv-dsfr-chart>
+<gouv-dsfr-chart source="repartition" type="pie"
+  label-field="categorie" value-field="montant" fill>
+</gouv-dsfr-chart>
 
 <!-- Carte par departement -->
-<gouv-dsfr-chart source="dept-data" type="map" code-field="code_dept" value-field="valeur" selected-palette="sequentialAscending"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="dept-data" type="map"
+  code-field="code_dept" value-field="valeur"
+  selected-palette="sequentialAscending">
+</gouv-dsfr-chart>
 
 <!-- Carte par region -->
-<gouv-dsfr-chart source="reg-data" type="map-reg" code-field="code_reg" value-field="valeur"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="reg-data" type="map-reg"
+  code-field="code_reg" value-field="valeur">
+</gouv-dsfr-chart>
 
 <!-- Jauge -->
 <gouv-dsfr-chart type="gauge" gauge-value="73"></gouv-dsfr-chart>
@@ -250,25 +557,40 @@ line, bar, pie, radar, scatter, gauge, bar-line, map, map-reg
     content: `## <gouv-datalist> - Tableau de donnees
 
 Affiche un tableau DSFR filtrable, triable, paginable avec export CSV.
+Se connecte a une gouv-source ou gouv-query via l'attribut \`source\`.
+
+### Format des donnees
+Attend un tableau d'objets plats. Les colonnes sont definies par l'attribut \`colonnes\`
+au format \`"cle_json:Label affiche, cle2:Label2"\`. Si \`colonnes\` est omis, toutes
+les cles du premier objet sont utilisees comme colonnes.
 
 ### Attributs
-| Attribut | Type | Description |
-|----------|------|-------------|
-| source | String | ID de la source ou query |
-| colonnes | String | Definition des colonnes : \`"key:Label, key2:Label2"\` |
-| recherche | Boolean | Afficher la barre de recherche |
-| filtres | String | Colonnes filtrables (dropdown) : \`"col1,col2"\` |
-| tri | String | Tri par defaut : \`"col:asc"\` ou \`"col:desc"\` |
-| pagination | Number | Lignes par page (0 = tout afficher) |
-| export | String | Formats d'export : \`"csv"\` |
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la source ou query |
+| colonnes | String | \`""\` | non | Definition des colonnes : \`"key:Label, key2:Label2"\` |
+| recherche | Boolean | \`false\` | non | Afficher la barre de recherche full-text |
+| filtres | String | \`""\` | non | Colonnes filtrables (dropdown) : \`"col1,col2"\` |
+| tri | String | \`""\` | non | Tri par defaut : \`"col:asc"\` ou \`"col:desc"\` |
+| pagination | Number | \`0\` | non | Lignes par page (0 = tout afficher sans pagination) |
+| export | String | \`""\` | non | Formats d'export disponibles : \`"csv"\` |
 
 ### Exemples
 \`\`\`html
 <!-- Tableau simple -->
-<gouv-datalist source="data" colonnes="nom:Nom, email:Email, ville:Ville"></gouv-datalist>
+<gouv-datalist source="data"
+  colonnes="nom:Nom, email:Email, ville:Ville">
+</gouv-datalist>
 
-<!-- Tableau complet -->
-<gouv-datalist source="sites" colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:Score RGAA" recherche filtres="ministere" tri="score_rgaa:desc" pagination="20" export="csv"></gouv-datalist>
+<!-- Tableau complet avec toutes les fonctionnalites -->
+<gouv-datalist source="sites"
+  colonnes="nom:Nom du site, ministere:Ministere, score_rgaa:Score RGAA"
+  recherche
+  filtres="ministere"
+  tri="score_rgaa:desc"
+  pagination="20"
+  export="csv">
+</gouv-datalist>
 \`\`\``,
   },
 
@@ -283,7 +605,11 @@ Affiche un tableau DSFR filtrable, triable, paginable avec export CSV.
     trigger: ['dsfr', 'natif', 'officiel', 'accessibilite', 'rgaa', 'bar-chart', 'line-chart', 'pie-chart', 'map-chart', 'gauge-chart'],
     content: `## Composants DSFR Chart natifs
 
-Les composants DSFR Chart acceptent des donnees au format JSON stringifie (tableaux imbriques).
+Les composants DSFR Chart sont des Web Components Vue utilises en interne par gouv-dsfr-chart.
+En usage direct (sans gouv-dsfr-chart), ils acceptent des donnees au format JSON stringifie.
+
+NOTE : preferer gouv-dsfr-chart qui gere automatiquement le format de donnees.
+N'utiliser les composants natifs que pour des cas avances.
 
 ### Format des donnees
 \`\`\`html
@@ -319,7 +645,7 @@ name='["Serie A","Serie B"]'
 
 ### <map-chart> (carte par departement)
 - data='{"75": 95, "69": 78, "2A": 60}' : JSON code_dept -> valeur
-- Codes valides : 01-95, 2A, 2B, 971-976
+- Codes departements valides : 01-95, 2A, 2B, 971-976
 - name : nom de l'indicateur
 - value-nat : valeur nationale de reference
 - selected-palette : palette de couleurs
@@ -344,13 +670,37 @@ name='["Serie A","Serie B"]'
     trigger: ['dashboard', 'tableau de bord', 'assembler', 'combiner', 'pipeline', 'plusieurs', 'ensemble', 'complet', 'page', 'embarquer', 'integrer'],
     content: `## Patterns de composition gouv-widgets
 
+### Architecture : composants freres lies par ID
+Les composants gouv-widgets sont des elements HTML freres (pas imbriques).
+Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
+\`\`\`
+<gouv-source id="X">   --dispatch-->   <gouv-query source="X">   --dispatch-->   <gouv-dsfr-chart source="...">
+\`\`\`
+
 ### Pipeline standard : Source -> Query -> Visualisation
 \`\`\`html
-<gouv-source id="data" url="https://api.exemple.fr/records" transform="results"></gouv-source>
+<gouv-source id="data"
+  url="https://api.exemple.fr/records"
+  transform="results">
+</gouv-source>
 
-<gouv-query id="top10" source="data" group-by="region" aggregate="population:sum" order-by="population__sum:desc" limit="10"></gouv-query>
+<gouv-query id="top10" source="data"
+  group-by="region"
+  aggregate="population:sum"
+  order-by="population__sum:desc"
+  limit="10">
+</gouv-query>
 
-<gouv-dsfr-chart source="top10" type="bar" label-field="region" value-field="population__sum" selected-palette="categorical"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="top10" type="bar"
+  label-field="region" value-field="population__sum"
+  selected-palette="categorical">
+</gouv-dsfr-chart>
+\`\`\`
+
+### Pipeline simplifie : Source -> Visualisation (sans transformation)
+\`\`\`html
+<gouv-source id="data" url="https://api.fr/records" transform="results"></gouv-source>
+<gouv-dsfr-chart source="data" type="line" label-field="date" value-field="valeur"></gouv-dsfr-chart>
 \`\`\`
 
 ### Multi-consommation : 1 source -> N visualisations
@@ -378,16 +728,40 @@ name='["Serie A","Serie B"]'
 
 ### Dependances CDN requises
 \`\`\`html
+<!-- CSS DSFR (obligatoire) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- DSFR Chart (obligatoire pour les graphiques) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+
+<!-- gouv-widgets (obligatoire) -->
 <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
+\`\`\`
+
+### Template HTML minimal complet
+\`\`\`html
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+  <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
+</head>
+<body>
+  <gouv-source id="data" url="VOTRE_URL_API" transform="results"></gouv-source>
+  <gouv-dsfr-chart source="data" type="bar" label-field="CHAMP_LABEL" value-field="CHAMP_VALEUR"></gouv-dsfr-chart>
+</body>
+</html>
 \`\`\``,
   },
 
   // ---------------------------------------------------------------------------
-  // Skills existants (mis a jour)
+  // ODSQL et APIs
   // ---------------------------------------------------------------------------
 
   odsql: {
@@ -397,32 +771,46 @@ name='["Serie A","Serie B"]'
     trigger: ['odsql', 'opendatasoft'],
     content: `## ODSQL - OpenDataSoft Query Language
 
-### Parametres de requete
-- **select**: Champs a retourner. Ex: \`select=nom,population\` ou avec alias \`select=avg(prix) as prix_moyen\`
-- **where**: Filtres. Ex: \`where=population>10000\` ou \`where=nom like "Paris%"\`
-- **group_by**: Groupement. Ex: \`group_by=region\`
-- **order_by**: Tri. Ex: \`order_by=population DESC\` ou \`order_by=nom ASC\`
-- **limit**: Nombre max de resultats. Ex: \`limit=100\` (defaut: 10, max: 100 par requete). gouv-query gere automatiquement la pagination via offset quand limit > 100 (ex: cartes departementales avec 102-108 resultats).
-- **offset**: Pagination. Ex: \`offset=100\`. Utilise automatiquement par gouv-query en mode opendatasoft pour recuperer toutes les pages.
+Syntaxe de requetes utilisee par les APIs OpenDataSoft (mode \`api-type="opendatasoft"\` de gouv-query)
+et par l'action \`reloadData\` du builder-IA.
 
-### Fonctions d'agregation
+### Parametres de requete
+| Parametre | Description | Exemple |
+|-----------|-------------|---------|
+| select | Champs a retourner (avec aliases) | \`select=nom,population\` ou \`select=avg(prix) as prix_moyen\` |
+| where | Condition de filtrage | \`where=population>10000\` ou \`where=nom like "Paris%"\` |
+| group_by | Champ de groupement | \`group_by=region\` |
+| order_by | Tri | \`order_by=population DESC\` |
+| limit | Max resultats (defaut: 10, max: 100 par requete) | \`limit=100\` |
+| offset | Pagination | \`offset=100\` |
+
+IMPORTANT : \`limit\` est plafonne a 100 par requete par l'API ODS.
+gouv-query gere automatiquement la pagination via offset quand la limite demandee > 100
+(ex: cartes departementales avec 101 departements). Max 10 pages (1000 resultats).
+
+### Fonctions d'agregation ODSQL
 - count(*), count(champ)
 - sum(champ), avg(champ), min(champ), max(champ)
 - percentile(champ, 50) pour la mediane
 
-### Operateurs WHERE
-- Comparaison: =, !=, <, >, <=, >=
-- Texte: like, not like (% = wildcard)
-- Liste: in, not in. Ex: \`region in ("IDF","PACA")\`
-- Null: is null, is not null
-- Logique: and, or, not
+### Operateurs WHERE (syntaxe SQL)
+| Operateur | Exemple |
+|-----------|---------|
+| =, !=, <, >, <=, >= | \`population > 10000\` |
+| like, not like | \`nom like "Paris%"\` (% = wildcard) |
+| in, not in | \`region in ("IDF","PACA")\` |
+| is null, is not null | \`email is not null\` |
+| and, or, not | \`population > 10000 and region = "IDF"\` |
 
 ### Fonctions sur les dates
 - year(date), month(date), day(date)
 - date_format(date, "YYYY-MM")
 
 ### Exemple complet
-\`?select=region,avg(prix) as prix_moyen&where=annee>=2020&group_by=region&order_by=prix_moyen DESC&limit=10\``,
+\`?select=region,avg(prix) as prix_moyen&where=annee>=2020&group_by=region&order_by=prix_moyen DESC&limit=10\`
+
+NOTE : ne pas confondre la syntaxe ODSQL (SQL-like) avec la syntaxe de filtre
+gouv-query mode generic (\`"champ:operateur:valeur"\`). Ce sont deux systemes distincts.`,
   },
 
   odsApiVersions: {
@@ -435,6 +823,7 @@ name='["Serie A","Serie B"]'
 ### API v2.1 (recommandee)
 - URL: \`/api/explore/v2.1/catalog/datasets/{dataset_id}/records\`
 - Reponse: \`{ results: [...], total_count: N }\`
+- \`transform="results"\` pour gouv-source
 - ODSQL complet supporte
 - Pagination: limit + offset
 
@@ -446,13 +835,13 @@ name='["Serie A","Serie B"]'
 ### API v1 (legacy)
 - URL: \`/api/records/1.0/search/?dataset={dataset_id}\`
 - Reponse: \`{ records: [{ fields: {...}, recordid: "..." }] }\`
+- \`transform="records"\` puis les donnees sont dans \`record.fields\`
 - Parametres differents: q (recherche), refine, exclude, rows, start
-- Les donnees sont dans record.fields
 
 ### Detection automatique
-- Si l'URL contient \`/v2.1/\` -> v2.1
-- Si l'URL contient \`/v2/\` -> v2
-- Si l'URL contient \`/1.0/\` ou \`rows=\` -> v1
+- URL contient \`/v2.1/\` -> v2.1
+- URL contient \`/v2/\` -> v2
+- URL contient \`/1.0/\` ou \`rows=\` -> v1
 - Par defaut essayer v2.1
 
 ### Migration v1 -> v2.1
@@ -465,6 +854,10 @@ name='["Serie A","Serie B"]'
 | record.fields.X | record.X |`,
   },
 
+  // ---------------------------------------------------------------------------
+  // Guides de choix
+  // ---------------------------------------------------------------------------
+
   chartTypes: {
     id: 'chartTypes',
     name: 'Types de graphiques',
@@ -472,56 +865,58 @@ name='["Serie A","Serie B"]'
     trigger: ['quel graphique', 'quel type', 'quel chart', 'recommand'],
     content: `## Choix du type de graphique
 
-### KPI (kpi)
-- Afficher une valeur unique importante (indicateur cle, total)
-- **Champs requis** : valueField uniquement (PAS de labelField)
-- **Options** : variant (info|success|warning|error), unit (EUR, %, etc.)
-
-### Jauge (gauge)
-- Progression vers un objectif (0-100%)
-- **Champs requis** : valueField uniquement (PAS de labelField)
+Guide pour choisir le type de visualisation adapte aux donnees.
 
 ### Barres verticales (bar)
-- Comparer des categories (5-15 ideal)
-- **Champs requis** : labelField (categories), valueField
-- **Options** : horizontal (barres horizontales), stacked (empile)
-- **Supporte** : valueField2, limit, sortOrder
+- **Quand** : comparer des categories (5-15 ideal)
+- **Champs** : label-field (categories), value-field (valeurs)
+- **Options** : \`horizontal\` (barres horizontales), \`stacked\` (empile)
+- **Supporte** : value-field-2 pour 2e serie, highlight-index
 
 ### Lignes (line)
-- Evolution temporelle, tendances
-- **Champs requis** : labelField (dates/temps), valueField
-- **Supporte** : valueField2 pour comparaisons
+- **Quand** : evolution temporelle, tendances
+- **Champs** : label-field (dates/temps), value-field (valeurs)
+- **Supporte** : value-field-2 pour comparaison, x-min/x-max/y-min/y-max
 
 ### Combine barres + ligne (bar-line)
-- Comparer 2 metriques differentes (ex: CA en barres + objectif en ligne)
-- **Champs requis** : labelField, valueField (barres), valueField2 (ligne)
-- **Options** : unit (barres), unit2 (ligne)
-
-### Nuage de points (scatter)
-- Correlation entre deux variables numeriques
-- **Champs requis** : labelField (axe X numerique), valueField (axe Y)
+- **Quand** : comparer 2 metriques differentes (ex: CA en barres + objectif en ligne)
+- **Champs** : label-field, value-field (barres), value-field-2 (ligne)
+- **Options** : unit-tooltip (barres), unit-tooltip-bar (ligne)
 
 ### Camembert / Anneau (pie)
-- Parts d'un tout (100%), max 5-7 segments
-- **Champs requis** : labelField, valueField
-- **Options** : fill (true = camembert plein, false = anneau)
+- **Quand** : parts d'un tout (100%), max 5-7 segments
+- **Champs** : label-field (categories), value-field (valeurs)
+- **Options** : \`fill\` (true = camembert plein, false = anneau par defaut)
 
 ### Radar
-- Profils multicriteres
-- **Champs requis** : labelField (criteres), valueField (scores)
-- **Supporte** : valueField2 pour comparer 2 profils
+- **Quand** : profils multicriteres, comparaison de dimensions
+- **Champs** : label-field (criteres), value-field (scores)
+- **Supporte** : value-field-2 pour comparer 2 profils
+
+### Nuage de points (scatter)
+- **Quand** : correlation entre deux variables numeriques
+- **Champs** : label-field (axe X numerique), value-field (axe Y)
+
+### Jauge (gauge)
+- **Quand** : progression vers un objectif (0-100%)
+- **Champs** : gauge-value uniquement (PAS de label-field ni source obligatoire)
+
+### KPI (kpi - composant gouv-kpi)
+- **Quand** : afficher UNE valeur cle (total, moyenne, comptage)
+- **Champs** : valeur (expression d'agregation), PAS de label-field
+- **Options** : format (nombre, pourcentage, euro), couleur, seuils
 
 ### Carte departements (map)
-- Donnees par departement francais
-- **Champs requis** : codeField (code INSEE: 01-95, 2A, 2B, 971-976), valueField
-- **labelField optionnel** : nom du departement
+- **Quand** : donnees geographiques par departement francais
+- **Champs** : code-field (code INSEE: 01-95, 2A, 2B, 971-976), value-field
+- **Palette recommandee** : sequentialAscending
 
 ### Carte regions (map-reg)
-- Donnees par region francaise
-- **Champs requis** : codeField (code region), valueField
+- **Quand** : donnees geographiques par region francaise
+- **Champs** : code-field (code region), value-field
 
-## Series multiples (bar, line, bar-line, radar)
-Utilise valueField2 pour une seconde serie avec color2.`,
+### Series multiples (bar, line, bar-line, radar)
+Utiliser value-field-2 pour une seconde serie. Definir les noms avec \`name='["Serie 1","Serie 2"]'\`.`,
   },
 
   dsfrColors: {
@@ -541,52 +936,73 @@ Utilise valueField2 pour une seconde serie avec color2.`,
 - **Vert foret**: #18753C
 
 ### Palettes DSFR Chart (attribut selected-palette)
-| Palette | Usage |
-|---------|-------|
-| categorical | Comparer des groupes distincts (defaut) |
-| sequentialAscending | Gradient clair -> fonce (cartes, classements) |
+| Palette | Usage recommande |
+|---------|-----------------|
+| categorical | Comparer des groupes distincts (defaut pour bar, pie, radar) |
+| sequentialAscending | Gradient clair -> fonce (recommande pour map, classements) |
 | sequentialDescending | Gradient fonce -> clair |
 | divergentAscending | Echelle divergente (ecarts positifs/negatifs) |
 | divergentDescending | Echelle divergente inversee |
-| neutral | Neutre avec highlight-index pour mise en avant |
-| default | Bleu France seul |
+| neutral | Neutre, utiliser avec highlight-index pour mettre en avant 1 barre |
+| default | Bleu France seul (serie unique) |
 
 ### Bonnes pratiques
-- Utiliser categorical pour pie/doughnut/radar
-- Utiliser sequentialAscending pour les cartes
-- Utiliser neutral + highlight-index pour mettre en avant 1 barre
-- Assurer un contraste suffisant (RGAA)
-- Eviter le rouge/vert seuls (daltonisme)`,
+- Utiliser \`categorical\` pour pie, radar et comparaisons multi-categories
+- Utiliser \`sequentialAscending\` pour les cartes (map, map-reg)
+- Utiliser \`neutral\` + \`highlight-index\` pour mettre en avant une valeur
+- Assurer un contraste suffisant (conformite RGAA)
+- Eviter le rouge/vert seuls (daltonisme) - les palettes DSFR sont concues pour ca`,
   },
 
-  apiQuery: {
-    id: 'apiQuery',
-    name: 'Requetes API avancees',
-    description: "Filtrer et agreger les donnees via l'API",
-    trigger: ['recharger', 'reloaddata', 'nouveaux parametres'],
-    content: `## Action reloadData
+  // ---------------------------------------------------------------------------
+  // Troubleshooting et pieges courants
+  // ---------------------------------------------------------------------------
 
-Tu peux suggerer de recharger les donnees avec des filtres en generant:
-\`\`\`json
-{
-  "action": "reloadData",
-  "query": {
-    "where": "condition ODSQL",
-    "select": "champs a selectionner",
-    "group_by": "champ de groupement",
-    "order_by": "champ ASC|DESC",
-    "limit": 100
-  },
-  "reason": "Explication pour l'utilisateur"
-}
-\`\`\`
+  troubleshooting: {
+    id: 'troubleshooting',
+    name: 'Troubleshooting',
+    description: 'Pieges courants et erreurs frequentes',
+    trigger: ['erreur', 'bug', 'marche pas', 'probleme', 'vide', 'affiche pas', 'ne fonctionne pas'],
+    content: `## Pieges courants et troubleshooting
 
-### Exemples
-- Top 10 : \`{ "order_by": "valeur DESC", "limit": 10 }\`
-- Filtrer : \`{ "where": "prix > 50" }\`
-- Agreger : \`{ "select": "region, avg(prix) as prix_moyen", "group_by": "region" }\`
+### 1. Le graphique est vide / ne s'affiche pas
+- **Verifier \`transform\`** : l'API retourne souvent un objet enveloppe (\`{results: [...]}\`).
+  Si \`transform\` n'est pas defini ou pointe au mauvais endroit, les donnees seront vides.
+  Exemples : \`transform="results"\` (ODS v2.1), \`transform="data"\` (Tabular), \`transform="records"\` (ODS v1)
+- **Verifier les noms de champs** : \`label-field\` et \`value-field\` doivent correspondre
+  exactement aux cles des objets JSON retournes (sensible a la casse).
+- **Verifier \`source\`** : l'attribut \`source="xxx"\` doit correspondre exactement a l'\`id="xxx"\`
+  de la gouv-source ou gouv-query (sensible a la casse).
 
-Note: Cette action recharge les donnees depuis l'API avec les nouveaux parametres.`,
+### 2. La carte ne s'affiche pas correctement
+- **Codes departements** : utiliser des codes INSEE (string) : "01" a "95", "2A", "2B", "971" a "976".
+  Attention au zero initial ("01" et non 1).
+- **Utiliser code-field** (pas label-field) pour les cartes.
+- **Patience** : les composants DSFR Chart map sont des Web Components Vue qui ecrasent
+  certains attributs au montage. gouv-dsfr-chart applique un delai de 500ms pour re-injecter
+  les valeurs. Le graphique peut mettre ~1s a apparaitre.
+
+### 3. Limite de 100 resultats (API ODS)
+L'API OpenDataSoft retourne maximum 100 enregistrements par requete.
+gouv-query en mode \`opendatasoft\` gere automatiquement la pagination (max 10 pages = 1000 resultats).
+Pour une gouv-source brute, ajouter \`limit=100\` dans l'URL ou utiliser gouv-query.
+
+### 4. Nommage des champs agrege
+Apres une agregation dans gouv-query, les champs sont renommes :
+\`"champ__fonction"\` (double underscore). Exemple : \`aggregate="population:sum"\` produit
+le champ \`population__sum\`. Utiliser ce nom dans \`value-field\` et \`order-by\`.
+
+### 5. Confusion syntaxe filtre generic vs ODSQL
+- **Mode generic** (gouv-query avec source) : \`where="champ:operateur:valeur"\` (ex: \`"prix:gt:100"\`)
+- **Mode opendatasoft** (gouv-query serveur) : \`where="prix > 100"\` (syntaxe SQL)
+- **Action reloadData** (builder-IA) : syntaxe ODSQL (SQL)
+- **Action createChart** (builder-IA) : syntaxe generic (\`"champ:operateur:valeur"\`)
+Ne pas melanger les deux !
+
+### 6. Attributs HTML en kebab-case
+Les attributs HTML sont en kebab-case : \`label-field\`, \`value-field\`, \`api-type\`, \`code-field\`, etc.
+Ne pas utiliser camelCase dans le HTML (\`labelField\` ne fonctionnera pas).
+En revanche, les proprietes JavaScript sont en camelCase (\`element.labelField\`).`,
   },
 };
 
