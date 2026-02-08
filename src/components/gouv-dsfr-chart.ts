@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
+import { isValidDeptCode } from '@gouv-widgets/shared';
 
 type DSFRChartType = 'line' | 'bar' | 'pie' | 'radar' | 'gauge' | 'scatter' | 'bar-line' | 'map' | 'map-reg';
 
@@ -47,6 +48,10 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
   /** Chemin vers le champ label */
   @property({ type: String, attribute: 'label-field' })
   labelField = '';
+
+  /** Chemin vers le champ code departement/region (map/map-reg, prioritaire sur label-field) */
+  @property({ type: String, attribute: 'code-field' })
+  codeField = '';
 
   /** Chemin vers le champ valeur */
   @property({ type: String, attribute: 'value-field' })
@@ -152,6 +157,25 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
     };
   }
 
+  private _processMapData(): string {
+    if (!this._data || this._data.length === 0) return '{}';
+
+    const field = this.codeField || this.labelField;
+    const mapData: Record<string, number> = {};
+    for (const record of this._data) {
+      let code = String(getByPath(record, field) ?? '').trim();
+      // Pad numeric codes to 2 digits (e.g. "1" -> "01")
+      if (/^\d+$/.test(code) && code.length < 3) {
+        code = code.padStart(2, '0');
+      }
+      const value = Number(getByPath(record, this.valueField)) || 0;
+      if (this.type === 'map' ? isValidDeptCode(code) : code !== '') {
+        mapData[code] = Math.round(value * 100) / 100;
+      }
+    }
+    return JSON.stringify(mapData);
+  }
+
   // --- Attribute builders ---
 
   private _getCommonAttributes(): Record<string, string> {
@@ -193,6 +217,10 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
         attrs['y-bar'] = y;
         attrs['y-line'] = y2 || y;
         if (this.unitTooltipBar) attrs['unit-tooltip-bar'] = this.unitTooltipBar;
+        break;
+      case 'map':
+      case 'map-reg':
+        attrs['data'] = this._processMapData();
         break;
       default:
         attrs['x'] = x;

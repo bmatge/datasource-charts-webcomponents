@@ -203,6 +203,7 @@ line, bar, pie, radar, scatter, gauge, bar-line, map, map-reg
 | x-min / x-max | String | Limites axe X |
 | y-min / y-max | String | Limites axe Y |
 | gauge-value | Number | Valeur pour jauge (0-100) |
+| code-field | String | Champ code departement/region (map/map-reg, prioritaire sur label-field) |
 | map-highlight | String | Departements a surligner |
 
 ### Palettes DSFR Chart
@@ -231,10 +232,10 @@ line, bar, pie, radar, scatter, gauge, bar-line, map, map-reg
 <gouv-dsfr-chart source="repartition" type="pie" label-field="categorie" value-field="montant" fill></gouv-dsfr-chart>
 
 <!-- Carte par departement -->
-<gouv-dsfr-chart source="dept-data" type="map" label-field="nom_dept" value-field="valeur" selected-palette="sequentialAscending"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="dept-data" type="map" code-field="code_dept" value-field="valeur" selected-palette="sequentialAscending"></gouv-dsfr-chart>
 
 <!-- Carte par region -->
-<gouv-dsfr-chart source="reg-data" type="map-reg" label-field="nom_reg" value-field="valeur"></gouv-dsfr-chart>
+<gouv-dsfr-chart source="reg-data" type="map-reg" code-field="code_reg" value-field="valeur"></gouv-dsfr-chart>
 
 <!-- Jauge -->
 <gouv-dsfr-chart type="gauge" gauge-value="73"></gouv-dsfr-chart>
