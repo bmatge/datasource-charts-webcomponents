@@ -629,7 +629,7 @@ function W(n, e) {
   r.set("c", n), e && r.set("t", e);
   const i = `${mt}?${r.toString()}`;
   try {
-    navigator.sendBeacon ? navigator.sendBeacon(i) : fetch(i, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
+    fetch(i, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
     });
   } catch {
   }
@@ -705,7 +705,7 @@ let P = class extends w {
     return u``;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-source"), this._fetchData(), this._setupRefresh();
+    super.connectedCallback(), W("gouv-source"), this._setupRefresh();
   }
   disconnectedCallback() {
     super.disconnectedCallback(), this._cleanup(), this.id && Qe(this.id);
@@ -2429,9 +2429,8 @@ let te = class extends w {
       { id: "composants", label: "Composants", href: "demo/index.html" },
       { id: "builder", label: "Builder", href: "apps/builder/index.html" },
       { id: "builder-ia", label: "Builder IA", href: "apps/builder-ia/index.html" },
-      { id: "dashboard", label: "Dashboard", href: "apps/dashboard/index.html" },
       { id: "playground", label: "Playground", href: "apps/playground/index.html" },
-      { id: "favoris", label: "Favoris", href: "apps/favorites/index.html" },
+      { id: "dashboard", label: "Dashboard", href: "apps/dashboard/index.html" },
       { id: "sources", label: "Sources", href: "apps/sources/index.html" },
       { id: "monitoring", label: "Monitoring", href: "apps/monitoring/index.html" }
     ];
@@ -2443,7 +2442,7 @@ let te = class extends w {
         <nav class="fr-container" role="navigation" aria-label="Accès rapide">
           <ul class="fr-skiplinks__list">
             <li><a class="fr-link" href="#main-content">Contenu</a></li>
-            <li><a class="fr-link" href="#header-navigation">Menu</a></li>
+            <li><a class="fr-link" href="${this._base}demo/index.html">Composants</a></li>
           </ul>
         </nav>
       </div>
@@ -2475,13 +2474,8 @@ let te = class extends w {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--secondary fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
+                      <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
                         Favoris${this._favCount > 0 ? u` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : f}
-                      </a>
-                    </li>
-                    <li>
-                      <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                        GitHub
                       </a>
                     </li>
                   </ul>

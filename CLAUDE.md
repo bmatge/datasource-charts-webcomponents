@@ -14,10 +14,11 @@ Architecture monorepo avec npm workspaces.
 ├── apps/                    # Applications TypeScript
 │   ├── builder/             # Generateur visuel de graphiques
 │   ├── builder-ia/          # Generateur IA avec Albert
-│   ├── dashboard/           # Editeur de tableaux de bord
+│   ├── dashboard/           # Editeur visuel de tableaux de bord (grille par ligne, preview, save/delete)
 │   ├── sources/             # Gestionnaire de sources de donnees
 │   ├── playground/          # Environnement de code interactif
-│   └── favorites/           # Gestion des favoris
+│   ├── favorites/           # Gestion des favoris
+│   └── monitoring/          # Monitoring et logs
 ├── packages/
 │   └── shared/              # Utilitaires partages (@gouv-widgets/shared)
 ├── src/                     # Composants web gouv-widgets (Lit)
