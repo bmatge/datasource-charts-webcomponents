@@ -78,7 +78,7 @@ export class AppHeader extends LitElement {
         <nav class="fr-container" role="navigation" aria-label="Accès rapide">
           <ul class="fr-skiplinks__list">
             <li><a class="fr-link" href="#main-content">Contenu</a></li>
-            <li><a class="fr-link" href="#header-navigation">Menu</a></li>
+            <li><a class="fr-link" href="${this._base}demo/index.html">Composants</a></li>
           </ul>
         </nav>
       </div>
@@ -112,11 +112,6 @@ export class AppHeader extends LitElement {
                     <li>
                       <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
                         Favoris${this._favCount > 0 ? html` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : nothing}
-                      </a>
-                    </li>
-                    <li>
-                      <a class="fr-btn fr-icon-github-fill" href="https://github.com/bmatge/datasource-charts-webcomponents" target="_blank" rel="noopener">
-                        GitHub
                       </a>
                     </li>
                   </ul>
