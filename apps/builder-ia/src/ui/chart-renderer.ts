@@ -192,10 +192,6 @@ export function applyChartConfig(config: ChartConfig): void {
     return config.sortOrder === 'asc' ? a.value - b.value : b.value - a.value;
   });
 
-  // Limit
-  const limit = config.limit || 10;
-  results = results.slice(0, limit);
-
   // Render chart
   renderChart(config, results);
 
@@ -432,7 +428,7 @@ function renderDatalist(config: ChartConfig, data: Record<string, unknown>[]): v
     columns = data.length > 0 ? Object.keys(data[0]) : [];
   }
 
-  const rows = data.slice(0, config.pagination || config.limit || 10);
+  const rows = data;
 
   const headerCells = columns.map(c => `<th>${escapeHtml(c)}</th>`).join('');
   const bodyRows = rows.map(row => {

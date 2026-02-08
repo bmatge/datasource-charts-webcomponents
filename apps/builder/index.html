@@ -230,10 +230,6 @@
             </select>
           </div>
 
-          <div class="fr-input-group fr-input-group--sm">
-            <label class="fr-label" for="limit">Limite</label>
-            <input class="fr-input" type="number" id="limit" value="10" min="1" max="100">
-          </div>
         </div>
 
         <!-- Tri -->
@@ -301,6 +297,35 @@
             <input class="fr-input" type="text" id="query-aggregate" placeholder="Ex: population:sum, surface:avg, count:count">
           </div>
         </div>
+
+        <!-- Options specifiques Tableau -->
+        <div class="datalist-config" id="datalist-config">
+          <fieldset class="fr-fieldset fr-mt-2w">
+            <legend class="fr-fieldset__legend fr-text--sm">Options du tableau</legend>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-recherche" checked>
+                <label class="fr-label" for="datalist-recherche">Recherche</label>
+              </div>
+            </div>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-filtres">
+                <label class="fr-label" for="datalist-filtres">Filtres par colonne</label>
+              </div>
+            </div>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-export" checked>
+                <label class="fr-label" for="datalist-export">Export CSV</label>
+              </div>
+            </div>
+          </fieldset>
+          <button class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-1w fr-icon-settings-5-line fr-btn--icon-left" id="datalist-columns-btn" type="button">
+            Configurer les colonnes
+          </button>
+        </div>
+
         </div>
       </div>
 
@@ -358,33 +383,6 @@
           </div>
         </div>
 
-        <!-- Options specifiques Tableau -->
-        <div class="datalist-config" id="datalist-config">
-          <fieldset class="fr-fieldset">
-            <legend class="fr-fieldset__legend fr-text--sm">Options du tableau</legend>
-            <div class="fr-fieldset__element">
-              <div class="fr-checkbox-group fr-checkbox-group--sm">
-                <input type="checkbox" id="datalist-recherche" checked>
-                <label class="fr-label" for="datalist-recherche">Recherche</label>
-              </div>
-            </div>
-            <div class="fr-fieldset__element">
-              <div class="fr-checkbox-group fr-checkbox-group--sm">
-                <input type="checkbox" id="datalist-filtres">
-                <label class="fr-label" for="datalist-filtres">Filtres par colonne</label>
-              </div>
-            </div>
-            <div class="fr-fieldset__element">
-              <div class="fr-checkbox-group fr-checkbox-group--sm">
-                <input type="checkbox" id="datalist-export" checked>
-                <label class="fr-label" for="datalist-export">Export CSV</label>
-              </div>
-            </div>
-          </fieldset>
-          <button class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-1w" id="datalist-columns-btn" type="button">
-            <i class="ri-settings-3-line" aria-hidden="true"></i> Configurer les colonnes
-          </button>
-        </div>
         </div>
       </div>
 

@@ -160,7 +160,7 @@ export function renderChart(): void {
       columnLabels = columnFields;
     }
 
-    const rows = rawData.slice(0, state.limit || 10);
+    const rows = rawData;
 
     const headerCells = columnLabels.map(c => `<th>${escapeHtml(c)}</th>`).join('');
     const bodyRows = rows.map(row => {

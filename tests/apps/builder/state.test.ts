@@ -23,7 +23,6 @@ describe('builder state', () => {
     expect(state.sourceType).toBe('saved');
     expect(state.chartType).toBe('bar');
     expect(state.aggregation).toBe('avg');
-    expect(state.limit).toBe(10);
     expect(state.sortOrder).toBe('desc');
     expect(state.title).toBe('Mon graphique');
     expect(state.palette).toBe('default');

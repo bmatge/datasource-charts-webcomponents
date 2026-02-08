@@ -51,7 +51,6 @@ export function saveFavorite(): void {
     codeField: state.codeField,
     aggregation: state.aggregation,
     sortOrder: state.sortOrder,
-    limit: state.limit,
     title: state.title,
     subtitle: state.subtitle,
     palette: state.palette,

@@ -57,12 +57,6 @@ export function selectChartType(type: ChartType): void {
   const valueFieldGroup = valueField?.closest('.fr-select-group') as HTMLElement | null;
   if (valueFieldGroup) valueFieldGroup.style.display = isDatalist ? 'none' : 'block';
 
-  // Limit: hide for single value types AND map (map shows all departments)
-  const hideLimit = isSingleValue || isMap;
-  const limitInput = document.getElementById('limit');
-  const limitGroup = limitInput?.closest('.fr-input-group') as HTMLElement | null;
-  if (limitGroup) limitGroup.style.display = hideLimit ? 'none' : 'block';
-
   // Sort order: hide for single value types, map, radar, and scatter
   const hideSort = isSingleValue || isMap || isRadar || isScatter;
   const sortSelect = document.getElementById('sort-order');

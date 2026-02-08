@@ -333,14 +333,12 @@ export function loadFavoriteState(): void {
         const codeSelect = document.getElementById('code-field') as HTMLSelectElement | null;
         const aggSelect = document.getElementById('aggregation') as HTMLSelectElement | null;
         const sortSelect = document.getElementById('sort-order') as HTMLSelectElement | null;
-        const limitInput = document.getElementById('limit') as HTMLInputElement | null;
 
         if (state.labelField && labelSelect) labelSelect.value = state.labelField;
         if (state.valueField && valueSelect) valueSelect.value = state.valueField;
         if (state.codeField && codeSelect) codeSelect.value = state.codeField;
         if (state.aggregation && aggSelect) aggSelect.value = state.aggregation;
         if (state.sortOrder && sortSelect) sortSelect.value = state.sortOrder;
-        if (state.limit && limitInput) limitInput.value = String(state.limit);
       }, 0);
     }
 

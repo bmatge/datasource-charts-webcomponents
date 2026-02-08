@@ -16,7 +16,7 @@ function resetState(): void {
   state.valueField2 = '';
   state.codeField = '';
   state.aggregation = 'avg';
-  state.limit = 10;
+
   state.sortOrder = 'desc';
   state.title = 'Mon graphique';
   state.subtitle = '';
@@ -51,7 +51,7 @@ describe('generateGouvQueryCode', () => {
     state.advancedMode = false;
     state.aggregation = 'avg';
     state.sortOrder = 'desc';
-    state.limit = 10;
+  
     const result = generateGouvQueryCode('my-source', 'fields.region', 'fields.population');
     expect(result.queryElement).toContain('<gouv-query');
     expect(result.queryElement).toContain('source="my-source"');
@@ -65,13 +65,12 @@ describe('generateGouvQueryCode', () => {
     expect(result.chartSource).toBe('query-data');
   });
 
-  it('should build gouv-query element with source, group-by, filter, aggregate, order-by, limit when advancedMode is true', () => {
+  it('should build gouv-query element with source, group-by, filter, aggregate, order-by when advancedMode is true', () => {
     state.advancedMode = true;
     state.queryFilter = 'population>1000';
     state.queryGroupBy = 'region';
     state.queryAggregate = 'population:sum';
     state.sortOrder = 'desc';
-    state.limit = 5;
 
     const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
 
@@ -82,13 +81,13 @@ describe('generateGouvQueryCode', () => {
     expect(result.queryElement).toContain('filter="population&gt;1000"');
     expect(result.queryElement).toContain('aggregate="population:sum"');
     expect(result.queryElement).toContain('order-by="population__sum:desc"');
-    expect(result.queryElement).toContain('limit="5"');
+    expect(result.queryElement).not.toContain('limit=');
   });
 
   it('should return chartSource = "query-data" when advancedMode is true', () => {
     state.advancedMode = true;
     state.sortOrder = 'desc';
-    state.limit = 10;
+  
 
     const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.chartSource).toBe('query-data');
@@ -98,7 +97,7 @@ describe('generateGouvQueryCode', () => {
     state.advancedMode = true;
     state.queryGroupBy = '';
     state.sortOrder = 'desc';
-    state.limit = 10;
+  
 
     const result = generateGouvQueryCode('chart-data', 'fields.commune', 'fields.value');
     expect(result.queryElement).toContain('group-by="fields.commune"');
@@ -109,7 +108,7 @@ describe('generateGouvQueryCode', () => {
     state.queryAggregate = '';
     state.aggregation = 'sum';
     state.sortOrder = 'asc';
-    state.limit = 10;
+  
 
     const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
     expect(result.queryElement).toContain('order-by="fields.population__sum:asc"');
@@ -119,7 +118,7 @@ describe('generateGouvQueryCode', () => {
     state.advancedMode = true;
     state.queryFilter = '';
     state.sortOrder = 'desc';
-    state.limit = 5;
+
 
     const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.queryElement).not.toContain('filter=');
@@ -130,7 +129,7 @@ describe('generateGouvQueryCode', () => {
     state.queryAggregate = '';
     state.aggregation = 'avg';
     state.sortOrder = 'desc';
-    state.limit = 5;
+
 
     const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
     expect(result.queryElement).toContain('aggregate="fields.population:avg"');
@@ -161,7 +160,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'region';
     state.valueField = 'population';
     state.aggregation = 'avg';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -179,7 +178,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'region';
     state.valueField = 'population';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -195,7 +194,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'region';
     state.valueField = 'population';
     state.aggregation = 'count';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -213,7 +212,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'region';
     state.valueField = 'population';
     state.aggregation = 'min';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -229,7 +228,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'region';
     state.valueField = 'population';
     state.aggregation = 'max';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -246,7 +245,7 @@ describe('generateChartFromLocalData', () => {
     state.valueField = 'population';
     state.aggregation = 'sum';
     state.sortOrder = 'desc';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -262,7 +261,7 @@ describe('generateChartFromLocalData', () => {
     state.valueField = 'population';
     state.aggregation = 'sum';
     state.sortOrder = 'asc';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -270,18 +269,6 @@ describe('generateChartFromLocalData', () => {
     for (let i = 0; i < values.length - 1; i++) {
       expect(values[i]).toBeLessThanOrEqual(values[i + 1]);
     }
-  });
-
-  it('should limit results to state.limit', () => {
-    state.localData = sampleData;
-    state.labelField = 'region';
-    state.valueField = 'population';
-    state.aggregation = 'sum';
-    state.limit = 2;
-
-    generateChartFromLocalData();
-
-    expect(state.data).toHaveLength(2);
   });
 
   it('should set state.data with aggregated results', () => {
@@ -292,7 +279,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'city';
     state.valueField = 'score';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -312,7 +299,7 @@ describe('generateChartFromLocalData', () => {
     state.codeField = 'dept_code';
     state.valueField = 'population';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -337,7 +324,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'city';
     state.valueField = 'score';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -350,7 +337,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'city';
     state.valueField = 'score';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -362,7 +349,7 @@ describe('generateChartFromLocalData', () => {
     state.labelField = 'city';
     state.valueField = 'score';
     state.aggregation = 'sum';
-    state.limit = 10;
+  
 
     generateChartFromLocalData();
 
@@ -576,7 +563,7 @@ describe('generateCodeForLocalData', () => {
     ];
     state.labelField = 'region';
     state.title = 'Donnees regionales';
-    state.limit = 10;
+  
     state.sortOrder = 'desc';
 
     generateCodeForLocalData();
@@ -600,7 +587,7 @@ describe('generateCodeForLocalData', () => {
     ];
     state.labelField = 'region';
     state.sortOrder = 'desc';
-    state.limit = 10;
+  
 
     generateCodeForLocalData();
 
@@ -622,7 +609,7 @@ describe('generateCodeForLocalData', () => {
       { field: 'code', label: 'Code', visible: false, filtrable: false },
     ];
     state.labelField = 'region';
-    state.limit = 10;
+  
 
     generateCodeForLocalData();
 
@@ -636,7 +623,7 @@ describe('generateCodeForLocalData', () => {
     state.localData = [{ region: 'Bretagne' }];
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     state.labelField = 'region';
-    state.limit = 10;
+  
     state.datalistRecherche = false;
     state.datalistExportCsv = false;
 
@@ -660,7 +647,7 @@ describe('generateCodeForLocalData', () => {
     ];
     state.datalistFiltres = true;
     state.labelField = 'region';
-    state.limit = 10;
+  
 
     generateCodeForLocalData();
 

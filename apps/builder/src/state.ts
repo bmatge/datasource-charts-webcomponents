@@ -103,7 +103,6 @@ export interface BuilderState {
   valueField2: string;
   codeField: string;
   aggregation: AggregationType;
-  limit: number;
   sortOrder: SortOrder;
   title: string;
   subtitle: string;
@@ -163,7 +162,6 @@ export const state: BuilderState = {
   valueField2: '',
   codeField: '',
   aggregation: 'avg',
-  limit: 10,
   sortOrder: 'desc',
   title: 'Mon graphique',
   subtitle: '',

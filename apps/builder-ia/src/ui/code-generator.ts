@@ -308,7 +308,6 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     const params = new URLSearchParams({
       select: `${config.codeField}, ${valueExpr}`,
       group_by: config.codeField!,
-      limit: '200',
     });
     if (config.where) {
       params.set('where', whereToOdsql(config.where));
@@ -420,7 +419,7 @@ function generateDatalistCode(config: ChartConfig): string {
 
   const triAttr = config.sortOrder && config.labelField
     ? `\n    tri="${config.labelField}:${config.sortOrder}"` : '';
-  const pagination = config.pagination || config.limit || 10;
+  const pagination = config.pagination || 10;
 
   // API-dynamic variant
   if (state.source?.type === 'api' && state.source?.url) {
@@ -501,7 +500,7 @@ document.getElementById('my-table').onSourceData(data);
 
 function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]): string {
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
-  const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, config.limit || 10));
+  const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, data.length || 10));
 
   // API-dynamic variant
   if (state.source?.type === 'api' && state.source?.url) {
@@ -521,7 +520,6 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
     select: `${config.labelField}, ${valueExpr}`,
     group_by: config.labelField!,
     order_by: `value ${config.sortOrder || 'desc'}`,
-    limit: (config.limit || 10).toString(),
   });
   if (config.where) {
     params.set('where', whereToOdsql(config.where));

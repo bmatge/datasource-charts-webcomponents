@@ -136,7 +136,6 @@ export async function generateChart(): Promise<void> {
   const valueField2 = document.getElementById('value-field-2') as HTMLSelectElement | null;
   const codeField = document.getElementById('code-field') as HTMLSelectElement | null;
   const aggregation = document.getElementById('aggregation') as HTMLSelectElement | null;
-  const limitInput = document.getElementById('limit') as HTMLInputElement | null;
   const sortOrder = document.getElementById('sort-order') as HTMLSelectElement | null;
 
   if (labelField) state.labelField = labelField.value;
@@ -144,12 +143,12 @@ export async function generateChart(): Promise<void> {
   state.valueField2 = valueField2?.value || '';
   state.codeField = codeField?.value || '';
   if (aggregation) state.aggregation = aggregation.value as typeof state.aggregation;
-  state.limit = parseInt(limitInput?.value || '10') || 10;
   if (sortOrder) state.sortOrder = sortOrder.value as typeof state.sortOrder;
 
   const isKPI = state.chartType === 'kpi';
   const isGauge = state.chartType === 'gauge';
   const isDatalist = state.chartType === 'datalist';
+  const isMap = state.chartType === 'map';
   const isSingleValue = isKPI || isGauge;
 
   // Validation: datalist only needs labelField, KPI/Gauge need valueField, charts need both
@@ -172,7 +171,7 @@ export async function generateChart(): Promise<void> {
       generateChartFromLocalData();
     } else {
       // For API sources, use raw data
-      const params = new URLSearchParams({ limit: state.limit.toString() });
+      const params = new URLSearchParams();
       if (state.advancedMode && state.queryFilter) {
         const odsql = filterToOdsql(state.queryFilter);
         if (odsql) params.set('where', odsql);
@@ -216,13 +215,18 @@ export async function generateChart(): Promise<void> {
       select: valueExpression,
       limit: '1',
     });
+  } else if (isMap) {
+    // Map: group by code field
+    params = new URLSearchParams({
+      select: `${state.codeField}, ${valueExpression}`,
+      group_by: state.codeField,
+    });
   } else {
     // Chart: group by label field
     params = new URLSearchParams({
       select: `${state.labelField}, ${valueExpression}${valueExpression2}`,
       group_by: state.labelField,
       order_by: `value ${state.sortOrder}`,
-      limit: state.limit.toString(),
     });
   }
 
@@ -269,7 +273,7 @@ export function generateChartFromLocalData(): void {
     if (state.advancedMode && state.queryFilter) {
       filteredLocal = applyLocalFilter(filteredLocal as Record<string, unknown>[], state.queryFilter);
     }
-    state.data = (filteredLocal as Record<string, unknown>[]).slice(0, state.limit || 100) as any[];
+    state.data = filteredLocal as any[];
 
     const rawDataEl = document.getElementById('raw-data');
     if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
@@ -354,9 +358,6 @@ export function generateChartFromLocalData(): void {
       ? (b.value as number) - (a.value as number)
       : (a.value as number) - (b.value as number);
   });
-
-  // Limit
-  results = results.slice(0, state.limit);
 
   state.data = results;
 
@@ -474,7 +475,7 @@ export function generateCodeForLocalData(): void {
   <gouv-datalist
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="${state.limit || 10}">
+    pagination="10">
   </gouv-datalist>
 </div>
 
@@ -662,11 +663,6 @@ export function generateGouvQueryCode(
     attrs.push(`order-by="${sortField}:${state.sortOrder}"`);
   }
 
-  // Limit
-  if (state.limit > 0) {
-    attrs.push(`limit="${state.limit}"`);
-  }
-
   const comment = state.advancedMode
     ? '<!-- Requete avancee (filtrage et agregation) -->'
     : '<!-- Agregation et tri des donnees -->';
@@ -755,7 +751,7 @@ export function generateDynamicCode(): void {
   <gouv-datalist
     source="table-data"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="${state.limit || 10}">
+    pagination="10">
   </gouv-datalist>
 </div>`;
     codeEl.textContent = code;
@@ -869,7 +865,7 @@ export function generateDynamicCodeForApi(): void {
   <gouv-datalist
     source="table-data"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="${state.limit || 10}">
+    pagination="10">
   </gouv-datalist>
 </div>`;
     codeEl.textContent = code;
@@ -1055,7 +1051,7 @@ loadGauge();
   <gouv-datalist
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="${state.limit || 10}">
+    pagination="10">
   </gouv-datalist>
 </div>
 

@@ -751,7 +751,7 @@ describe('builder chart-renderer', () => {
         { name: 'region', type: 'string', sample: 'Bretagne' },
         { name: 'population', type: 'number', sample: 3300000 },
       ];
-      state.limit = 10;
+
 
       renderChart();
 
@@ -773,7 +773,7 @@ describe('builder chart-renderer', () => {
         { name: 'region', type: 'string', sample: 'Bretagne' },
         { name: 'population', type: 'number', sample: 3300000 },
       ];
-      state.limit = 10;
+
 
       renderChart();
 
@@ -787,29 +787,12 @@ describe('builder chart-renderer', () => {
       expect(rows).toHaveLength(2);
     });
 
-    it('should limit rows to state.limit', async () => {
-      const renderChart = await loadRenderChart();
-      state.chartType = 'datalist';
-      state.localData = [
-        { region: 'Bretagne', population: 1 },
-        { region: 'Normandie', population: 2 },
-        { region: 'Occitanie', population: 3 },
-      ];
-      state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
-      state.limit = 2;
-
-      renderChart();
-
-      const rows = document.querySelectorAll('.datalist-card tbody tr');
-      expect(rows).toHaveLength(2);
-    });
-
     it('should not call Chart.js constructor for datalist type', async () => {
       const renderChart = await loadRenderChart();
       state.chartType = 'datalist';
       state.localData = [{ region: 'Bretagne' }];
       state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
-      state.limit = 10;
+
 
       renderChart();
 
@@ -844,7 +827,7 @@ describe('builder chart-renderer', () => {
         { field: 'region', label: 'Nom Region', visible: true, filtrable: false },
         { field: 'population', label: 'Pop.', visible: true, filtrable: false },
       ];
-      state.limit = 10;
+
 
       renderChart();
 
@@ -870,7 +853,7 @@ describe('builder chart-renderer', () => {
         { field: 'population', label: 'Pop.', visible: false, filtrable: false },
         { field: 'code', label: 'Code', visible: true, filtrable: false },
       ];
-      state.limit = 10;
+
 
       renderChart();
 
@@ -888,7 +871,7 @@ describe('builder chart-renderer', () => {
       state.datalistRecherche = true;
       state.datalistFiltres = true;
       state.datalistExportCsv = true;
-      state.limit = 10;
+
 
       renderChart();
 
