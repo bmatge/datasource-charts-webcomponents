@@ -186,7 +186,9 @@ export class GouvSource extends LitElement {
   }
 
   private _buildUrl(): string {
-    const url = new URL(this.url, window.location.origin);
+    // In srcdoc iframes, window.location.origin is the string "null"
+    const base = window.location.origin !== 'null' ? window.location.origin : undefined;
+    const url = new URL(this.url, base);
 
     if (this.params && this.method === 'GET') {
       try {

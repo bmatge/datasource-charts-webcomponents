@@ -785,17 +785,17 @@ let E = (V = class extends w {
     }
   }
   _buildUrl() {
-    const e = new URL(this.url, window.location.origin);
+    const e = window.location.origin !== "null" ? window.location.origin : void 0, t = new URL(this.url, e);
     if (this.params && this.method === "GET")
       try {
-        const t = JSON.parse(this.params);
-        Object.entries(t).forEach(([r, i]) => {
-          e.searchParams.set(r, String(i));
+        const r = JSON.parse(this.params);
+        Object.entries(r).forEach(([i, n]) => {
+          t.searchParams.set(i, String(n));
         });
-      } catch (t) {
-        console.warn("gouv-source: params invalides (JSON attendu)", t);
+      } catch (r) {
+        console.warn("gouv-source: params invalides (JSON attendu)", r);
       }
-    return e.toString();
+    return t.toString();
   }
   _buildFetchOptions() {
     const e = {

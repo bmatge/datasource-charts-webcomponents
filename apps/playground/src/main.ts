@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
   editor = initEditor('code-editor');
 
   // Load first example (skip confirm since editor is empty)
-  loadExample('bar-chart', true);
+  loadExample('gouv-bar', true);
 
   // Event listeners
   document.getElementById('run-btn')?.addEventListener('click', runCode);

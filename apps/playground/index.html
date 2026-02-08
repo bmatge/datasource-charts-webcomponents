@@ -40,11 +40,13 @@
   <div class="example-selector">
     <label for="example-select">Charger un exemple :</label>
     <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
-      <optgroup label="Chart.js (API OpenDataSoft)">
-        <option value="bar-chart">Graphique en barres — Prix moyen par region</option>
-        <option value="pie-chart">Graphique circulaire — Repartition par energie</option>
-        <option value="line-chart">Graphique lineaire — Evolution des prix</option>
-        <option value="kpi-dashboard">Dashboard KPI</option>
+      <optgroup label="Composants gouv-widgets">
+        <option value="gouv-bar">Source + Query + Barres</option>
+        <option value="gouv-pie">Source + Camembert</option>
+        <option value="gouv-line">Source + Lignes</option>
+        <option value="gouv-kpi">Indicateurs KPI</option>
+        <option value="gouv-datalist">Tableau de donnees</option>
+        <option value="gouv-dashboard">Dashboard complet</option>
       </optgroup>
       <optgroup label="DSFR Chart natifs">
         <option value="dsfr-bar">DSFR Bar Chart</option>
@@ -54,13 +56,10 @@
         <option value="dsfr-radar">DSFR Radar Chart</option>
         <option value="dsfr-map">DSFR Map Chart (carte)</option>
       </optgroup>
-      <optgroup label="Composants gouv-widgets">
-        <option value="gouv-source-chart">gouv-source + gouv-dsfr-chart</option>
-        <option value="gouv-kpi">gouv-kpi (indicateurs)</option>
-        <option value="gouv-datalist">gouv-datalist (tableau)</option>
-        <option value="gouv-dashboard">Dashboard complet gouv-widgets</option>
-      </optgroup>
     </select>
+    <a href="../../docs/guide.html" class="fr-link fr-link--sm fr-ml-2w" style="white-space: nowrap;">
+      <i class="ri-book-open-line fr-mr-1v" aria-hidden="true"></i>Guide utilisateur
+    </a>
   </div>
 
   <app-layout-builder left-ratio="50">

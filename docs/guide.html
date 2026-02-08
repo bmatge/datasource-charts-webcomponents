@@ -265,7 +265,7 @@
           <p>Le code genere ressemble a :</p>
 <pre>&lt;gouv-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
              transform="records[].fields"&gt;&lt;/gouv-source&gt;
-&lt;gouv-query source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/gouv-query&gt;
+&lt;gouv-query id="query-result" source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/gouv-query&gt;
 &lt;gouv-dsfr-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
                  title="PIB par pays"&gt;&lt;/gouv-dsfr-chart&gt;</pre>
         </section>
@@ -321,9 +321,8 @@
           <h3>Etape 1 — Charger un exemple</h3>
           <p>Le <strong>Playground</strong> est un editeur de code split avec un apercu en temps reel. Un selecteur d'exemples propose des modeles classes en 3 categories :</p>
           <ul>
-            <li><strong>Chart.js (API OpenDataSoft)</strong> : graphiques avec appels API reels</li>
+            <li><strong>Composants gouv-widgets</strong> : <code>gouv-source</code> + <code>gouv-query</code> + <code>gouv-dsfr-chart</code> (barres, camembert, lignes), <code>gouv-kpi</code>, <code>gouv-datalist</code>, dashboard complet</li>
             <li><strong>DSFR Chart natifs</strong> : composants DSFR (barres, lignes, camembert, jauge, radar, carte)</li>
-            <li><strong>Composants gouv-widgets</strong> : <code>gouv-source</code>, <code>gouv-kpi</code>, <code>gouv-datalist</code>, dashboard complet</li>
           </ul>
           <img src="images/guide-D1-playground-overview.png" alt="Playground — vue d'ensemble">
 
@@ -498,7 +497,7 @@
   &lt;/gouv-source&gt;
 
   &lt;!-- Filtrage et agregation --&gt;
-  &lt;gouv-query source="data"
+  &lt;gouv-query id="query-result" source="data"
     group-by="nom_region"
     aggregate="nombre_beneficiaires:sum"
     order-by="value:desc"
@@ -527,7 +526,20 @@
         <section id="ressources" class="fr-mt-4w">
           <h2>Ressources</h2>
           <div class="fr-grid-row fr-grid-row--gutters">
-            <div class="fr-col-12 fr-col-md-6">
+            <div class="fr-col-12 fr-col-md-4">
+              <div class="fr-card fr-card--no-arrow">
+                <div class="fr-card__body">
+                  <div class="fr-card__content">
+                    <h3 class="fr-card__title">Playground</h3>
+                    <p class="fr-card__desc">Editeur de code interactif avec exemples precharges et apercu en temps reel.</p>
+                  </div>
+                  <div class="fr-card__footer">
+                    <a class="fr-btn fr-btn--secondary" href="../apps/playground/index.html">Ouvrir le Playground</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="fr-col-12 fr-col-md-4">
               <div class="fr-card fr-card--no-arrow">
                 <div class="fr-card__body">
                   <div class="fr-card__content">
@@ -540,7 +552,7 @@
                 </div>
               </div>
             </div>
-            <div class="fr-col-12 fr-col-md-6">
+            <div class="fr-col-12 fr-col-md-4">
               <div class="fr-card fr-card--no-arrow">
                 <div class="fr-card__body">
                   <div class="fr-card__content">

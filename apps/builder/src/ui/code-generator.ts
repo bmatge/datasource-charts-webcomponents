@@ -41,6 +41,28 @@ function dsfrChartAttrs(): string {
 }
 
 /**
+ * Escape single quotes in a string for use inside single-quoted HTML attributes.
+ * DSFR Chart x/y attributes contain JSON with French names that may include
+ * apostrophes (e.g. "CÔTES-D'ARMOR", "VAL-D'OISE") which would prematurely
+ * close the HTML attribute if unescaped.
+ */
+function escapeSingleQuotes(value: string): string {
+  return value.replace(/'/g, '&#39;');
+}
+
+/**
+ * Generate an inline <script> that re-applies DSFR Chart element attributes
+ * after Vue mount. DSFR Chart Vue components overwrite certain attributes
+ * (value, date) with defaults during mount.
+ */
+function dsfrDeferredScript(tagName: string): string {
+  return `
+<script>
+(function(){var c=document.querySelector('${tagName}');if(!c)return;var s={};[].forEach.call(c.attributes,function(a){s[a.name]=a.value});customElements.whenDefined('${tagName}').then(function(){setTimeout(function(){Object.keys(s).forEach(function(k){c.setAttribute(k,s[k])})},500)})})();
+<\/script>`;
+}
+
+/**
  * Convert gouv-query filter format (field:operator:value) to ODSQL where clause.
  */
 function filterToOdsql(filterExpr: string): string {
@@ -506,12 +528,12 @@ datalist.onSourceData(data);
   <h2>${escapeHtml(state.title)}</h2>
 
   <scatter-chart
-    x='${JSON.stringify([xValues])}'
-    y='${JSON.stringify([yValues])}'
-    name='${JSON.stringify([`${state.labelField} vs ${state.valueField}`])}'
+    x='${escapeSingleQuotes(JSON.stringify([xValues]))}'
+    y='${escapeSingleQuotes(JSON.stringify([yValues]))}'
+    name='${escapeSingleQuotes(JSON.stringify([`${state.labelField} vs ${state.valueField}`]))}'
     selected-palette="${state.palette}">
   </scatter-chart>
-</div>`;
+</div>${dsfrDeferredScript('scatter-chart')}`;
     codeEl.textContent = code;
     return;
   }
@@ -562,10 +584,10 @@ datalist.onSourceData(data);
     data='${JSON.stringify(mapData)}'
     name="${escapeHtml(state.title || 'Donn\u00e9es')}"
     date="${today}"
-    value-nat="${avgValue}"
+    value="${avgValue}"
     selected-palette="${mapPalette}"
   ></map-chart>
-</div>`;
+</div>${dsfrDeferredScript('map-chart')}`;
     codeEl.textContent = mapCode;
     return;
   }
@@ -606,12 +628,12 @@ datalist.onSourceData(data);
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
   <${dsfrTag}
-    x='${x}'
-    y='${y}'
-    name='${seriesNames}'
+    x='${escapeSingleQuotes(x)}'
+    y='${escapeSingleQuotes(y)}'
+    name='${escapeSingleQuotes(seriesNames)}'
     selected-palette="${state.palette}"${extraStr}>
   </${dsfrTag}>
-</div>`;
+</div>${dsfrDeferredScript(dsfrTag)}`;
 
   codeEl.textContent = code;
 }
@@ -1098,14 +1120,12 @@ async function loadChart() {
   const xValues = data.map(d => d['${state.labelField}'] || 0);
   const yValues = data.map(d => d.value || 0);
 
-  document.getElementById('scatter-container').innerHTML = \`
-    <scatter-chart
-      x='\${JSON.stringify([xValues])}'
-      y='\${JSON.stringify([yValues])}'
-      name='${JSON.stringify([`${state.labelField} vs ${state.valueField}`])}'
-      selected-palette="${state.palette}">
-    </scatter-chart>
-  \`;
+  var el = document.createElement('scatter-chart');
+  el.setAttribute('x', JSON.stringify([xValues]));
+  el.setAttribute('y', JSON.stringify([yValues]));
+  el.setAttribute('name', ${JSON.stringify(JSON.stringify([`${state.labelField} vs ${state.valueField}`]))});
+  el.setAttribute('selected-palette', '${state.palette}');
+  document.getElementById('scatter-container').appendChild(el);
 }
 
 loadChart();
@@ -1167,13 +1187,16 @@ async function loadMap() {
     }
   });
 
-  document.getElementById('map-container').innerHTML = \`
-    <map-chart
-      data='\${JSON.stringify(mapData)}'
-      name="${escapeHtml(state.title)}"
-      selected-palette="${mapPalette}"
-    ></map-chart>
-  \`;
+  var el = document.createElement('map-chart');
+  el.setAttribute('data', JSON.stringify(mapData));
+  el.setAttribute('name', '${escapeHtml(state.title)}');
+  el.setAttribute('selected-palette', '${mapPalette}');
+  // Compute national average
+  var vals = Object.values(mapData);
+  var avg = vals.length ? Math.round(vals.reduce(function(a,b){return a+b},0) / vals.length * 100) / 100 : 0;
+  el.setAttribute('value', String(avg));
+  el.setAttribute('date', new Date().toISOString().split('T')[0]);
+  document.getElementById('map-container').appendChild(el);
 }
 
 loadMap();
@@ -1189,7 +1212,6 @@ loadMap();
   const extraAttrs: string[] = [];
   if (state.chartType === 'horizontalBar') extraAttrs.push('horizontal');
   if (state.chartType === 'pie') extraAttrs.push('fill');
-  const extraStr = extraAttrs.map(a => `\n      ${a}`).join('');
 
   const seriesNames = hasSecondSeries
     ? JSON.stringify([state.valueField, state.valueField2])
@@ -1224,14 +1246,14 @@ async function loadChart() {
 
   const y = ${hasSecondSeries ? 'JSON.stringify([values, values2])' : 'JSON.stringify([values])'};
 
-  document.getElementById('chart-container').innerHTML = \`
-    <${dsfrTag}
-      x='\${JSON.stringify([labels])}'
-      y='\${y}'
-      name='${seriesNames}'
-      selected-palette="${state.palette}"${extraStr}>
-    </${dsfrTag}>
-  \`;
+  var el = document.createElement('${dsfrTag}');
+  el.setAttribute('x', JSON.stringify([labels]));
+  el.setAttribute('y', y);
+  el.setAttribute('name', '${escapeSingleQuotes(seriesNames)}');
+  el.setAttribute('selected-palette', '${state.palette}');${state.chartType === 'horizontalBar' ? `
+  el.setAttribute('horizontal', '');` : ''}${state.chartType === 'pie' ? `
+  el.setAttribute('fill', '');` : ''}
+  document.getElementById('chart-container').appendChild(el);
 }
 
 loadChart();
