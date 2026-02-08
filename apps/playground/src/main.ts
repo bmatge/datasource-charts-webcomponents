@@ -10,6 +10,66 @@ import { getPreviewHTML } from './preview.js';
 
 let editor: CodeMirrorEditor;
 
+/** Standard dependency block for external use */
+const DEPS_BLOCK = `<!-- Dependances (DSFR + DSFR Chart + gouv-widgets) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
+
+`;
+
+/** Regex to detect dependency lines (CDN links for dsfr, chart.js, gouv-widgets) */
+const DEPS_LINE_RE = /^[ \t]*(<link[^>]*(dsfr|DSFRChart)[^>]*>|<script[^>]*(dsfr|chart\.js|DSFRChart|gouv-widgets)[^>]*><\/script>)[ \t]*\n?/gm;
+const DEPS_COMMENT_RE = /^[ \t]*<!--\s*Dependances[^>]*-->\s*\n?/gm;
+
+function hasDeps(code: string): boolean {
+  return DEPS_LINE_RE.test(code) || /gouv-widgets\.(umd|esm)\.js/.test(code);
+}
+
+function addDeps(code: string): string {
+  return DEPS_BLOCK + code;
+}
+
+function removeDeps(code: string): string {
+  let result = code;
+  // Reset regex lastIndex (they have /g flag)
+  DEPS_LINE_RE.lastIndex = 0;
+  DEPS_COMMENT_RE.lastIndex = 0;
+  result = result.replace(DEPS_LINE_RE, '');
+  result = result.replace(DEPS_COMMENT_RE, '');
+  // Clean up leading blank lines
+  result = result.replace(/^\n+/, '');
+  return result;
+}
+
+function updateDepsButton(hasDepsState: boolean): void {
+  const btn = document.getElementById('deps-btn');
+  if (!btn) return;
+  if (hasDepsState) {
+    btn.innerHTML = '<i class="ri-code-s-slash-line" aria-hidden="true"></i> - Deps';
+    btn.title = 'Retirer les dependances CDN';
+  } else {
+    btn.innerHTML = '<i class="ri-code-s-slash-line" aria-hidden="true"></i> + Deps';
+    btn.title = 'Ajouter les dependances CDN pour usage externe';
+  }
+}
+
+function toggleDeps(): void {
+  const code = editor.getValue();
+  DEPS_LINE_RE.lastIndex = 0;
+  if (hasDeps(code)) {
+    editor.setValue(removeDeps(code));
+    updateDepsButton(false);
+  } else {
+    editor.setValue(addDeps(code));
+    updateDepsButton(true);
+  }
+  runCode();
+}
+
 function runCode(): void {
   const code = editor.getValue();
   const iframe = document.getElementById('preview-frame') as HTMLIFrameElement | null;
@@ -22,6 +82,8 @@ function loadExample(name: string, skipConfirm = false): void {
   if (examples[name]) {
     if (!skipConfirm && editor.getValue().trim() && !confirm('Remplacer le code actuel par cet exemple ?')) return;
     editor.setValue(examples[name]);
+    DEPS_LINE_RE.lastIndex = 0;
+    updateDepsButton(hasDeps(examples[name]));
     runCode();
   }
 }
@@ -133,6 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Dependencies toggle
+  document.getElementById('deps-btn')?.addEventListener('click', toggleDeps);
+
   // Copy code button
   document.getElementById('copy-btn')?.addEventListener('click', copyCode);
 
@@ -145,6 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedCode = sessionStorage.getItem('playground-code');
     if (savedCode) {
       editor.setValue(savedCode);
+      DEPS_LINE_RE.lastIndex = 0;
+      updateDepsButton(hasDeps(savedCode));
       runCode();
       sessionStorage.removeItem('playground-code');
     }
