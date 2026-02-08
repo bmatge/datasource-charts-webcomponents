@@ -1,0 +1,31 @@
+{
+  "name": "gouv-widgets-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing gouv-widgets skills for AI-assisted chart generation",
+  "type": "module",
+  "bin": {
+    "gouv-widgets-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "gouv-widgets",
+    "dsfr",
+    "dataviz",
+    "web-components"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

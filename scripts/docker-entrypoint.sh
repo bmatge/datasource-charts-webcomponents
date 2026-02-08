@@ -28,5 +28,14 @@ sh "$PARSE_SCRIPT" 2>&1
   done
 ) &
 
+# Start MCP server in background (reads skills from local file, no network dependency)
+SKILLS_FILE="/usr/share/nginx/html/dist/skills.json"
+if [ -f "$SKILLS_FILE" ]; then
+  node /app/mcp-server/dist/index.js --http --skills-file "$SKILLS_FILE" &
+  echo "[entrypoint] MCP server started on port 3001"
+else
+  echo "[entrypoint] WARNING: $SKILLS_FILE not found, MCP server not started"
+fi
+
 # Start nginx in foreground
 exec nginx -g "daemon off;"

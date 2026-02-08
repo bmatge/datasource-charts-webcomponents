@@ -15,8 +15,14 @@ COPY . .
 RUN npm run build:all
 RUN node scripts/build-app.js
 
-# Production stage - Nginx pour servir les fichiers statiques
+# Build MCP server (separate package, outside workspace)
+RUN cd mcp-server && npm ci && npm run build
+
+# Production stage - Nginx + MCP server
 FROM nginx:alpine
+
+# Add Node.js for the MCP server
+RUN apk add --no-cache nodejs
 
 # Copier la config nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -27,6 +33,10 @@ RUN echo "log_format beacon '\$time_iso8601|\$http_referer|\$arg_c|\$arg_t|\$rem
 
 # Copier tous les fichiers depuis app-dist
 COPY --from=builder /app/app-dist /usr/share/nginx/html
+
+# Copier le MCP server (dist + deps)
+COPY --from=builder /app/mcp-server/dist /app/mcp-server/dist
+COPY --from=builder /app/mcp-server/node_modules /app/mcp-server/node_modules
 
 # Copier les fichiers publics
 COPY --from=builder /app/public /usr/share/nginx/html/public
