@@ -4,6 +4,12 @@
 
 export function getPreviewHTML(code: string): string {
   const origin = window.location.origin;
+  // If the code already includes a gouv-widgets script (e.g. UMD from exported code),
+  // don't inject the local ESM to avoid double custom element registration.
+  const hasGouvWidgets = code.includes('gouv-widgets');
+  const gouvWidgetsScript = hasGouvWidgets
+    ? ''
+    : `\n  <script type="module" src="${origin}/dist/gouv-widgets.esm.js"><\/script>`;
   return `<!DOCTYPE html>
 <html lang="fr" data-fr-theme>
 <head>
@@ -13,8 +19,7 @@ export function getPreviewHTML(code: string): string {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-  <script type="module" src="${origin}/dist/gouv-widgets.esm.js"><\/script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>${gouvWidgetsScript}
   <style>
     body { padding: 1rem; font-family: Marianne, arial, sans-serif; }
   </style>

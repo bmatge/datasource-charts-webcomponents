@@ -348,7 +348,7 @@ describe('builder chart-renderer', () => {
       expect(parsed['00']).toBeUndefined();
     });
 
-    it('should calculate national average for value-nat attribute', async () => {
+    it('should calculate national average for value attribute', async () => {
       const renderChart = await loadRenderChart();
       state.chartType = 'map';
       state.codeField = 'dept';
@@ -360,7 +360,7 @@ describe('builder chart-renderer', () => {
       renderChart();
 
       const mapChart = document.querySelector('map-chart')!;
-      const valueNat = mapChart.getAttribute('value-nat');
+      const valueNat = mapChart.getAttribute('value');
       // Average of 100 and 200 = 150
       expect(valueNat).toBe('150');
     });

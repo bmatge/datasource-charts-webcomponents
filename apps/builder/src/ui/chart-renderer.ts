@@ -121,21 +121,26 @@ export function renderChart(): void {
       }
     });
 
-    // Calculate national average for value-nat attribute
+    // Calculate national average for value attribute
     const avgValue = count > 0 ? Math.round((totalValue / count) * 100) / 100 : 0;
     const today = new Date().toISOString().split('T')[0];
 
     const mapCard = document.createElement('div');
     mapCard.className = 'map-card';
-    mapCard.innerHTML = `
-      <map-chart
-        data='${JSON.stringify(mapData)}'
-        name="${escapeHtml(state.title || 'Donn\u00e9es')}"
-        date="${today}"
-        value-nat="${avgValue}"
-        selected-palette="${mapPalette}"
-      ></map-chart>
-    `;
+    const mapEl = document.createElement('map-chart');
+    mapEl.setAttribute('data', JSON.stringify(mapData));
+    mapEl.setAttribute('name', state.title || 'Donn\u00e9es');
+    mapEl.setAttribute('date', today);
+    mapEl.setAttribute('value', String(avgValue));
+    mapEl.setAttribute('selected-palette', mapPalette);
+    mapCard.appendChild(mapEl);
+    // Re-apply deferred attributes after Vue mount overwrites them
+    customElements.whenDefined('map-chart').then(() => {
+      setTimeout(() => {
+        mapEl.setAttribute('value', String(avgValue));
+        mapEl.setAttribute('date', today);
+      }, 500);
+    });
     chartContainer.appendChild(mapCard);
     return;
   }

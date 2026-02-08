@@ -192,8 +192,8 @@ export async function generateChart(): Promise<void> {
     if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
       generateChartFromLocalData();
     } else {
-      // For API sources, use raw data
-      const params = new URLSearchParams();
+      // For API sources, use raw data — limit=200 to fetch all records
+      const params = new URLSearchParams({ limit: '200' });
       if (state.advancedMode && state.queryFilter) {
         const odsql = filterToOdsql(state.queryFilter);
         if (odsql) params.set('where', odsql);
@@ -238,17 +238,19 @@ export async function generateChart(): Promise<void> {
       limit: '1',
     });
   } else if (isMap) {
-    // Map: group by code field
+    // Map: group by code field — limit=200 to fetch all departments (API default is 10)
     params = new URLSearchParams({
       select: `${state.codeField}, ${valueExpression}`,
       group_by: state.codeField,
+      limit: '200',
     });
   } else {
-    // Chart: group by label field
+    // Chart: group by label field — limit=200 to fetch all categories
     params = new URLSearchParams({
       select: `${state.labelField}, ${valueExpression}${valueExpression2}`,
       group_by: state.labelField,
       order_by: `value ${state.sortOrder}`,
+      limit: '200',
     });
   }
 
