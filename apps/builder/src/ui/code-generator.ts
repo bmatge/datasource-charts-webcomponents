@@ -93,6 +93,30 @@ function escapeSingleQuotes(value: string): string {
 }
 
 /**
+ * Inline JS helper for ODS pagination in generated code.
+ * Handles offset-based pagination (ODS API max 100 records/request).
+ */
+const ODS_FETCH_HELPER = `// Pagination ODS (max 100 par requete)
+async function fetchAllODS(apiUrl) {
+  var allResults = [], offset = 0, url = new URL(apiUrl);
+  var limit = parseInt(url.searchParams.get('limit') || '100');
+  for (var p = 0; p < 10; p++) {
+    var rem = limit - allResults.length;
+    if (rem <= 0) break;
+    var u = new URL(apiUrl);
+    u.searchParams.set('limit', String(Math.min(100, rem)));
+    u.searchParams.set('offset', String(offset));
+    var r = await fetch(u.toString());
+    var j = await r.json();
+    var d = j.results || [];
+    allResults = allResults.concat(d);
+    if (d.length < 100 || (j.total_count && allResults.length >= j.total_count)) break;
+    offset += d.length;
+  }
+  return allResults;
+}`;
+
+/**
  * Generate an inline <script> that re-applies DSFR Chart element attributes
  * after Vue mount. DSFR Chart Vue components overwrite certain attributes
  * (value, date) with defaults during mount.
@@ -1120,10 +1144,10 @@ loadGauge();
 <script>
 const API_URL = '${apiUrl}';
 
+${ODS_FETCH_HELPER}
+
 async function loadTable() {
-  const response = await fetch(API_URL);
-  const json = await response.json();
-  const data = json.results || [];
+  const data = await fetchAllODS(API_URL);
   document.getElementById('my-table').onSourceData(data);
 }
 
@@ -1152,10 +1176,10 @@ loadTable();
 <script type="module">
 const API_URL = '${apiUrl}';
 
+${ODS_FETCH_HELPER}
+
 async function loadChart() {
-  const response = await fetch(API_URL);
-  const json = await response.json();
-  const data = json.results || [];
+  const data = await fetchAllODS(API_URL);
 
   const xValues = data.map(d => d['${state.labelField}'] || 0);
   const yValues = data.map(d => d.value || 0);
@@ -1199,6 +1223,8 @@ loadChart();
 <script type="module">
 const API_URL = '${apiUrl}';
 
+${ODS_FETCH_HELPER}
+
 // Valide un code de d\u00e9partement fran\u00e7ais
 function isValidDeptCode(code) {
   if (!code || typeof code !== 'string') return false;
@@ -1210,9 +1236,7 @@ function isValidDeptCode(code) {
 }
 
 async function loadMap() {
-  const response = await fetch(API_URL);
-  const json = await response.json();
-  const records = json.results || [];
+  const records = await fetchAllODS(API_URL);
 
   // Transformer les donn\u00e9es en format carte: {"code": valeur, ...}
   const mapData = {};
@@ -1275,10 +1299,10 @@ loadMap();
 // URL de l'API avec agregation
 const API_URL = '${apiUrl}';
 
+${ODS_FETCH_HELPER}
+
 async function loadChart() {
-  const response = await fetch(API_URL);
-  const json = await response.json();
-  const data = json.results || [];
+  const data = await fetchAllODS(API_URL);
 
   const labels = data.map(d => d['${state.labelField}'] || 'N/A');
   const values = data.map(d => Math.round((d.value || 0) * 100) / 100);${hasSecondSeries ? `

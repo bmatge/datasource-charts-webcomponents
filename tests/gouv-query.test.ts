@@ -341,6 +341,131 @@ describe('GouvQuery', () => {
       const url = (query as any)._buildOpenDataSoftUrl();
       expect(url).toContain('limit=20');
     });
+
+    it('caps limit at 100 (ODS max) when no override', () => {
+      query.limit = 200;
+      const url = (query as any)._buildOpenDataSoftUrl();
+      expect(url).toContain('limit=100');
+      expect(url).not.toContain('limit=200');
+    });
+
+    it('uses limitOverride when provided', () => {
+      query.limit = 200;
+      const url = (query as any)._buildOpenDataSoftUrl(8);
+      expect(url).toContain('limit=8');
+    });
+
+    it('adds offset when provided and > 0', () => {
+      const url = (query as any)._buildOpenDataSoftUrl(100, 100);
+      expect(url).toContain('offset=100');
+    });
+
+    it('does not add offset when 0', () => {
+      const url = (query as any)._buildOpenDataSoftUrl(100, 0);
+      expect(url).not.toContain('offset');
+    });
+  });
+
+  describe('OpenDataSoft pagination', () => {
+    beforeEach(() => {
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'fiscalite-locale';
+      query.baseUrl = 'https://data.example.com';
+      query.id = 'ods-test';
+      query.groupBy = 'dep';
+      query.select = 'dep, avg(taux) as value';
+    });
+
+    it('fetches single page when limit <= 100', async () => {
+      query.limit = 50;
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 50 }, (_, i) => ({ dep: String(i), value: i })),
+          total_count: 50
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(50);
+    });
+
+    it('fetches multiple pages when limit > 100 (department map case)', async () => {
+      query.limit = 108;
+
+      // Page 1: 100 results
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i).padStart(2, '0'), value: i })),
+          total_count: 108
+        })
+      });
+      // Page 2: 8 results
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 8 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
+          total_count: 108
+        })
+      });
+
+      // Need an AbortController for the fetch
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(query.getData()).toHaveLength(108);
+    });
+
+    it('stops when page returns fewer results than page size', async () => {
+      query.limit = 200;
+
+      // Single page returns only 75 results (dataset has fewer records)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 75 }, (_, i) => ({ dep: String(i), value: i })),
+          total_count: 75
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(75);
+    });
+
+    it('sends correct offset in second page URL', async () => {
+      query.limit = 110;
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i), value: i })),
+          total_count: 110
+        })
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 10 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
+          total_count: 110
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromOdsWithPagination();
+
+      // Check second call URL contains offset=100
+      const secondCallUrl = mockFetch.mock.calls[1][0] as string;
+      expect(secondCallUrl).toContain('offset=100');
+      expect(secondCallUrl).toContain('limit=10');
+    });
   });
 
   describe('Tabular API URL building', () => {

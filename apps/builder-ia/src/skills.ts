@@ -402,8 +402,8 @@ name='["Serie A","Serie B"]'
 - **where**: Filtres. Ex: \`where=population>10000\` ou \`where=nom like "Paris%"\`
 - **group_by**: Groupement. Ex: \`group_by=region\`
 - **order_by**: Tri. Ex: \`order_by=population DESC\` ou \`order_by=nom ASC\`
-- **limit**: Nombre max de resultats. Ex: \`limit=100\` (defaut: 10, max: 100)
-- **offset**: Pagination. Ex: \`offset=20\`
+- **limit**: Nombre max de resultats. Ex: \`limit=100\` (defaut: 10, max: 100 par requete). gouv-query gere automatiquement la pagination via offset quand limit > 100 (ex: cartes departementales avec 102-108 resultats).
+- **offset**: Pagination. Ex: \`offset=100\`. Utilise automatiquement par gouv-query en mode opendatasoft pour recuperer toutes les pages.
 
 ### Fonctions d'agregation
 - count(*), count(champ)
