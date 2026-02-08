@@ -8,6 +8,9 @@ TRIGGER="/tmp/beacon-refresh"
 INTERVAL=300  # 5 minutes
 CHECK=3       # check trigger every 3 seconds
 
+# Parse immediately on startup (restore monitoring-data.json from persisted logs)
+sh "$PARSE_SCRIPT" 2>&1
+
 # Background loop: parse periodically or on trigger
 (
   last_parse=0

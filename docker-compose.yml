@@ -4,6 +4,10 @@ services:
     container_name: chartsbuilder
     restart: unless-stopped
 
+    # Persister les beacon logs pour le monitoring (survit aux redémarrages)
+    volumes:
+      - beacon-logs:/var/log/nginx
+
     # Réseau Traefik (même réseau que ecosystem)
     networks:
       - ecosystem-network
@@ -33,6 +37,9 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
 # Réseau externe Traefik (même que le projet ecosystem)
+volumes:
+  beacon-logs:
+
 networks:
   ecosystem-network:
     external: true
