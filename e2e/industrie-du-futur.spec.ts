@@ -76,12 +76,12 @@ test.describe('Industrie du Futur - Builder simulation', () => {
     const section = page.locator('#bar-brut');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '01-bar-brut.png') });
 
-    // DSFR bar-chart should exist and have rendered SVG content
+    // DSFR bar-chart should exist and have rendered canvas content (Chart.js)
     const barChart = section.locator('bar-chart');
     await expect(barChart).toBeVisible();
 
-    const svg = section.locator('bar-chart svg');
-    await expect(svg).toBeVisible();
+    const canvas = section.locator('bar-chart canvas');
+    await expect(canvas).toBeVisible();
   });
 
   // -------------------------------------------------------------------
