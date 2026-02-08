@@ -26,6 +26,9 @@ function buildDOM(): void {
     <!-- KPI config panel -->
     <div id="kpi-config"></div>
 
+    <!-- Datalist config panel -->
+    <div class="datalist-config" id="datalist-config"></div>
+
     <!-- Palette config -->
     <div id="palette-config" style="display: block;"></div>
 
@@ -482,6 +485,19 @@ describe('selectChartType', () => {
       selectChartType('datalist');
       const group = document.getElementById('code-field-group') as HTMLElement;
       expect(group.style.display).toBe('none');
+    });
+
+    it('should show datalist-config for datalist', () => {
+      selectChartType('datalist');
+      const config = document.getElementById('datalist-config')!;
+      expect(config.classList.contains('visible')).toBe(true);
+    });
+
+    it('should hide datalist-config for non-datalist types', () => {
+      selectChartType('datalist');
+      selectChartType('bar');
+      const config = document.getElementById('datalist-config')!;
+      expect(config.classList.contains('visible')).toBe(false);
     });
   });
 });

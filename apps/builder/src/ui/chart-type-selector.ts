@@ -4,6 +4,7 @@
  */
 
 import { state, type ChartType } from '../state.js';
+import { initDatalistColumns } from './datalist-config.js';
 
 /**
  * Select a chart type and update the UI accordingly.
@@ -27,6 +28,13 @@ export function selectChartType(type: ChartType): void {
   // Toggle KPI-specific options (variant selector)
   const kpiConfig = document.getElementById('kpi-config');
   if (kpiConfig) kpiConfig.classList.toggle('visible', isKPI);
+
+  // Toggle datalist-specific options (feature checkboxes + columns)
+  const datalistConfig = document.getElementById('datalist-config');
+  if (datalistConfig) datalistConfig.classList.toggle('visible', isDatalist);
+  if (isDatalist && state.datalistColumns.length === 0) {
+    initDatalistColumns();
+  }
 
   // Palette config: hide for KPI, gauge, and datalist
   const paletteConfig = document.getElementById('palette-config') as HTMLElement | null;

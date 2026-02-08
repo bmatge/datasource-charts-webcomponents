@@ -22,6 +22,7 @@ import {
   toggleSection,
 } from './ui/ui-helpers.js';
 import type { ChartType } from './state.js';
+import { setupDatalistListeners } from './ui/datalist-config.js';
 
 // Expose functions called from inline onclick in HTML
 (window as any).toggleSection = toggleSection;
@@ -158,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
       state.queryAggregate = (e.target as HTMLInputElement).value;
     });
   }
+
+  // Datalist config listeners
+  setupDatalistListeners();
 
   // Load saved sources and check for selected source from sources.html
   loadSavedSources();

@@ -88,7 +88,7 @@
             <input type="radio" id="mode-dynamic" name="generation-mode" value="dynamic">
             <label class="fr-label" for="mode-dynamic">
               Chargement dynamique
-              <span class="fr-hint-text">Utilise &lt;gouv-source&gt; et &lt;gouv-chart&gt; pour charger les donnees en temps reel</span>
+              <span class="fr-hint-text">Utilise &lt;gouv-source&gt;, &lt;gouv-query&gt; et &lt;gouv-dsfr-chart&gt; pour charger les donnees en temps reel</span>
             </label>
           </div>
 
@@ -357,6 +357,34 @@
             </div>
           </div>
         </div>
+
+        <!-- Options specifiques Tableau -->
+        <div class="datalist-config" id="datalist-config">
+          <fieldset class="fr-fieldset">
+            <legend class="fr-fieldset__legend fr-text--sm">Options du tableau</legend>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-recherche" checked>
+                <label class="fr-label" for="datalist-recherche">Recherche</label>
+              </div>
+            </div>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-filtres">
+                <label class="fr-label" for="datalist-filtres">Filtres par colonne</label>
+              </div>
+            </div>
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
+                <input type="checkbox" id="datalist-export" checked>
+                <label class="fr-label" for="datalist-export">Export CSV</label>
+              </div>
+            </div>
+          </fieldset>
+          <button class="fr-btn fr-btn--secondary fr-btn--sm fr-mt-1w" id="datalist-columns-btn" type="button">
+            <i class="ri-settings-3-line" aria-hidden="true"></i> Configurer les colonnes
+          </button>
+        </div>
         </div>
       </div>
 
@@ -421,6 +449,21 @@
 
     </app-preview-panel>
   </app-layout-builder>
+
+  <!-- Modale configuration colonnes datalist -->
+  <div class="modal-overlay" id="datalist-columns-modal">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Configuration des colonnes</h3>
+        <button class="modal-close" id="datalist-columns-close">&times;</button>
+      </div>
+      <div class="modal-body" id="datalist-columns-list">
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--sm" id="datalist-columns-save">Appliquer</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js" integrity="sha384-4dK3hBJJh/bjoOulz9Q1kNO2O09lzuKiFeF5c+0VguV1RT3IiLkv+Pt98Jul84V+" crossorigin="anonymous"></script>
 </body>

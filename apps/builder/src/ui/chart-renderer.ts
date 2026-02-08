@@ -145,25 +145,46 @@ export function renderChart(): void {
     canvas.style.display = 'none';
 
     const rawData = state.localData || [];
-    const columns = state.fields.length > 0
-      ? state.fields.map(f => f.name)
-      : (rawData.length > 0 ? Object.keys(rawData[0]) : []);
+
+    // Use custom column config if available, otherwise auto-detect
+    const visibleCols = state.datalistColumns.filter(c => c.visible);
+    let columnFields: string[];
+    let columnLabels: string[];
+    if (visibleCols.length > 0) {
+      columnFields = visibleCols.map(c => c.field);
+      columnLabels = visibleCols.map(c => c.label);
+    } else {
+      columnFields = state.fields.length > 0
+        ? state.fields.map(f => f.name)
+        : (rawData.length > 0 ? Object.keys(rawData[0]) : []);
+      columnLabels = columnFields;
+    }
 
     const rows = rawData.slice(0, state.limit || 10);
 
-    const headerCells = columns.map(c => `<th>${escapeHtml(c)}</th>`).join('');
+    const headerCells = columnLabels.map(c => `<th>${escapeHtml(c)}</th>`).join('');
     const bodyRows = rows.map(row => {
-      const cells = columns.map(c => {
+      const cells = columnFields.map(c => {
         const val = row[c];
         return `<td>${val === null || val === undefined ? '\u2014' : escapeHtml(String(val))}</td>`;
       }).join('');
       return `<tr>${cells}</tr>`;
     }).join('');
 
+    // Feature badges
+    const badges: string[] = [];
+    if (state.datalistRecherche) badges.push('Recherche');
+    if (state.datalistFiltres) badges.push('Filtres');
+    if (state.datalistExportCsv) badges.push('Export CSV');
+    const badgesHtml = badges.length > 0
+      ? `<p class="fr-text--xs fr-mb-1w" style="color: var(--text-mention-grey);">${badges.join(' \u00b7 ')}</p>`
+      : '';
+
     const datalistCard = document.createElement('div');
     datalistCard.className = 'datalist-card';
     datalistCard.innerHTML = `
       <p class="fr-text--sm fr-mb-1w">${rawData.length} enregistrement(s)${rows.length < rawData.length ? `, ${rows.length} affich\u00e9(s)` : ''}</p>
+      ${badgesHtml}
       <div class="fr-table" style="overflow-x: auto;">
         <table>
           <thead><tr>${headerCells}</tr></thead>

@@ -23,6 +23,10 @@ describe('builder chart-renderer', () => {
     state.title = 'Test Chart';
     state.palette = 'default';
     state.color2 = '#E1000F';
+    state.datalistRecherche = true;
+    state.datalistFiltres = false;
+    state.datalistExportCsv = true;
+    state.datalistColumns = [];
 
     // Set up minimal DOM structure expected by renderChart
     document.body.innerHTML = `
@@ -824,6 +828,74 @@ describe('builder chart-renderer', () => {
       renderChart();
 
       expect(container.querySelector('.datalist-card')).toBeNull();
+    });
+
+    it('should use custom column labels when datalistColumns is set', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [
+        { region: 'Bretagne', population: 3300000 },
+      ];
+      state.fields = [
+        { name: 'region', type: 'string', sample: 'Bretagne' },
+        { name: 'population', type: 'number', sample: 3300000 },
+      ];
+      state.datalistColumns = [
+        { field: 'region', label: 'Nom Region', visible: true, filtrable: false },
+        { field: 'population', label: 'Pop.', visible: true, filtrable: false },
+      ];
+      state.limit = 10;
+
+      renderChart();
+
+      const headers = document.querySelectorAll('.datalist-card th');
+      expect(headers).toHaveLength(2);
+      expect(headers[0].textContent).toBe('Nom Region');
+      expect(headers[1].textContent).toBe('Pop.');
+    });
+
+    it('should hide columns where visible is false', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [
+        { region: 'Bretagne', population: 3300000, code: '35' },
+      ];
+      state.fields = [
+        { name: 'region', type: 'string', sample: 'Bretagne' },
+        { name: 'population', type: 'number', sample: 3300000 },
+        { name: 'code', type: 'string', sample: '35' },
+      ];
+      state.datalistColumns = [
+        { field: 'region', label: 'Region', visible: true, filtrable: false },
+        { field: 'population', label: 'Pop.', visible: false, filtrable: false },
+        { field: 'code', label: 'Code', visible: true, filtrable: false },
+      ];
+      state.limit = 10;
+
+      renderChart();
+
+      const headers = document.querySelectorAll('.datalist-card th');
+      expect(headers).toHaveLength(2);
+      expect(headers[0].textContent).toBe('Region');
+      expect(headers[1].textContent).toBe('Code');
+    });
+
+    it('should show feature badges when options are enabled', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [{ region: 'Bretagne' }];
+      state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+      state.datalistRecherche = true;
+      state.datalistFiltres = true;
+      state.datalistExportCsv = true;
+      state.limit = 10;
+
+      renderChart();
+
+      const card = document.querySelector('.datalist-card')!;
+      expect(card.innerHTML).toContain('Recherche');
+      expect(card.innerHTML).toContain('Filtres');
+      expect(card.innerHTML).toContain('Export CSV');
     });
   });
 });

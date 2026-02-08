@@ -36,6 +36,10 @@ function resetState(): void {
   state.chartInstance = null;
   state.refreshInterval = 0;
   state.apiUrl = '';
+  state.datalistRecherche = true;
+  state.datalistFiltres = false;
+  state.datalistExportCsv = true;
+  state.datalistColumns = [];
 }
 
 describe('generateGouvQueryCode', () => {
@@ -602,5 +606,65 @@ describe('generateCodeForLocalData', () => {
 
     const code = document.getElementById('generated-code')!.textContent!;
     expect(code).toContain('tri="region:desc"');
+  });
+
+  it('should use custom datalist columns when configured', () => {
+    state.chartType = 'datalist';
+    state.localData = [{ region: 'Bretagne', population: 3300000, code: '35' }];
+    state.fields = [
+      { name: 'region', type: 'string', sample: 'Bretagne' },
+      { name: 'population', type: 'number', sample: 3300000 },
+      { name: 'code', type: 'string', sample: '35' },
+    ];
+    state.datalistColumns = [
+      { field: 'region', label: 'Region', visible: true, filtrable: false },
+      { field: 'population', label: 'Pop.', visible: true, filtrable: false },
+      { field: 'code', label: 'Code', visible: false, filtrable: false },
+    ];
+    state.labelField = 'region';
+    state.limit = 10;
+
+    generateCodeForLocalData();
+
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('colonnes="region:Region, population:Pop."');
+    expect(code).not.toContain('code:Code');
+  });
+
+  it('should not include recherche attribute when datalistRecherche is false', () => {
+    state.chartType = 'datalist';
+    state.localData = [{ region: 'Bretagne' }];
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    state.labelField = 'region';
+    state.limit = 10;
+    state.datalistRecherche = false;
+    state.datalistExportCsv = false;
+
+    generateCodeForLocalData();
+
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).not.toContain('recherche');
+    expect(code).not.toContain('export="csv"');
+  });
+
+  it('should include filtres attribute when datalistFiltres is true', () => {
+    state.chartType = 'datalist';
+    state.localData = [{ region: 'Bretagne', code: '35' }];
+    state.fields = [
+      { name: 'region', type: 'string', sample: 'Bretagne' },
+      { name: 'code', type: 'string', sample: '35' },
+    ];
+    state.datalistColumns = [
+      { field: 'region', label: 'Region', visible: true, filtrable: true },
+      { field: 'code', label: 'Code', visible: true, filtrable: false },
+    ];
+    state.datalistFiltres = true;
+    state.labelField = 'region';
+    state.limit = 10;
+
+    generateCodeForLocalData();
+
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('filtres="region"');
   });
 });

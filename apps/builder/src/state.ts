@@ -40,6 +40,14 @@ export type AggregationType = 'avg' | 'sum' | 'count' | 'min' | 'max';
 /** Sort orders */
 export type SortOrder = 'asc' | 'desc' | 'none';
 
+/** A datalist column definition */
+export interface DatalistColumn {
+  field: string;
+  label: string;
+  visible: boolean;
+  filtrable: boolean;
+}
+
 /** A field descriptor extracted from data */
 export interface Field {
   name: string;
@@ -110,6 +118,10 @@ export interface BuilderState {
   queryFilter: string;
   queryGroupBy: string;
   queryAggregate: string;
+  datalistRecherche: boolean;
+  datalistFiltres: boolean;
+  datalistExportCsv: boolean;
+  datalistColumns: DatalistColumn[];
 }
 
 // --- Draft persistence helpers ---
@@ -166,4 +178,8 @@ export const state: BuilderState = {
   queryFilter: '',
   queryGroupBy: '',
   queryAggregate: '',
+  datalistRecherche: true,
+  datalistFiltres: false,
+  datalistExportCsv: true,
+  datalistColumns: [],
 };
