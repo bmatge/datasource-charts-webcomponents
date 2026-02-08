@@ -43,16 +43,22 @@ describe('generateGouvQueryCode', () => {
     resetState();
   });
 
-  it('should return empty queryElement when advancedMode is false', () => {
+  it('should always generate a gouv-query element even when advancedMode is false', () => {
     state.advancedMode = false;
-    const result = generateGouvQueryCode('my-source', 'fields.region');
-    expect(result.queryElement).toBe('');
+    state.aggregation = 'avg';
+    state.sortOrder = 'desc';
+    state.limit = 10;
+    const result = generateGouvQueryCode('my-source', 'fields.region', 'fields.population');
+    expect(result.queryElement).toContain('<gouv-query');
+    expect(result.queryElement).toContain('source="my-source"');
+    expect(result.queryElement).toContain('group-by="fields.region"');
+    expect(result.queryElement).toContain('aggregate="fields.population:avg"');
   });
 
-  it('should return chartSource = sourceId when advancedMode is false', () => {
+  it('should always return chartSource = "query-data"', () => {
     state.advancedMode = false;
-    const result = generateGouvQueryCode('my-source', 'fields.region');
-    expect(result.chartSource).toBe('my-source');
+    const result = generateGouvQueryCode('my-source', 'fields.region', 'fields.population');
+    expect(result.chartSource).toBe('query-data');
   });
 
   it('should build gouv-query element with source, group-by, filter, aggregate, order-by, limit when advancedMode is true', () => {
@@ -63,7 +69,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
     state.limit = 5;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region');
+    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
 
     expect(result.queryElement).toContain('<gouv-query');
     expect(result.queryElement).toContain('id="query-data"');
@@ -80,7 +86,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
     state.limit = 10;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region');
+    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.chartSource).toBe('query-data');
   });
 
@@ -90,19 +96,19 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
     state.limit = 10;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.commune');
+    const result = generateGouvQueryCode('chart-data', 'fields.commune', 'fields.value');
     expect(result.queryElement).toContain('group-by="fields.commune"');
   });
 
-  it('should use value__aggregation for order-by when queryAggregate is empty', () => {
+  it('should use valueFieldPath__aggregation for order-by when queryAggregate is empty', () => {
     state.advancedMode = true;
     state.queryAggregate = '';
     state.aggregation = 'sum';
     state.sortOrder = 'asc';
     state.limit = 10;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region');
-    expect(result.queryElement).toContain('order-by="value__sum:asc"');
+    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
+    expect(result.queryElement).toContain('order-by="fields.population__sum:asc"');
   });
 
   it('should not include filter attribute when queryFilter is empty', () => {
@@ -111,18 +117,19 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
     state.limit = 5;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region');
+    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.queryElement).not.toContain('filter=');
   });
 
-  it('should not include aggregate attribute when queryAggregate is empty', () => {
+  it('should use default aggregate from form when queryAggregate is empty', () => {
     state.advancedMode = true;
     state.queryAggregate = '';
+    state.aggregation = 'avg';
     state.sortOrder = 'desc';
     state.limit = 5;
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region');
-    expect(result.queryElement).not.toContain('aggregate=');
+    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
+    expect(result.queryElement).toContain('aggregate="fields.population:avg"');
   });
 });
 
@@ -426,13 +433,12 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain("type: 'scatter'");
-    expect(code).toContain('age vs salary');
+    expect(code).toContain('<scatter-chart');
     expect(code).toContain('Nuage de points');
-    expect(code).toContain('chart.js');
+    expect(code).toContain('DSFRChart');
   });
 
-  it('should generate standard chart code with chart.js for bar type', () => {
+  it('should generate DSFR bar-chart element for bar type', () => {
     state.chartType = 'bar';
     state.labelField = 'region';
     state.valueField = 'population';
@@ -445,9 +451,8 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain("type: 'bar'");
-    expect(code).toContain('chart.js');
-    expect(code).toContain('myChart');
+    expect(code).toContain('<bar-chart');
+    expect(code).toContain('DSFRChart');
     expect(code).toContain('Population par region');
     expect(code).toContain('Bretagne');
     expect(code).toContain('Normandie');
@@ -463,7 +468,7 @@ describe('generateCodeForLocalData', () => {
     expect(() => generateCodeForLocalData()).not.toThrow();
   });
 
-  it('should generate horizontalBar as bar type with indexAxis y', () => {
+  it('should generate horizontalBar as bar-chart with horizontal attribute', () => {
     state.chartType = 'horizontalBar';
     state.labelField = 'region';
     state.valueField = 'count';
@@ -472,8 +477,8 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain("type: 'bar'");
-    expect(code).toContain("indexAxis: 'y'");
+    expect(code).toContain('<bar-chart');
+    expect(code).toContain('horizontal');
   });
 
   it('should generate map code for map chart type', () => {
@@ -506,7 +511,7 @@ describe('generateCodeForLocalData', () => {
     expect(code).toContain('En milliers');
   });
 
-  it('should embed data as JSON in standard chart code', () => {
+  it('should embed data as x/y attributes in DSFR chart element', () => {
     state.chartType = 'line';
     state.labelField = 'year';
     state.valueField = 'gdp';
@@ -518,10 +523,12 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain(JSON.stringify(state.data, null, 2));
+    expect(code).toContain('<line-chart');
+    expect(code).toContain("x='[[\"2020\",\"2021\"]]'");
+    expect(code).toContain("y='[[1000,1100]]'");
   });
 
-  it('should use multi-color background for pie chart', () => {
+  it('should generate pie-chart with fill attribute for pie type', () => {
     state.chartType = 'pie';
     state.labelField = 'category';
     state.valueField = 'amount';
@@ -533,8 +540,8 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain("type: 'pie'");
-    expect(code).toContain('legend: { display: true }');
+    expect(code).toContain('<pie-chart');
+    expect(code).toContain('fill');
   });
 
   it('should handle KPI with unit from kpi-unit input', () => {

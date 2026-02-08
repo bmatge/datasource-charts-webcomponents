@@ -9,7 +9,6 @@ export { GouvSource } from './components/gouv-source.js';
 export { GouvQuery } from './components/gouv-query.js';
 export { GouvKpi } from './components/gouv-kpi.js';
 export { GouvDatalist } from './components/gouv-datalist.js';
-export { GouvChart } from './components/gouv-chart.js';
 export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
 
 // Composants de layout

@@ -31,7 +31,7 @@ describe('getPreviewHTML', () => {
   });
 
   it('should include the code in the body', () => {
-    const code = '<gouv-chart type="bar" data="..."></gouv-chart>';
+    const code = '<gouv-dsfr-chart type="bar" source="data"></gouv-dsfr-chart>';
     const result = getPreviewHTML(code);
     expect(result).toContain(code);
   });

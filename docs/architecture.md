@@ -26,7 +26,6 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
 /
   src/                          Bibliotheque de Web Components (point d'entree: src/index.ts)
     components/
-      gouv-chart.ts             Graphique Chart.js generique
       gouv-dsfr-chart.ts        Graphique DSFR (@gouvfr/dsfr-chart)
       gouv-kpi.ts               Indicateur chiffre cle
       gouv-query.ts             Filtrage et aggregation de donnees
@@ -168,14 +167,14 @@ Les beacon logs sont persistes via un volume Docker (`beacon-logs:/var/log/nginx
 
 ### 3.5 Communication intra-composants
 
-A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-chart>`, `<gouv-kpi>`, `<gouv-query>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
+A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-dsfr-chart>`, `<gouv-kpi>`, `<gouv-query>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
 
 ```
 <gouv-source src="...">       Charge les donnees, emet DATA_EVENTS.LOADED
     |
     |-- CustomEvent sur document
     v
-<gouv-chart source="...">     Ecoute via SourceSubscriberMixin
+<gouv-dsfr-chart source="...">  Ecoute via SourceSubscriberMixin
 <gouv-kpi source="...">       Ecoute via SourceSubscriberMixin
 <gouv-query source="...">     Ecoute via SourceSubscriberMixin
 ```

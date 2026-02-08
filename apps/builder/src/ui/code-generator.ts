@@ -9,14 +9,36 @@ import {
   formatKPIValue,
   toNumber,
   isValidDeptCode,
-  PALETTE_PRIMARY_COLOR,
-  PALETTE_COLORS,
   toastWarning,
   toastError,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
 import { updateAccessibleTable } from './accessible-table.js';
+
+/** Maps builder chart types to DSFR Chart element tags */
+const DSFR_TAG_MAP: Record<string, string> = {
+  bar: 'bar-chart',
+  horizontalBar: 'bar-chart',
+  line: 'line-chart',
+  pie: 'pie-chart',
+  doughnut: 'pie-chart',
+  radar: 'radar-chart',
+  scatter: 'scatter-chart',
+  gauge: 'gauge-chart',
+  'bar-line': 'bar-line-chart',
+  map: 'map-chart',
+  'map-reg': 'map-chart-reg',
+};
+
+/** Build DSFR Chart specific attributes from builder state */
+function dsfrChartAttrs(): string {
+  const extra: string[] = [];
+  if (state.chartType === 'horizontalBar') extra.push('horizontal');
+  if (state.chartType === 'pie') extra.push('fill');
+  if (state.chartType === 'doughnut') { /* no fill = donut */ }
+  return extra.map(a => `\n    ${a}`).join('');
+}
 
 /**
  * Convert gouv-query filter format (field:operator:value) to ODSQL where clause.
@@ -74,13 +96,34 @@ function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): 
 }
 
 /**
- * Build the colonnes attribute for gouv-datalist from available fields.
+ * Build the colonnes attribute for gouv-datalist.
+ * Uses custom column config if available, otherwise auto-detects from fields.
  */
 function buildColonnesAttr(): string {
+  // Use custom columns if configured
+  const visibleCols = state.datalistColumns.filter(c => c.visible);
+  if (visibleCols.length > 0) {
+    return visibleCols.map(c => `${c.field}:${c.label}`).join(', ');
+  }
+  // Fallback: auto-detect from fields or raw data
   const fields = state.fields.length > 0
     ? state.fields.map(f => f.name)
     : (state.localData && state.localData.length > 0 ? Object.keys(state.localData[0]) : []);
   return fields.map(f => `${f}:${f}`).join(', ');
+}
+
+/**
+ * Build optional datalist attributes (recherche, filtres, export) from state.
+ */
+function buildDatalistAttrs(): string {
+  let attrs = '';
+  if (state.datalistRecherche) attrs += '\n    recherche';
+  if (state.datalistExportCsv) attrs += '\n    export="csv"';
+  const filtrables = state.datalistColumns.filter(c => c.visible && c.filtrable).map(c => c.field);
+  if (state.datalistFiltres && filtrables.length > 0) {
+    attrs += `\n    filtres="${filtrables.join(',')}"`;
+  }
+  return attrs;
 }
 
 /**
@@ -430,10 +473,8 @@ export function generateCodeForLocalData(): void {
 
   <gouv-datalist
     id="my-table"
-    colonnes="${colonnes}"
-    recherche${triAttr}
-    pagination="${state.limit || 10}"
-    export="csv">
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="${state.limit || 10}">
   </gouv-datalist>
 </div>
 
@@ -451,46 +492,25 @@ datalist.onSourceData(data);
 
   // Handle Scatter type (local data)
   if (state.chartType === 'scatter') {
-    const scatterColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-    const scatterData = state.data.map(d => ({
-      x: (d[state.labelField] as number) || 0,
-      y: (d.value as number) || 0,
-    }));
-    const code = `<!-- Nuage de points g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
-<!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
-<!-- Palette: ${state.palette} -->
+    const xValues = state.data.map(d => (d[state.labelField] as number) || 0);
+    const yValues = state.data.map(d => (d.value as number) || 0);
+    const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
-  <div style="height: 400px;"><canvas id="myChart"></canvas></div>
-</div>
 
-<script>
-const data = ${JSON.stringify(scatterData, null, 2)};
-
-new Chart(document.getElementById('myChart'), {
-  type: 'scatter',
-  data: {
-    datasets: [{
-      label: '${state.labelField} vs ${state.valueField}',
-      data: data,
-      backgroundColor: '${scatterColor}',
-      pointRadius: 6
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { title: { display: true, text: '${state.labelField}' } },
-      y: { title: { display: true, text: '${state.valueField}' } }
-    }
-  }
-});
-<\/script>`;
+  <scatter-chart
+    x='${JSON.stringify([xValues])}'
+    y='${JSON.stringify([yValues])}'
+    name='${JSON.stringify([`${state.labelField} vs ${state.valueField}`])}'
+    selected-palette="${state.palette}">
+  </scatter-chart>
+</div>`;
     codeEl.textContent = code;
     return;
   }
@@ -549,145 +569,121 @@ new Chart(document.getElementById('myChart'), {
     return;
   }
 
-  // Get palette colors for code generation
-  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-  const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
+  // Build DSFR Chart element for static embed
+  const labels = state.data.map(d => (d[state.labelField] as string) || 'N/A');
+  const values = state.data.map(d => Math.round(((d.value as number) || 0) * 100) / 100);
 
-  // Check for multi-series support
   const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
-  const isMultiColor = ['pie', 'doughnut', 'radar'].includes(state.chartType);
+  const values2 = hasSecondSeries
+    ? state.data.map(d => Math.round(((d.value2 as number) || 0) * 100) / 100)
+    : null;
 
-  // Build datasets code
-  let datasetsCode: string;
-  if (hasSecondSeries) {
-    datasetsCode = `[{
-      label: '${state.valueField}',
-      data: values,
-      backgroundColor: '${primaryColor}',
-      borderColor: '${primaryColor}',
-      borderWidth: ${state.chartType === 'line' ? 2 : 1}
-    }, {
-      label: '${state.valueField2}',
-      data: values2,
-      backgroundColor: '${state.color2}',
-      borderColor: '${state.color2}',
-      borderWidth: ${state.chartType === 'line' ? 2 : 1}
-    }]`;
-  } else {
-    datasetsCode = `[{
-      label: '${state.valueField}',
-      data: values,
-      backgroundColor: ${JSON.stringify(isMultiColor ? paletteColors.slice(0, state.limit) : primaryColor)},
-      borderColor: '${primaryColor}',
-      borderWidth: ${state.chartType === 'line' ? 2 : 1}
-    }]`;
-  }
+  const dsfrTag = DSFR_TAG_MAP[state.chartType] || 'bar-chart';
+  const x = JSON.stringify([labels]);
+  const y = values2 ? JSON.stringify([values, values2]) : JSON.stringify([values]);
+  const seriesNames = values2
+    ? JSON.stringify([state.valueField, state.valueField2])
+    : JSON.stringify([state.valueField]);
 
-  const code = `<!-- Graphique g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
-<!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
+  // Build extra attributes
+  const extraAttrs: string[] = [];
+  if (state.chartType === 'horizontalBar') extraAttrs.push('horizontal');
+  if (state.chartType === 'pie') extraAttrs.push('fill');
+  const extraStr = extraAttrs.map(a => `\n    ${a}`).join('');
 
-<!-- D\u00e9pendances CSS (DSFR) -->
+  const code = `<!-- Graphique genere avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
+
+<!-- Dependances (DSFR + DSFR Chart) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-
-<!-- D\u00e9pendances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <div id="chart-container" style="height: 400px; position: relative;">
-    <canvas id="myChart"></canvas>
-  </div>
-</div>
-
-<script>
-// Donn\u00e9es int\u00e9gr\u00e9es (depuis ${state.savedSource?.type === 'grist' ? 'Grist' : 'source manuelle'})
-const data = ${JSON.stringify(state.data, null, 2)};
-
-const labels = data.map(d => d['${state.labelField}'] || 'N/A');
-const values = data.map(d => Math.round((d.value || 0) * 100) / 100);${hasSecondSeries ? `
-const values2 = data.map(d => Math.round((d.value2 || 0) * 100) / 100);` : ''}
-
-new Chart(document.getElementById('myChart'), {
-  type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
-  data: {
-    labels: labels,
-    datasets: ${datasetsCode}
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''},
-    plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
-  }
-});
-<\/script>`;
+  <${dsfrTag}
+    x='${x}'
+    y='${y}'
+    name='${seriesNames}'
+    selected-palette="${state.palette}"${extraStr}>
+  </${dsfrTag}>
+</div>`;
 
   codeEl.textContent = code;
 }
 
 /**
- * Generate gouv-query HTML when advanced mode is enabled.
- * Returns { queryElement, chartSource }.
+ * Generate gouv-query HTML for dynamic mode.
+ * Always generates a <gouv-query> to handle aggregation, sorting and filtering.
+ * Returns { queryElement, chartSource, labelField, valueField }.
  */
 export function generateGouvQueryCode(
   sourceId: string,
-  labelFieldPath: string
-): { queryElement: string; chartSource: string } {
-  if (!state.advancedMode) {
-    return { queryElement: '', chartSource: sourceId };
-  }
-
+  labelFieldPath: string,
+  valueFieldPath: string
+): { queryElement: string; chartSource: string; labelField: string; valueField: string } {
   const attrs: string[] = [];
   attrs.push(`source="${sourceId}"`);
 
-  // Group by: use custom field or labelField
-  const groupByField = state.queryGroupBy || labelFieldPath;
+  // Group by: advanced custom field or default labelField
+  const groupByField = state.advancedMode && state.queryGroupBy ? state.queryGroupBy : labelFieldPath;
   if (groupByField) {
     attrs.push(`group-by="${groupByField}"`);
   }
 
-  // Filters
-  if (state.queryFilter) {
+  // Filters (advanced mode only)
+  if (state.advancedMode && state.queryFilter) {
     attrs.push(`filter="${escapeHtml(state.queryFilter)}"`);
   }
 
-  // Aggregations: use advanced ones or default
-  if (state.queryAggregate) {
-    attrs.push(`aggregate="${escapeHtml(state.queryAggregate)}"`);
-  }
+  // Aggregations: advanced custom or default from form
+  let aggregateExpr: string;
+  let sortField: string;
+  let resultValueField: string;
 
-  // Sort and limit (use form values)
+  if (state.advancedMode && state.queryAggregate) {
+    aggregateExpr = state.queryAggregate;
+    const firstAgg = aggregateExpr.split(',')[0].trim();
+    const parts = firstAgg.split(':');
+    sortField = parts.length >= 2 ? `${parts[0]}__${parts[1]}` : groupByField;
+    resultValueField = sortField;
+  } else {
+    aggregateExpr = `${valueFieldPath}:${state.aggregation}`;
+    sortField = `${valueFieldPath}__${state.aggregation}`;
+    resultValueField = sortField;
+  }
+  attrs.push(`aggregate="${escapeHtml(aggregateExpr)}"`);
+
+  // Sort
   if (state.sortOrder && state.sortOrder !== 'none') {
-    // Build sort field based on aggregation
-    let sortField = labelFieldPath;
-    if (state.queryAggregate) {
-      // If we have custom aggregations, use the first aggregated field
-      const firstAgg = state.queryAggregate.split(',')[0].trim();
-      const parts = firstAgg.split(':');
-      if (parts.length >= 2) {
-        sortField = `${parts[0]}__${parts[1]}`;
-      }
-    } else {
-      // Otherwise use value__aggregation
-      sortField = `value__${state.aggregation}`;
-    }
     attrs.push(`order-by="${sortField}:${state.sortOrder}"`);
   }
 
+  // Limit
   if (state.limit > 0) {
     attrs.push(`limit="${state.limit}"`);
   }
 
+  const comment = state.advancedMode
+    ? '<!-- Requete avancee (filtrage et agregation) -->'
+    : '<!-- Agregation et tri des donnees -->';
+
   const queryElement = `
-  <!-- Requ\u00eate avanc\u00e9e (filtrage et agr\u00e9gation) -->
+  ${comment}
   <gouv-query
     id="query-data"
     ${attrs.join('\n    ')}>
   </gouv-query>`;
 
-  return { queryElement, chartSource: 'query-data' };
+  return {
+    queryElement,
+    chartSource: 'query-data',
+    labelField: groupByField,
+    valueField: resultValueField,
+  };
 }
 
 /**
@@ -725,14 +721,7 @@ export function generateDynamicCode(): void {
 
   const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
-  // Determine chart type for gouv-chart
-  const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
-  const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
-
-  // Get primary color from palette (gouv-chart uses color, not selected-palette)
-  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-
-  // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
+  // Handle KPI type (no DSFR Chart equivalent, fallback to embedded)
   if (state.chartType === 'kpi') {
     generateCodeForLocalData();
     return;
@@ -765,69 +754,68 @@ export function generateDynamicCode(): void {
 
   <gouv-datalist
     source="table-data"
-    colonnes="${colonnes}"
-    recherche${triAttr}
-    pagination="${state.limit || 10}"
-    export="csv">
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="${state.limit || 10}">
   </gouv-datalist>
 </div>`;
     codeEl.textContent = code;
     return;
   }
 
-  // Generate gouv-query if advanced mode is enabled
-  const { queryElement, chartSource } = generateGouvQueryCode('chart-data', labelFieldPath);
+  // Generate gouv-query for aggregation, sorting, filtering
+  const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField } =
+    generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
 
-  // In advanced mode with gouv-query, the chart uses pre-processed data
-  const chartAggregation = state.advancedMode ? 'none' : state.aggregation;
-  const chartLimit = state.advancedMode ? 0 : state.limit;
-  const chartSortOrder = state.advancedMode ? 'none' : state.sortOrder;
+  // Map palette
+  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
+  const palette = isMap
+    ? (state.palette.includes('sequential') || state.palette.includes('divergent') ? state.palette : 'sequentialAscending')
+    : state.palette;
 
-  const code = `<!-- Graphique dynamique g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
+  // Map-specific attributes
+  const codeFieldAttr = isMap && state.codeField ? `\n    code-field="${state.codeField}"` : '';
+
+  const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
-<!-- Les donn\u00e9es sont charg\u00e9es via le proxy ${PROXY_BASE_URL} -->
-${state.advancedMode ? '<!-- Mode avanc\u00e9 activ\u00e9 : filtrage et agr\u00e9gation via gouv-query -->' : ''}
+<!-- Les donnees sont chargees via le proxy ${PROXY_BASE_URL} -->
+${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
 
-<!-- D\u00e9pendances CSS (DSFR) -->
+<!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 
-<!-- D\u00e9pendances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<!-- Dependances JS -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <!-- Source de donn\u00e9es (via proxy chartsbuilder.matge.com) -->
+  <!-- Source de donnees (via proxy chartsbuilder.matge.com) -->
   <gouv-source
     id="chart-data"
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
   </gouv-source>
 ${queryElement}
-  <!-- Graphique (se met \u00e0 jour automatiquement) -->
-  <gouv-chart
+  <!-- Graphique DSFR (se met a jour automatiquement) -->
+  <gouv-dsfr-chart
     source="${chartSource}"
-    type="${chartType}"${indexAxisAttr}
-    label-field="${state.advancedMode ? state.queryGroupBy || labelFieldPath : labelFieldPath}"
-    value-field="${state.advancedMode && state.queryAggregate ? state.queryAggregate.split(',')[0].trim().replace(':', '__') : valueFieldPath}"
-    aggregation="${chartAggregation}"
-    limit="${chartLimit}"
-    sort-order="${chartSortOrder}"
-    ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
-    ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
-    color="${primaryColor}"
-    height="400">
-  </gouv-chart>
+    type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
+    label-field="${queryLabelField}"
+    value-field="${queryValueField}"
+    name="${escapeHtml(state.title || state.valueField)}"
+    selected-palette="${palette}">
+  </gouv-dsfr-chart>
 </div>`;
 
   codeEl.textContent = code;
 }
 
 /**
- * Generate code using gouv-source + gouv-chart for API sources.
+ * Generate code using gouv-source + gouv-dsfr-chart for API sources.
  */
 export function generateDynamicCodeForApi(): void {
   const source = state.savedSource;
@@ -845,17 +833,10 @@ export function generateDynamicCodeForApi(): void {
 
   const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
-  // Determine chart type for gouv-chart
-  const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
-  const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
-
-  // Get primary color from palette (gouv-chart uses color, not selected-palette)
-  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-
   // Handle data path transform
   const transformAttr = source.dataPath ? `\n    transform="${source.dataPath}"` : '';
 
-  // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
+  // Handle KPI type (no DSFR Chart equivalent, fallback to embedded)
   if (state.chartType === 'kpi') {
     generateCodeForLocalData();
     return;
@@ -887,26 +868,30 @@ export function generateDynamicCodeForApi(): void {
 
   <gouv-datalist
     source="table-data"
-    colonnes="${colonnes}"
-    recherche${triAttr}
-    pagination="${state.limit || 10}"
-    export="csv">
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="${state.limit || 10}">
   </gouv-datalist>
 </div>`;
     codeEl.textContent = code;
     return;
   }
 
-  // Handle map chart (needs gouv-dsfr-chart)
-  const isMapChart = state.chartType === 'map' || state.chartType === ('mapReg' as any);
+  // Generate gouv-query for aggregation, sorting, filtering
+  const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField } =
+    generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
 
-  if (isMapChart) {
-    const mapPalette = state.palette.includes('sequential') || state.palette.includes('divergent')
-      ? state.palette
-      : 'sequentialAscending';
+  // Map palette
+  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
+  const palette = isMap
+    ? (state.palette.includes('sequential') || state.palette.includes('divergent') ? state.palette : 'sequentialAscending')
+    : state.palette;
 
-    const code = `<!-- Carte dynamique generee avec gouv-widgets Builder -->
+  // Map-specific attributes
+  const codeFieldAttr = isMap && state.codeField ? `\n    code-field="${state.codeField}"` : '';
+
+  const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -923,70 +908,19 @@ export function generateDynamicCodeForApi(): void {
 
   <!-- Source de donnees API -->
   <gouv-source
-    id="map-data"
-    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
-  </gouv-source>
-
-  <!-- Carte (se met a jour automatiquement) -->
-  <gouv-dsfr-chart
-    source="map-data"
-    type="${state.chartType === ('mapReg' as any) ? 'map-reg' : 'map'}"
-    code-field="${state.codeField}"
-    value-field="${valueFieldPath}"
-    aggregation="${state.aggregation}"
-    name="${state.title || 'Indicateur'}"
-    selected-palette="${mapPalette}">
-  </gouv-dsfr-chart>
-</div>`;
-
-    codeEl.textContent = code;
-    return;
-  }
-
-  // Generate gouv-query if advanced mode is enabled
-  const { queryElement, chartSource } = generateGouvQueryCode('chart-data', labelFieldPath);
-
-  // In advanced mode with gouv-query, the chart uses pre-processed data
-  const chartAggregation = state.advancedMode ? 'none' : state.aggregation;
-  const chartLimit = state.advancedMode ? 0 : state.limit;
-  const chartSortOrder = state.advancedMode ? 'none' : state.sortOrder;
-
-  const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
-<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
-${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
-
-<!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-
-<!-- Dependances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
-
-<div class="fr-container fr-my-4w">
-  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
-  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-
-  <!-- Source de donnees API -->
-  <gouv-source
     id="chart-data"
     url="${source.apiUrl}"${transformAttr}${refreshAttr}>
   </gouv-source>
 ${queryElement}
-  <!-- Graphique (se met a jour automatiquement) -->
-  <gouv-chart
+  <!-- Graphique DSFR (se met a jour automatiquement) -->
+  <gouv-dsfr-chart
     source="${chartSource}"
-    type="${chartType}"${indexAxisAttr}
-    label-field="${state.advancedMode ? state.queryGroupBy || labelFieldPath : labelFieldPath}"
-    value-field="${state.advancedMode && state.queryAggregate ? state.queryAggregate.split(',')[0].trim().replace(':', '__') : valueFieldPath}"
-    aggregation="${chartAggregation}"
-    limit="${chartLimit}"
-    sort-order="${chartSortOrder}"
-    ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
-    ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
-    color="${primaryColor}"
-    height="400">
-  </gouv-chart>
+    type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
+    label-field="${queryLabelField}"
+    value-field="${queryValueField}"
+    name="${escapeHtml(state.title || state.valueField)}"
+    selected-palette="${palette}">
+  </gouv-dsfr-chart>
 </div>`;
 
   codeEl.textContent = code;
@@ -1120,10 +1054,8 @@ loadGauge();
 
   <gouv-datalist
     id="my-table"
-    colonnes="${colonnes}"
-    recherche${triAttr}
-    pagination="${state.limit || 10}"
-    export="csv">
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="${state.limit || 10}">
   </gouv-datalist>
 </div>
 
@@ -1145,53 +1077,39 @@ loadTable();
 
   // Handle Scatter type
   if (state.chartType === 'scatter') {
-    const scatterColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-    const code = `<!-- Nuage de points g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
-<!-- Palette: ${state.palette} -->
+    const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
 
-<!-- D\u00e9pendances CSS (DSFR) -->
+<!-- Dependances (DSFR + DSFR Chart) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-
-<!-- D\u00e9pendances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-  <div style="height: 400px;"><canvas id="myChart"></canvas></div>
+  <div id="scatter-container"></div>
 </div>
 
-<script>
+<script type="module">
 const API_URL = '${apiUrl}';
 
 async function loadChart() {
   const response = await fetch(API_URL);
   const json = await response.json();
-  const data = (json.results || []).map(d => ({
-    x: d['${state.labelField}'] || 0,
-    y: d.value || 0
-  }));
+  const data = json.results || [];
 
-  new Chart(document.getElementById('myChart'), {
-    type: 'scatter',
-    data: {
-      datasets: [{
-        label: '${state.labelField} vs ${state.valueField}',
-        data: data,
-        backgroundColor: '${scatterColor}',
-        pointRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { title: { display: true, text: '${state.labelField}' } },
-        y: { title: { display: true, text: '${state.valueField}' } }
-      }
-    }
-  });
+  const xValues = data.map(d => d['${state.labelField}'] || 0);
+  const yValues = data.map(d => d.value || 0);
+
+  document.getElementById('scatter-container').innerHTML = \`
+    <scatter-chart
+      x='\${JSON.stringify([xValues])}'
+      y='\${JSON.stringify([yValues])}'
+      name='${JSON.stringify([`${state.labelField} vs ${state.valueField}`])}'
+      selected-palette="${state.palette}">
+    </scatter-chart>
+  \`;
 }
 
 loadChart();
@@ -1268,71 +1186,35 @@ loadMap();
     return;
   }
 
-  // Get palette colors for code generation
-  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
-  const paletteColors = PALETTE_COLORS[state.palette] || PALETTE_COLORS['categorical'];
-
-  // Check if we have multiple series
+  // Build DSFR Chart type and extra attributes
   const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
-  const isMultiColor = ['pie', 'doughnut', 'radar'].includes(state.chartType);
+  const dsfrTag = DSFR_TAG_MAP[state.chartType] || 'bar-chart';
 
-  // Build datasets code
-  let datasetsCode: string;
-  if (hasSecondSeries) {
-    datasetsCode = `[{
-        label: '${state.valueField}',
-        data: values,
-        backgroundColor: '${primaryColor}',
-        borderColor: '${primaryColor}',
-        borderWidth: ${state.chartType === 'line' ? 2 : 1}
-      }, {
-        label: '${state.valueField2}',
-        data: values2,
-        backgroundColor: '${state.color2}',
-        borderColor: '${state.color2}',
-        borderWidth: ${state.chartType === 'line' ? 2 : 1}
-      }]`;
-  } else {
-    datasetsCode = `[{
-        label: '${state.valueField}',
-        data: values,
-        backgroundColor: ${JSON.stringify(isMultiColor ? paletteColors.slice(0, state.limit) : primaryColor)},
-        borderColor: '${primaryColor}',
-        borderWidth: ${state.chartType === 'line' ? 2 : 1}
-      }]`;
-  }
+  const extraAttrs: string[] = [];
+  if (state.chartType === 'horizontalBar') extraAttrs.push('horizontal');
+  if (state.chartType === 'pie') extraAttrs.push('fill');
+  const extraStr = extraAttrs.map(a => `\n      ${a}`).join('');
 
-  const code = `<!-- Graphique g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
+  const seriesNames = hasSecondSeries
+    ? JSON.stringify([state.valueField, state.valueField2])
+    : JSON.stringify([state.valueField]);
 
-<!-- D\u00e9pendances CSS (DSFR) -->
+  const code = `<!-- Graphique genere avec gouv-widgets Builder -->
+
+<!-- Dependances (DSFR + DSFR Chart) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-
-<!-- D\u00e9pendances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-
-  <div id="chart-container" style="height: 400px; position: relative;">
-    <canvas id="myChart"></canvas>
-  </div>
-
-  <!-- Alternative accessible (RGAA) -->
-  <details class="fr-accordion fr-mt-2w">
-    <summary class="fr-accordion__btn">Voir les donn\u00e9es en tableau</summary>
-    <div class="fr-accordion__content">
-      <table class="fr-table" id="data-table">
-        <thead><tr><th>${escapeHtml(state.labelField)}</th><th>${state.valueField}${hasSecondSeries ? `</th><th>${state.valueField2}` : ''}</th></tr></thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
-  </details>
+  <div id="chart-container"></div>
 </div>
 
-<script>
-// URL de l'API avec agr\u00e9gation
+<script type="module">
+// URL de l'API avec agregation
 const API_URL = '${apiUrl}';
 
 async function loadChart() {
@@ -1344,26 +1226,16 @@ async function loadChart() {
   const values = data.map(d => Math.round((d.value || 0) * 100) / 100);${hasSecondSeries ? `
   const values2 = data.map(d => Math.round((d.value2 || 0) * 100) / 100);` : ''}
 
-  new Chart(document.getElementById('myChart'), {
-    type: '${state.chartType === 'horizontalBar' ? 'bar' : state.chartType}',
-    data: {
-      labels: labels,
-      datasets: ${datasetsCode}
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false${state.chartType === 'horizontalBar' ? ",\n      indexAxis: 'y'" : ''},
-      plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
-    }
-  });
+  const y = ${hasSecondSeries ? 'JSON.stringify([values, values2])' : 'JSON.stringify([values])'};
 
-  // Remplir le tableau accessible
-  const tbody = document.getElementById('table-body');
-  data.forEach(d => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + (d['${state.labelField}'] || 'N/A') + '</td><td>' + (d.value?.toFixed(2) || '\u2014') + '</td>${hasSecondSeries ? `<td>' + (d.value2?.toFixed(2) || '\u2014') + '</td>` : ''}';
-    tbody.appendChild(tr);
-  });
+  document.getElementById('chart-container').innerHTML = \`
+    <${dsfrTag}
+      x='\${JSON.stringify([labels])}'
+      y='\${y}'
+      name='${seriesNames}'
+      selected-palette="${state.palette}"${extraStr}>
+    </${dsfrTag}>
+  \`;
 }
 
 loadChart();

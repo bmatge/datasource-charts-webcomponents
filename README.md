@@ -16,7 +16,7 @@ Construite avec [Lit](https://lit.dev/), TypeScript, Vite et Vitest.
 │   └── favorites/      # Gestion des favoris
 ├── packages/
 │   └── shared/         # Utilitaires partages (@gouv-widgets/shared)
-├── src/                # Composants web (gouv-chart, gouv-kpi, etc.)
+├── src/                # Composants web (gouv-dsfr-chart, gouv-kpi, etc.)
 ├── dist/               # Build output (ESM + UMD)
 ├── demo/               # Pages de demonstration
 ├── tests/              # Tests Vitest
@@ -86,11 +86,11 @@ npm run dev --workspace=@gouv-widgets/app-favorites
 ```html
 <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.js"></script>
 
-<gouv-chart
+<gouv-dsfr-chart
   type="bar"
   title="Exemple"
   data='[{"label":"A","value":10},{"label":"B","value":20}]'>
-</gouv-chart>
+</gouv-dsfr-chart>
 ```
 
 ### Integration via npm
@@ -107,7 +107,7 @@ import 'gouv-widgets';
 
 | Composant       | Description                              |
 |-----------------|------------------------------------------|
-| `gouv-chart`    | Graphiques (barres, lignes, camembert...) |
+| `gouv-dsfr-chart` | Graphiques DSFR (barres, lignes, camembert...) |
 | `gouv-kpi`      | Indicateurs chiffres cles                |
 | `gouv-query`    | Filtrage et agregation de donnees        |
 
