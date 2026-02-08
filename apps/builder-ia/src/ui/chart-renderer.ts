@@ -142,7 +142,7 @@ export function applyChartConfig(config: ChartConfig): void {
 
   // Aggregate data for charts
   const aggregated: Record<string, { values: number[]; count: number; code: string | null }> = {};
-  const isMap = config.type === 'map';
+  const isMap = config.type === 'map' || config.type === 'map-reg';
   const codeField = config.codeField || config.labelField;
 
   workingData.forEach(record => {
@@ -274,8 +274,8 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
     return;
   }
 
-  // Handle map type (uses DSFR map-chart)
-  if (config.type === 'map') {
+  // Handle map type (uses DSFR map-chart / map-chart-reg)
+  if (config.type === 'map' || config.type === 'map-reg') {
     canvas.style.display = 'none';
     emptyState.style.display = 'none';
 
@@ -292,14 +292,15 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
       }
     });
 
+    const mapTag = config.type === 'map-reg' ? 'map-chart-reg' : 'map-chart';
     const mapCard = document.createElement('div');
     mapCard.className = 'map-card';
     mapCard.innerHTML = `
-      <map-chart
+      <${mapTag}
         data='${JSON.stringify(mapData)}'
         name="${escapeHtml(config.title || 'Carte')}"
         selected-palette="${config.palette || 'sequentialAscending'}"
-      ></map-chart>
+      ></${mapTag}>
     `;
     chartWrapper.appendChild(mapCard);
     return;
@@ -340,8 +341,9 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
     return;
   }
 
-  const chartType = config.type === 'horizontalBar' ? 'bar' : config.type;
+  const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
+  const isBarLine = config.type === 'bar-line';
 
   // Build datasets array
   const datasets: Record<string, unknown>[] = [{
@@ -350,17 +352,19 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
     backgroundColor: isMultiColor ? DSFR_COLORS.slice(0, data.length) : (config.color || '#000091'),
     borderColor: config.color || '#000091',
     borderWidth: config.type === 'line' ? 2 : 1,
+    type: isBarLine ? 'bar' : undefined,
   }];
 
-  // Handle multi-series (valueField2)
+  // Handle multi-series (valueField2) or bar-line second series
   if (config.valueField2 && config.data2 && config.data2.length > 0) {
     const values2 = config.data2.map(d => Math.round(d.value * 100) / 100);
     datasets.push({
       label: config.valueField2,
       data: values2,
-      backgroundColor: config.color2 || '#E1000F',
+      backgroundColor: isBarLine ? 'transparent' : (config.color2 || '#E1000F'),
       borderColor: config.color2 || '#E1000F',
-      borderWidth: config.type === 'line' ? 2 : 1,
+      borderWidth: 2,
+      type: isBarLine ? 'line' : undefined,
     });
   }
 

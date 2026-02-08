@@ -306,105 +306,105 @@ createChart();
 <\/script>`,
 
   // ---------------------------------------------------------
-  // EXEMPLE 3 : Graphique linéaire
-  // Distribution des prix
+  // EXEMPLE 3 : Graphique en ligne
+  // Evolution du prix moyen par departement (top 10)
   // ---------------------------------------------------------
   'line-chart': `<!--
-  EXEMPLE : Graphique linéaire DSFR
+  EXEMPLE : Graphique en ligne DSFR
 
-  Distribution des prix de contrôle technique
-  (histogramme des tranches de prix)
+  Ce code recupere le prix moyen du controle technique
+  par departement et l'affiche en graphique en ligne.
+
+  L'API utilisee : data.economie.gouv.fr
+  Dataset : prix-controle-technique
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Distribution des prix du contrôle technique</h2>
+  <h2>Prix moyen du controle technique par departement</h2>
   <p class="fr-text--sm fr-text--light">
-    Répartition des centres par tranche de prix
+    Source : data.economie.gouv.fr — Top 15 departements
   </p>
 
-  <div id="chart-container" style="height: 350px; position: relative;">
-    <p id="loading">Chargement et analyse des données...</p>
+  <div id="chart-container" style="height: 400px; position: relative;">
+    <p id="loading">Chargement des donnees...</p>
   </div>
 
-  <div class="fr-callout fr-mt-2w">
-    <p class="fr-callout__text">
-      <strong>Comment lire ce graphique :</strong>
-      Chaque barre représente le nombre de centres proposant
-      un prix dans cette tranche (par exemple : 60-65€).
-    </p>
-  </div>
+  <!-- Tableau alternatif pour l'accessibilite (RGAA) -->
+  <details class="fr-accordion fr-mt-2w">
+    <summary class="fr-accordion__btn">
+      Voir les donnees en tableau (accessibilite)
+    </summary>
+    <div class="fr-accordion__content">
+      <table class="fr-table" id="data-table">
+        <thead>
+          <tr>
+            <th>Departement</th>
+            <th>Prix moyen</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </details>
 </div>
 
 <script>
-// On récupère un échantillon de prix pour faire une distribution
-const API_URL = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records?' +
-  new URLSearchParams({
-    select: 'prix_visite',
-    where: 'prix_visite is not null and prix_visite > 0 and prix_visite < 200',
-    limit: '1000'
-  });
+// URL de base de l'API OpenDataSoft
+const API_BASE = 'https://data.economie.gouv.fr/api/explore/v2.1';
+const DATASET = 'prix-controle-technique';
+
+// Requete : prix moyen par departement, top 15
+const API_URL = \`\${API_BASE}/catalog/datasets/\${DATASET}/records?\` + new URLSearchParams({
+  select: 'nom_departement, avg(prix_visite) as prix_moyen',
+  group_by: 'nom_departement',
+  order_by: 'prix_moyen desc',
+  limit: '15'
+});
 
 async function fetchData() {
   try {
     const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(\`Erreur HTTP: \${response.status}\`);
     const json = await response.json();
-    // Extraire juste les prix
-    return json.results.map(r => r.prix_visite).filter(p => p);
+    return json.results;
   } catch (error) {
-    console.error('Erreur:', error);
+    console.error('Erreur lors du chargement:', error);
+    document.getElementById('loading').textContent =
+      'Erreur de chargement. Verifiez la console.';
     return [];
   }
 }
 
-// Fonction pour créer un histogramme (grouper par tranches)
-function createHistogram(prices, binSize = 5) {
-  const min = Math.floor(Math.min(...prices) / binSize) * binSize;
-  const max = Math.ceil(Math.max(...prices) / binSize) * binSize;
-
-  const bins = {};
-  for (let i = min; i < max; i += binSize) {
-    bins[\`\${i}-\${i + binSize}€\`] = 0;
-  }
-
-  prices.forEach(price => {
-    const binStart = Math.floor(price / binSize) * binSize;
-    const key = \`\${binStart}-\${binStart + binSize}€\`;
-    if (bins[key] !== undefined) {
-      bins[key]++;
-    }
-  });
-
-  return bins;
-}
-
 async function createChart() {
-  const prices = await fetchData();
-  if (prices.length === 0) {
-    document.getElementById('loading').textContent = 'Pas de données';
-    return;
-  }
+  const data = await fetchData();
+  if (data.length === 0) return;
 
   document.getElementById('loading').style.display = 'none';
 
-  // Créer l'histogramme avec des tranches de 5€
-  const histogram = createHistogram(prices, 5);
-
-  const labels = Object.keys(histogram);
-  const values = Object.values(histogram);
+  const labels = data.map(d => d.nom_departement || 'Non renseigne');
+  const values = data.map(d => Math.round(d.prix_moyen * 100) / 100);
 
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    'Graphique en ligne montrant le prix moyen du controle technique par departement');
   document.getElementById('chart-container').appendChild(canvas);
 
   new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Nombre de centres',
+        label: 'Prix moyen',
         data: values,
-        backgroundColor: '#6A6AF4', // Bleu cumulus DSFR
+        // Couleur DSFR : bleu france
         borderColor: '#000091',
-        borderWidth: 1
+        backgroundColor: 'rgba(0, 0, 145, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#000091',
+        pointRadius: 4
       }]
     },
     options: {
@@ -412,23 +412,33 @@ async function createChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: {
-          display: true,
-          text: \`Distribution sur \${prices.length} centres\`,
-          font: { size: 14 }
+        tooltip: {
+          callbacks: {
+            label: (ctx) => \`\${ctx.parsed.y.toFixed(2)} \u20ac\`
+          }
         }
       },
       scales: {
         y: {
-          beginAtZero: true,
-          title: { display: true, text: 'Nombre de centres' }
+          beginAtZero: false,
+          title: { display: true, text: 'Prix moyen (\u20ac)' }
         },
         x: {
-          title: { display: true, text: 'Tranche de prix' },
           ticks: { maxRotation: 45, minRotation: 45 }
         }
       }
     }
+  });
+
+  // Remplir le tableau pour l'accessibilite
+  const tbody = document.getElementById('table-body');
+  data.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = \`
+      <td>\${d.nom_departement || 'Non renseigne'}</td>
+      <td>\${d.prix_moyen?.toFixed(2) || '\u2014'} \u20ac</td>
+    \`;
+    tbody.appendChild(tr);
   });
 }
 

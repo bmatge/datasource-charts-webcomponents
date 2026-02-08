@@ -77,13 +77,13 @@ export function generateCode(config: ChartConfig, data: AggregatedResult[]): voi
     return;
   }
 
-  // Handle map type
-  if (config.type === 'map') {
+  // Handle map type (department or region)
+  if (config.type === 'map' || config.type === 'map-reg') {
     codeEl.textContent = generateMapCode(config, data);
     return;
   }
 
-  // Handle standard chart types (bar, line, pie, doughnut, radar, horizontalBar)
+  // Handle standard chart types (bar, line, pie, doughnut, radar, horizontalBar, bar-line)
   codeEl.textContent = generateStandardChartCode(config, data);
 }
 
@@ -208,53 +208,21 @@ loadKPI();
 // ---------------------------------------------------------------------------
 
 function generateGaugeCode(config: ChartConfig, data: AggregatedResult[]): string {
-  const gaugeValue = data[0]?.value || 0;
+  const gaugeValue = Math.round(data[0]?.value || 0);
 
   return `<!-- Jauge generee avec gouv-widgets Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
-<!-- Dependances CSS (DSFR) -->
+<!-- Dependances (DSFR Chart) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-
-<style>
-.gauge-card {
-  background: var(--background-default-grey);
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-  display: inline-block;
-}
-.gauge-container { position: relative; width: 200px; }
-.gauge-svg { width: 100%; height: auto; }
-.gauge-value {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-title-grey);
-}
-.gauge-label {
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--text-mention-grey);
-}
-</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <div class="fr-container fr-my-4w">
-  <div class="gauge-card">
-    <div class="gauge-container">
-      <svg viewBox="0 0 200 120" class="gauge-svg">
-        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20" stroke-linecap="round"/>
-        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${config.color || '#000091'}" stroke-width="20" stroke-linecap="round"
-              stroke-dasharray="${(gaugeValue / 100) * 251.2} 251.2"/>
-      </svg>
-      <div class="gauge-value">${Math.round(gaugeValue)}%</div>
-      <div class="gauge-label">${escapeHtml(config.title || 'Jauge')}</div>
-    </div>
-  </div>
+  <h2>${escapeHtml(config.title || 'Jauge')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+  <gauge-chart percent="${gaugeValue}" init="0" target="100"></gauge-chart>
 </div>`;
 }
 
@@ -389,12 +357,13 @@ async function loadMap() {
       }
     });
 
+    const mapTag = '${config.type === 'map-reg' ? 'map-chart-reg' : 'map-chart'}';
     document.getElementById('map-container').innerHTML = \`
-      <map-chart
+      <\${mapTag}
         data='\${JSON.stringify(mapData)}'
         name="${escapeHtml(config.title || 'Carte')}"
         selected-palette="${config.palette || 'sequentialAscending'}"
-      ></map-chart>
+      ></\${mapTag}>
     \`;
   } catch (error) {
     console.error('Erreur chargement carte:', error);
@@ -407,6 +376,7 @@ loadMap();
   }
 
   // Embedded-data variant
+  const mapTagEmbed = config.type === 'map-reg' ? 'map-chart-reg' : 'map-chart';
   return `<!-- Carte generee avec gouv-widgets Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
@@ -419,11 +389,11 @@ loadMap();
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
-  <map-chart
+  <${mapTagEmbed}
     data='${JSON.stringify(mapData)}'
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}"
-  ></map-chart>
+  ></${mapTagEmbed}>
 </div>`;
 }
 
@@ -508,7 +478,7 @@ async function loadChart() {
     const values = data.map(d => Math.round((d.value || 0) * 100) / 100);
 
     new Chart(document.getElementById('myChart'), {
-      type: '${config.type === 'horizontalBar' ? 'bar' : config.type}',
+      type: '${config.type === 'horizontalBar' || config.type === 'bar-line' ? 'bar' : config.type}',
       data: {
         labels: labels,
         datasets: [{
@@ -547,6 +517,7 @@ function generateStandardChartCodeEmbedded(config: ChartConfig, data: Aggregated
   const sourceName = state.source?.name || 'Donnees locales';
   const sourceType = state.source?.type === 'grist' ? 'Grist' : 'source manuelle';
   const hasSecondSeries = !!(config.valueField2 && config.data2 && config.data2.length > 0);
+  const isBarLine = config.type === 'bar-line';
 
   // Build datasets code
   let datasetsCode = `[{
@@ -554,16 +525,16 @@ function generateStandardChartCodeEmbedded(config: ChartConfig, data: Aggregated
       data: values,
       backgroundColor: ${isMultiColor ? 'DSFR_COLORS.slice(0, data.length)' : `'${config.color || '#000091'}'`},
       borderColor: '${config.color || '#000091'}',
-      borderWidth: ${config.type === 'line' ? 2 : 1}
+      borderWidth: ${config.type === 'line' ? 2 : 1}${isBarLine ? ",\n      type: 'bar'" : ''}
     }`;
 
   if (hasSecondSeries) {
     datasetsCode += `, {
       label: '${config.valueField2}',
       data: values2,
-      backgroundColor: '${config.color2 || '#E1000F'}',
+      backgroundColor: '${isBarLine ? 'transparent' : (config.color2 || '#E1000F')}',
       borderColor: '${config.color2 || '#E1000F'}',
-      borderWidth: ${config.type === 'line' ? 2 : 1}
+      borderWidth: 2${isBarLine ? ",\n      type: 'line'" : ''}
     }`;
   }
   datasetsCode += ']';
@@ -601,7 +572,7 @@ const values = data.map(d => Math.round(d.value * 100) / 100);
 ${hasSecondSeries ? 'const values2 = data2.map(d => Math.round(d.value * 100) / 100);' : ''}
 
 new Chart(document.getElementById('myChart'), {
-  type: '${config.type === 'horizontalBar' ? 'bar' : config.type}',
+  type: '${config.type === 'horizontalBar' || config.type === 'bar-line' ? 'bar' : config.type}',
   data: {
     labels: labels,
     datasets: ${datasetsCode}
@@ -609,7 +580,7 @@ new Chart(document.getElementById('myChart'), {
   options: {
     responsive: true,
     maintainAspectRatio: false${config.type === 'horizontalBar' ? ",\n    indexAxis: 'y'" : ''},
-    plugins: { legend: { display: ${hasSecondSeries || isMultiColor} } }
+    plugins: { legend: { display: ${hasSecondSeries || isMultiColor || isBarLine} } }
   }
 });
 <\/script>`;

@@ -137,9 +137,19 @@ Genere TOUJOURS UN SEUL bloc JSON par reponse.
 }
 ```
 
-### reloadData — recharger les donnees de la source
+### reloadData — recharger les donnees avec de nouveaux parametres ODSQL
 ```json
-{ "action": "reloadData" }
+{
+  "action": "reloadData",
+  "query": {
+    "where": "condition ODSQL (ex: prix > 50)",
+    "select": "champs a selectionner (ex: region, avg(prix) as prix_moyen)",
+    "group_by": "champ de groupement",
+    "order_by": "champ ASC|DESC",
+    "limit": 100
+  },
+  "reason": "Explication pour l'utilisateur"
+}
 ```
 
 ## Filtrage (attribut where de createChart)

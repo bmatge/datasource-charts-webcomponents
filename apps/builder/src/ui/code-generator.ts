@@ -554,6 +554,9 @@ export function generateDynamicCode(): void {
   const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
   const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
 
+  // Get primary color from palette (gouv-chart uses color, not selected-palette)
+  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
+
   // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
   if (state.chartType === 'kpi') {
     generateCodeForLocalData();
@@ -603,7 +606,7 @@ ${queryElement}
     sort-order="${chartSortOrder}"
     ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
     ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
-    selected-palette="${state.palette}"
+    color="${primaryColor}"
     height="400">
   </gouv-chart>
 </div>`;
@@ -633,6 +636,9 @@ export function generateDynamicCodeForApi(): void {
   // Determine chart type for gouv-chart
   const chartType = state.chartType === 'horizontalBar' ? 'bar' : state.chartType;
   const indexAxisAttr = state.chartType === 'horizontalBar' ? '\n    index-axis="y"' : '';
+
+  // Get primary color from palette (gouv-chart uses color, not selected-palette)
+  const primaryColor = PALETTE_PRIMARY_COLOR[state.palette] || '#000091';
 
   // Handle data path transform
   const transformAttr = source.dataPath ? `\n    transform="${source.dataPath}"` : '';
@@ -730,7 +736,7 @@ ${queryElement}
     sort-order="${chartSortOrder}"
     ${state.title ? `title="${escapeHtml(state.title)}"` : ''}
     ${state.subtitle ? `subtitle="${escapeHtml(state.subtitle)}"` : ''}
-    selected-palette="${state.palette}"
+    color="${primaryColor}"
     height="400">
   </gouv-chart>
 </div>`;
