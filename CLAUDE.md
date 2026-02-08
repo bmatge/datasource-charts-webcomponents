@@ -127,6 +127,23 @@ Chaque composant `gouv-*` envoie un beacon fire-and-forget a l'initialisation (`
 - Skip en dev (localhost/127.0.0.1)
 - Utilise `fetch()` avec `mode: 'no-cors'` (pas `navigator.sendBeacon()` qui cause des erreurs CORS)
 
+## Build : esbuild keepNames
+
+Le `vite.config.ts` contient `esbuild: { keepNames: true }`. Cette option est **obligatoire** :
+sans elle, esbuild supprime les methodes privees non-decorees des prototypes de classes Lit
+lors de la minification (ex: `_processMapData`, `_createChartElement`), ce qui casse le
+fonctionnement des composants en production. Overhead negligeable (~2 Ko).
+
+## DSFR Chart : attributs differes (deferred)
+
+Les composants DSFR Chart (`map-chart`, `map-chart-reg`) sont des Web Components Vue qui
+ecrasent certains attributs (`value`, `date`) avec leurs valeurs par defaut lors du montage Vue.
+`gouv-dsfr-chart` utilise un mecanisme de `setTimeout(500ms)` pour re-appliquer ces attributs
+apres le montage Vue (voir `_createChartElement` dans `src/components/gouv-dsfr-chart.ts`).
+
+Si un nouveau composant DSFR Chart presente le meme comportement, ajouter les attributs
+concernes dans l'objet `deferred` retourne par `_getTypeSpecificAttributes()`.
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
