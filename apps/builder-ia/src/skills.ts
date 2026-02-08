@@ -726,7 +726,14 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 <gouv-dsfr-chart source="top5" type="pie" label-field="region" value-field="montant__sum"></gouv-dsfr-chart>
 \`\`\`
 
+### Format de sortie : snippet embarquable (PAS une page HTML complete)
+Le code genere doit etre un **snippet** pret a copier-coller dans une page existante.
+- **NE PAS** generer \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\` ni \`<meta>\`.
+- Generer uniquement : les dependances CDN (liens CSS + scripts) puis les composants HTML.
+- L'utilisateur collera ce snippet dans sa propre page.
+
 ### Dependances CDN requises
+Toujours inclure ces 6 dependances dans cet ordre exact :
 \`\`\`html
 <!-- CSS DSFR (obligatoire) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -734,29 +741,24 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 
 <!-- DSFR Chart (obligatoire pour les graphiques) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
 
 <!-- gouv-widgets (obligatoire) -->
-<script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
+<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
 \`\`\`
 
-### Template HTML minimal complet
+### Exemple de snippet complet
 \`\`\`html
-<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-  <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
-</head>
-<body>
-  <gouv-source id="data" url="VOTRE_URL_API" transform="results"></gouv-source>
-  <gouv-dsfr-chart source="data" type="bar" label-field="CHAMP_LABEL" value-field="CHAMP_VALEUR"></gouv-dsfr-chart>
-</body>
-</html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
+
+<gouv-source id="data" url="VOTRE_URL_API" transform="results"></gouv-source>
+<gouv-dsfr-chart source="data" type="bar" label-field="CHAMP_LABEL" value-field="CHAMP_VALEUR"></gouv-dsfr-chart>
 \`\`\``,
   },
 
