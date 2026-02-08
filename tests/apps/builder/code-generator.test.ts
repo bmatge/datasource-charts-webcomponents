@@ -552,4 +552,48 @@ describe('generateCodeForLocalData', () => {
     // The formatted value should contain the percentage sign
     expect(code).toContain('%');
   });
+
+  it('should generate datalist HTML code when chartType is "datalist"', () => {
+    state.chartType = 'datalist';
+    state.localData = [
+      { region: 'Bretagne', population: 3300000 },
+      { region: 'Normandie', population: 3300000 },
+    ];
+    state.fields = [
+      { name: 'region', type: 'string', sample: 'Bretagne' },
+      { name: 'population', type: 'number', sample: 3300000 },
+    ];
+    state.labelField = 'region';
+    state.title = 'Donnees regionales';
+    state.limit = 10;
+    state.sortOrder = 'desc';
+
+    generateCodeForLocalData();
+
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('gouv-datalist');
+    expect(code).toContain('colonnes=');
+    expect(code).toContain('recherche');
+    expect(code).toContain('pagination=');
+    expect(code).toContain('export="csv"');
+    expect(code).toContain('Donnees regionales');
+    expect(code).toContain('onSourceData');
+  });
+
+  it('should generate datalist code with tri attribute when sortOrder is set', () => {
+    state.chartType = 'datalist';
+    state.localData = [{ region: 'Bretagne', population: 3300000 }];
+    state.fields = [
+      { name: 'region', type: 'string', sample: 'Bretagne' },
+      { name: 'population', type: 'number', sample: 3300000 },
+    ];
+    state.labelField = 'region';
+    state.sortOrder = 'desc';
+    state.limit = 10;
+
+    generateCodeForLocalData();
+
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('tri="region:desc"');
+  });
 });

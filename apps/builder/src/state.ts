@@ -25,7 +25,8 @@ export type ChartType =
   | 'scatter'
   | 'gauge'
   | 'kpi'
-  | 'map';
+  | 'map'
+  | 'datalist';
 
 /** Source types */
 export type SourceType = 'saved';

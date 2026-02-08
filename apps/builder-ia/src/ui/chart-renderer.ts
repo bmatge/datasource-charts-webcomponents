@@ -111,6 +111,13 @@ export function applyChartConfig(config: ChartConfig): void {
     }
   }
 
+  // For datalist, skip aggregation - use raw data directly
+  if (config.type === 'datalist') {
+    renderDatalist(config, workingData);
+    generateCode(config, []);
+    return;
+  }
+
   // For KPI, aggregate all values into a single result
   if (config.type === 'kpi') {
     let kpiValue: number;
@@ -212,9 +219,11 @@ function renderKPI(config: ChartConfig, value: number): void {
     state.chart = null;
   }
 
-  // Remove any existing KPI card
+  // Remove any existing special cards
   const existingKpi = chartWrapper.querySelector('.kpi-card');
   if (existingKpi) existingKpi.remove();
+  const existingDatalist2 = chartWrapper.querySelector('.datalist-card');
+  if (existingDatalist2) existingDatalist2.remove();
 
   const variant = config.variant || '';
   const unit = config.unit || '';
@@ -245,6 +254,8 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
   if (existingGauge) existingGauge.remove();
   const existingMap = chartWrapper.querySelector('.map-card');
   if (existingMap) existingMap.remove();
+  const existingDatalist = chartWrapper.querySelector('.datalist-card');
+  if (existingDatalist) existingDatalist.remove();
 
   if (state.chart) {
     (state.chart as { destroy(): void }).destroy();
@@ -385,4 +396,63 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
       },
     },
   });
+}
+
+/**
+ * Render a datalist (table) preview in the preview panel
+ */
+function renderDatalist(config: ChartConfig, data: Record<string, unknown>[]): void {
+  const canvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+  const emptyState = document.getElementById('empty-state') as HTMLElement;
+  const chartWrapper = document.querySelector('.chart-wrapper') as HTMLElement;
+
+  // Cleanup
+  const existingKpi = chartWrapper.querySelector('.kpi-card');
+  if (existingKpi) existingKpi.remove();
+  const existingGauge = chartWrapper.querySelector('.gauge-card');
+  if (existingGauge) existingGauge.remove();
+  const existingMap = chartWrapper.querySelector('.map-card');
+  if (existingMap) existingMap.remove();
+  const existingDatalist = chartWrapper.querySelector('.datalist-card');
+  if (existingDatalist) existingDatalist.remove();
+
+  if (state.chart) {
+    (state.chart as { destroy(): void }).destroy();
+    state.chart = null;
+  }
+
+  emptyState.style.display = 'none';
+  canvas.style.display = 'none';
+
+  // Determine columns: from config.colonnes or auto-detect from data keys
+  let columns: string[];
+  if (config.colonnes) {
+    columns = config.colonnes.split(',').map(c => c.split(':')[0].trim());
+  } else {
+    columns = data.length > 0 ? Object.keys(data[0]) : [];
+  }
+
+  const rows = data.slice(0, config.pagination || config.limit || 10);
+
+  const headerCells = columns.map(c => `<th>${escapeHtml(c)}</th>`).join('');
+  const bodyRows = rows.map(row => {
+    const cells = columns.map(c => {
+      const val = row[c];
+      return `<td>${val === null || val === undefined ? '\u2014' : escapeHtml(String(val))}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  const datalistCard = document.createElement('div');
+  datalistCard.className = 'datalist-card';
+  datalistCard.innerHTML = `
+    <p class="fr-text--sm fr-mb-1w">${data.length} enregistrement(s)${rows.length < data.length ? `, ${rows.length} affich\u00e9(s)` : ''}</p>
+    <div class="fr-table" style="overflow-x: auto;">
+      <table>
+        <thead><tr>${headerCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+  chartWrapper.appendChild(datalistCard);
 }

@@ -124,11 +124,11 @@ En attendant, je peux vous aider avec des commandes simples. Essayez :
 
     if (action?.action === 'createChart' && action.config) {
       applyChartConfig(action.config as ChartConfig);
-      addMessage('assistant', textWithoutJson || 'Voici votre graphique !', [
-        'Changer le type',
-        'Modifier les couleurs',
-        'Ajuster le tri',
-      ]);
+      const chartConfig = action.config as ChartConfig;
+      const suggestions = chartConfig.type === 'datalist'
+        ? ['Modifier les colonnes', 'Ajouter un filtre', 'Changer la pagination']
+        : ['Changer le type', 'Modifier les couleurs', 'Ajuster le tri'];
+      addMessage('assistant', textWithoutJson || (chartConfig.type === 'datalist' ? 'Voici votre tableau !' : 'Voici votre graphique !'), suggestions);
     } else if (action?.action === 'reloadData') {
       const success = await handleReloadData(action);
       if (success) {

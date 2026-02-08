@@ -21,6 +21,7 @@ function buildDOM(): void {
     <button class="chart-type-btn" data-type="kpi"></button>
     <button class="chart-type-btn" data-type="gauge"></button>
     <button class="chart-type-btn" data-type="map"></button>
+    <button class="chart-type-btn" data-type="datalist"></button>
 
     <!-- KPI config panel -->
     <div id="kpi-config"></div>
@@ -51,8 +52,17 @@ function buildDOM(): void {
       <select id="sort-order"></select>
     </div>
 
-    <!-- Aggregation label -->
-    <label for="aggregation">Aggregation</label>
+    <!-- Value field inside a .fr-select-group wrapper -->
+    <div class="fr-select-group" style="display: block;">
+      <label for="value-field">Value</label>
+      <select id="value-field"></select>
+    </div>
+
+    <!-- Aggregation inside a .fr-select-group wrapper -->
+    <div class="fr-select-group" style="display: block;">
+      <label for="aggregation">Aggregation</label>
+      <select id="aggregation"></select>
+    </div>
 
     <!-- Multi-series value field 2 -->
     <div id="value-field-2-group" style="display: none;">
@@ -63,9 +73,6 @@ function buildDOM(): void {
     <div id="code-field-group" style="display: none;">
       <select id="code-field"></select>
     </div>
-
-    <!-- Value field label -->
-    <label for="value-field">Value</label>
   `;
 }
 
@@ -324,7 +331,7 @@ describe('selectChartType', () => {
   // -----------------------------------------------------------
   describe('multi-series support', () => {
     const multiSeriesTypes: ChartType[] = ['bar', 'horizontalBar', 'line', 'radar'];
-    const noMultiSeriesTypes: ChartType[] = ['pie', 'doughnut', 'scatter', 'kpi', 'gauge', 'map'];
+    const noMultiSeriesTypes: ChartType[] = ['pie', 'doughnut', 'scatter', 'kpi', 'gauge', 'map', 'datalist'];
 
     for (const type of multiSeriesTypes) {
       it(`should show value-field-2-group for ${type}`, () => {
@@ -411,6 +418,70 @@ describe('selectChartType', () => {
       state.codeField = 'code_dept';
       selectChartType('map');
       expect(state.codeField).toBe('code_dept');
+    });
+  });
+
+  // -----------------------------------------------------------
+  // 14. Datalist type visibility
+  // -----------------------------------------------------------
+  describe('datalist type visibility', () => {
+    it('should set state.chartType to datalist', () => {
+      selectChartType('datalist');
+      expect(state.chartType).toBe('datalist');
+    });
+
+    it('should add "selected" to datalist button', () => {
+      selectChartType('datalist');
+      const btn = document.querySelector('[data-type="datalist"]');
+      expect(btn!.classList.contains('selected')).toBe(true);
+    });
+
+    it('should hide palette config for datalist', () => {
+      selectChartType('datalist');
+      const palette = document.getElementById('palette-config') as HTMLElement;
+      expect(palette.style.display).toBe('none');
+    });
+
+    it('should show label field for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('label-field')!.closest('.fr-select-group') as HTMLElement;
+      expect(group.style.display).toBe('block');
+    });
+
+    it('should hide value field for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('value-field')!.closest('.fr-select-group') as HTMLElement;
+      expect(group.style.display).toBe('none');
+    });
+
+    it('should hide aggregation for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('aggregation')!.closest('.fr-select-group') as HTMLElement;
+      expect(group.style.display).toBe('none');
+    });
+
+    it('should show limit for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('limit')!.closest('.fr-input-group') as HTMLElement;
+      expect(group.style.display).toBe('block');
+    });
+
+    it('should show sort order for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('sort-order')!.closest('.fr-select-group') as HTMLElement;
+      expect(group.style.display).toBe('block');
+    });
+
+    it('should hide value-field-2-group for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('value-field-2-group') as HTMLElement;
+      expect(group.style.display).toBe('none');
+    });
+
+    it('should hide code-field-group for datalist', () => {
+      selectChartType('datalist');
+      const group = document.getElementById('code-field-group') as HTMLElement;
+      expect(group.style.display).toBe('none');
     });
   });
 });

@@ -83,6 +83,12 @@ export function generateCode(config: ChartConfig, data: AggregatedResult[]): voi
     return;
   }
 
+  // Handle datalist type
+  if (config.type === 'datalist') {
+    codeEl.textContent = generateDatalistCode(config);
+    return;
+  }
+
   // Handle standard chart types (bar, line, pie, doughnut, radar, horizontalBar, bar-line)
   codeEl.textContent = generateStandardChartCode(config, data);
 }
@@ -395,6 +401,98 @@ loadMap();
     selected-palette="${config.palette || 'sequentialAscending'}"
   ></${mapTagEmbed}>
 </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Datalist (table)
+// ---------------------------------------------------------------------------
+
+function generateDatalistCode(config: ChartConfig): string {
+  const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
+
+  // Build colonnes attribute: from config or auto-detect from fields
+  let colonnes: string;
+  if (config.colonnes) {
+    colonnes = config.colonnes;
+  } else {
+    colonnes = state.fields.map(f => `${f.name}:${f.name}`).join(', ');
+  }
+
+  const triAttr = config.sortOrder && config.labelField
+    ? `\n    tri="${config.labelField}:${config.sortOrder}"` : '';
+  const pagination = config.pagination || config.limit || 10;
+
+  // API-dynamic variant
+  if (state.source?.type === 'api' && state.source?.url) {
+    let sourceUrl = state.source.url;
+    if (config.where) {
+      const url = new URL(sourceUrl);
+      url.searchParams.set('where', whereToOdsql(config.where));
+      sourceUrl = url.toString();
+    }
+
+    return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+<!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-source
+    id="table-data"
+    url="${sourceUrl}"
+    transform="records">
+  </gouv-source>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${pagination}"
+    export="csv">
+  </gouv-datalist>
+</div>`;
+  }
+
+  // Embedded-data variant
+  const rawData = state.localData || [];
+  return `<!-- Tableau genere avec gouv-widgets Builder IA -->
+<!-- Source : ${state.source?.name || 'Donnees locales'} - donnees embarquees -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-datalist
+    id="my-table"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${pagination}"
+    export="csv">
+  </gouv-datalist>
+</div>
+
+<script>
+// Donnees integrees
+const data = ${JSON.stringify(rawData.slice(0, 500), null, 2)};
+
+// Injecter les donnees dans le composant
+document.getElementById('my-table').onSourceData(data);
+<\/script>`;
 }
 
 // ---------------------------------------------------------------------------

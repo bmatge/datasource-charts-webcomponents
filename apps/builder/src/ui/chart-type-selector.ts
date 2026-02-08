@@ -19,6 +19,7 @@ export function selectChartType(type: ChartType): void {
   const isGauge = type === 'gauge';
   const isScatter = type === 'scatter';
   const isMap = type === 'map';
+  const isDatalist = type === 'datalist';
   const isPieOrDoughnut = ['pie', 'doughnut'].includes(type);
   const isRadar = type === 'radar';
   const isSingleValue = isKPI || isGauge; // Types with a single aggregated value
@@ -27,9 +28,9 @@ export function selectChartType(type: ChartType): void {
   const kpiConfig = document.getElementById('kpi-config');
   if (kpiConfig) kpiConfig.classList.toggle('visible', isKPI);
 
-  // Palette config: hide for KPI and gauge (they have their own styling)
+  // Palette config: hide for KPI, gauge, and datalist
   const paletteConfig = document.getElementById('palette-config') as HTMLElement | null;
-  if (paletteConfig) paletteConfig.style.display = isSingleValue ? 'none' : 'block';
+  if (paletteConfig) paletteConfig.style.display = (isSingleValue || isDatalist) ? 'none' : 'block';
 
   // For maps, force a sequential palette for color gradient
   if (isMap && !state.palette.startsWith('sequential')) {
@@ -43,6 +44,11 @@ export function selectChartType(type: ChartType): void {
   const labelFieldGroup = labelField?.closest('.fr-select-group') as HTMLElement | null;
   if (labelFieldGroup) labelFieldGroup.style.display = isSingleValue ? 'none' : 'block';
 
+  // Value field: hide for datalist (no numeric aggregation)
+  const valueField = document.getElementById('value-field');
+  const valueFieldGroup = valueField?.closest('.fr-select-group') as HTMLElement | null;
+  if (valueFieldGroup) valueFieldGroup.style.display = isDatalist ? 'none' : 'block';
+
   // Limit: hide for single value types AND map (map shows all departments)
   const hideLimit = isSingleValue || isMap;
   const limitInput = document.getElementById('limit');
@@ -55,7 +61,11 @@ export function selectChartType(type: ChartType): void {
   const sortGroup = sortSelect?.closest('.fr-select-group') as HTMLElement | null;
   if (sortGroup) sortGroup.style.display = hideSort ? 'none' : 'block';
 
-  // Aggregation: always show, but update hint text based on type
+  // Aggregation: hide for datalist, update hint text for others
+  const aggSelect = document.getElementById('aggregation');
+  const aggGroup = aggSelect?.closest('.fr-select-group') as HTMLElement | null;
+  if (aggGroup) aggGroup.style.display = isDatalist ? 'none' : 'block';
+
   const aggLabel = document.querySelector('label[for="aggregation"]');
   if (aggLabel) {
     if (isSingleValue) {
@@ -91,7 +101,10 @@ export function selectChartType(type: ChartType): void {
   const valueFieldLabel = document.querySelector('label[for="value-field"]');
 
   if (labelFieldLabel && valueFieldLabel) {
-    if (isScatter) {
+    if (isDatalist) {
+      labelFieldLabel.innerHTML = 'Colonnes<span class="fr-hint-text">Champ principal du tableau</span>';
+      valueFieldLabel.innerHTML = 'Valeurs<span class="fr-hint-text">Non utilis\u00e9 pour les tableaux</span>';
+    } else if (isScatter) {
       labelFieldLabel.innerHTML = 'Axe X (num\u00e9rique)<span class="fr-hint-text">Valeurs horizontales</span>';
       valueFieldLabel.innerHTML = 'Axe Y (num\u00e9rique)<span class="fr-hint-text">Valeurs verticales</span>';
     } else if (isMap) {

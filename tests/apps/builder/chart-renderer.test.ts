@@ -734,4 +734,96 @@ describe('builder chart-renderer', () => {
       expect(config.options.plugins.legend.display).toBe(false);
     });
   });
+
+  describe('Datalist rendering', () => {
+    it('should create a datalist-card element and hide canvas', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [
+        { region: 'Bretagne', population: 3300000 },
+        { region: 'Normandie', population: 3300000 },
+      ];
+      state.fields = [
+        { name: 'region', type: 'string', sample: 'Bretagne' },
+        { name: 'population', type: 'number', sample: 3300000 },
+      ];
+      state.limit = 10;
+
+      renderChart();
+
+      const canvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+      expect(canvas.style.display).toBe('none');
+
+      const datalistCard = document.querySelector('.datalist-card');
+      expect(datalistCard).not.toBeNull();
+    });
+
+    it('should display table with correct headers and rows', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [
+        { region: 'Bretagne', population: 3300000 },
+        { region: 'Normandie', population: 3300000 },
+      ];
+      state.fields = [
+        { name: 'region', type: 'string', sample: 'Bretagne' },
+        { name: 'population', type: 'number', sample: 3300000 },
+      ];
+      state.limit = 10;
+
+      renderChart();
+
+      const datalistCard = document.querySelector('.datalist-card')!;
+      const headers = datalistCard.querySelectorAll('th');
+      expect(headers).toHaveLength(2);
+      expect(headers[0].textContent).toBe('region');
+      expect(headers[1].textContent).toBe('population');
+
+      const rows = datalistCard.querySelectorAll('tbody tr');
+      expect(rows).toHaveLength(2);
+    });
+
+    it('should limit rows to state.limit', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [
+        { region: 'Bretagne', population: 1 },
+        { region: 'Normandie', population: 2 },
+        { region: 'Occitanie', population: 3 },
+      ];
+      state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+      state.limit = 2;
+
+      renderChart();
+
+      const rows = document.querySelectorAll('.datalist-card tbody tr');
+      expect(rows).toHaveLength(2);
+    });
+
+    it('should not call Chart.js constructor for datalist type', async () => {
+      const renderChart = await loadRenderChart();
+      state.chartType = 'datalist';
+      state.localData = [{ region: 'Bretagne' }];
+      state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+      state.limit = 10;
+
+      renderChart();
+
+      expect(MockChart).not.toHaveBeenCalled();
+    });
+
+    it('should remove existing datalist card before rendering', async () => {
+      const renderChart = await loadRenderChart();
+      const container = document.querySelector('.chart-container')!;
+      const existingCard = document.createElement('div');
+      existingCard.className = 'datalist-card';
+      container.appendChild(existingCard);
+
+      state.chartType = 'bar';
+      state.data = [{ region: 'IDF', value: 100 }];
+      renderChart();
+
+      expect(container.querySelector('.datalist-card')).toBeNull();
+    });
+  });
 });

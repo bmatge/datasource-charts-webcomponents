@@ -74,6 +74,16 @@ function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): 
 }
 
 /**
+ * Build the colonnes attribute for gouv-datalist from available fields.
+ */
+function buildColonnesAttr(): string {
+  const fields = state.fields.length > 0
+    ? state.fields.map(f => f.name)
+    : (state.localData && state.localData.length > 0 ? Object.keys(state.localData[0]) : []);
+  return fields.map(f => `${f}:${f}`).join(', ');
+}
+
+/**
  * Main orchestrator: reads form state, validates, routes to correct code gen path.
  */
 export async function generateChart(): Promise<void> {
@@ -96,15 +106,46 @@ export async function generateChart(): Promise<void> {
 
   const isKPI = state.chartType === 'kpi';
   const isGauge = state.chartType === 'gauge';
+  const isDatalist = state.chartType === 'datalist';
   const isSingleValue = isKPI || isGauge;
 
-  // Validation: KPI/Gauge only need valueField, charts need both
-  if (!isSingleValue && (!state.labelField || !state.valueField)) {
+  // Validation: datalist only needs labelField, KPI/Gauge need valueField, charts need both
+  if (isDatalist && !state.labelField) {
+    toastWarning('Veuillez s\u00e9lectionner un champ pour les colonnes');
+    return;
+  }
+  if (!isSingleValue && !isDatalist && (!state.labelField || !state.valueField)) {
     toastWarning('Veuillez s\u00e9lectionner les champs pour les axes X et Y');
     return;
   }
   if (isSingleValue && !state.valueField && state.aggregation !== 'count') {
     toastWarning('Veuillez s\u00e9lectionner un champ pour la valeur');
+    return;
+  }
+
+  // Datalist: route to local data path (no aggregation needed)
+  if (isDatalist) {
+    if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
+      generateChartFromLocalData();
+    } else {
+      // For API sources, use raw data
+      const params = new URLSearchParams({ limit: state.limit.toString() });
+      if (state.advancedMode && state.queryFilter) {
+        const odsql = filterToOdsql(state.queryFilter);
+        if (odsql) params.set('where', odsql);
+      }
+      const apiUrl = `${state.apiUrl}?${params}`;
+      try {
+        const response = await fetch(apiUrl);
+        const json = await response.json();
+        state.data = json.results || [];
+        state.localData = state.data as Record<string, unknown>[];
+        renderChart();
+        generateCode(apiUrl);
+      } catch (error) {
+        toastError('Erreur lors du chargement des donn\u00e9es : ' + (error as Error).message);
+      }
+    }
     return;
   }
 
@@ -179,6 +220,33 @@ export async function generateChart(): Promise<void> {
  * Aggregate local data client-side, render, and generate code.
  */
 export function generateChartFromLocalData(): void {
+  // Datalist: skip aggregation, use raw data
+  if (state.chartType === 'datalist') {
+    let filteredLocal = state.localData || [];
+    if (state.advancedMode && state.queryFilter) {
+      filteredLocal = applyLocalFilter(filteredLocal as Record<string, unknown>[], state.queryFilter);
+    }
+    state.data = (filteredLocal as Record<string, unknown>[]).slice(0, state.limit || 100) as any[];
+
+    const rawDataEl = document.getElementById('raw-data');
+    if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
+
+    renderChart();
+
+    if (state.generationMode === 'dynamic') {
+      if (state.savedSource?.type === 'grist') {
+        generateDynamicCode();
+      } else if (state.savedSource?.type === 'api') {
+        generateDynamicCodeForApi();
+      } else {
+        generateCodeForLocalData();
+      }
+    } else {
+      generateCodeForLocalData();
+    }
+    return;
+  }
+
   // Aggregate local data
   const aggregated: Record<string, { values: number[]; count: number }> = {};
 
@@ -337,6 +405,46 @@ export function generateCodeForLocalData(): void {
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
   <gauge-chart percent="${value}" init="0" target="100"></gauge-chart>
 </div>`;
+    codeEl.textContent = code;
+    return;
+  }
+
+  // Handle Datalist type (local data)
+  if (state.chartType === 'datalist') {
+    const colonnes = buildColonnesAttr();
+    const triAttr = state.sortOrder !== 'none' && state.labelField
+      ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const code = `<!-- Tableau genere avec gouv-widgets Builder -->
+<!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-datalist
+    id="my-table"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${state.limit || 10}"
+    export="csv">
+  </gouv-datalist>
+</div>
+
+<script>
+// Donnees integrees
+const data = ${JSON.stringify(state.localData?.slice(0, 500) || [], null, 2)};
+
+// Injecter les donnees dans le composant
+const datalist = document.getElementById('my-table');
+datalist.onSourceData(data);
+<\/script>`;
     codeEl.textContent = code;
     return;
   }
@@ -630,6 +738,43 @@ export function generateDynamicCode(): void {
     return;
   }
 
+  // Handle Datalist type (Grist dynamic)
+  if (state.chartType === 'datalist') {
+    const colonnes = buildColonnesAttr();
+    const triAttr = state.sortOrder !== 'none' && state.labelField
+      ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-source
+    id="table-data"
+    url="${proxyUrl}"
+    transform="records"${refreshAttr}>
+  </gouv-source>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${state.limit || 10}"
+    export="csv">
+  </gouv-datalist>
+</div>`;
+    codeEl.textContent = code;
+    return;
+  }
+
   // Generate gouv-query if advanced mode is enabled
   const { queryElement, chartSource } = generateGouvQueryCode('chart-data', labelFieldPath);
 
@@ -713,6 +858,42 @@ export function generateDynamicCodeForApi(): void {
   // Handle KPI type (not supported by gouv-chart yet, fallback to embedded)
   if (state.chartType === 'kpi') {
     generateCodeForLocalData();
+    return;
+  }
+
+  // Handle Datalist type (API dynamic)
+  if (state.chartType === 'datalist') {
+    const colonnes = buildColonnesAttr();
+    const triAttr = state.sortOrder !== 'none' && state.labelField
+      ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-source
+    id="table-data"
+    url="${source.apiUrl}"${transformAttr}${refreshAttr}>
+  </gouv-source>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${state.limit || 10}"
+    export="csv">
+  </gouv-datalist>
+</div>`;
+    codeEl.textContent = code;
     return;
   }
 
@@ -914,6 +1095,49 @@ async function loadGauge() {
 }
 
 loadGauge();
+<\/script>`;
+    codeEl.textContent = code;
+    return;
+  }
+
+  // Handle Datalist type (API fetch)
+  if (state.chartType === 'datalist') {
+    const colonnes = buildColonnesAttr();
+    const triAttr = state.sortOrder !== 'none' && state.labelField
+      ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const code = `<!-- Tableau genere avec gouv-widgets Builder -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-datalist
+    id="my-table"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${state.limit || 10}"
+    export="csv">
+  </gouv-datalist>
+</div>
+
+<script>
+const API_URL = '${apiUrl}';
+
+async function loadTable() {
+  const response = await fetch(API_URL);
+  const json = await response.json();
+  const data = json.results || [];
+  document.getElementById('my-table').onSourceData(data);
+}
+
+loadTable();
 <\/script>`;
     codeEl.textContent = code;
     return;

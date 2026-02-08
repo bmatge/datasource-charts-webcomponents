@@ -118,7 +118,7 @@ Genere TOUJOURS UN SEUL bloc JSON par reponse.
 {
   "action": "createChart",
   "config": {
-    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map|bar-line|map-reg",
+    "type": "bar|line|pie|doughnut|radar|horizontalBar|scatter|gauge|kpi|map|bar-line|map-reg|datalist",
     "labelField": "champ_labels",
     "valueField": "champ_valeurs",
     "valueField2": "champ_serie2",
@@ -132,7 +132,9 @@ Genere TOUJOURS UN SEUL bloc JSON par reponse.
     "color": "#000091",
     "color2": "#E1000F",
     "variant": "info|success|warning|error",
-    "unit": "EUR|%|unite"
+    "unit": "EUR|%|unite",
+    "colonnes": "champ1:Label1, champ2:Label2 (datalist uniquement)",
+    "pagination": 10
   }
 }
 ```

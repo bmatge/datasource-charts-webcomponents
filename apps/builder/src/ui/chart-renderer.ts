@@ -33,8 +33,8 @@ export function renderChart(): void {
     state.chartInstance = null;
   }
 
-  // Remove any existing KPI/Gauge card
-  const existingCard = chartContainer.querySelector('.kpi-card, .gauge-card, .map-card');
+  // Remove any existing KPI/Gauge/Map/Datalist card
+  const existingCard = chartContainer.querySelector('.kpi-card, .gauge-card, .map-card, .datalist-card');
   if (existingCard) existingCard.remove();
 
   // Handle KPI type differently
@@ -137,6 +137,41 @@ export function renderChart(): void {
       ></map-chart>
     `;
     chartContainer.appendChild(mapCard);
+    return;
+  }
+
+  // Handle Datalist type (DSFR table preview)
+  if (state.chartType === 'datalist') {
+    canvas.style.display = 'none';
+
+    const rawData = state.localData || [];
+    const columns = state.fields.length > 0
+      ? state.fields.map(f => f.name)
+      : (rawData.length > 0 ? Object.keys(rawData[0]) : []);
+
+    const rows = rawData.slice(0, state.limit || 10);
+
+    const headerCells = columns.map(c => `<th>${escapeHtml(c)}</th>`).join('');
+    const bodyRows = rows.map(row => {
+      const cells = columns.map(c => {
+        const val = row[c];
+        return `<td>${val === null || val === undefined ? '\u2014' : escapeHtml(String(val))}</td>`;
+      }).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+
+    const datalistCard = document.createElement('div');
+    datalistCard.className = 'datalist-card';
+    datalistCard.innerHTML = `
+      <p class="fr-text--sm fr-mb-1w">${rawData.length} enregistrement(s)${rows.length < rawData.length ? `, ${rows.length} affich\u00e9(s)` : ''}</p>
+      <div class="fr-table" style="overflow-x: auto;">
+        <table>
+          <thead><tr>${headerCells}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    `;
+    chartContainer.appendChild(datalistCard);
     return;
   }
 
