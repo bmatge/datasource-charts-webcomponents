@@ -319,6 +319,15 @@ export class GouvQuery extends LitElement {
       onLoaded: (data: unknown) => {
         this._rawData = Array.isArray(data) ? data : [data];
         this._processClientSide();
+      },
+      onLoading: () => {
+        this._loading = true;
+        dispatchDataLoading(this.id);
+      },
+      onError: (error: Error) => {
+        this._error = error;
+        this._loading = false;
+        dispatchDataError(this.id, error);
       }
     });
   }

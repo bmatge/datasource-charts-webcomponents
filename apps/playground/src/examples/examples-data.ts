@@ -296,15 +296,15 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=50"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=50"
     transform="data">
   </gouv-source>
 
   <gouv-datalist source="data"
-    colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction, Libelle du departement:Departement, Libelle de la categorie socio-professionnelle:Categorie"
+    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction, Libellé du  département:Departement, Libellé de la catégorie socio-professionnelle:Categorie"
     recherche="true"
-    filtres="Libelle du departement"
-    tri="Nom de l'elu:asc"
+    filtres="Libellé du  département"
+    tri="Nom de l'élu:asc"
     pagination="10"
     export="csv">
   </gouv-datalist>
@@ -396,12 +396,12 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <gouv-query id="q-pie" source="data"
-    group-by="Libelle de la categorie socio-professionnelle"
+    group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Code sexe:count:nombre"
     order-by="nombre:desc"
     limit="8">
@@ -410,7 +410,7 @@ export const examples: Record<string, string> = {
   <div style="max-width: 500px; margin: 0 auto;">
     <gouv-dsfr-chart source="q-pie"
       type="pie"
-      label-field="Libelle de la categorie socio-professionnelle"
+      label-field="Libellé de la catégorie socio-professionnelle"
       value-field="nombre"
       selected-palette="categorical">
     </gouv-dsfr-chart>
@@ -596,13 +596,13 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <!-- Filtre : uniquement les Maires -->
   <gouv-query id="q-maires" source="data"
-    filter="Libelle de la fonction:contains:Maire">
+    filter="Libellé de la fonction:contains:Maire">
   </gouv-query>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
@@ -622,7 +622,7 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      Le filtre <code>Libelle de la fonction:contains:Maire</code>
+      Le filtre <code>Libellé de la fonction:contains:Maire</code>
       isole un sous-ensemble, chaque KPI souscrit a sa propre source.
     </p>
   </div>
@@ -642,18 +642,18 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?__pageSize=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <gouv-query id="q-datalist" source="data"
-    filter="Libelle de la region:contains:Ile">
+    filter="Libellé de la région:contains:Ile">
   </gouv-query>
 
   <gouv-datalist source="q-datalist"
-    colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction, Libelle du departement:Departement"
+    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction, Libellé du  département:Departement"
     recherche="true"
-    tri="Nom de l'elu:asc"
+    tri="Nom de l'élu:asc"
     pagination="10"
     export="csv">
   </gouv-datalist>

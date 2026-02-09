@@ -48,7 +48,7 @@ const At = /* @__PURE__ */ c((s) => new ft(typeof s == "string" ? s : s + "", vo
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Et, defineProperty: Pt, getOwnPropertyDescriptor: kt, getOwnPropertyNames: Rt, getOwnPropertySymbols: Mt, getPrototypeOf: Tt } = Object, O = globalThis, Ye = O.trustedTypes, Nt = Ye ? Ye.emptyScript : "", Ae = O.reactiveElementPolyfillSupport, oe = /* @__PURE__ */ c((s, e) => s, "d$1"), ye = { toAttribute(s, e) {
+const { is: Et, defineProperty: Pt, getOwnPropertyDescriptor: kt, getOwnPropertyNames: Rt, getOwnPropertySymbols: Mt, getPrototypeOf: Tt } = Object, O = globalThis, Ye = O.trustedTypes, Nt = Ye ? Ye.emptyScript : "", Ee = O.reactiveElementPolyfillSupport, oe = /* @__PURE__ */ c((s, e) => s, "d$1"), we = { toAttribute(s, e) {
   switch (e) {
     case Boolean:
       s = s ? Nt : null;
@@ -76,7 +76,7 @@ const { is: Et, defineProperty: Pt, getOwnPropertyDescriptor: kt, getOwnProperty
       }
   }
   return t;
-} }, Be = /* @__PURE__ */ c((s, e) => !Et(s, e), "f$1"), et = { attribute: !0, type: String, converter: ye, reflect: !1, useDefault: !1, hasChanged: Be };
+} }, Be = /* @__PURE__ */ c((s, e) => !Et(s, e), "f$1"), et = { attribute: !0, type: String, converter: we, reflect: !1, useDefault: !1, hasChanged: Be };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), O.litPropertyMetadata ?? (O.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 var H;
 let q = (H = class extends HTMLElement {
@@ -188,7 +188,7 @@ let q = (H = class extends HTMLElement {
     var n;
     const r = this.constructor.elementProperties.get(e), i = this.constructor._$Eu(e, r);
     if (i !== void 0 && r.reflect === !0) {
-      const a = (((n = r.converter) == null ? void 0 : n.toAttribute) !== void 0 ? r.converter : ye).toAttribute(t, r.type);
+      const a = (((n = r.converter) == null ? void 0 : n.toAttribute) !== void 0 ? r.converter : we).toAttribute(t, r.type);
       this._$Em = e, a == null ? this.removeAttribute(i) : this.setAttribute(i, a), this._$Em = null;
     }
   }
@@ -196,7 +196,7 @@ let q = (H = class extends HTMLElement {
     var n, a;
     const r = this.constructor, i = r._$Eh.get(e);
     if (i !== void 0 && this._$Em !== i) {
-      const o = r.getPropertyOptions(i), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((n = o.converter) == null ? void 0 : n.fromAttribute) !== void 0 ? o.converter : ye;
+      const o = r.getPropertyOptions(i), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((n = o.converter) == null ? void 0 : n.fromAttribute) !== void 0 ? o.converter : we;
       this._$Em = i;
       const p = l.fromAttribute(t, o.type);
       this[i] = p ?? ((a = this._$Ej) == null ? void 0 : a.get(i)) ?? p, this._$Em = null;
@@ -282,14 +282,14 @@ let q = (H = class extends HTMLElement {
   firstUpdated(e) {
   }
 }, c(H, "y"), H);
-q.elementStyles = [], q.shadowRootOptions = { mode: "open" }, q[oe("elementProperties")] = /* @__PURE__ */ new Map(), q[oe("finalized")] = /* @__PURE__ */ new Map(), Ae == null || Ae({ ReactiveElement: q }), (O.reactiveElementVersions ?? (O.reactiveElementVersions = [])).push("2.1.2");
+q.elementStyles = [], q.shadowRootOptions = { mode: "open" }, q[oe("elementProperties")] = /* @__PURE__ */ new Map(), q[oe("finalized")] = /* @__PURE__ */ new Map(), Ee == null || Ee({ ReactiveElement: q }), (O.reactiveElementVersions ?? (O.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const le = globalThis, tt = /* @__PURE__ */ c((s) => s, "i$1"), $e = le.trustedTypes, rt = $e ? $e.createPolicy("lit-html", { createHTML: /* @__PURE__ */ c((s) => s, "createHTML") }) : void 0, bt = "$lit$", N = `lit$${Math.random().toFixed(9).slice(2)}$`, mt = "?" + N, Ot = `<${mt}>`, j = document, ce = /* @__PURE__ */ c(() => j.createComment(""), "c"), ue = /* @__PURE__ */ c((s) => s === null || typeof s != "object" && typeof s != "function", "a"), Ie = Array.isArray, Dt = /* @__PURE__ */ c((s) => Ie(s) || typeof (s == null ? void 0 : s[Symbol.iterator]) == "function", "d"), Ce = `[ 	
-\f\r]`, ae = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, it = /-->/g, nt = />/g, L = RegExp(`>|${Ce}(?:([^\\s"'>=/]+)(${Ce}*=${Ce}*(?:[^ 	
+const le = globalThis, tt = /* @__PURE__ */ c((s) => s, "i$1"), xe = le.trustedTypes, rt = xe ? xe.createPolicy("lit-html", { createHTML: /* @__PURE__ */ c((s) => s, "createHTML") }) : void 0, bt = "$lit$", N = `lit$${Math.random().toFixed(9).slice(2)}$`, mt = "?" + N, Ot = `<${mt}>`, j = document, ce = /* @__PURE__ */ c(() => j.createComment(""), "c"), ue = /* @__PURE__ */ c((s) => s === null || typeof s != "object" && typeof s != "function", "a"), Ie = Array.isArray, Dt = /* @__PURE__ */ c((s) => Ie(s) || typeof (s == null ? void 0 : s[Symbol.iterator]) == "function", "d"), Pe = `[ 	
+\f\r]`, ae = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, it = /-->/g, nt = />/g, L = RegExp(`>|${Pe}(?:([^\\s"'>=/]+)(${Pe}*=${Pe}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), st = /'/g, at = /"/g, vt = /^(?:script|style|textarea|title)$/i, Lt = /* @__PURE__ */ c((s) => (e, ...t) => ({ _$litType$: s, strings: e, values: t }), "x"), d = Lt(1), te = Symbol.for("lit-noChange"), b = Symbol.for("lit-nothing"), ot = /* @__PURE__ */ new WeakMap(), F = j.createTreeWalker(j, 129);
 function _t(s, e) {
   if (!Ie(s) || !s.hasOwnProperty("raw")) throw Error("invalid template strings array");
@@ -307,13 +307,13 @@ const Ft = /* @__PURE__ */ c((s, e) => {
     n += a === ae ? l + Ot : h >= 0 ? (r.push(p), l.slice(0, h) + bt + l.slice(h) + N + T) : l + N + (h === -2 ? o : T);
   }
   return [_t(s, n + (s[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), r];
-}, "N"), we = class we {
+}, "N"), Se = class Se {
   constructor({ strings: e, _$litType$: t }, r) {
     let i;
     this.parts = [];
     let n = 0, a = 0;
     const o = e.length - 1, l = this.parts, [p, f] = Ft(e, t);
-    if (this.el = we.createElement(p, r), F.currentNode = this.el.content, t === 2 || t === 3) {
+    if (this.el = Se.createElement(p, r), F.currentNode = this.el.content, t === 2 || t === 3) {
       const h = this.el.content.firstChild;
       h.replaceWith(...h.childNodes);
     }
@@ -321,12 +321,12 @@ const Ft = /* @__PURE__ */ c((s, e) => {
       if (i.nodeType === 1) {
         if (i.hasAttributes()) for (const h of i.getAttributeNames()) if (h.endsWith(bt)) {
           const w = f[a++], T = i.getAttribute(h).split(N), be = /([.?@])?(.*)/.exec(w);
-          l.push({ type: 1, index: n, name: be[2], strings: T, ctor: be[1] === "." ? Me : be[1] === "?" ? Te : be[1] === "@" ? Ne : ie }), i.removeAttribute(h);
+          l.push({ type: 1, index: n, name: be[2], strings: T, ctor: be[1] === "." ? Ne : be[1] === "?" ? Oe : be[1] === "@" ? De : ie }), i.removeAttribute(h);
         } else h.startsWith(N) && (l.push({ type: 6, index: n }), i.removeAttribute(h));
         if (vt.test(i.tagName)) {
           const h = i.textContent.split(N), w = h.length - 1;
           if (w > 0) {
-            i.textContent = $e ? $e.emptyScript : "";
+            i.textContent = xe ? xe.emptyScript : "";
             for (let T = 0; T < w; T++) i.append(h[T], ce()), F.nextNode(), l.push({ type: 2, index: ++n });
             i.append(h[w], ce());
           }
@@ -344,8 +344,8 @@ const Ft = /* @__PURE__ */ c((s, e) => {
     return r.innerHTML = e, r;
   }
 };
-c(we, "S");
-let de = we;
+c(Se, "S");
+let de = Se;
 function re(s, e, t = s, r) {
   var a, o;
   if (e === te) return e;
@@ -371,7 +371,7 @@ const He = class He {
     for (; l !== void 0; ) {
       if (a === l.index) {
         let p;
-        l.type === 2 ? p = new he(n, n.nextSibling, this, e) : l.type === 1 ? p = new l.ctor(n, l.name, l.strings, this, e) : l.type === 6 && (p = new Oe(n, this, e)), this._$AV.push(p), l = r[++o];
+        l.type === 2 ? p = new he(n, n.nextSibling, this, e) : l.type === 1 ? p = new l.ctor(n, l.name, l.strings, this, e) : l.type === 6 && (p = new Le(n, this, e)), this._$AV.push(p), l = r[++o];
       }
       a !== (l == null ? void 0 : l.index) && (n = F.nextNode(), a++);
     }
@@ -383,8 +383,8 @@ const He = class He {
   }
 };
 c(He, "R");
-let Re = He;
-const xe = class xe {
+let Te = He;
+const Ae = class Ae {
   get _$AU() {
     var e;
     return ((e = this._$AM) == null ? void 0 : e._$AU) ?? this._$Cv;
@@ -420,7 +420,7 @@ const xe = class xe {
     const { values: t, _$litType$: r } = e, i = typeof r == "number" ? this._$AC(e) : (r.el === void 0 && (r.el = de.createElement(_t(r.h, r.h[0]), this.options)), r);
     if (((n = this._$AH) == null ? void 0 : n._$AD) === i) this._$AH.p(t);
     else {
-      const a = new Re(i, this), o = a.u(this.options);
+      const a = new Te(i, this), o = a.u(this.options);
       a.p(t), this.T(o), this._$AH = a;
     }
   }
@@ -432,7 +432,7 @@ const xe = class xe {
     Ie(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let r, i = 0;
-    for (const n of e) i === t.length ? t.push(r = new xe(this.O(ce()), this.O(ce()), this, this.options)) : r = t[i], r._$AI(n), i++;
+    for (const n of e) i === t.length ? t.push(r = new Ae(this.O(ce()), this.O(ce()), this, this.options)) : r = t[i], r._$AI(n), i++;
     i < t.length && (this._$AR(r && r._$AB.nextSibling, i), t.length = i);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -447,8 +447,8 @@ const xe = class xe {
     this._$AM === void 0 && (this._$Cv = e, (t = this._$AP) == null || t.call(this, e));
   }
 };
-c(xe, "k");
-let he = xe;
+c(Ae, "k");
+let he = Ae;
 const Ve = class Ve {
   get tagName() {
     return this.element.tagName;
@@ -485,7 +485,7 @@ const Ge = class Ge extends ie {
   }
 };
 c(Ge, "I");
-let Me = Ge;
+let Ne = Ge;
 const We = class We extends ie {
   constructor() {
     super(...arguments), this.type = 4;
@@ -495,7 +495,7 @@ const We = class We extends ie {
   }
 };
 c(We, "L");
-let Te = We;
+let Oe = We;
 const Je = class Je extends ie {
   constructor(e, t, r, i, n) {
     super(e, t, r, i, n), this.type = 5;
@@ -511,7 +511,7 @@ const Je = class Je extends ie {
   }
 };
 c(Je, "z");
-let Ne = Je;
+let De = Je;
 const Qe = class Qe {
   constructor(e, t, r) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = r;
@@ -524,9 +524,9 @@ const Qe = class Qe {
   }
 };
 c(Qe, "Z");
-let Oe = Qe;
-const Ee = le.litHtmlPolyfillSupport;
-Ee == null || Ee(de, he), (le.litHtmlVersions ?? (le.litHtmlVersions = [])).push("3.3.2");
+let Le = Qe;
+const ke = le.litHtmlPolyfillSupport;
+ke == null || ke(de, he), (le.litHtmlVersions ?? (le.litHtmlVersions = [])).push("3.3.2");
 const Ut = /* @__PURE__ */ c((s, e, t) => {
   const r = (t == null ? void 0 : t.renderBefore) ?? e;
   let i = r._$litPart$;
@@ -570,8 +570,8 @@ c(Ke, "i");
 let x = Ke;
 var pt;
 x._$litElement$ = !0, x.finalized = !0, (pt = U.litElementHydrateSupport) == null || pt.call(U, { LitElement: x });
-const Pe = U.litElementPolyfillSupport;
-Pe == null || Pe({ LitElement: x });
+const Re = U.litElementPolyfillSupport;
+Re == null || Re({ LitElement: x });
 (U.litElementVersions ?? (U.litElementVersions = [])).push("4.2.2");
 /**
  * @license
@@ -588,7 +588,7 @@ const k = /* @__PURE__ */ c((s) => (e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const jt = { attribute: !0, type: String, converter: ye, reflect: !1, hasChanged: Be }, Bt = /* @__PURE__ */ c((s = jt, e, t) => {
+const jt = { attribute: !0, type: String, converter: we, reflect: !1, hasChanged: Be }, Bt = /* @__PURE__ */ c((s = jt, e, t) => {
   const { kind: r, metadata: i } = t;
   let n = globalThis.litPropertyMetadata.get(i);
   if (n === void 0 && globalThis.litPropertyMetadata.set(i, n = /* @__PURE__ */ new Map()), r === "setter" && ((s = Object.create(s)).wrapped = !0), n.set(t.name, s), r === "accessor") {
@@ -692,7 +692,7 @@ function _e(s, e) {
   document.dispatchEvent(t);
 }
 c(_e, "dispatchDataLoaded");
-function De(s, e) {
+function ye(s, e) {
   const t = new CustomEvent(M.ERROR, {
     bubbles: !0,
     composed: !0,
@@ -700,8 +700,8 @@ function De(s, e) {
   });
   document.dispatchEvent(t);
 }
-c(De, "dispatchDataError");
-function Le(s) {
+c(ye, "dispatchDataError");
+function $e(s) {
   const e = new CustomEvent(M.LOADING, {
     bubbles: !0,
     composed: !0,
@@ -709,7 +709,7 @@ function Le(s) {
   });
   document.dispatchEvent(e);
 }
-c(Le, "dispatchDataLoading");
+c($e, "dispatchDataLoading");
 function wt(s, e) {
   const t = /* @__PURE__ */ c((n) => {
     const a = n;
@@ -765,7 +765,7 @@ let E = (V = class extends x {
         console.warn('gouv-source: attribut "id" requis pour identifier la source');
         return;
       }
-      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, Le(this.id);
+      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, $e(this.id);
       try {
         const e = this._buildUrl(), t = this._buildFetchOptions(), r = await fetch(e, {
           ...t,
@@ -778,7 +778,7 @@ let E = (V = class extends x {
       } catch (e) {
         if (e.name === "AbortError")
           return;
-        this._error = e, De(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
+        this._error = e, ye(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
       } finally {
         this._loading = !1;
       }
@@ -873,7 +873,7 @@ var y = function(s, e, t, r) {
   else for (var o = s.length - 1; o >= 0; o--) (a = s[o]) && (n = (i < 3 ? a(n) : i > 3 ? a(e, t, n) : a(e, t)) || n);
   return i > 3 && n && Object.defineProperty(e, t, n), n;
 };
-const me = 100, ke = 10;
+const me = 100, Me = 10;
 var G;
 let v = (G = class extends x {
   constructor() {
@@ -937,7 +937,13 @@ let v = (G = class extends x {
     e !== void 0 && (this._rawData = Array.isArray(e) ? e : [e], this._processClientSide()), this._unsubscribe = wt(this.source, {
       onLoaded: /* @__PURE__ */ c((t) => {
         this._rawData = Array.isArray(t) ? t : [t], this._processClientSide();
-      }, "onLoaded")
+      }, "onLoaded"),
+      onLoading: /* @__PURE__ */ c(() => {
+        this._loading = !0, $e(this.id);
+      }, "onLoading"),
+      onError: /* @__PURE__ */ c((t) => {
+        this._error = t, this._loading = !1, ye(this.id, t);
+      }, "onError")
     });
   }
   /**
@@ -945,12 +951,12 @@ let v = (G = class extends x {
    */
   _processClientSide() {
     try {
-      Le(this.id), this._loading = !0;
+      $e(this.id), this._loading = !0;
       let e = [...this._rawData];
       const t = this.filter || this.where;
       t && (e = this._applyFilters(e, t)), this.groupBy && (e = this._applyGroupByAndAggregate(e)), this.orderBy && (e = this._applySort(e)), this.limit > 0 && (e = e.slice(0, this.limit)), this._data = e, _e(this.id, this._data);
     } catch (e) {
-      this._error = e, De(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
+      this._error = e, ye(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
     } finally {
       this._loading = !1;
     }
@@ -1093,13 +1099,13 @@ let v = (G = class extends x {
       console.warn('gouv-query: attribut "dataset" requis pour les requêtes API');
       return;
     }
-    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, Le(this.id);
+    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, $e(this.id);
     try {
       this.apiType === "opendatasoft" ? await this._fetchFromOdsWithPagination() : await this._fetchSinglePage();
     } catch (e) {
       if (e.name === "AbortError")
         return;
-      this._error = e, De(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de requête API`, e);
+      this._error = e, ye(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de requête API`, e);
     } finally {
       this._loading = !1;
     }
@@ -1128,9 +1134,9 @@ let v = (G = class extends x {
    * total_count from the API response to detect incomplete data.
    */
   async _fetchFromOdsWithPagination() {
-    const t = this.limit <= 0 ? ke * me : this.limit, r = me;
+    const t = this.limit <= 0 ? Me * me : this.limit, r = me;
     let i = [], n = 0, a = -1;
-    for (let o = 0; o < ke; o++) {
+    for (let o = 0; o < Me; o++) {
       const l = t - i.length;
       if (l <= 0)
         break;
@@ -1144,7 +1150,7 @@ let v = (G = class extends x {
         break;
       n += w.length;
     }
-    a >= 0 && i.length < a && i.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${i.length}/${a} resultats recuperes (limite de securite: ${ke} pages de ${me})`), this._data = this.transform ? _(i, this.transform) : i, _e(this.id, this._data);
+    a >= 0 && i.length < a && i.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${i.length}/${a} resultats recuperes (limite de securite: ${Me} pages de ${me})`), this._data = this.transform ? _(i, this.transform) : i, _e(this.id, this._data);
   }
   /**
    * Construit l'URL de requête selon le type d'API
@@ -1422,7 +1428,7 @@ c(Gt, "getColorBySeuil");
 function Wt(s) {
   const e = s.split(":");
   if (e.length === 1)
-    return { type: "direct", field: e[0] };
+    return e[0] === "count" ? { type: "count", field: "" } : { type: "direct", field: e[0] };
   const t = e[0], r = e[1];
   if (e.length === 3) {
     let i = e[2];
@@ -2227,7 +2233,7 @@ m([
 g = m([
   k("gouv-dsfr-chart")
 ], g);
-var Se = function(s, e, t, r) {
+var Ce = function(s, e, t, r) {
   var i = arguments.length, n = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") n = Reflect.decorate(s, e, t, r);
   else for (var o = s.length - 1; o >= 0; o--) (a = s[o]) && (n = (i < 3 ? a(n) : i > 3 ? a(e, t, n) : a(e, t)) || n);
@@ -2349,16 +2355,16 @@ let pe = (K = class extends x {
     `;
   }
 }, c(K, "AppHeader"), K);
-Se([
+Ce([
   u({ type: String, attribute: "current-page" })
 ], pe.prototype, "currentPage", void 0);
-Se([
+Ce([
   u({ type: String, attribute: "base-path" })
 ], pe.prototype, "basePath", void 0);
-Se([
+Ce([
   $()
 ], pe.prototype, "_favCount", void 0);
-pe = Se([
+pe = Ce([
   k("app-header")
 ], pe);
 var xt = function(s, e, t, r) {
@@ -3307,9 +3313,9 @@ export {
   ze as SourceSubscriberMixin,
   Xt as aggregateByLabel,
   dt as computeAggregation,
-  De as dispatchDataError,
+  ye as dispatchDataError,
   _e as dispatchDataLoaded,
-  Le as dispatchDataLoading,
+  $e as dispatchDataLoading,
   Kt as extractLabelValues,
   Ht as formatCurrency,
   ir as formatDate,

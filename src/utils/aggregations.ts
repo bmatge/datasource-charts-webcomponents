@@ -26,6 +26,10 @@ export function parseExpression(expression: string): ParsedExpression {
   const parts = expression.split(':');
 
   if (parts.length === 1) {
+    // "count" seul = compter tous les enregistrements
+    if (parts[0] === 'count') {
+      return { type: 'count', field: '' };
+    }
     return { type: 'direct', field: parts[0] };
   }
 

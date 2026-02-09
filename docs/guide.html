@@ -618,13 +618,13 @@
             <a href="../apps/playground/index.html?example=direct-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
 <pre>&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?__pageSize=50"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?page_size=50"
   transform="data"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-datalist source="data"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
-  recherche="true" filtres="Libelle du departement"
-  tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
+  colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction"
+  recherche="true" filtres="Libellé du  département"
+  tri="Nom de l'élu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           <img src="images/guide-ex-direct-datalist.png" alt="Tableau — Registre des elus">
 
@@ -671,17 +671,17 @@
             <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
 <pre>&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?__pageSize=100"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/?page_size=100"
   transform="data"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q-pie" source="data"
-  group-by="Libelle de la categorie socio-professionnelle"
+  group-by="Libellé de la catégorie socio-professionnelle"
   aggregate="Code sexe:count:nombre"
   order-by="nombre:desc" limit="8"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="q-pie" type="pie"
-  label-field="Libelle de la categorie socio-professionnelle"
+  label-field="Libellé de la catégorie socio-professionnelle"
   value-field="nombre"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
           <img src="images/guide-ex-query-pie.png" alt="Camembert — Elus par categorie socio-pro">
@@ -770,7 +770,7 @@
 <pre>&lt;gouv-source id="data" url="..." transform="data"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q-maires" source="data"
-  filter="Libelle de la fonction:contains:Maire"&gt;
+  filter="Libellé de la fonction:contains:Maire"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-kpi source="data" valeur="count"
@@ -786,12 +786,12 @@
 <pre>&lt;gouv-source id="data" url="..." transform="data"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q-datalist" source="data"
-  filter="Libelle de la region:contains:Ile"&gt;
+  filter="Libellé de la région:contains:Ile"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-datalist source="q-datalist"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
-  recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
+  colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction"
+  recherche="true" tri="Nom de l'élu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           <img src="images/guide-ex-query-datalist.png" alt="Tableau — Elus filtres par region">
 
