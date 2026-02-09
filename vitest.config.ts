@@ -20,8 +20,8 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.ts'],
-      exclude: ['src/index.ts', 'src/components/layout/**'],
+      include: ['src/**/*.js'],
+      exclude: ['src/index.js', 'src/components/layout/**'],
       reporter: ['text', 'html'],
       all: true,
     },

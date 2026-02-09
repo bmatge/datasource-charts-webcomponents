@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { GouvDatalist } from '../src/components/gouv-datalist.js';
+import { clearDataCache, dispatchDataLoaded } from '../src/utils/data-bridge.js';
 
 /**
  * Tests for GouvDatalist component logic.
  *
- * Since JSDOM doesn't fully support Lit custom elements with mixins,
- * we test the pure data-processing functions by accessing them from
- * the class prototype, and test standalone formatting/parsing logic.
+ * Tests both pure data-processing functions and component-level behavior
+ * using the actual component class with data-bridge integration.
  */
 
 // --- Extract and test pure logic independently ---
@@ -283,6 +284,194 @@ describe('GouvDatalist logic', () => {
       const paginated = data.slice(start, start + pageSize);
       expect(paginated).toHaveLength(5);
       expect(paginated[0].id).toBe(20);
+    });
+  });
+});
+
+describe('GouvDatalist component', () => {
+  let datalist: GouvDatalist;
+
+  beforeEach(() => {
+    clearDataCache('test-dl-src');
+    datalist = new GouvDatalist();
+  });
+
+  afterEach(() => {
+    if (datalist.isConnected) {
+      datalist.disconnectedCallback();
+    }
+  });
+
+  describe('parseColumns', () => {
+    it('returns empty array when colonnes is empty', () => {
+      datalist.colonnes = '';
+      expect(datalist.parseColumns()).toEqual([]);
+    });
+
+    it('parses columns with labels', () => {
+      datalist.colonnes = 'name:Nom, score:Score RGAA';
+      const cols = datalist.parseColumns();
+      expect(cols).toHaveLength(2);
+      expect(cols[0]).toEqual({ key: 'name', label: 'Nom' });
+      expect(cols[1]).toEqual({ key: 'score', label: 'Score RGAA' });
+    });
+
+    it('uses key as label when label is missing', () => {
+      datalist.colonnes = 'id, name:Nom';
+      const cols = datalist.parseColumns();
+      expect(cols[0]).toEqual({ key: 'id', label: 'id' });
+    });
+  });
+
+  describe('formatCellValue', () => {
+    it('returns em-dash for null', () => {
+      expect(datalist.formatCellValue(null)).toBe('\u2014');
+    });
+
+    it('returns em-dash for undefined', () => {
+      expect(datalist.formatCellValue(undefined)).toBe('\u2014');
+    });
+
+    it('returns Oui for true', () => {
+      expect(datalist.formatCellValue(true)).toBe('Oui');
+    });
+
+    it('returns Non for false', () => {
+      expect(datalist.formatCellValue(false)).toBe('Non');
+    });
+
+    it('converts numbers to string', () => {
+      expect(datalist.formatCellValue(42)).toBe('42');
+    });
+  });
+
+  describe('onSourceData', () => {
+    it('stores array data', () => {
+      datalist.onSourceData([{ id: 1 }, { id: 2 }]);
+      expect((datalist as any)._data).toHaveLength(2);
+    });
+
+    it('stores empty array for non-array', () => {
+      datalist.onSourceData('not an array');
+      expect((datalist as any)._data).toEqual([]);
+    });
+
+    it('resets current page on new data', () => {
+      (datalist as any)._currentPage = 5;
+      datalist.onSourceData([{ id: 1 }]);
+      expect((datalist as any)._currentPage).toBe(1);
+    });
+  });
+
+  describe('getFilteredData', () => {
+    beforeEach(() => {
+      datalist.onSourceData([
+        { name: 'Site Alpha', ministere: 'Education', score: 80 },
+        { name: 'Site Beta', ministere: 'Sante', score: 60 },
+        { name: 'Site Gamma', ministere: 'Education', score: 95 },
+      ]);
+    });
+
+    it('returns all data when no filters', () => {
+      expect(datalist.getFilteredData()).toHaveLength(3);
+    });
+
+    it('filters by search query', () => {
+      (datalist as any)._searchQuery = 'alpha';
+      expect(datalist.getFilteredData()).toHaveLength(1);
+    });
+
+    it('filters by active filter', () => {
+      (datalist as any)._activeFilters = { ministere: 'Education' };
+      expect(datalist.getFilteredData()).toHaveLength(2);
+    });
+
+    it('sorts ascending by key', () => {
+      (datalist as any)._sort = { key: 'score', direction: 'asc' };
+      const result = datalist.getFilteredData();
+      expect(result[0].score).toBe(60);
+      expect(result[2].score).toBe(95);
+    });
+
+    it('sorts descending by key', () => {
+      (datalist as any)._sort = { key: 'score', direction: 'desc' };
+      const result = datalist.getFilteredData();
+      expect(result[0].score).toBe(95);
+      expect(result[2].score).toBe(60);
+    });
+
+    it('combines search and filter', () => {
+      (datalist as any)._searchQuery = 'site';
+      (datalist as any)._activeFilters = { ministere: 'Education' };
+      expect(datalist.getFilteredData()).toHaveLength(2);
+    });
+  });
+
+  describe('Data integration via data-bridge', () => {
+    it('receives data from source', () => {
+      datalist.source = 'test-dl-src';
+      datalist.connectedCallback();
+
+      dispatchDataLoaded('test-dl-src', [
+        { name: 'A', score: 10 },
+        { name: 'B', score: 20 },
+      ]);
+
+      expect((datalist as any)._data).toHaveLength(2);
+    });
+
+    it('picks up cached data on connect', () => {
+      dispatchDataLoaded('test-dl-src', [{ name: 'cached' }]);
+
+      datalist.source = 'test-dl-src';
+      datalist.connectedCallback();
+
+      expect((datalist as any)._data).toHaveLength(1);
+    });
+
+    it('initializes sort from tri attribute', () => {
+      datalist.tri = 'score:desc';
+      datalist.source = 'test-dl-src';
+      datalist.connectedCallback();
+
+      expect((datalist as any)._sort).toEqual({ key: 'score', direction: 'desc' });
+    });
+
+    it('defaults sort direction to asc', () => {
+      datalist.tri = 'name';
+      datalist.source = 'test-dl-src';
+      datalist.connectedCallback();
+
+      expect((datalist as any)._sort).toEqual({ key: 'name', direction: 'asc' });
+    });
+  });
+
+  describe('Event handlers', () => {
+    beforeEach(() => {
+      datalist.onSourceData([
+        { name: 'A', status: 'actif' },
+        { name: 'B', status: 'inactif' },
+        { name: 'C', status: 'actif' },
+      ]);
+    });
+
+    it('_handleSort toggles direction on same key', () => {
+      (datalist as any)._handleSort('name');
+      expect((datalist as any)._sort).toEqual({ key: 'name', direction: 'asc' });
+
+      (datalist as any)._handleSort('name');
+      expect((datalist as any)._sort).toEqual({ key: 'name', direction: 'desc' });
+    });
+
+    it('_handleSort resets to asc on new key', () => {
+      (datalist as any)._handleSort('name');
+      (datalist as any)._handleSort('status');
+      expect((datalist as any)._sort).toEqual({ key: 'status', direction: 'asc' });
+    });
+
+    it('_handlePageChange updates page', () => {
+      (datalist as any)._handlePageChange(3);
+      expect((datalist as any)._currentPage).toBe(3);
     });
   });
 });

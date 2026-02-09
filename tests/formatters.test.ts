@@ -4,8 +4,11 @@ import {
   formatNumber,
   formatPercentage,
   formatCurrency,
+  formatDecimal,
   formatDate,
-  getColorBySeuil
+  getColorBySeuil,
+  getDsfrColorClass,
+  getDsfrKpiColor
 } from '../src/utils/formatters.js';
 
 describe('formatters', () => {
@@ -82,6 +85,91 @@ describe('formatters', () => {
 
     it('retourne bleu si aucun seuil défini', () => {
       expect(getColorBySeuil(50)).toBe('bleu');
+    });
+
+    it('retourne rouge avec seuil vert seul et valeur en dessous', () => {
+      expect(getColorBySeuil(50, 80)).toBe('rouge');
+    });
+
+    it('retourne vert avec seuil vert seul et valeur au-dessus', () => {
+      expect(getColorBySeuil(90, 80)).toBe('vert');
+    });
+  });
+
+  describe('formatDecimal', () => {
+    it('formate un nombre avec decimales', () => {
+      const result = formatDecimal(12.5);
+      expect(result).toMatch(/12[,.]5/);
+    });
+
+    it('ajoute au moins 1 decimale', () => {
+      const result = formatDecimal(42);
+      expect(result).toMatch(/42[,.]0/);
+    });
+
+    it('limite a 2 decimales', () => {
+      const result = formatDecimal(3.14159);
+      expect(result).toMatch(/3[,.]14/);
+    });
+  });
+
+  describe('formatValue with decimal format', () => {
+    it('formate en decimal', () => {
+      const result = formatValue(12.5, 'decimal');
+      expect(result).toMatch(/12[,.]5/);
+    });
+
+    it('formate en euro', () => {
+      const result = formatValue(1500, 'euro');
+      expect(result).toMatch(/1\s*500\s*€/);
+    });
+
+    it('formate une string numerique', () => {
+      expect(formatValue('42', 'nombre')).toBe('42');
+    });
+  });
+
+  describe('getDsfrColorClass', () => {
+    it('retourne fr-badge--success pour vert', () => {
+      expect(getDsfrColorClass('vert')).toBe('fr-badge--success');
+    });
+
+    it('retourne fr-badge--warning pour orange', () => {
+      expect(getDsfrColorClass('orange')).toBe('fr-badge--warning');
+    });
+
+    it('retourne fr-badge--error pour rouge', () => {
+      expect(getDsfrColorClass('rouge')).toBe('fr-badge--error');
+    });
+
+    it('retourne fr-badge--info pour bleu', () => {
+      expect(getDsfrColorClass('bleu')).toBe('fr-badge--info');
+    });
+
+    it('retourne fr-badge--info pour couleur inconnue', () => {
+      expect(getDsfrColorClass('inconnu' as any)).toBe('fr-badge--info');
+    });
+  });
+
+  describe('getDsfrKpiColor', () => {
+    it('retourne la variable CSS success pour vert', () => {
+      expect(getDsfrKpiColor('vert')).toBe('var(--background-contrast-success)');
+    });
+
+    it('retourne la variable CSS warning pour orange', () => {
+      expect(getDsfrKpiColor('orange')).toBe('var(--background-contrast-warning)');
+    });
+
+    it('retourne la variable CSS error pour rouge', () => {
+      expect(getDsfrKpiColor('rouge')).toBe('var(--background-contrast-error)');
+    });
+
+    it('retourne la variable CSS info pour bleu', () => {
+      expect(getDsfrKpiColor('bleu')).toBe('var(--background-contrast-info)');
+    });
+
+    it('retourne la variable CSS info pour couleur inconnue', () => {
+      expect(getDsfrKpiColor('inconnu' as any)).toBe('var(--background-contrast-info)');
     });
   });
 });

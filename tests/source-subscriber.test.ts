@@ -132,5 +132,71 @@ describe('SourceSubscriberMixin integration via data-bridge', () => {
 
       unsub2();
     });
+
+    it('loading callback is invoked on loading event', () => {
+      const onLoading = vi.fn();
+      const unsub = subscribeToSource('test-src', { onLoading });
+
+      dispatchDataLoading('test-src');
+
+      expect(onLoading).toHaveBeenCalledTimes(1);
+      unsub();
+    });
+
+    it('error callback is invoked on error event', () => {
+      const onError = vi.fn();
+      const unsub = subscribeToSource('test-src', { onError });
+
+      const error = new Error('test error');
+      dispatchDataError('test-src', error);
+
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledWith(error);
+      unsub();
+    });
+
+    it('does not call callbacks for different source ids', () => {
+      const onLoaded = vi.fn();
+      const onLoading = vi.fn();
+      const onError = vi.fn();
+      const unsub = subscribeToSource('test-src', { onLoaded, onLoading, onError });
+
+      dispatchDataLoaded('other-src', [{ id: 'other' }]);
+      dispatchDataLoading('other-src');
+      dispatchDataError('other-src', new Error('other'));
+
+      expect(onLoaded).not.toHaveBeenCalled();
+      expect(onLoading).not.toHaveBeenCalled();
+      expect(onError).not.toHaveBeenCalled();
+
+      unsub();
+    });
+
+    it('multiple subscribers receive the same data', () => {
+      const onLoaded1 = vi.fn();
+      const onLoaded2 = vi.fn();
+      const unsub1 = subscribeToSource('test-src', { onLoaded: onLoaded1 });
+      const unsub2 = subscribeToSource('test-src', { onLoaded: onLoaded2 });
+
+      dispatchDataLoaded('test-src', [{ id: 'shared' }]);
+
+      expect(onLoaded1).toHaveBeenCalledWith([{ id: 'shared' }]);
+      expect(onLoaded2).toHaveBeenCalledWith([{ id: 'shared' }]);
+
+      unsub1();
+      unsub2();
+    });
+
+    it('setDataCache does not trigger subscriber (only dispatch does)', () => {
+      const onLoaded = vi.fn();
+      const unsub = subscribeToSource('test-src', { onLoaded });
+
+      setDataCache('test-src', [{ id: 'set' }]);
+
+      expect(onLoaded).not.toHaveBeenCalled();
+      expect(getDataCache('test-src')).toEqual([{ id: 'set' }]);
+
+      unsub();
+    });
   });
 });
