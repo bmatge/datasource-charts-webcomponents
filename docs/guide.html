@@ -152,6 +152,9 @@
                       <a class="fr-sidemenu__link" href="#exemples-direct" data-guide-link>Mode direct</a>
                     </li>
                     <li class="fr-sidemenu__item">
+                      <a class="fr-sidemenu__link" href="#exemples-normalize" data-guide-link>Avec normalisation</a>
+                    </li>
+                    <li class="fr-sidemenu__item">
                       <a class="fr-sidemenu__link" href="#exemples-query" data-guide-link>Avec requete</a>
                     </li>
                   </ul>
@@ -627,6 +630,52 @@
   tri="Nom de l'élu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           <img src="images/guide-ex-direct-datalist.png" alt="Tableau — Registre des elus">
+
+          <!-- Mode avec normalisation -->
+          <h3 id="exemples-normalize">Avec normalisation : gouv-source &rarr; gouv-normalize &rarr; composant</h3>
+          <p>Les donnees passent par <code>gouv-normalize</code> qui nettoie les valeurs (conversion numerique, renommage, trim) avant de les transmettre au composant de visualisation ou a <code>gouv-query</code>.</p>
+
+          <h4 id="ex-normalize-numeric">Barres — Conversion numerique + renommage</h4>
+          <p>Les donnees brutes contiennent des populations en string et des cles d'API peu lisibles. <code>gouv-normalize</code> convertit les nombres et renomme les colonnes avant l'agregation.
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="data"
+  numeric="nombre_beneficiaires, montant_investissement"
+  rename="nom_region:Region | nombre_beneficiaires:Beneficiaires | montant_investissement:Investissement"
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-query id="stats" source="clean"
+  group-by="Region"
+  aggregate="Beneficiaires:sum"
+  order-by="Beneficiaires__sum:desc"
+  limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="Region" value-field="Beneficiaires__sum"
+  selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+
+          <h4 id="ex-normalize-clean">Tableau — Nettoyage complet des donnees</h4>
+          <p>Nettoyage multi-etapes : trim des espaces, detection automatique des nombres, et remplacement des valeurs vides avant affichage dans un tableau interactif.
+          </p>
+<pre>&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="data"
+  trim
+  numeric-auto
+  replace="N/A: | n.d.: | -:"&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-datalist source="clean"
+  recherche pagination="10" export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
 
           <!-- Mode avec requete -->
           <h3 id="exemples-query">Avec requete : gouv-source &rarr; gouv-query &rarr; composant</h3>
