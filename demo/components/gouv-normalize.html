@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-normalize - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .attr-table { width: 100%; border-collapse: collapse; }
+    .attr-table th, .attr-table td { border: 1px solid var(--border-default-grey); padding: 0.5rem; text-align: left; }
+    .attr-table th { background: var(--background-contrast-grey); }
+    pre { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    code { font-size: 0.875em; }
+  </style>
+</head>
+<body>
+  <!-- Source de donnees brutes -->
+  <gouv-source
+    id="demo-raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+    transform="data">
+  </gouv-source>
+
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
+
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-normalize"
+    icon="ri-filter-line"
+    active-path="components/gouv-normalize"
+    base-path="../">
+    <div slot="content">
+        <p class="fr-text--lead">
+          Composant intermediaire de normalisation et nettoyage des donnees.
+          Se place entre <code>&lt;gouv-source&gt;</code> et <code>&lt;gouv-query&gt;</code>
+          pour nettoyer les donnees avant traitement.
+        </p>
+
+        <div class="fr-callout fr-callout--blue-france">
+          <p class="fr-callout__text">
+            <strong>Invisible :</strong> Ce composant ne rend rien visuellement. Il normalise les donnees
+            et les redistribue aux composants en aval via le systeme d'evenements.
+          </p>
+        </div>
+
+        <h2>Position dans le pipeline</h2>
+        <div class="fr-highlight">
+          <p>
+            <code>gouv-source</code> &rarr; <strong><code>gouv-normalize</code></strong> &rarr; <code>gouv-query</code> &rarr; <code>gouv-dsfr-chart</code>
+          </p>
+          <p>
+            Normaliser <strong>avant</strong> <code>gouv-query</code> permet aux filtres et agregations de travailler
+            sur des donnees propres (evite les comparaisons string vs number).
+          </p>
+        </div>
+
+        <h2>Cas d'usage</h2>
+        <ul>
+          <li><strong>Nombres en string</strong> : valeurs numeriques stockees comme texte (<code>"1234"</code> au lieu de <code>1234</code>)</li>
+          <li><strong>Separateurs decimaux</strong> : virgule francaise vs point international (<code>"12,5"</code> vs <code>"12.5"</code>)</li>
+          <li><strong>Caracteres speciaux</strong> : balises HTML, espaces superflus dans les valeurs</li>
+          <li><strong>Libelles peu clairs</strong> : cles d'API cryptiques a renommer pour la lisibilite</li>
+          <li><strong>Valeurs manquantes</strong> : remplacer <code>N/A</code>, <code>n.d.</code>, <code>-</code> par des valeurs exploitables</li>
+        </ul>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Defaut</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td>-</td><td><strong>Requis.</strong> Identifiant de la sortie.</td></tr>
+            <tr><td><code>source</code></td><td>String</td><td><code>""</code></td><td><strong>Requis.</strong> ID de la source a ecouter.</td></tr>
+            <tr><td><code>numeric</code></td><td>String</td><td><code>""</code></td><td>Champs a forcer en nombre (virgule-separes).</td></tr>
+            <tr><td><code>numeric-auto</code></td><td>Boolean</td><td><code>false</code></td><td>Detection et conversion automatique des champs numeriques.</td></tr>
+            <tr><td><code>rename</code></td><td>String</td><td><code>""</code></td><td>Renommage de cles : <code>"ancien:nouveau | ancien2:nouveau2"</code></td></tr>
+            <tr><td><code>trim</code></td><td>Boolean</td><td><code>false</code></td><td>Supprime les espaces en debut/fin des valeurs string.</td></tr>
+            <tr><td><code>strip-html</code></td><td>Boolean</td><td><code>false</code></td><td>Supprime les balises HTML des valeurs string.</td></tr>
+            <tr><td><code>replace</code></td><td>String</td><td><code>""</code></td><td>Remplacement de valeurs : <code>"N/A: | n.d.: | -:0"</code></td></tr>
+            <tr><td><code>lowercase-keys</code></td><td>Boolean</td><td><code>false</code></td><td>Met toutes les cles en minuscules.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="fr-callout fr-mt-3w">
+          <p class="fr-callout__text">
+            <strong>Separateurs :</strong> <code>rename</code> et <code>replace</code> utilisent le pipe <code>|</code>
+            pour separer les paires, et <code>:</code> pour separer la cle de la valeur.
+            <code>numeric</code> utilise la virgule.
+          </p>
+        </div>
+
+        <!-- Exemple 1 : conversion numerique -->
+        <h2 class="fr-mt-4w">Exemple : conversion numerique + renommage</h2>
+        <p>Les donnees brutes contiennent des populations en string. On les convertit en nombre et on renomme les colonnes.</p>
+
+        <gouv-normalize
+          id="demo-clean"
+          source="demo-raw"
+          numeric-auto
+          trim>
+        </gouv-normalize>
+
+        <div class="fr-grid-row fr-grid-row--gutters fr-mt-2w">
+          <div class="fr-col-12 fr-col-md-6">
+            <h3>Donnees brutes</h3>
+            <gouv-datalist source="demo-raw" pagination="5"></gouv-datalist>
+          </div>
+          <div class="fr-col-12 fr-col-md-6">
+            <h3>Donnees normalisees</h3>
+            <gouv-datalist source="demo-clean" pagination="5"></gouv-datalist>
+          </div>
+        </div>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-source id="raw" url="..." transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  numeric-auto
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;!-- Les donnees normalisees sont pretes pour query/chart --&gt;
+&lt;gouv-datalist source="clean" pagination="5"&gt;&lt;/gouv-datalist&gt;</code></pre>
+
+        <!-- Exemple 2 : pipeline complet -->
+        <h2 class="fr-mt-6w">Exemple : pipeline complet</h2>
+        <p>Source &rarr; Normalize &rarr; Query &rarr; Chart</p>
+
+        <pre><code>&lt;gouv-source id="raw" url="..." transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  numeric="population, budget"
+  rename="pop_tot:Population totale | lib_dep:Departement"
+  trim
+  replace="N/A: | n.d.:"&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-query id="stats" source="clean"
+  group-by="Departement"
+  aggregate="population:sum"
+  order-by="population__sum:desc"
+  limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="Departement"
+  value-field="population__sum"&gt;
+&lt;/gouv-dsfr-chart&gt;</code></pre>
+
+    </div>
+  </app-layout-demo>
+
+  <!-- Footer -->
+  <app-footer base-path="../../"></app-footer>
+
+  <!-- DSFR JS -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

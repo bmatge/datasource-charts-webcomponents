@@ -356,6 +356,69 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 \`\`\``,
   },
 
+  gouvNormalize: {
+    id: 'gouvNormalize',
+    name: 'gouv-normalize',
+    description: 'Nettoyage et normalisation des donnees avant traitement',
+    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation'],
+    content: `## <gouv-normalize> - Normalisation de donnees
+
+Composant invisible intermediaire qui nettoie et normalise les donnees avant traitement.
+Se place entre <gouv-source> et <gouv-query> (ou directement avant une visualisation).
+
+### Position recommandee
+\`\`\`
+gouv-source -> gouv-normalize -> gouv-query -> gouv-dsfr-chart
+\`\`\`
+Normaliser AVANT gouv-query permet aux filtres et agregations de travailler sur des donnees propres
+(evite les comparaisons string vs number).
+
+### Format des donnees
+Entree : tableau d'objets (fourni par gouv-source ou un autre composant).
+Sortie : meme tableau avec valeurs nettoyees/renommees.
+
+### Attributs
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la source a ecouter |
+| numeric | String | \`""\` | non | Champs a forcer en nombre (virgule-separes) : \`"population, surface"\` |
+| numeric-auto | Boolean | \`false\` | non | Detection et conversion auto des champs numeriques |
+| rename | String | \`""\` | non | Renommage : \`"ancien:nouveau | ancien2:nouveau2"\` (pipe-separe) |
+| trim | Boolean | \`false\` | non | Supprime les espaces en debut/fin des valeurs string |
+| strip-html | Boolean | \`false\` | non | Supprime les balises HTML des valeurs string |
+| replace | String | \`""\` | non | Remplace des valeurs : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
+| lowercase-keys | Boolean | \`false\` | non | Met toutes les cles en minuscules |
+
+### Separateurs
+- \`numeric\` : champs separes par virgule
+- \`rename\` et \`replace\` : paires separees par \`|\`, cle et valeur separees par \`:\`
+  Le \`:\` separe le pattern de sa valeur de remplacement (valeur vide = suppression).
+
+### Exemples
+\`\`\`html
+<!-- Conversion numerique + renommage -->
+<gouv-source id="raw" url="https://api.fr/data" transform="results"></gouv-source>
+<gouv-normalize id="clean" source="raw"
+  numeric="population, budget"
+  rename="pop_tot:Population totale | lib_dep:Departement"
+  trim>
+</gouv-normalize>
+<gouv-query id="stats" source="clean" group-by="Departement" aggregate="population:sum"></gouv-query>
+<gouv-dsfr-chart source="stats" type="bar" label-field="Departement" value-field="population__sum"></gouv-dsfr-chart>
+
+<!-- Nettoyage complet : trim + strip HTML + remplacement de valeurs vides -->
+<gouv-normalize id="propre" source="raw"
+  trim
+  strip-html
+  replace="N/A: | n.d.: | -:0"
+  numeric-auto>
+</gouv-normalize>
+
+<!-- Normalisation des cles en minuscules -->
+<gouv-normalize id="lower" source="raw" lowercase-keys></gouv-normalize>
+\`\`\``,
+  },
+
   gouvKpi: {
     id: 'gouvKpi',
     name: 'gouv-kpi',
