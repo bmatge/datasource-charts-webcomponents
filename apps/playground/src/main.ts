@@ -204,9 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Save to favorites button
   document.getElementById('save-btn')?.addEventListener('click', saveFavorite);
 
-  // Load code from favorites if coming from favorites page
+  // Load code from sessionStorage if coming from another app
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('from') === 'favorites') {
+  const from = urlParams.get('from');
+  if (from === 'favorites' || from === 'builder' || from === 'builder-ia') {
     const savedCode = sessionStorage.getItem('playground-code');
     if (savedCode) {
       editor.setValue(savedCode);

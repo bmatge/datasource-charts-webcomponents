@@ -95,18 +95,21 @@ export function setupDatalistListeners(): void {
   if (rechercheEl) {
     rechercheEl.addEventListener('change', () => {
       state.datalistRecherche = rechercheEl.checked;
+      renderChart();
     });
   }
 
   if (filtresEl) {
     filtresEl.addEventListener('change', () => {
       state.datalistFiltres = filtresEl.checked;
+      renderChart();
     });
   }
 
   if (exportEl) {
     exportEl.addEventListener('change', () => {
       state.datalistExportCsv = exportEl.checked;
+      renderChart();
     });
   }
 

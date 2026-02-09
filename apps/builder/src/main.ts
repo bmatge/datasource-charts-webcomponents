@@ -4,7 +4,7 @@
  */
 
 import './styles/builder.css';
-import { state, saveDraft, loadDraft, clearDraft } from './state.js';
+import { state } from './state.js';
 import {
   loadSavedSources,
   checkSelectedSource,
@@ -30,26 +30,6 @@ import { setupFacetsListeners } from './ui/facets-config.js';
 (window as any).toggleSection = toggleSection;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Offer to restore draft if available (and not coming from favorites)
-  const urlParams = new URLSearchParams(window.location.search);
-  if (!urlParams.get('from') && loadDraft()) {
-    const banner = document.createElement('div');
-    banner.className = 'fr-alert fr-alert--info fr-alert--sm fr-mb-2w';
-    banner.innerHTML = `<p>Une session precedente a ete trouvee. <button class="fr-btn fr-btn--sm fr-btn--secondary fr-ml-1w" id="restore-draft">Reprendre</button> <button class="fr-btn fr-btn--sm fr-btn--tertiary fr-ml-1w" id="discard-draft">Ignorer</button></p>`;
-    const main = document.querySelector('main .fr-container') || document.querySelector('main');
-    if (main) main.prepend(banner);
-
-    document.getElementById('restore-draft')?.addEventListener('click', () => {
-      banner.remove();
-      // State already loaded by loadDraft(), just trigger UI refresh
-      window.location.reload();
-    });
-    document.getElementById('discard-draft')?.addEventListener('click', () => {
-      clearDraft();
-      banner.remove();
-    });
-  }
-
   // Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -183,13 +163,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load a favorite if coming from the favorites page
   loadFavoriteState();
-
-  // Auto-save draft every 2s on any state change
-  let draftTimer: ReturnType<typeof setTimeout>;
-  const autoSaveDraft = () => {
-    clearTimeout(draftTimer);
-    draftTimer = setTimeout(saveDraft, 2000);
-  };
-  document.addEventListener('input', autoSaveDraft);
-  document.addEventListener('change', autoSaveDraft);
 });
