@@ -56,8 +56,6 @@ Naviguez vers le **Builder**. Dans l'etape 1 "Source de donnees", selectionnez v
 
 L'etape 2 propose une grille de 11 types de graphiques : barres, lignes, camembert, radar, carte, KPI, tableau, etc. Cliquez sur le type souhaite (ici **Barres**).
 
-![Builder — choix du type](images/guide-A4-builder-chart-type.png)
-
 ### Etape 5 — Configurer et generer
 
 Completez la configuration :
@@ -76,7 +74,7 @@ Basculez sur l'onglet **Code genere** dans le panneau de droite. Le code HTML co
 
 ![Builder — code genere](images/guide-A7-builder-code.png)
 
-Le code genere est autonome : il inclut les balises DSFR Chart (`<bar-chart>`, `<line-chart>`, etc.) avec les donnees en attributs, ainsi que les liens vers les CSS et JS necessaires.
+Le code genere est autonome : il inclut les balises DSFR Chart avec les donnees en attributs, ainsi que les liens vers les CSS et JS necessaires.
 
 ---
 
@@ -102,13 +100,9 @@ Cliquez sur **Tester et sauvegarder**.
 
 Une fois connecte, cliquez sur la connexion dans la barre laterale. L'explorateur affiche les documents et tables disponibles. L'onglet **Apercu** permet de previsualiser les donnees.
 
-![Explorateur Grist](images/guide-B2-sources-grist-explorer.png)
-
 ### Etape 3 — Activer le mode dynamique dans le Builder
 
 Dans le **Builder**, selectionnez la source Grist et chargez les champs. Une section supplementaire apparait : **Mode de generation**. Selectionnez **Chargement dynamique** pour que le code genere interroge Grist en temps reel.
-
-![Mode dynamique](images/guide-B3-builder-dynamic-mode.png)
 
 - **Donnees integrees** : les donnees sont copiees en dur dans le HTML (statique)
 - **Chargement dynamique** : utilise `<gouv-source>` + `<gouv-query>` + `<gouv-dsfr-chart>` pour charger les donnees en temps reel
@@ -119,11 +113,10 @@ Apres avoir configure et genere le graphique, le code genere contient les Web Co
 
 ![Code dynamique Grist](images/guide-B4-builder-grist-code.png)
 
-Le code genere ressemble a :
 ```html
 <gouv-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
              transform="records[].fields"></gouv-source>
-<gouv-query source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"></gouv-query>
+<gouv-query id="query-result" source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"></gouv-query>
 <gouv-dsfr-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
                  title="PIB par pays"></gouv-dsfr-chart>
 ```
@@ -153,8 +146,6 @@ Ecrivez dans le chat ce que vous souhaitez, en langage naturel. Par exemple :
 
 L'IA analyse les champs disponibles dans vos donnees et genere la configuration correspondante. Elle propose ensuite des **suggestions** pour affiner le resultat.
 
-![Chat IA](images/guide-C2-builder-ia-chat.png)
-
 ### Etape 3 — Iterer et exporter
 
 L'IA repond avec :
@@ -178,21 +169,16 @@ Vous pouvez continuer la conversation pour ajuster le graphique, puis copier le 
 
 ### Etape 1 — Charger un exemple
 
-Le **Playground** est un editeur de code split avec un apercu en temps reel. Un selecteur d'exemples propose des modeles classes en 3 categories :
+Le **Playground** est un editeur de code split avec un apercu en temps reel. Un selecteur d'exemples propose des modeles classes en 2 categories :
 
-- **Chart.js (API OpenDataSoft)** : graphiques avec appels API reels
+- **Composants gouv-widgets** : `gouv-source` + `gouv-query` + `gouv-dsfr-chart` (barres, camembert, lignes), `gouv-kpi`, `gouv-datalist`, dashboard complet
 - **DSFR Chart natifs** : composants DSFR (barres, lignes, camembert, jauge, radar, carte)
-- **Composants gouv-widgets** : `gouv-source`, `gouv-kpi`, `gouv-datalist`, dashboard complet
 
 ![Playground — vue d'ensemble](images/guide-D1-playground-overview.png)
 
 ### Etape 2 — Executer et visualiser
 
-Selectionnez un exemple (ici "DSFR Bar Chart") et cliquez sur **Executer**. Le code a gauche est rendu en temps reel dans l'apercu a droite.
-
-![Playground — DSFR Bar Chart](images/guide-D2-playground-dsfr-bar.png)
-
-L'exemple ci-dessus charge les prix moyens du controle technique par region depuis l'API data.economie.gouv.fr et les affiche avec un composant `<bar-chart>` DSFR natif.
+Selectionnez un exemple et cliquez sur **Executer**. Le code a gauche est rendu en temps reel dans l'apercu a droite.
 
 ### Etape 3 — Modifier et sauvegarder
 
@@ -200,14 +186,6 @@ Modifiez le code dans l'editeur (theme Dracula), puis :
 1. Cliquez sur **Executer** (ou `Ctrl+Entree`) pour voir le resultat
 2. Cliquez sur **Copier** pour copier le code
 3. Cliquez sur **Favoris** pour sauvegarder dans vos favoris
-
-![Playground — dashboard gouv-widgets](images/guide-D3-playground-dashboard.png)
-
-### Etape 4 — Tester les composants gouv-widgets
-
-L'exemple "gouv-source + gouv-dsfr-chart" montre comment connecter une source de donnees a un graphique DSFR via les Web Components :
-
-![Playground — gouv-source + chart](images/guide-D4-playground-gouv-source.png)
 
 ---
 
@@ -223,8 +201,6 @@ Le **Dashboard** est un editeur visuel avec :
 - A gauche : la **bibliotheque de widgets** (KPI, Graphique, Tableau, Texte), les **favoris** sauvegardes, et les reglages de **grille**
 - Au centre : la **grille de placement** avec des zones de depot
 
-![Dashboard — vue d'ensemble](images/guide-E1-dashboard-overview.png)
-
 ### Etape 2 — Placer des widgets
 
 Glissez un widget depuis la bibliotheque ou un favori vers une cellule de la grille. Chaque widget peut etre configure en cliquant dessus.
@@ -234,8 +210,6 @@ La barre d'outils permet de :
 - **Exporter HTML** : telecharger le dashboard en page HTML autonome
 - **Apercu** : voir le rendu final dans un navigateur
 
-![Dashboard — barre d'outils](images/guide-E4-dashboard-toolbar.png)
-
 ### Etape 3 — Configurer la grille
 
 La section **Grille** dans la barre laterale permet d'ajuster :
@@ -243,8 +217,6 @@ La section **Grille** dans la barre laterale permet d'ajuster :
 - L'**espacement** entre les widgets (Normal ou Sans)
 
 Chaque ligne peut avoir un nombre de colonnes different, permettant des layouts complexes (ex: 3 KPI en ligne 1, 2 graphiques en ligne 2).
-
-![Dashboard — barre laterale](images/guide-E3-dashboard-sidebar.png)
 
 Les onglets **Code genere** et **JSON** permettent de recuperer le code HTML ou la configuration JSON du dashboard.
 
@@ -265,8 +237,6 @@ Dans **Sources**, cliquez sur **Nouvelle connexion** et selectionnez le type **A
 3. Indiquez le **chemin vers les donnees** dans la reponse JSON (ex: `results` pour OpenDataSoft, `data` pour tabular-api.data.gouv.fr)
 4. Cliquez sur **Tester et sauvegarder**
 
-![Connexion API](images/guide-F1-sources-api-modal.png)
-
 > **APIs testees** :
 > - OpenDataSoft : `data.economie.gouv.fr` (chemin : `results`)
 > - Tabular API : `tabular-api.data.gouv.fr` (chemin : `data`)
@@ -274,15 +244,11 @@ Dans **Sources**, cliquez sur **Nouvelle connexion** et selectionnez le type **A
 
 ### Etape 2 — Generer le graphique
 
-Dans le **Builder**, selectionnez la source API, choisissez un type de graphique et configurez les champs. Ici, un graphique en lignes des beneficiaires de l'Industrie du futur par region :
-
-![Builder — graphique API](images/guide-F2-builder-api-chart.png)
+Dans le **Builder**, selectionnez la source API, choisissez un type de graphique et configurez les champs.
 
 ### Etape 3 — Recuperer le code
 
 Le code genere inclut soit un fetch direct vers l'API, soit les composants `<gouv-source>` et `<gouv-dsfr-chart>` pour un chargement dynamique.
-
-![Builder — code API](images/guide-F3-builder-api-code.png)
 
 ---
 
@@ -296,8 +262,6 @@ Le code genere inclut soit un fetch direct vers l'API, soit les composants `<gou
 
 La page **Monitoring** affiche automatiquement les donnees collectees par le systeme de beacons. Chaque composant gouv-widgets envoie un signal au deploiement, permettant de suivre l'utilisation.
 
-![Monitoring — vue d'ensemble](images/guide-G1-monitoring-overview.png)
-
 ### KPIs de suivi
 
 Quatre indicateurs en haut de page resument l'activite :
@@ -305,8 +269,6 @@ Quatre indicateurs en haut de page resument l'activite :
 - **Widgets actifs** : nombre total d'instances de composants
 - **Appels totaux** : volume cumule de chargements de pages
 - **Derniere mise a jour** : horodatage de la derniere collecte
-
-![Monitoring — KPIs](images/guide-G2-monitoring-kpis.png)
 
 ### Filtrer et exporter
 
@@ -316,91 +278,321 @@ Le tableau detaille liste chaque deploiement avec le site, la page, le composant
 - **Exporter en CSV** pour analyse
 - **Actualiser** pour recharger les donnees
 
-![Monitoring — filtres et tableau](images/guide-G3-monitoring-filters-table.png)
-
 ---
 
-## Composants de reference
+## Exemples d'implementations
 
-### gouv-kpi — Indicateurs chiffres
+Exemples prets a l'emploi, organises par mode de construction. Trois sources de donnees publiques sont utilisees :
 
-Affiche des valeurs numeriques mises en avant (chiffres cles, KPI).
+- **Fiscalite locale** — Taux de taxes foncieres et d'habitation par commune (data.economie.gouv.fr)
+- **Elus municipaux** — Repertoire national des elus (tabular-api.data.gouv.fr)
+- **Industrie du futur** — Beneficiaires et investissements par region (data.economie.gouv.fr)
 
-![Demo gouv-kpi](images/guide-comp-kpi.png)
+### Mode direct : gouv-source → composant
 
-### gouv-datalist — Tableau filtrable
+Les donnees de la source sont transmises directement au composant de visualisation, sans transformation intermediaire.
 
-Tableau de donnees avec recherche, filtres par colonne, tri et export CSV.
-
-![Demo gouv-datalist](images/guide-comp-datalist.png)
-
-### gouv-dsfr-chart — Graphiques DSFR
-
-Wrapper pour les graphiques DSFR natifs (barres, lignes, camembert, radar, jauge, carte, nuage de points).
-
-![Demo gouv-dsfr-chart](images/guide-comp-chart.png)
-
-### gouv-query — Filtrage et agregation
-
-Composant invisible de transformation de donnees : filtre, regroupe et agrege les donnees entre la source et l'affichage.
-
-![Demo gouv-query](images/guide-comp-query.png)
-
----
-
-## Integration rapide
-
-Le code minimal pour integrer un graphique dans votre page :
+#### Barres — Taux de taxe fonciere par commune
 
 ```html
-<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-  <!-- DSFR -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-  <!-- DSFR Chart -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <!-- gouv-widgets -->
-  <script type="module" src="gouv-widgets.esm.js"></script>
-</head>
-<body>
-  <!-- Source de donnees -->
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
-  </gouv-source>
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
+  transform="results"></gouv-source>
 
-  <!-- Filtrage et agregation -->
-  <gouv-query source="data"
-    group-by="nom_region"
-    aggregate="nombre_beneficiaires:sum"
-    order-by="value:desc"
-    limit="10">
-  </gouv-query>
-
-  <!-- Graphique DSFR -->
-  <gouv-dsfr-chart source="query-result"
-    type="bar"
-    label-field="nom_region"
-    value-field="nombre_beneficiaires"
-    title="Beneficiaires Industrie du futur par region"
-    palette="categorical">
-  </gouv-dsfr-chart>
-</body>
-</html>
+<gouv-dsfr-chart source="data" type="bar"
+  label-field="libcom" value-field="taux_global_tfb"
+  unit-tooltip="%" selected-palette="categorical">
+</gouv-dsfr-chart>
 ```
 
-Ce code :
-1. Charge les donnees depuis l'API OpenDataSoft
-2. Les regroupe par region avec une somme des beneficiaires
-3. Affiche un graphique en barres conforme DSFR
+#### Courbe — Beneficiaires Industrie du futur
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="line"
+  label-field="nom_departement" value-field="nombre_beneficiaires">
+</gouv-dsfr-chart>
+```
+
+#### Camembert — Poids demographique
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="pie"
+  label-field="libcom" value-field="mpoid">
+</gouv-dsfr-chart>
+```
+
+#### Radar — Beneficiaires par region
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="radar"
+  label-field="nom_region" value-field="nombre_beneficiaires">
+</gouv-dsfr-chart>
+```
+
+#### Jauge — Taux de taxe fonciere
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="gauge"
+  value-field="taux_global_tfb">
+</gouv-dsfr-chart>
+```
+
+#### Nuage — Investissement vs participation
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="scatter"
+  label-field="montant_investissement"
+  value-field="montant_participation_etat">
+</gouv-dsfr-chart>
+```
+
+#### Barres + ligne — Investissements
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="bar-line"
+  label-field="nom_departement"
+  value-field="montant_investissement"
+  value-field-2="montant_participation_etat"
+  name='["Investissement", "Participation Etat"]'>
+</gouv-dsfr-chart>
+```
+
+#### Carte — Beneficiaires par departement
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-dsfr-chart source="data" type="map"
+  code-field="code_departement" value-field="nombre_beneficiaires"
+  selected-palette="sequentialAscending">
+</gouv-dsfr-chart>
+```
+
+#### KPI — Indicateurs Industrie du futur
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"></gouv-source>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+  <gouv-kpi source="data" valeur="sum:nombre_beneficiaires"
+    label="Total beneficiaires" format="nombre"></gouv-kpi>
+  <gouv-kpi source="data" valeur="avg:nombre_beneficiaires"
+    label="Moyenne" format="decimal"></gouv-kpi>
+  <gouv-kpi source="data" valeur="max:montant_investissement"
+    label="Investissement max" format="euro" couleur="vert"></gouv-kpi>
+  <gouv-kpi source="data" valeur="count"
+    label="Enregistrements" format="nombre"></gouv-kpi>
+</div>
+```
+
+#### Tableau — Registre des elus
+
+```html
+<gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=50"
+  transform="data"></gouv-source>
+
+<gouv-datalist source="data"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
+  recherche="true" filtres="Libelle du  departement"
+  tri="Nom de l'elu:asc" pagination="10" export="csv">
+</gouv-datalist>
+```
+
+### Avec normalisation : gouv-source → gouv-normalize → composant
+
+Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion numerique, renommage, trim) avant de les transmettre au composant de visualisation ou a `gouv-query`.
+
+#### Barres — Conversion numerique + renommage
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-normalize id="clean" source="data"
+  numeric="nombre_beneficiaires, montant_investissement"
+  rename="nom_region:Region | nombre_beneficiaires:Beneficiaires | montant_investissement:Investissement"
+  trim>
+</gouv-normalize>
+
+<gouv-query id="stats" source="clean"
+  group-by="Region"
+  aggregate="Beneficiaires:sum"
+  order-by="Beneficiaires__sum:desc"
+  limit="10">
+</gouv-query>
+
+<gouv-dsfr-chart source="stats" type="bar"
+  label-field="Region" value-field="Beneficiaires__sum"
+  selected-palette="categorical">
+</gouv-dsfr-chart>
+```
+
+#### Tableau — Nettoyage complet des donnees
+
+```html
+<gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+  transform="data"></gouv-source>
+
+<gouv-normalize id="clean" source="data"
+  trim
+  numeric-auto
+  replace="N/A: | n.d.: | -:">
+</gouv-normalize>
+
+<gouv-datalist source="clean"
+  recherche pagination="10" export="csv">
+</gouv-datalist>
+```
+
+### Avec requete : gouv-source → gouv-query → composant
+
+Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant de les transmettre au composant de visualisation.
+
+#### Barres — Beneficiaires agreges par region
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-query id="q" source="data"
+  group-by="nom_region"
+  aggregate="nombre_beneficiaires:sum:beneficiaires"
+  order-by="beneficiaires:desc" limit="10">
+</gouv-query>
+
+<gouv-dsfr-chart source="q" type="bar"
+  label-field="nom_region" value-field="beneficiaires">
+</gouv-dsfr-chart>
+```
+
+#### Courbe — Taux moyen TFB par region
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-query id="q" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:taux_moyen"
+  order-by="taux_moyen:desc">
+</gouv-query>
+
+<gouv-dsfr-chart source="q" type="line"
+  label-field="libreg" value-field="taux_moyen" unit-tooltip="%">
+</gouv-dsfr-chart>
+```
+
+#### Camembert — Elus par categorie socio-pro
+
+```html
+<gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  transform="data"></gouv-source>
+
+<gouv-query id="q" source="data"
+  group-by="Libelle de la categorie socio-professionnelle"
+  aggregate="Code sexe:count:nombre"
+  order-by="nombre:desc" limit="8">
+</gouv-query>
+
+<gouv-dsfr-chart source="q" type="pie"
+  label-field="Libelle de la categorie socio-professionnelle"
+  value-field="nombre">
+</gouv-dsfr-chart>
+```
+
+#### Carte — Taux TFB par departement
+
+```html
+<gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"></gouv-source>
+
+<gouv-query id="q" source="data"
+  group-by="dep"
+  aggregate="taux_global_tfb:avg:taux">
+</gouv-query>
+
+<gouv-dsfr-chart source="q" type="map"
+  code-field="dep" value-field="taux"
+  selected-palette="sequentialAscending">
+</gouv-dsfr-chart>
+```
+
+#### KPI — Statistiques des elus avec filtre
+
+```html
+<gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  transform="data"></gouv-source>
+
+<gouv-query id="q-maires" source="data"
+  filter="Libelle de la fonction:contains:Maire">
+</gouv-query>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+  <gouv-kpi source="data" valeur="count"
+    label="Total des elus" format="nombre"></gouv-kpi>
+  <gouv-kpi source="q-maires" valeur="count"
+    label="Dont Maires" format="nombre" couleur="bleu"></gouv-kpi>
+</div>
+```
+
+#### Tableau — Elus filtres par region
+
+```html
+<gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  transform="data"></gouv-source>
+
+<gouv-query id="q" source="data"
+  filter="Libelle de la region:contains:Ile">
+</gouv-query>
+
+<gouv-datalist source="q"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
+  recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv">
+</gouv-datalist>
+```
 
 ---
 
 ## Ressources
 
-- **Code source** : [github.com/anthropics/datasource-charts-webcomponents](https://github.com/anthropics/datasource-charts-webcomponents)
+- **Code source** : [github.com/bmatge/datasource-charts-webcomponents](https://github.com/bmatge/datasource-charts-webcomponents)
 - **Demo composants** : section Composants de l'application
 - **Documentation DSFR Chart** : [github.com/GouvernementFR/dsfr-chart](https://github.com/GouvernementFR/dsfr-chart)
 - **API Albert** : [albert.api.etalab.gouv.fr](https://albert.api.etalab.gouv.fr)

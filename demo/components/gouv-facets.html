@@ -109,6 +109,7 @@
             <tr><td><code>sort</code></td><td>String</td><td><code>"count"</code></td><td>Tri des valeurs : <code>count</code>, <code>-count</code>, <code>alpha</code>, <code>-alpha</code>.</td></tr>
             <tr><td><code>searchable</code></td><td>String</td><td><code>""</code></td><td>Champs avec barre de recherche (virgule-separes).</td></tr>
             <tr><td><code>hide-empty</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les facettes avec une seule valeur.</td></tr>
+            <tr><td><code>display</code></td><td>String</td><td><code>""</code></td><td>Mode d'affichage par facette : <code>"field:select | field2:multiselect"</code>. Modes : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>.</td></tr>
           </tbody>
         </table>
 
@@ -117,6 +118,16 @@
             <strong>Logique de filtrage :</strong> au sein d'une facette, les selections sont en <strong>OU</strong>
             (afficher Paris ou Lyon). Entre facettes differentes, c'est du <strong>ET</strong>
             (region = PACA ET type = Commune). Les compteurs se recalculent dynamiquement.
+          </p>
+        </div>
+
+        <div class="fr-callout fr-callout--brown-caramel fr-mt-3w">
+          <p class="fr-callout__text">
+            <strong>Modes d'affichage :</strong><br>
+            <code>checkbox</code> (defaut) : checkboxes inline avec compteurs.<br>
+            <code>select</code> : liste deroulante DSFR, selection exclusive.<br>
+            <code>multiselect</code> : dropdown avec checkboxes, recherche et "Tout deselectionner".<br>
+            Le mode <code>select</code> est automatiquement exclusif, <code>multiselect</code> automatiquement disjonctif.
           </p>
         </div>
 
@@ -309,6 +320,41 @@
   value-field="taux"
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 4 : Modes d'affichage mixtes
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 4 : modes d'affichage mixtes</h2>
+        <p>Trois facettes avec des modes differents : <code>select</code> pour la Region (liste deroulante exclusive),
+        <code>multiselect</code> pour le Departement (dropdown multi-selection avec recherche),
+        et <code>checkbox</code> (defaut) pour la Fonction.</p>
+
+        <gouv-facets id="elus-display-demo" source="elus-clean"
+          fields="Region, Departement, Fonction"
+          labels="Region:Region | Departement:Departement | Fonction:Fonction"
+          display="Region:select | Departement:multiselect"
+          max-values="6">
+        </gouv-facets>
+
+        <gouv-datalist source="elus-display-demo"
+          colonnes="Nom, Prenom, Fonction, Departement"
+          recherche="true"
+          pagination="5">
+        </gouv-datalist>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-facets id="filtered" source="clean"
+  fields="Region, Departement, Fonction"
+  labels="Region:Region | Departement:Departement | Fonction:Fonction"
+  display="Region:select | Departement:multiselect"
+  max-values="6"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;gouv-datalist source="filtered"
+  colonnes="Nom, Prenom, Fonction, Departement"
+  recherche="true"
+  pagination="5"&gt;
+&lt;/gouv-datalist&gt;</code></pre>
 
     </div>
   </app-layout-demo>

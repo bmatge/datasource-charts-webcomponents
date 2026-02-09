@@ -10,6 +10,8 @@ import {
   getDataCache
 } from '../utils/data-bridge.js';
 
+type FacetDisplayMode = 'checkbox' | 'select' | 'multiselect';
+
 interface FacetValue {
   value: string;
   count: number;
@@ -70,6 +72,10 @@ export class GouvFacets extends LitElement {
   @property({ type: Boolean, attribute: 'hide-empty' })
   hideEmpty = false;
 
+  /** Mode d'affichage par facette : "field:select | field2:multiselect". Defaut = checkbox */
+  @property({ type: String })
+  display = '';
+
   @state()
   private _rawData: Record<string, unknown>[] = [];
 
@@ -85,6 +91,9 @@ export class GouvFacets extends LitElement {
   @state()
   private _searchQueries: Record<string, string> = {};
 
+  @state()
+  private _openMultiselectField: string | null = null;
+
   private _unsubscribe: (() => void) | null = null;
 
   createRenderRoot() {
@@ -95,10 +104,12 @@ export class GouvFacets extends LitElement {
     super.connectedCallback();
     sendWidgetBeacon('gouv-facets');
     this._initialize();
+    document.addEventListener('click', this._onClickOutsideMultiselect);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    document.removeEventListener('click', this._onClickOutsideMultiselect);
     if (this._unsubscribe) {
       this._unsubscribe();
       this._unsubscribe = null;
@@ -116,7 +127,7 @@ export class GouvFacets extends LitElement {
       return;
     }
 
-    const facetAttrs = ['fields', 'labels', 'sort', 'hideEmpty', 'maxValues', 'disjunctive', 'searchable'];
+    const facetAttrs = ['fields', 'labels', 'sort', 'hideEmpty', 'maxValues', 'disjunctive', 'searchable', 'display'];
     const hasFacetChange = facetAttrs.some(attr => changedProperties.has(attr));
     if (hasFacetChange && this._rawData.length > 0) {
       this._buildFacetGroups();
@@ -332,20 +343,45 @@ export class GouvFacets extends LitElement {
     return map;
   }
 
+  /** Parse display attribute into per-field mode map */
+  _parseDisplayModes(): Map<string, FacetDisplayMode> {
+    const map = new Map<string, FacetDisplayMode>();
+    if (!this.display) return map;
+
+    const pairs = this.display.split('|');
+    for (const pair of pairs) {
+      const colonIndex = pair.indexOf(':');
+      if (colonIndex === -1) continue;
+      const key = pair.substring(0, colonIndex).trim();
+      const value = pair.substring(colonIndex + 1).trim();
+      if (key && (value === 'checkbox' || value === 'select' || value === 'multiselect')) {
+        map.set(key, value);
+      }
+    }
+    return map;
+  }
+
+  /** Get the display mode for a specific field */
+  _getDisplayMode(field: string): FacetDisplayMode {
+    return this._parseDisplayModes().get(field) ?? 'checkbox';
+  }
+
   // --- User interaction ---
 
   private _toggleValue(field: string, value: string) {
     const selections = { ...this._activeSelections };
     const fieldSet = new Set(selections[field] ?? []);
 
+    const displayMode = this._getDisplayMode(field);
     const disjunctiveFields = _parseCSV(this.disjunctive);
-    const isDisjunctive = disjunctiveFields.includes(field);
+    // select = always exclusive, multiselect = always disjunctive, checkbox = check attribute
+    const isDisjunctive = displayMode === 'multiselect'
+      || (displayMode === 'checkbox' && disjunctiveFields.includes(field));
 
     if (fieldSet.has(value)) {
       fieldSet.delete(value);
     } else {
       if (!isDisjunctive) {
-        // In conjunctive mode, only one value at a time per facet
         fieldSet.clear();
       }
       fieldSet.add(value);
@@ -361,6 +397,43 @@ export class GouvFacets extends LitElement {
     this._buildFacetGroups();
     this._applyFilters();
   }
+
+  private _handleSelectChange(field: string, e: Event) {
+    const select = e.target as HTMLSelectElement;
+    const value = select.value;
+    const selections = { ...this._activeSelections };
+
+    if (!value) {
+      delete selections[field];
+    } else {
+      selections[field] = new Set([value]);
+    }
+
+    this._activeSelections = selections;
+    this._buildFacetGroups();
+    this._applyFilters();
+  }
+
+  private _clearFieldSelections(field: string) {
+    const selections = { ...this._activeSelections };
+    delete selections[field];
+    this._activeSelections = selections;
+    this._buildFacetGroups();
+    this._applyFilters();
+  }
+
+  private _toggleMultiselectDropdown(field: string) {
+    this._openMultiselectField = this._openMultiselectField === field ? null : field;
+  }
+
+  private _onClickOutsideMultiselect = (e: MouseEvent) => {
+    if (!this._openMultiselectField) return;
+    const target = e.target as HTMLElement;
+    const panel = this.querySelector(`[data-multiselect="${this._openMultiselectField}"]`);
+    if (panel && !panel.contains(target)) {
+      this._openMultiselectField = null;
+    }
+  };
 
   private _toggleExpand(field: string) {
     const expanded = new Set(this._expandedFacets);
@@ -412,6 +485,10 @@ export class GouvFacets extends LitElement {
         .gouv-facets__value-count { flex-shrink: 0; font-size: 0.75rem; color: var(--text-mention-grey, #666); }
         .gouv-facets__more { background: none; border: none; color: var(--text-action-high-blue-france, #000091); cursor: pointer; font-size: 0.8125rem; padding: 0.25rem 0; margin-top: 0.25rem; }
         .gouv-facets__more:hover { text-decoration: underline; }
+        .gouv-facets__multiselect { position: relative; }
+        .gouv-facets__multiselect-trigger { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; font-weight: 400; }
+        .gouv-facets__multiselect-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: var(--background-default-grey, #fff); border: 1px solid var(--border-default-grey, #ddd); border-radius: 0 0 0.25rem 0.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); max-height: 320px; overflow-y: auto; padding: 0.5rem; }
+        .gouv-facets__multiselect-clear { width: 100%; text-align: left; margin-bottom: 0.5rem; }
         @media (max-width: 576px) { .gouv-facets__groups { grid-template-columns: 1fr; } }
       </style>
       <div class="gouv-facets">
@@ -430,6 +507,18 @@ export class GouvFacets extends LitElement {
   }
 
   private _renderFacetGroup(group: FacetGroup) {
+    const mode = this._getDisplayMode(group.field);
+    switch (mode) {
+      case 'select':
+        return this._renderSelectGroup(group);
+      case 'multiselect':
+        return this._renderMultiselectGroup(group);
+      default:
+        return this._renderCheckboxGroup(group);
+    }
+  }
+
+  private _renderCheckboxGroup(group: FacetGroup) {
     const searchableFields = _parseCSV(this.searchable);
     const isSearchable = searchableFields.includes(group.field);
     const searchQuery = (this._searchQueries[group.field] ?? '').toLowerCase();
@@ -479,6 +568,93 @@ export class GouvFacets extends LitElement {
           </button>
         ` : nothing}
       </fieldset>
+    `;
+  }
+
+  private _renderSelectGroup(group: FacetGroup) {
+    const uid = `facet-${this.id}-${group.field}`;
+    const selected = this._activeSelections[group.field];
+    const selectedValue = selected ? [...selected][0] ?? '' : '';
+
+    return html`
+      <div class="gouv-facets__group fr-select-group" data-field="${group.field}">
+        <label class="fr-label" for="${uid}-select">${group.label}</label>
+        <select class="fr-select" id="${uid}-select"
+          @change="${(e: Event) => this._handleSelectChange(group.field, e)}">
+          <option value="" ?selected="${!selectedValue}">Tous</option>
+          ${group.values.map(fv => html`
+            <option value="${fv.value}" ?selected="${fv.value === selectedValue}">
+              ${fv.value} (${fv.count})
+            </option>
+          `)}
+        </select>
+      </div>
+    `;
+  }
+
+  private _renderMultiselectGroup(group: FacetGroup) {
+    const uid = `facet-${this.id}-${group.field}`;
+    const selected = this._activeSelections[group.field] ?? new Set();
+    const isOpen = this._openMultiselectField === group.field;
+    const searchQuery = (this._searchQueries[group.field] ?? '').toLowerCase();
+
+    let displayValues = group.values;
+    if (searchQuery) {
+      displayValues = displayValues.filter(v => v.value.toLowerCase().includes(searchQuery));
+    }
+
+    const triggerLabel = selected.size > 0
+      ? `${selected.size} option${selected.size > 1 ? 's' : ''} selectionnee${selected.size > 1 ? 's' : ''}`
+      : 'Selectionnez des options';
+
+    return html`
+      <div class="gouv-facets__group gouv-facets__multiselect"
+           data-multiselect="${group.field}"
+           data-field="${group.field}">
+        <label class="gouv-facets__legend" id="${uid}-legend">${group.label}</label>
+        <button class="fr-btn fr-btn--secondary fr-btn--sm gouv-facets__multiselect-trigger"
+          type="button"
+          aria-expanded="${isOpen}"
+          aria-controls="${uid}-panel"
+          @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
+          ${triggerLabel}
+          <span class="fr-icon-arrow-${isOpen ? 'up' : 'down'}-s-line" aria-hidden="true"></span>
+        </button>
+        ${isOpen ? html`
+          <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
+               @click="${(e: Event) => e.stopPropagation()}">
+            ${selected.size > 0 ? html`
+              <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm gouv-facets__multiselect-clear"
+                type="button"
+                @click="${() => this._clearFieldSelections(group.field)}">
+                Tout deselectionner
+              </button>
+            ` : nothing}
+            <div class="gouv-facets__search">
+              <input class="fr-input fr-input--sm" type="search"
+                placeholder="Rechercher..."
+                .value="${this._searchQueries[group.field] ?? ''}"
+                @input="${(e: Event) => this._handleSearch(group.field, e)}"
+                aria-label="Rechercher dans ${group.label}">
+            </div>
+            <ul class="gouv-facets__values" role="group">
+              ${displayValues.map(fv => {
+                const checkId = `${uid}-${fv.value.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const isChecked = selected.has(fv.value);
+                return html`
+                  <li class="gouv-facets__value">
+                    <input type="checkbox" id="${checkId}"
+                      .checked="${isChecked}"
+                      @change="${() => this._toggleValue(group.field, fv.value)}">
+                    <label class="gouv-facets__value-label" for="${checkId}">${fv.value}</label>
+                    <span class="gouv-facets__value-count">${fv.count}</span>
+                  </li>
+                `;
+              })}
+            </ul>
+          </div>
+        ` : nothing}
+      </div>
     `;
   }
 }

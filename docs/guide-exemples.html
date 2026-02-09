@@ -25,8 +25,8 @@
     .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
     .guide-content li { margin-bottom: 0.25rem; }
     .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
-    .example-iframe { width: 100%; border: 1px solid var(--border-default-grey); border-radius: 0 0 4px 4px; min-height: 300px; overflow: hidden; background: white; }
-    .example-loading { padding: 2rem; text-align: center; color: var(--text-mention-grey); }
+    .example-iframe { width: 100%; border: 1px solid var(--border-default-grey); border-radius: 4px; min-height: 300px; overflow: hidden; background: white; }
+    .example-loading { padding: 2rem; text-align: center; color: var(--text-mention-grey); border: 1px solid var(--border-default-grey); border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -71,7 +71,7 @@
         <h1><i class="ri-code-box-line fr-mr-1w"></i>Exemples d'implementations</h1>
         <p class="fr-text--lead">
           Exemples prets a l'emploi, organises par mode de construction.
-          Chaque exemple affiche le rendu live et le code source correspondant.
+          Chaque exemple affiche le rendu live avec le code source en accordeon.
         </p>
         <p>Trois sources de donnees publiques sont utilisees en alternance :</p>
         <ul>
@@ -92,13 +92,10 @@
           <p>Graphique en barres affichant les taux de taxe fonciere de 15 communes.
             <a href="../apps/playground/index.html?example=direct-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-bar-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-bar-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-bar-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-bar-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-bar-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-bar-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-bar-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-bar-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-bar">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-bar">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -108,20 +105,17 @@
   unit-tooltip="%" selected-palette="categorical"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-line -->
           <h4>Courbe — Beneficiaires Industrie du futur</h4>
           <p>Courbe du nombre de beneficiaires par departement.
             <a href="../apps/playground/index.html?example=direct-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-line-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-line-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-line-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-line-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-line-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-line-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-line-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-line-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-line">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-line">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -130,20 +124,17 @@
   label-field="nom_departement" value-field="nombre_beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-pie -->
           <h4>Camembert — Poids demographique</h4>
           <p>Diagramme circulaire du poids demographique par commune.
             <a href="../apps/playground/index.html?example=direct-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-pie-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-pie-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-pie-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-pie-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-pie-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-pie-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-pie-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-pie-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-pie">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-pie">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -152,20 +143,17 @@
   label-field="libcom" value-field="mpoid"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-radar -->
           <h4>Radar — Beneficiaires par region</h4>
           <p>Graphique radar montrant le profil des beneficiaires.
             <a href="../apps/playground/index.html?example=direct-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-radar-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-radar-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-radar-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-radar-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-radar-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-radar-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-radar-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-radar-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-radar">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-radar">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -174,20 +162,17 @@
   label-field="nom_region" value-field="nombre_beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-gauge -->
           <h4>Jauge — Taux de taxe fonciere</h4>
           <p>Jauge affichant le taux de taxe fonciere d'une commune (1 enregistrement).
             <a href="../apps/playground/index.html?example=direct-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-gauge-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-gauge-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-gauge-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-gauge-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-gauge-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-gauge-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-gauge-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-gauge-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-gauge">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-gauge">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -196,20 +181,17 @@
   value-field="taux_global_tfb"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-scatter -->
           <h4>Nuage — Investissement vs participation</h4>
           <p>Nuage de points croisant investissement et participation de l'Etat.
             <a href="../apps/playground/index.html?example=direct-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-scatter-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-scatter-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-scatter-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-scatter-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-scatter-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-scatter-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-scatter-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-scatter-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-scatter">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-scatter">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -219,20 +201,17 @@
   value-field="montant_participation_etat"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-barline -->
           <h4>Barres + ligne — Investissements</h4>
           <p>Combine barres (investissement) et ligne (participation Etat) via <code>value-field-2</code>.
             <a href="../apps/playground/index.html?example=direct-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-barline-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-barline-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-barline-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-barline-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-barline-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-barline-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-barline-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-barline-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-barline">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-barline">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -244,20 +223,17 @@
   name='["Investissement", "Participation Etat"]'&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-map -->
           <h4>Carte — Beneficiaires par departement</h4>
           <p>Carte de France coloree par nombre de beneficiaires, via <code>code-field</code>.
             <a href="../apps/playground/index.html?example=direct-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-map-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-map-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-map-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-map-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-map-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-map-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-map-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-map-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-map">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-map">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -267,20 +243,17 @@
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-kpi -->
           <h4>KPI — Indicateurs Industrie du futur</h4>
           <p>Quatre indicateurs cles calcules directement depuis les donnees brutes.
             <a href="../apps/playground/index.html?example=direct-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-kpi-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-kpi-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-kpi-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-kpi-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-kpi-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-kpi-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-kpi-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-kpi-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-kpi">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-kpi">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -296,20 +269,17 @@
     label="Enregistrements" format="nombre"&gt;&lt;/gouv-kpi&gt;
 &lt;/div&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- direct-datalist -->
           <h4>Tableau — Registre des elus</h4>
           <p>Tableau interactif avec recherche, filtres, tri et export CSV.
             <a href="../apps/playground/index.html?example=direct-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-d-datalist-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-d-datalist-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-d-datalist-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-d-datalist-code">Code source</button></li>
-            </ul>
-            <div id="panel-d-datalist-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-d-datalist-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-d-datalist-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-d-datalist-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-datalist">Code source</button></h3>
+            <div class="fr-collapse" id="code-d-datalist">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=50"
   transform="data"&gt;&lt;/gouv-source&gt;
@@ -320,7 +290,7 @@
   tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
             </div>
-          </div>
+          </section>
         </section>
 
         <!-- ============================================================
@@ -333,13 +303,10 @@
           <!-- normalize-numeric -->
           <h4>Barres — Conversion numerique + renommage</h4>
           <p>Les donnees brutes contiennent des populations en string et des cles d'API peu lisibles. <code>gouv-normalize</code> convertit les nombres et renomme les colonnes avant l'agregation.</p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-n-bar-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-n-bar-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-n-bar-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-n-bar-code">Code source</button></li>
-            </ul>
-            <div id="panel-n-bar-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-n-bar-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-n-bar-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-n-bar-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-bar">Code source</button></h3>
+            <div class="fr-collapse" id="code-n-bar">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -362,18 +329,15 @@
   selected-palette="categorical"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- normalize-clean -->
           <h4>Tableau — Nettoyage complet des donnees</h4>
           <p>Nettoyage multi-etapes : trim des espaces, detection automatique des nombres, et remplacement des valeurs vides avant affichage dans un tableau interactif.</p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-n-datalist-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-n-datalist-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-n-datalist-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-n-datalist-code">Code source</button></li>
-            </ul>
-            <div id="panel-n-datalist-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-n-datalist-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-n-datalist-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-n-datalist-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-datalist">Code source</button></h3>
+            <div class="fr-collapse" id="code-n-datalist">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
   transform="data"&gt;&lt;/gouv-source&gt;
@@ -388,7 +352,7 @@
   recherche pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
             </div>
-          </div>
+          </section>
         </section>
 
         <!-- ============================================================
@@ -403,13 +367,10 @@
           <p>Regroupe par region et somme les beneficiaires avec <code>group-by</code> + <code>aggregate</code>.
             <a href="../apps/playground/index.html?example=query-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-bar-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-bar-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-bar-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-bar-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-bar-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-bar-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-bar-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-bar-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-bar">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-bar">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -424,20 +385,17 @@
   label-field="nom_region" value-field="beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-line -->
           <h4>Courbe — Taux moyen TFB par region</h4>
           <p>Calcule la moyenne du taux de taxe fonciere par region.
             <a href="../apps/playground/index.html?example=query-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-line-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-line-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-line-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-line-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-line-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-line-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-line-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-line-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-line">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-line">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -452,20 +410,17 @@
   label-field="libreg" value-field="taux_moyen" unit-tooltip="%"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-pie -->
           <h4>Camembert — Elus par categorie socio-pro</h4>
           <p>Compte les elus par categorie socio-professionnelle via <code>count</code>.
             <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-pie-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-pie-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-pie-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-pie-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-pie-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-pie-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-pie-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-pie-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-pie">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-pie">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
   transform="data"&gt;&lt;/gouv-source&gt;
@@ -481,20 +436,17 @@
   value-field="nombre"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-radar -->
           <h4>Radar — Investissement moyen par region</h4>
           <p>Calcule l'investissement moyen par region (limite a 6 pour lisibilite).
             <a href="../apps/playground/index.html?example=query-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-radar-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-radar-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-radar-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-radar-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-radar-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-radar-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-radar-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-radar-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-radar">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-radar">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -509,20 +461,17 @@
   label-field="nom_region" value-field="investissement"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-gauge -->
           <h4>Jauge — Taux moyen TFB regional</h4>
           <p>Calcule la moyenne par region, trie par taux decroissant et prend le premier (limit=1).
             <a href="../apps/playground/index.html?example=query-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-gauge-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-gauge-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-gauge-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-gauge-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-gauge-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-gauge-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-gauge-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-gauge-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-gauge">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-gauge">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -537,20 +486,17 @@
   value-field="taux_moyen"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-scatter -->
           <h4>Nuage — TFB vs TH par departement</h4>
           <p>Double agregation : moyenne TFB (axe X) et TH (axe Y) par departement.
             <a href="../apps/playground/index.html?example=query-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-scatter-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-scatter-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-scatter-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-scatter-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-scatter-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-scatter-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-scatter-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-scatter-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-scatter">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-scatter">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -565,20 +511,17 @@
   label-field="tfb" value-field="th"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-barline -->
           <h4>Barres + ligne — TFB et TH par region</h4>
           <p>Barres pour le TFB moyen et ligne pour le TH moyen, combines via <code>value-field-2</code>.
             <a href="../apps/playground/index.html?example=query-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-barline-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-barline-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-barline-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-barline-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-barline-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-barline-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-barline-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-barline-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-barline">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-barline">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -595,20 +538,17 @@
   unit-tooltip="%"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-map -->
           <h4>Carte — Taux TFB par departement</h4>
           <p>Moyenne du taux TFB par code departement, affichee sur la carte de France.
             <a href="../apps/playground/index.html?example=query-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-map-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-map-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-map-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-map-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-map-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-map-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-map-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-map-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-map">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-map">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
   transform="results"&gt;&lt;/gouv-source&gt;
@@ -623,20 +563,17 @@
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-kpi -->
           <h4>KPI — Statistiques des elus avec filtre</h4>
           <p>Filtre les Maires et compare le sous-ensemble au total via deux KPI distincts.
             <a href="../apps/playground/index.html?example=query-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-kpi-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-kpi-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-kpi-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-kpi-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-kpi-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-kpi-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-kpi-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-kpi-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-kpi">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-kpi">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
   transform="data"&gt;&lt;/gouv-source&gt;
@@ -652,20 +589,17 @@
     label="Dont Maires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
 &lt;/div&gt;</pre>
             </div>
-          </div>
+          </section>
 
           <!-- query-datalist -->
           <h4>Tableau — Elus filtres par region</h4>
           <p>Filtre les elus d'Ile-de-France et affiche le resultat dans un tableau interactif.
             <a href="../apps/playground/index.html?example=query-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
           </p>
-          <div class="fr-tabs" data-example>
-            <ul class="fr-tabs__list" role="tablist">
-              <li role="presentation"><button id="tab-q-datalist-rendu" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="panel-q-datalist-rendu">Rendu</button></li>
-              <li role="presentation"><button id="tab-q-datalist-code" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="panel-q-datalist-code">Code source</button></li>
-            </ul>
-            <div id="panel-q-datalist-rendu" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-q-datalist-rendu"><div class="example-loading">Chargement...</div></div>
-            <div id="panel-q-datalist-code" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-q-datalist-code">
+          <div class="example-loading" data-example>Chargement...</div>
+          <section class="fr-accordion fr-mt-1w">
+            <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-datalist">Code source</button></h3>
+            <div class="fr-collapse" id="code-q-datalist">
 <pre class="example-code">&lt;gouv-source id="data"
   url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
   transform="data"&gt;&lt;/gouv-source&gt;
@@ -679,7 +613,7 @@
   recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
             </div>
-          </div>
+          </section>
         </section>
 
       </div><!-- /guide-content -->
@@ -713,26 +647,31 @@
 </body>
 </html>`;
 
+      // Find the code block associated with each example placeholder
+      function getCodeForExample(placeholder) {
+        const accordion = placeholder.nextElementSibling;
+        if (!accordion) return null;
+        const pre = accordion.querySelector('.example-code');
+        return pre ? pre.textContent : null;
+      }
+
       // Lazy-load iframes via IntersectionObserver
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (!entry.isIntersecting) return;
-          const tabs = entry.target;
-          observer.unobserve(tabs);
-          const pre = tabs.querySelector('.example-code');
-          const renderPanel = tabs.querySelector('[id$="-rendu"]');
-          if (!pre || !renderPanel) return;
-          const code = pre.textContent;
+          const placeholder = entry.target;
+          observer.unobserve(placeholder);
+          const code = getCodeForExample(placeholder);
+          if (!code) return;
           const iframe = document.createElement('iframe');
           iframe.className = 'example-iframe';
           iframe.srcdoc = iframeTemplate(code);
           iframe.loading = 'lazy';
-          renderPanel.innerHTML = '';
-          renderPanel.appendChild(iframe);
+          placeholder.replaceWith(iframe);
         });
       }, { rootMargin: '200px 0px' });
 
-      document.querySelectorAll('[data-example]').forEach(tabs => observer.observe(tabs));
+      document.querySelectorAll('[data-example]').forEach(el => observer.observe(el));
 
       // Auto-resize iframes
       window.addEventListener('message', (e) => {

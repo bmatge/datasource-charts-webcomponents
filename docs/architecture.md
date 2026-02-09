@@ -8,7 +8,7 @@ Le monorepo se decompose en trois niveaux :
 
 - **Bibliotheque principale** (`src/`) -- Web Components Lit enregistres globalement
 - **Package partage** (`packages/shared/`) -- Utilitaires communs a toutes les apps
-- **Applications** (`apps/*/`) -- Cinq apps TypeScript independantes buildees avec Vite
+- **Applications** (`apps/*/`) -- Sept apps TypeScript independantes buildees avec Vite
 
 Toutes les dependances internes sont resolues via les workspaces npm declares dans le `package.json` racine :
 
@@ -26,11 +26,13 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
 /
   src/                          Bibliotheque de Web Components (point d'entree: src/index.ts)
     components/
-      gouv-dsfr-chart.ts        Graphique DSFR (@gouvfr/dsfr-chart)
-      gouv-kpi.ts               Indicateur chiffre cle
-      gouv-query.ts             Filtrage et aggregation de donnees
       gouv-source.ts            Chargement de donnees (Grist, ODS, tabular-api)
+      gouv-normalize.ts         Normalisation des donnees (numerique, renommage, trim)
+      gouv-query.ts             Filtrage et aggregation de donnees
+      gouv-facets.ts            Filtres a facettes interactifs
+      gouv-kpi.ts               Indicateur chiffre cle
       gouv-datalist.ts          Liste de donnees
+      gouv-dsfr-chart.ts        Graphique DSFR (@gouvfr/dsfr-chart)
       layout/
         app-header.ts           En-tete DSFR
         app-footer.ts           Pied de page DSFR
@@ -167,16 +169,19 @@ Les beacon logs sont persistes via un volume Docker (`beacon-logs:/var/log/nginx
 
 ### 3.5 Communication intra-composants
 
-A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-dsfr-chart>`, `<gouv-kpi>`, `<gouv-query>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
+A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-dsfr-chart>`, `<gouv-kpi>`, `<gouv-query>`, `<gouv-normalize>`, `<gouv-facets>`, `<gouv-datalist>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
 
 ```
-<gouv-source src="...">       Charge les donnees, emet DATA_EVENTS.LOADED
+<gouv-source src="...">          Charge les donnees, emet DATA_EVENTS.LOADED
     |
     |-- CustomEvent sur document
     v
-<gouv-dsfr-chart source="...">  Ecoute via SourceSubscriberMixin
-<gouv-kpi source="...">       Ecoute via SourceSubscriberMixin
-<gouv-query source="...">     Ecoute via SourceSubscriberMixin
+<gouv-normalize source="...">    Ecoute via SourceSubscriberMixin, re-emet apres nettoyage
+<gouv-query source="...">        Ecoute via SourceSubscriberMixin, re-emet apres filtrage
+<gouv-facets source="...">       Ecoute via SourceSubscriberMixin, re-emet apres facettes
+<gouv-dsfr-chart source="...">   Ecoute via SourceSubscriberMixin
+<gouv-kpi source="...">          Ecoute via SourceSubscriberMixin
+<gouv-datalist source="...">     Ecoute via SourceSubscriberMixin
 ```
 
 ---
@@ -230,7 +235,7 @@ baseUrl         '' (relatif)          VITE_PROXY_URL ou defaut            defaut
 |-----------------------|--------------------------------------------------------|
 | `npm run build`       | Compile TypeScript + Vite lib mode (ESM + UMD)         |
 | `npm run build:shared`| Compile `packages/shared/` via `tsc`                   |
-| `npm run build:apps`  | Build les 5 apps sequentiellement via workspaces npm   |
+| `npm run build:apps`  | Build les 7 apps sequentiellement via workspaces npm   |
 | `npm run build:all`   | Enchaine shared, bibliotheque, puis apps               |
 | `npm run build:app`   | Assemble `app-dist/` pour Tauri (voir 5.3)             |
 
@@ -332,9 +337,11 @@ tests/
   data-bridge.test.ts          Tests du bus d'evenements
   formatters.test.ts           Tests du formatage (src/utils)
   json-path.test.ts            Tests de l'acces par chemin JSON
-  gouv-datalist.test.ts        Tests du composant gouv-datalist
-  gouv-query.test.ts           Tests du composant gouv-query
   gouv-source.test.ts          Tests du composant gouv-source
+  gouv-query.test.ts           Tests du composant gouv-query
+  gouv-normalize.test.ts       Tests du composant gouv-normalize
+  gouv-facets.test.ts          Tests du composant gouv-facets
+  gouv-datalist.test.ts        Tests du composant gouv-datalist
   integration.test.ts          Tests d'integration inter-composants
   source-subscriber.test.ts    Tests du mixin SourceSubscriber
   shared/                      Tests du package @gouv-widgets/shared
@@ -344,8 +351,10 @@ tests/
     formatters.test.ts
     local-storage.test.ts
     modal.test.ts
+    navigation.test.ts
     number-parser.test.ts
     proxy-config.test.ts
+    toast.test.ts
   apps/                        Tests des applications
     builder/
     builder-ia/
@@ -362,6 +371,7 @@ tests/
 | `npm run test`          | Vitest en mode watch                           |
 | `npm run test:run`      | Execution unique                               |
 | `npm run test:coverage` | Couverture de code (provider v8, format text+html) |
+| `npm run test:e2e`      | Tests E2E Playwright                               |
 
 ### Configuration notable
 

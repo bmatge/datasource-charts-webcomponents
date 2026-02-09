@@ -29,9 +29,11 @@ Chaque app peut etre developpee independamment :
 ```bash
 npm run dev --workspace=@gouv-widgets/app-builder
 npm run dev --workspace=@gouv-widgets/app-builder-ia
+npm run dev --workspace=@gouv-widgets/app-dashboard
 npm run dev --workspace=@gouv-widgets/app-sources
 npm run dev --workspace=@gouv-widgets/app-playground
 npm run dev --workspace=@gouv-widgets/app-favorites
+npm run dev --workspace=@gouv-widgets/app-monitoring
 ```
 
 ### Package shared
@@ -48,16 +50,65 @@ npm run build:all    # shared + lib + toutes les apps
 
 ## Tests
 
+### Tests unitaires (Vitest)
+
 ```bash
 npm run test         # Watch mode
 npm run test:run     # Execution unique
 npm run test:coverage
 ```
 
-Les tests sont dans `/tests/` et suivent la structure des sources :
-- `tests/shared/` - Tests du package shared
-- `tests/apps/` - Tests des apps
-- `tests/components/` - Tests des composants
+### Tests E2E (Playwright)
+
+```bash
+npm run test:e2e
+```
+
+### Structure des tests
+
+```
+tests/
+  gouv-source.test.ts          Composant gouv-source
+  gouv-query.test.ts           Composant gouv-query
+  gouv-normalize.test.ts       Composant gouv-normalize
+  gouv-facets.test.ts          Composant gouv-facets
+  gouv-datalist.test.ts        Composant gouv-datalist
+  aggregations.test.ts         Fonctions d'agregation
+  chart-data.test.ts           Traitement des donnees graphiques
+  data-bridge.test.ts          Bus d'evenements inter-composants
+  formatters.test.ts           Formatage (src/utils)
+  json-path.test.ts            Acces par chemin JSON
+  integration.test.ts          Tests d'integration inter-composants
+  source-subscriber.test.ts    Mixin SourceSubscriber
+  shared/                      Tests @gouv-widgets/shared
+    dept-codes.test.ts
+    dsfr-palettes.test.ts
+    escape-html.test.ts
+    formatters.test.ts
+    local-storage.test.ts
+    modal.test.ts
+    navigation.test.ts
+    number-parser.test.ts
+    proxy-config.test.ts
+    toast.test.ts
+  apps/                        Tests des applications
+    builder/
+    builder-ia/
+    dashboard/
+    favorites/
+    playground/
+    sources/
+e2e/                           Tests E2E Playwright
+```
+
+### Alignement des skills (Builder IA)
+
+Le builder IA utilise un systeme de skills (blocs de connaissances injectes dans le prompt). Les tests dans `tests/apps/builder-ia/skills.test.ts` verifient automatiquement que :
+
+- Chaque attribut HTML d'un composant est documente dans son skill (via introspection Lit)
+- Tous les types de graphiques, operateurs de filtre et fonctions d'agregation sont couverts
+
+Quand on ajoute ou modifie un attribut dans un composant `gouv-*`, il faut mettre a jour le skill correspondant dans `apps/builder-ia/src/skills.ts`.
 
 ## Conventions
 
@@ -99,6 +150,8 @@ Utiliser les imports depuis `@gouv-widgets/shared` pour le code partage :
 import { escapeHtml, formatKPIValue, DSFR_COLORS } from '@gouv-widgets/shared';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
 import { getProxiedUrl, isViteDevMode } from '@gouv-widgets/shared';
+import { toastSuccess, toastWarning } from '@gouv-widgets/shared';
+import { appHref, navigateTo } from '@gouv-widgets/shared';
 ```
 
 ### Tests
@@ -111,12 +164,24 @@ import { getProxiedUrl, isViteDevMode } from '@gouv-widgets/shared';
 ## Docker
 
 ```bash
-docker build -t gouv-widgets .
-docker run -p 8080:80 gouv-widgets
+docker compose up -d --build
 ```
+
+Le conteneur utilise un volume `beacon-logs` pour persister les donnees de monitoring entre redemarrages.
 
 ## Proxy
 
 En dev, les proxys CORS sont geres par Vite (`vite.config.ts`).
 En production, ils sont geres par nginx (`nginx.conf`).
 L'URL du proxy est configurable via la variable d'environnement `VITE_PROXY_URL`.
+
+## Release
+
+La release est declenchee par un tag git :
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM + x86), Linux (deb + AppImage) et Windows (NSIS + MSI).

@@ -450,6 +450,15 @@ Sortie : meme tableau, filtre selon les selections de l'utilisateur.
 | sort | String | \`"count"\` | non | Tri des valeurs : count, -count, alpha, -alpha |
 | searchable | String | \`""\` | non | Champs avec barre de recherche (virgule-separes) |
 | hide-empty | Boolean | \`false\` | non | Masquer les facettes avec une seule valeur |
+| display | String | \`""\` | non | Mode d'affichage par facette : \`"field:select | field2:multiselect"\`. Modes : checkbox (defaut), select, multiselect |
+
+### Modes d'affichage
+- **checkbox** (defaut) : checkboxes inline avec compteurs, "Voir plus/moins", recherche optionnelle
+- **select** : liste deroulante DSFR standard, selection exclusive (une seule valeur)
+- **multiselect** : dropdown custom avec checkboxes, recherche integree, bouton "Tout deselectionner"
+
+Le mode \`select\` rend la facette automatiquement exclusive.
+Le mode \`multiselect\` rend la facette automatiquement disjonctive (multi-selection OU).
 
 ### Logique de filtrage
 - Intra-facette : OU (afficher les lignes qui matchent l'une des valeurs selectionnees)
@@ -476,6 +485,13 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
   max-values="10">
 </gouv-facets>
 <gouv-dsfr-chart source="filtered" type="bar" label-field="region" value-field="count"></gouv-dsfr-chart>
+
+<!-- Modes d'affichage mixtes -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, departement, statut"
+  display="region:select | departement:multiselect"
+  labels="region:Region | departement:Departement | statut:Statut">
+</gouv-facets>
 \`\`\``,
   },
 

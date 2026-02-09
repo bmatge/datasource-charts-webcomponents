@@ -411,4 +411,163 @@ describe('GouvFacets', () => {
       expect(typeGroup).toBeDefined(); // 2 unique values -> shown
     });
   });
+
+  // --- Display modes ---
+
+  describe('display modes', () => {
+    describe('_parseDisplayModes / _getDisplayMode', () => {
+      it('returns empty map when display is empty', () => {
+        facets.display = '';
+        expect(facets._parseDisplayModes().size).toBe(0);
+      });
+
+      it('parses select mode', () => {
+        facets.display = 'region:select';
+        const map = facets._parseDisplayModes();
+        expect(map.get('region')).toBe('select');
+      });
+
+      it('parses multiselect mode', () => {
+        facets.display = 'type:multiselect';
+        const map = facets._parseDisplayModes();
+        expect(map.get('type')).toBe('multiselect');
+      });
+
+      it('parses mixed modes', () => {
+        facets.display = 'region:select | type:multiselect';
+        const map = facets._parseDisplayModes();
+        expect(map.get('region')).toBe('select');
+        expect(map.get('type')).toBe('multiselect');
+      });
+
+      it('ignores invalid mode values', () => {
+        facets.display = 'region:dropdown';
+        expect(facets._getDisplayMode('region')).toBe('checkbox');
+      });
+
+      it('returns checkbox for unlisted fields', () => {
+        facets.display = 'region:select';
+        expect(facets._getDisplayMode('type')).toBe('checkbox');
+      });
+
+      it('returns checkbox when display is empty', () => {
+        facets.display = '';
+        expect(facets._getDisplayMode('region')).toBe('checkbox');
+      });
+    });
+
+    describe('select mode behavior', () => {
+      beforeEach(() => {
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region, type';
+        facets.display = 'type:select';
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+      });
+
+      it('select mode enforces single exclusive selection', () => {
+        // Select one value via _toggleValue
+        facets._toggleValue('type', 'Commune');
+        expect(facets._activeSelections['type']?.size).toBe(1);
+        expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+
+        // Select another - should replace, not add
+        facets._toggleValue('type', 'Prefecture');
+        expect(facets._activeSelections['type']?.size).toBe(1);
+        expect(facets._activeSelections['type']?.has('Prefecture')).toBe(true);
+      });
+
+      it('select mode filters data correctly', () => {
+        facets._activeSelections = { type: new Set(['Prefecture']) };
+        facets._applyFilters();
+
+        const result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(4);
+        expect(result.every(r => r.type === 'Prefecture')).toBe(true);
+      });
+
+      it('cross-facet counts work with select mode', () => {
+        facets._activeSelections = { type: new Set(['Prefecture']) };
+        facets._buildFacetGroups();
+
+        const regionGroup = facets._facetGroups.find(g => g.field === 'region');
+        const totalCount = regionGroup?.values.reduce((sum, v) => sum + v.count, 0) ?? 0;
+        expect(totalCount).toBe(4);
+      });
+    });
+
+    describe('multiselect mode behavior', () => {
+      beforeEach(() => {
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region, type';
+        facets.display = 'region:multiselect';
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+      });
+
+      it('multiselect mode is automatically disjunctive', () => {
+        // Select two values - both should be in the Set (OR logic)
+        facets._toggleValue('region', 'PACA');
+        facets._toggleValue('region', 'Bretagne');
+        expect(facets._activeSelections['region']?.size).toBe(2);
+        expect(facets._activeSelections['region']?.has('PACA')).toBe(true);
+        expect(facets._activeSelections['region']?.has('Bretagne')).toBe(true);
+      });
+
+      it('multiselect filters with OR logic', () => {
+        facets._activeSelections = { region: new Set(['PACA', 'Bretagne']) };
+        facets._applyFilters();
+
+        const result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(3); // Marseille + Nice + Rennes
+      });
+
+      it('clear field selections removes all for that field', () => {
+        facets._activeSelections = { region: new Set(['PACA', 'Bretagne']), type: new Set(['Commune']) };
+        facets._clearFieldSelections('region');
+
+        expect(facets._activeSelections['region']).toBeUndefined();
+        expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+      });
+    });
+
+    describe('backward compatibility', () => {
+      it('default display (no attribute) uses checkbox mode', () => {
+        facets.display = '';
+        expect(facets._getDisplayMode('region')).toBe('checkbox');
+        expect(facets._getDisplayMode('type')).toBe('checkbox');
+      });
+
+      it('disjunctive attribute still works in checkbox mode', () => {
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region';
+        facets.disjunctive = 'region';
+        facets.display = ''; // no display attribute
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+        // Should allow multi-select via disjunctive
+        facets._toggleValue('region', 'PACA');
+        facets._toggleValue('region', 'Bretagne');
+        expect(facets._activeSelections['region']?.size).toBe(2);
+      });
+
+      it('existing checkbox behavior unchanged without display attribute', () => {
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'type';
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+        // Without disjunctive, checkbox is exclusive
+        facets._toggleValue('type', 'Commune');
+        facets._toggleValue('type', 'Prefecture');
+        expect(facets._activeSelections['type']?.size).toBe(1);
+        expect(facets._activeSelections['type']?.has('Prefecture')).toBe(true);
+      });
+    });
+  });
 });
