@@ -499,6 +499,7 @@
   label-field="libcom" value-field="taux_global_tfb"
   unit-tooltip="%" selected-palette="categorical"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-bar.png" alt="Barres — Taux de taxe fonciere par commune">
 
           <h4 id="ex-direct-line">Courbe — Beneficiaires Industrie du futur</h4>
           <p>Courbe du nombre de beneficiaires par departement.
@@ -511,6 +512,7 @@
 &lt;gouv-dsfr-chart source="data" type="line"
   label-field="nom_departement" value-field="nombre_beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-line.png" alt="Courbe — Beneficiaires Industrie du futur">
 
           <h4 id="ex-direct-pie">Camembert — Poids demographique</h4>
           <p>Diagramme circulaire du poids demographique par commune.
@@ -523,6 +525,7 @@
 &lt;gouv-dsfr-chart source="data" type="pie"
   label-field="libcom" value-field="mpoid"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-pie.png" alt="Camembert — Poids demographique">
 
           <h4 id="ex-direct-radar">Radar — Beneficiaires par region</h4>
           <p>Graphique radar montrant le profil des beneficiaires.
@@ -535,6 +538,7 @@
 &lt;gouv-dsfr-chart source="data" type="radar"
   label-field="nom_region" value-field="nombre_beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-radar.png" alt="Radar — Beneficiaires par region">
 
           <h4 id="ex-direct-gauge">Jauge — Taux de taxe fonciere</h4>
           <p>Jauge affichant le taux de taxe fonciere d'une commune (1 enregistrement).
@@ -547,6 +551,7 @@
 &lt;gouv-dsfr-chart source="data" type="gauge"
   value-field="taux_global_tfb"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-gauge.png" alt="Jauge — Taux de taxe fonciere">
 
           <h4 id="ex-direct-scatter">Nuage — Investissement vs participation</h4>
           <p>Nuage de points croisant investissement et participation de l'Etat.
@@ -560,6 +565,7 @@
   label-field="montant_investissement"
   value-field="montant_participation_etat"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-scatter.png" alt="Nuage — Investissement vs participation">
 
           <h4 id="ex-direct-barline">Barres + ligne — Investissements</h4>
           <p>Combine barres (investissement) et ligne (participation Etat) via <code>value-field-2</code>.
@@ -575,6 +581,7 @@
   value-field-2="montant_participation_etat"
   name='["Investissement", "Participation Etat"]'&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-barline.png" alt="Barres + ligne — Investissements">
 
           <h4 id="ex-direct-map">Carte — Beneficiaires par departement</h4>
           <p>Carte de France coloree par nombre de beneficiaires, via <code>code-field</code>.
@@ -588,6 +595,7 @@
   code-field="code_departement" value-field="nombre_beneficiaires"
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-direct-map.png" alt="Carte — Beneficiaires par departement">
 
           <h4 id="ex-direct-kpi">KPI — Indicateurs Industrie du futur</h4>
           <p>Quatre indicateurs cles calcules directement depuis les donnees brutes.
@@ -603,6 +611,7 @@
   label="Investissement max" format="euro" couleur="vert"&gt;&lt;/gouv-kpi&gt;
 &lt;gouv-kpi source="data" valeur="count"
   label="Enregistrements" format="nombre"&gt;&lt;/gouv-kpi&gt;</pre>
+          <img src="images/guide-ex-direct-kpi.png" alt="KPI — Indicateurs Industrie du futur">
 
           <h4 id="ex-direct-datalist">Tableau — Registre des elus</h4>
           <p>Tableau interactif avec recherche, filtres, tri et export CSV.
@@ -617,6 +626,7 @@
   recherche="true" filtres="Libelle du departement"
   tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
+          <img src="images/guide-ex-direct-datalist.png" alt="Tableau — Registre des elus">
 
           <!-- Mode avec requete -->
           <h3 id="exemples-query">Avec requete : gouv-source &rarr; gouv-query &rarr; composant</h3>
@@ -637,6 +647,7 @@
 &lt;gouv-dsfr-chart source="q-bar" type="bar"
   label-field="nom_region" value-field="beneficiaires"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-bar.png" alt="Barres — Beneficiaires agreges par region">
 
           <h4 id="ex-query-line">Courbe — Taux moyen TFB par region</h4>
           <p>Calcule la moyenne du taux de taxe fonciere par region.
@@ -653,6 +664,7 @@
 &lt;gouv-dsfr-chart source="q-line" type="line"
   label-field="libreg" value-field="taux_moyen" unit-tooltip="%"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-line.png" alt="Courbe — Taux moyen TFB par region">
 
           <h4 id="ex-query-pie">Camembert — Elus par categorie socio-pro</h4>
           <p>Compte les elus par categorie socio-professionnelle via <code>count</code>.
@@ -672,6 +684,7 @@
   label-field="Libelle de la categorie socio-professionnelle"
   value-field="nombre"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-pie.png" alt="Camembert — Elus par categorie socio-pro">
 
           <h4 id="ex-query-radar">Radar — Investissement moyen par region</h4>
           <p>Calcule l'investissement moyen par region (limite a 6 pour lisibilite).
@@ -686,6 +699,7 @@
 &lt;gouv-dsfr-chart source="q-radar" type="radar"
   label-field="nom_region" value-field="investissement"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-radar.png" alt="Radar — Investissement moyen par region">
 
           <h4 id="ex-query-gauge">Jauge — Taux moyen TFB regional</h4>
           <p>Calcule la moyenne par region, trie par taux decroissant et prend le premier (limit=1).
@@ -700,6 +714,7 @@
 &lt;gouv-dsfr-chart source="q-gauge" type="gauge"
   value-field="taux_moyen"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-gauge.png" alt="Jauge — Taux moyen TFB regional">
 
           <h4 id="ex-query-scatter">Nuage — TFB vs TH par departement</h4>
           <p>Double agregation : moyenne TFB (axe X) et TH (axe Y) par departement.
@@ -714,6 +729,7 @@
 &lt;gouv-dsfr-chart source="q-scatter" type="scatter"
   label-field="tfb" value-field="th"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-scatter.png" alt="Nuage — TFB vs TH par departement">
 
           <h4 id="ex-query-barline">Barres + ligne — TFB et TH par region</h4>
           <p>Barres pour le TFB moyen et ligne pour le TH moyen, combines via <code>value-field-2</code>.
@@ -730,6 +746,7 @@
   name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
   unit-tooltip="%"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-barline.png" alt="Barres + ligne — TFB et TH par region">
 
           <h4 id="ex-query-map">Carte — Taux TFB par departement</h4>
           <p>Moyenne du taux TFB par code departement, affichee sur la carte de France.
@@ -744,6 +761,7 @@
   code-field="dep" value-field="taux"
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
+          <img src="images/guide-ex-query-map.png" alt="Carte — Taux TFB par departement">
 
           <h4 id="ex-query-kpi">KPI — Statistiques des elus avec filtre</h4>
           <p>Filtre les Maires et compare le sous-ensemble au total via deux KPI distincts.
@@ -759,6 +777,7 @@
   label="Total des elus" format="nombre"&gt;&lt;/gouv-kpi&gt;
 &lt;gouv-kpi source="q-maires" valeur="count"
   label="Dont Maires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;</pre>
+          <img src="images/guide-ex-query-kpi.png" alt="KPI — Statistiques des elus avec filtre">
 
           <h4 id="ex-query-datalist">Tableau — Elus filtres par region</h4>
           <p>Filtre les elus d'Ile-de-France et affiche le resultat dans un tableau interactif.
@@ -774,6 +793,7 @@
   colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
   recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
+          <img src="images/guide-ex-query-datalist.png" alt="Tableau — Elus filtres par region">
 
         </section>
 
