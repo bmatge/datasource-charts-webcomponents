@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
+import { getProxiedUrl } from '@gouv-widgets/shared';
 import {
   dispatchDataLoaded,
   dispatchDataError,
@@ -154,7 +155,7 @@ export class GouvSource extends LitElement {
     dispatchDataLoading(this.id);
 
     try {
-      const url = this._buildUrl();
+      const url = getProxiedUrl(this._buildUrl());
       const options = this._buildFetchOptions();
 
       const response = await fetch(url, {

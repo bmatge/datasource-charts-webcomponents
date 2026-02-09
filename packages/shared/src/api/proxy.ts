@@ -28,17 +28,26 @@ export function getProxyUrl(gristUrl: string, endpoint: string): string {
 
 /**
  * Get proxied URL for any external API URL
- * Handles known APIs (tabular, data.gouv.fr) and falls through for unknown ones
+ * Handles known APIs (tabular, grist, albert) by routing through the CORS proxy.
+ * Works in all environments: dev (Vite proxy), production, CodePen embeds, etc.
  */
 export function getProxiedUrl(url: string): string {
-  const isLocalDev = typeof window !== 'undefined'
-    && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const config = getProxyConfig();
 
-  if (!isLocalDev) return url;
-
-  // Proxy for tabular-api.data.gouv.fr
   if (url.includes('tabular-api.data.gouv.fr')) {
-    return url.replace('https://tabular-api.data.gouv.fr', '/tabular-proxy');
+    return url.replace('https://tabular-api.data.gouv.fr', `${config.baseUrl}${config.endpoints.tabular}`);
+  }
+
+  if (url.includes('docs.getgrist.com')) {
+    return url.replace('https://docs.getgrist.com', `${config.baseUrl}${config.endpoints.grist}`);
+  }
+
+  if (url.includes('grist.numerique.gouv.fr')) {
+    return url.replace('https://grist.numerique.gouv.fr', `${config.baseUrl}${config.endpoints.gristGouv}`);
+  }
+
+  if (url.includes('albert.api.etalab.gouv.fr')) {
+    return url.replace('https://albert.api.etalab.gouv.fr', `${config.baseUrl}${config.endpoints.albert}`);
   }
 
   return url;

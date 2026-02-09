@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getByPath } from '../utils/json-path.js';
+import { getByPath, setByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
 import { getProxyConfig } from '@gouv-widgets/shared';
 import {
@@ -485,16 +485,16 @@ export class GouvQuery extends LitElement {
     for (const [key, items] of groups) {
       const row: Record<string, unknown> = {};
 
-      // Ajouter les champs de regroupement
+      // Ajouter les champs de regroupement (structure imbriquée préservée)
       const keyParts = key.split('|||');
       groupFields.forEach((field, i) => {
-        row[field] = keyParts[i];
+        setByPath(row, field, keyParts[i]);
       });
 
-      // Calculer les agrégations
+      // Calculer les agrégations (structure imbriquée préservée)
       for (const agg of aggregates) {
         const fieldName = agg.alias || `${agg.field}__${agg.function}`;
-        row[fieldName] = this._computeAggregate(items, agg);
+        setByPath(row, fieldName, this._computeAggregate(items, agg));
       }
 
       result.push(row);

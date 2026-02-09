@@ -48,6 +48,29 @@ export function hasPath(obj: unknown, path: string): boolean {
 }
 
 /**
+ * Assigne une valeur dans un objet en suivant un chemin de propriétés,
+ * créant les objets intermédiaires si nécessaire.
+ * @example
+ * const obj = {};
+ * setByPath(obj, 'fields.Pays', 'France') // => { fields: { Pays: 'France' } }
+ */
+export function setByPath(obj: Record<string, unknown>, path: string, value: unknown): void {
+  const normalizedPath = path.replace(/\[(\d+)\]/g, '.$1');
+  const keys = normalizedPath.split('.');
+
+  let current: Record<string, unknown> = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+      current[key] = {};
+    }
+    current = current[key] as Record<string, unknown>;
+  }
+
+  current[keys[keys.length - 1]] = value;
+}
+
+/**
  * Extrait une valeur avec une valeur par défaut si non trouvée
  */
 export function getByPathOrDefault<T>(obj: unknown, path: string, defaultValue: T): T {
