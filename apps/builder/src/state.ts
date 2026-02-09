@@ -48,6 +48,36 @@ export interface DatalistColumn {
   filtrable: boolean;
 }
 
+/** Normalize pipeline configuration */
+export interface NormalizeConfig {
+  enabled: boolean;
+  trim: boolean;
+  numericAuto: boolean;
+  numeric: string;
+  rename: string;
+  stripHtml: boolean;
+  replace: string;
+  lowercaseKeys: boolean;
+}
+
+/** A single facet field configuration */
+export interface FacetFieldConfig {
+  field: string;
+  label: string;
+  display: 'checkbox' | 'select' | 'multiselect';
+  searchable: boolean;
+  disjunctive: boolean;
+}
+
+/** Facets configuration */
+export interface FacetsConfig {
+  enabled: boolean;
+  fields: FacetFieldConfig[];
+  maxValues: number;
+  sort: string;
+  hideEmpty: boolean;
+}
+
 /** A field descriptor extracted from data */
 export interface Field {
   name: string;
@@ -121,6 +151,8 @@ export interface BuilderState {
   datalistFiltres: boolean;
   datalistExportCsv: boolean;
   datalistColumns: DatalistColumn[];
+  normalizeConfig: NormalizeConfig;
+  facetsConfig: FacetsConfig;
 }
 
 // --- Draft persistence helpers ---
@@ -180,4 +212,21 @@ export const state: BuilderState = {
   datalistFiltres: false,
   datalistExportCsv: true,
   datalistColumns: [],
+  normalizeConfig: {
+    enabled: false,
+    trim: false,
+    numericAuto: false,
+    numeric: '',
+    rename: '',
+    stripHtml: false,
+    replace: '',
+    lowercaseKeys: false,
+  },
+  facetsConfig: {
+    enabled: false,
+    fields: [],
+    maxValues: 6,
+    sort: 'count',
+    hideEmpty: false,
+  },
 };

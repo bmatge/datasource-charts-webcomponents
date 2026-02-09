@@ -10,6 +10,7 @@ import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
 import { renderChart } from './ui/chart-renderer.js';
 import { generateCodeForLocalData } from './ui/code-generator.js';
+import { updateMiddlewareSections } from './ui/normalize-config.js';
 
 /**
  * Load saved sources from localStorage and populate the dropdown.
@@ -221,6 +222,7 @@ export function loadFieldsFromLocalData(): void {
   } else {
     if (generationModeSection) generationModeSection.style.display = 'none';
   }
+  updateMiddlewareSections();
 
   const statusEl = document.getElementById('fields-status');
   if (statusEl) {

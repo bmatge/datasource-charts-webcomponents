@@ -23,6 +23,8 @@ import {
 } from './ui/ui-helpers.js';
 import type { ChartType } from './state.js';
 import { setupDatalistListeners } from './ui/datalist-config.js';
+import { setupNormalizeListeners, updateMiddlewareSections } from './ui/normalize-config.js';
+import { setupFacetsListeners } from './ui/facets-config.js';
 
 // Expose functions called from inline onclick in HTML
 (window as any).toggleSection = toggleSection;
@@ -116,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicOptions.style.display =
           (e.target as HTMLInputElement).value === 'dynamic' ? 'block' : 'none';
       }
+      updateMiddlewareSections();
     });
   });
 
@@ -162,6 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Datalist config listeners
   setupDatalistListeners();
+
+  // Normalize & facets config listeners
+  setupNormalizeListeners();
+  setupFacetsListeners();
 
   // Load saved sources and check for selected source from sources.html
   loadSavedSources();

@@ -37,7 +37,7 @@
       <!-- ETAPE 1 : Source de donnees -->
       <div class="config-section" id="section-source">
         <div class="config-section-header" onclick="toggleSection('section-source')">
-          <h3><span class="step-number">1</span> Source de donnees</h3>
+          <h3>Source de donnees</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -73,7 +73,7 @@
       <!-- ETAPE 1.5 : Mode de generation (visible si source Grist) -->
       <div class="config-section collapsed" id="section-generation-mode" style="display: none;">
         <div class="config-section-header" onclick="toggleSection('section-generation-mode')">
-          <h3><span class="step-number">1.5</span> Mode de generation</h3>
+          <h3>Mode de generation</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -108,10 +108,128 @@
         </div>
       </div>
 
+      <!-- ETAPE 1.6 : Nettoyage des donnees (mode dynamique uniquement) -->
+      <div class="config-section collapsed" id="section-normalize" style="display: none;">
+        <div class="config-section-header" onclick="toggleSection('section-normalize')">
+          <h3>Nettoyage des donnees</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+          <div class="fr-toggle">
+            <input type="checkbox" class="fr-toggle__input" id="normalize-enabled" aria-describedby="normalize-hint">
+            <label class="fr-toggle__label" for="normalize-enabled"
+              data-fr-checked-label="Active" data-fr-unchecked-label="Desactive">
+              Normalisation des donnees
+            </label>
+            <p class="fr-hint-text" id="normalize-hint">Nettoyer les donnees avant traitement (trim, conversion numerique, renommage...)</p>
+          </div>
+
+          <div id="normalize-options" style="display: none;" class="fr-mt-2w">
+            <div class="fr-checkbox-group fr-checkbox-group--sm">
+              <input type="checkbox" id="normalize-trim">
+              <label class="fr-label" for="normalize-trim">Supprimer les espaces (trim)</label>
+            </div>
+
+            <div class="fr-checkbox-group fr-checkbox-group--sm fr-mt-1w">
+              <input type="checkbox" id="normalize-numeric-auto">
+              <label class="fr-label" for="normalize-numeric-auto">
+                Detection automatique des nombres
+                <span class="fr-hint-text">Convertit les chaines "123" en nombres</span>
+              </label>
+            </div>
+
+            <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+              <label class="fr-label" for="normalize-numeric">
+                Champs numeriques explicites
+                <span class="fr-hint-text">Noms de champs separes par virgule</span>
+              </label>
+              <input class="fr-input" type="text" id="normalize-numeric" placeholder="Ex: population, budget, surface">
+            </div>
+
+            <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+              <label class="fr-label" for="normalize-rename">
+                Renommer des champs
+                <span class="fr-hint-text">Format : ancien:nouveau | ancien2:nouveau2</span>
+              </label>
+              <input class="fr-input" type="text" id="normalize-rename" placeholder="Ex: pop_tot:Population | lib_dep:Departement">
+            </div>
+
+            <div class="fr-checkbox-group fr-checkbox-group--sm fr-mt-1w">
+              <input type="checkbox" id="normalize-strip-html">
+              <label class="fr-label" for="normalize-strip-html">Supprimer les balises HTML</label>
+            </div>
+
+            <div class="fr-input-group fr-input-group--sm fr-mt-1w">
+              <label class="fr-label" for="normalize-replace">
+                Remplacer des valeurs
+                <span class="fr-hint-text">Format : ancien:nouveau | ancien2:nouveau2 (vide pour supprimer)</span>
+              </label>
+              <input class="fr-input" type="text" id="normalize-replace" placeholder="Ex: N/A: | n.d.: | -:0">
+            </div>
+
+            <div class="fr-checkbox-group fr-checkbox-group--sm fr-mt-1w">
+              <input type="checkbox" id="normalize-lowercase-keys">
+              <label class="fr-label" for="normalize-lowercase-keys">Cles en minuscules</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 1.7 : Filtres a facettes (mode dynamique uniquement) -->
+      <div class="config-section collapsed" id="section-facets" style="display: none;">
+        <div class="config-section-header" onclick="toggleSection('section-facets')">
+          <h3>Filtres a facettes</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
+          <div class="fr-toggle">
+            <input type="checkbox" class="fr-toggle__input" id="facets-enabled" aria-describedby="facets-hint">
+            <label class="fr-toggle__label" for="facets-enabled"
+              data-fr-checked-label="Active" data-fr-unchecked-label="Desactive">
+              Filtres interactifs
+            </label>
+            <p class="fr-hint-text" id="facets-hint">Ajouter des facettes pour filtrer les donnees dynamiquement</p>
+          </div>
+
+          <div id="facets-options" style="display: none;" class="fr-mt-2w">
+            <button class="fr-btn fr-btn--secondary fr-btn--sm fr-icon-settings-5-line fr-btn--icon-left"
+              id="facets-fields-btn" type="button">
+              Configurer les facettes
+            </button>
+            <p class="fr-text--xs fr-mt-1v" id="facets-fields-summary">Aucun champ configure</p>
+
+            <div class="fr-input-group fr-input-group--sm fr-mt-2w">
+              <label class="fr-label" for="facets-max-values">
+                Valeurs visibles par facette
+                <span class="fr-hint-text">Nombre de valeurs avant "Voir plus" (defaut: 6)</span>
+              </label>
+              <input class="fr-input" type="number" id="facets-max-values" value="6" min="2" max="50">
+            </div>
+
+            <div class="fr-select-group fr-select-group--sm fr-mt-1w">
+              <label class="fr-label" for="facets-sort">Tri des valeurs</label>
+              <select class="fr-select" id="facets-sort">
+                <option value="count">Par nombre (decroissant)</option>
+                <option value="-count">Par nombre (croissant)</option>
+                <option value="alpha">Alphabetique (A-Z)</option>
+                <option value="-alpha">Alphabetique (Z-A)</option>
+              </select>
+            </div>
+
+            <div class="fr-checkbox-group fr-checkbox-group--sm fr-mt-1w">
+              <input type="checkbox" id="facets-hide-empty">
+              <label class="fr-label" for="facets-hide-empty">
+                Masquer les facettes avec une seule valeur
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ETAPE 2 : Type de graphique -->
       <div class="config-section collapsed" id="section-type">
         <div class="config-section-header" onclick="toggleSection('section-type')">
-          <h3><span class="step-number">2</span> Type de graphique</h3>
+          <h3>Type de graphique</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -168,7 +286,7 @@
       <!-- ETAPE 3 : Mapping des donnees -->
       <div class="config-section collapsed" id="section-data">
         <div class="config-section-header" onclick="toggleSection('section-data')">
-          <h3><span class="step-number">3</span> Configuration des donnees</h3>
+          <h3>Configuration des donnees</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -332,7 +450,7 @@
       <!-- ETAPE 4 : Apparence -->
       <div class="config-section collapsed" id="section-appearance">
         <div class="config-section-header" onclick="toggleSection('section-appearance')">
-          <h3><span class="step-number">4</span> Apparence</h3>
+          <h3>Apparence</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -459,6 +577,21 @@
       </div>
       <div class="modal-footer">
         <button class="fr-btn fr-btn--sm" id="datalist-columns-save">Appliquer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale configuration facettes -->
+  <div class="modal-overlay" id="facets-fields-modal">
+    <div class="modal" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3>Configuration des facettes</h3>
+        <button class="modal-close" id="facets-fields-close">&times;</button>
+      </div>
+      <div class="modal-body" id="facets-fields-list">
+      </div>
+      <div class="modal-footer">
+        <button class="fr-btn fr-btn--sm" id="facets-fields-save">Appliquer</button>
       </div>
     </div>
   </div>

@@ -197,6 +197,88 @@ function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): 
 }
 
 /**
+ * Generate optional middleware elements (gouv-normalize, gouv-facets)
+ * to insert between gouv-source and gouv-query/gouv-dsfr-chart.
+ * Returns the generated HTML and the final source ID for downstream components.
+ */
+function generateMiddlewareElements(
+  sourceId: string
+): { elements: string; finalSourceId: string } {
+  let currentSourceId = sourceId;
+  let elements = '';
+
+  // gouv-normalize
+  if (state.normalizeConfig.enabled) {
+    const normalizeId = 'normalized-data';
+    const attrs: string[] = [`source="${currentSourceId}"`];
+    if (state.normalizeConfig.trim) attrs.push('trim');
+    if (state.normalizeConfig.numericAuto) attrs.push('numeric-auto');
+    if (state.normalizeConfig.numeric) attrs.push(`numeric="${escapeHtml(state.normalizeConfig.numeric)}"`);
+    if (state.normalizeConfig.rename) attrs.push(`rename="${escapeHtml(state.normalizeConfig.rename)}"`);
+    if (state.normalizeConfig.stripHtml) attrs.push('strip-html');
+    if (state.normalizeConfig.replace) attrs.push(`replace="${escapeHtml(state.normalizeConfig.replace)}"`);
+    if (state.normalizeConfig.lowercaseKeys) attrs.push('lowercase-keys');
+
+    elements += `
+  <!-- Nettoyage des donnees -->
+  <gouv-normalize
+    id="${normalizeId}"
+    ${attrs.join('\n    ')}>
+  </gouv-normalize>`;
+    currentSourceId = normalizeId;
+  }
+
+  // gouv-facets
+  const activeFields = state.facetsConfig.fields.filter(f => f.field);
+  if (state.facetsConfig.enabled && activeFields.length > 0) {
+    const facetsId = 'faceted-data';
+    const attrs: string[] = [`source="${currentSourceId}"`];
+
+    attrs.push(`fields="${activeFields.map(f => f.field).join(', ')}"`);
+
+    const labelsWithCustom = activeFields.filter(f => f.label && f.label !== f.field);
+    if (labelsWithCustom.length > 0) {
+      attrs.push(`labels="${escapeHtml(labelsWithCustom.map(f => `${f.field}:${f.label}`).join(' | '))}"`);
+    }
+
+    const nonDefaultDisplay = activeFields.filter(f => f.display !== 'checkbox');
+    if (nonDefaultDisplay.length > 0) {
+      attrs.push(`display="${nonDefaultDisplay.map(f => `${f.field}:${f.display}`).join(' | ')}"`);
+    }
+
+    const disjunctiveFields = activeFields.filter(f => f.disjunctive);
+    if (disjunctiveFields.length > 0) {
+      attrs.push(`disjunctive="${disjunctiveFields.map(f => f.field).join(', ')}"`);
+    }
+
+    const searchableFields = activeFields.filter(f => f.searchable);
+    if (searchableFields.length > 0) {
+      attrs.push(`searchable="${searchableFields.map(f => f.field).join(', ')}"`);
+    }
+
+    if (state.facetsConfig.maxValues !== 6) {
+      attrs.push(`max-values="${state.facetsConfig.maxValues}"`);
+    }
+    if (state.facetsConfig.sort !== 'count') {
+      attrs.push(`sort="${state.facetsConfig.sort}"`);
+    }
+    if (state.facetsConfig.hideEmpty) {
+      attrs.push('hide-empty');
+    }
+
+    elements += `
+  <!-- Filtres a facettes -->
+  <gouv-facets
+    id="${facetsId}"
+    ${attrs.join('\n    ')}>
+  </gouv-facets>`;
+    currentSourceId = facetsId;
+  }
+
+  return { elements, finalSourceId: currentSourceId };
+}
+
+/**
  * Build the colonnes attribute for gouv-datalist.
  * Uses custom column config if available, otherwise auto-detects from fields.
  */
@@ -919,6 +1001,7 @@ export function generateDynamicCode(): void {
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data');
     const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 
@@ -938,9 +1021,9 @@ export function generateDynamicCode(): void {
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
   </gouv-source>
-
+${middlewareHtml}
   <gouv-datalist
-    source="table-data"
+    source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
   </gouv-datalist>
@@ -949,9 +1032,12 @@ export function generateDynamicCode(): void {
     return;
   }
 
+  // Middleware (normalize, facets) between source and query
+  const { elements: middlewareHtml, finalSourceId: querySourceId } = generateMiddlewareElements('chart-data');
+
   // Generate gouv-query for aggregation, sorting, filtering
   const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField } =
-    generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
+    generateGouvQueryCode(querySourceId, labelFieldPath, valueFieldPath);
 
   // Map palette
   const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
@@ -986,7 +1072,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
   </gouv-source>
-${queryElement}
+${middlewareHtml}${queryElement}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
     source="${chartSource}"
@@ -1034,6 +1120,7 @@ export function generateDynamicCodeForApi(): void {
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+    const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data');
     const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
 
@@ -1052,9 +1139,9 @@ export function generateDynamicCodeForApi(): void {
     id="table-data"
     url="${source.apiUrl}"${transformAttr}${refreshAttr}>
   </gouv-source>
-
+${middlewareHtml}
   <gouv-datalist
-    source="table-data"
+    source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
   </gouv-datalist>
@@ -1071,19 +1158,23 @@ export function generateDynamicCodeForApi(): void {
   let queryLabelField: string;
   let queryValueField: string;
   let sourceElement: string;
+  let middlewareHtml = '';
 
   if (odsInfo) {
     // ODS source: use gouv-query with api-type="opendatasoft" for
     // server-side aggregation and automatic pagination (limit > 100)
+    // No middleware for ODS (data is aggregated server-side)
     const result = generateOdsQueryCode(odsInfo, labelFieldPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
     queryValueField = result.valueField;
-    sourceElement = ''; // No gouv-source needed, gouv-query fetches directly
+    sourceElement = '';
   } else {
     // Non-ODS source: use gouv-source + gouv-query (generic, client-side)
-    const result = generateGouvQueryCode('chart-data', labelFieldPath, valueFieldPath);
+    const mw = generateMiddlewareElements('chart-data');
+    middlewareHtml = mw.elements;
+    const result = generateGouvQueryCode(mw.finalSourceId, labelFieldPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
@@ -1121,7 +1212,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-${sourceElement}${queryElement}
+${sourceElement}${middlewareHtml}${queryElement}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
     source="${chartSource}"
