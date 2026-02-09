@@ -67,7 +67,14 @@ export default defineConfig({
         target: 'https://tabular-api.data.gouv.fr',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/tabular-proxy/, ''),
-        secure: true
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        }
       },
       // Proxy générique pour les APIs externes
       '/api-proxy': {
