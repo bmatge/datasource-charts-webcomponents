@@ -813,6 +813,21 @@
           <p>Wrapper pour les graphiques DSFR natifs (barres, lignes, camembert, radar, jauge, carte, nuage de points).</p>
           <img src="images/guide-comp-chart.png" alt="Demo gouv-dsfr-chart">
 
+          <h3>gouv-normalize — Normalisation des donnees</h3>
+          <p>Composant invisible de nettoyage des donnees : conversion numerique (string vers number, virgule/point), renommage de cles, trim, suppression de balises HTML, remplacement de valeurs (N/A, n.d., etc.). Se place entre <code>gouv-source</code> et <code>gouv-query</code> pour que les filtres et agregations travaillent sur des donnees propres.</p>
+<pre>&lt;gouv-source id="raw" url="..." transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  numeric="population, budget"
+  rename="pop_tot:Population totale | lib_dep:Departement"
+  trim
+  replace="N/A: | n.d.:"&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-query id="stats" source="clean"
+  group-by="Departement" aggregate="population:sum"&gt;
+&lt;/gouv-query&gt;</pre>
+
           <h3>gouv-query — Filtrage et agregation</h3>
           <p>Composant invisible de transformation de donnees : filtre, regroupe et agrege les donnees entre la source et l'affichage.</p>
           <img src="images/guide-comp-query.png" alt="Demo gouv-query">
