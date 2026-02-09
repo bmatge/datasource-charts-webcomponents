@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
+import { getProxyConfig } from '@gouv-widgets/shared';
 import {
   dispatchDataLoaded,
   dispatchDataError,
@@ -768,14 +769,21 @@ export class GouvQuery extends LitElement {
    * Construit une URL Tabular API (data.gouv.fr)
    */
   private _buildTabularUrl(): string {
-    const base = this.baseUrl || 'https://tabular-api.data.gouv.fr';
+    let base: string;
+    if (this.baseUrl) {
+      base = this.baseUrl;
+    } else {
+      // Route through CORS proxy (dev: Vite proxy, prod/embedded: chartsbuilder.matge.com)
+      const config = getProxyConfig();
+      base = `${config.baseUrl}${config.endpoints.tabular}`;
+    }
 
     // L'URL Tabular nécessite dataset_id et resource_id
     if (!this.resource) {
       throw new Error('gouv-query: attribut "resource" requis pour l\'API Tabular');
     }
 
-    const url = new URL(`${base}/api/resources/${this.resource}/data/`);
+    const url = new URL(`${base}/api/resources/${this.resource}/data/`, window.location.origin);
 
     // Filtres (format: "field:operator:value")
     const filterExpr = this.filter || this.where;
