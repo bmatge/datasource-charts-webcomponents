@@ -101,6 +101,7 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
           tagName: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+          uploadPlainBinary: true
           args: ${{ matrix.args }} --verbose
 
   publish-release:
