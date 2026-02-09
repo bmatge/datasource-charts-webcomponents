@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (ex: v0.2.0)'
+        required: true
+        default: 'v0.2.0'
 
 permissions:
   contents: write
@@ -16,14 +22,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create GitHub Release
         id: create
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RELEASE_ID=$(gh api repos/${{ github.repository }}/releases \
-            -f tag_name="${{ github.ref_name }}" \
-            -f name="${{ github.ref_name }}" \
+            -f tag_name="${{ steps.version.outputs.tag }}" \
+            -f name="${{ steps.version.outputs.tag }}" \
+            -f target_commitish="${{ github.sha }}" \
             -F draft=true \
             -F generate_release_notes=true \
             --jq '.id')
@@ -84,6 +100,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
           args: ${{ matrix.args }}
 
   publish-release:
