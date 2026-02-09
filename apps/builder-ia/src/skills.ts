@@ -384,7 +384,7 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 | numeric | String | \`""\` | non | Champs a forcer en nombre (virgule-separes) : \`"population, surface"\` |
 | numeric-auto | Boolean | \`false\` | non | Detection et conversion auto des champs numeriques |
 | rename | String | \`""\` | non | Renommage : \`"ancien:nouveau | ancien2:nouveau2"\` (pipe-separe) |
-| trim | Boolean | \`false\` | non | Supprime les espaces en debut/fin des valeurs string |
+| trim | Boolean | \`false\` | non | Supprime les espaces en debut/fin des cles ET valeurs string |
 | strip-html | Boolean | \`false\` | non | Supprime les balises HTML des valeurs string |
 | replace | String | \`""\` | non | Remplace des valeurs : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
 | lowercase-keys | Boolean | \`false\` | non | Met toutes les cles en minuscules |
@@ -416,6 +416,66 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 
 <!-- Normalisation des cles en minuscules -->
 <gouv-normalize id="lower" source="raw" lowercase-keys></gouv-normalize>
+\`\`\``,
+  },
+
+  gouvFacets: {
+    id: 'gouvFacets',
+    name: 'gouv-facets',
+    description: 'Filtres a facettes interactifs pour exploration de donnees',
+    trigger: ['facette', 'facets', 'filtre interactif', 'categorie', 'refinement', 'exploration', 'filtrer par'],
+    content: `## <gouv-facets> - Filtres a facettes
+
+Composant visuel intermediaire qui affiche des filtres interactifs (checkboxes) bases sur les valeurs
+categoriques des donnees. Se place entre une source/normalize/query et les composants de visualisation.
+
+### Position dans le pipeline
+\`\`\`
+gouv-source -> gouv-normalize -> gouv-facets -> gouv-dsfr-chart / gouv-datalist
+\`\`\`
+Les donnees filtrees sont redistribuees automatiquement aux composants en aval.
+
+### Format des donnees
+Entree : tableau d'objets (fourni par gouv-source, gouv-normalize ou gouv-query).
+Sortie : meme tableau, filtre selon les selections de l'utilisateur.
+
+### Attributs
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la source a ecouter |
+| fields | String | \`""\` | non | Champs a exposer comme facettes (virgule-separes). Vide = auto-detection |
+| labels | String | \`""\` | non | Labels custom : \`"field:Label | field2:Label 2"\` (pipe-separe) |
+| max-values | Number | \`6\` | non | Nb de valeurs visibles par facette avant "Voir plus" |
+| disjunctive | String | \`""\` | non | Champs en mode multi-selection OU (virgule-separes) |
+| sort | String | \`"count"\` | non | Tri des valeurs : count, -count, alpha, -alpha |
+| searchable | String | \`""\` | non | Champs avec barre de recherche (virgule-separes) |
+| hide-empty | Boolean | \`false\` | non | Masquer les facettes avec une seule valeur |
+
+### Logique de filtrage
+- Intra-facette : OU (afficher les lignes qui matchent l'une des valeurs selectionnees)
+- Inter-facettes : ET (toutes les facettes doivent matcher)
+- Les compteurs se recalculent dynamiquement selon les selections
+
+### Auto-detection
+Si \`fields\` est omis, le composant detecte automatiquement les champs categoriques :
+champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
+
+### Exemples
+\`\`\`html
+<!-- Facettes avec auto-detection -->
+<gouv-source id="raw" url="https://api.fr/data" transform="data"></gouv-source>
+<gouv-normalize id="clean" source="raw" trim numeric-auto></gouv-normalize>
+<gouv-facets id="filtered" source="clean"></gouv-facets>
+<gouv-datalist source="filtered"></gouv-datalist>
+
+<!-- Facettes explicites avec labels custom -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, type_etablissement, statut"
+  labels="region:Region | type_etablissement:Type | statut:Statut"
+  searchable="region"
+  max-values="10">
+</gouv-facets>
+<gouv-dsfr-chart source="filtered" type="bar" label-field="region" value-field="count"></gouv-dsfr-chart>
 \`\`\``,
   },
 

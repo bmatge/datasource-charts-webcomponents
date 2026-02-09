@@ -203,6 +203,61 @@ describe('GouvNormalize', () => {
       const result = getDataCache('test-normalize') as Record<string, unknown>[];
       expect(result[0].nom).toBe('  Paris  ');
     });
+
+    it('trims keys with leading/trailing spaces when trim is true', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.trim = true;
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { ' DEP ': ' 01 ', ' LIB_DEP ': ' Ain ', ' pp_vacant_25 ': ' 19 805   ' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toHaveProperty('DEP');
+      expect(result[0]).toHaveProperty('LIB_DEP');
+      expect(result[0]).toHaveProperty('pp_vacant_25');
+      expect(result[0]['DEP']).toBe('01');
+      expect(result[0]['LIB_DEP']).toBe('Ain');
+      expect(result[0]['pp_vacant_25']).toBe('19 805');
+    });
+
+    it('trim + numeric-auto handles LOVAC-style data (space thousands)', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.trim = true;
+      normalize.numericAuto = true;
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { ' DEP ': ' 01 ', ' LIB_DEP ': ' Ain ', ' pp_vacant_25 ': ' 19 805   ', ' pp_total_24 ': ' 293 837   ' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]['DEP']).toBe(1);
+      expect(result[0]['LIB_DEP']).toBe('Ain');
+      expect(result[0]['pp_vacant_25']).toBe(19805);
+      expect(result[0]['pp_total_24']).toBe(293837);
+    });
+
+    it('trim + rename works with spaced keys', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.trim = true;
+      normalize.rename = 'LIB_DEP:Departement | DEP:Code';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { ' DEP ': ' 01 ', ' LIB_DEP ': ' Ain ' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toHaveProperty('Code');
+      expect(result[0]).toHaveProperty('Departement');
+      expect(result[0]['Code']).toBe('01');
+      expect(result[0]['Departement']).toBe('Ain');
+    });
   });
 
   describe('Strip HTML', () => {

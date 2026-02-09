@@ -13,6 +13,7 @@ import { GouvKpi } from '../../../src/components/gouv-kpi.js';
 import { GouvDatalist } from '../../../src/components/gouv-datalist.js';
 import { GouvDsfrChart } from '../../../src/components/gouv-dsfr-chart.js';
 import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
+import { GouvFacets } from '../../../src/components/gouv-facets.js';
 
 // Type/constant imports for alignment checks
 import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
@@ -40,8 +41,8 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 15 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(15);
+  it('should have 16 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(16);
   });
 
   it('should have expected skill IDs', () => {
@@ -50,6 +51,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('gouvSource');
     expect(SKILLS).toHaveProperty('gouvQuery');
     expect(SKILLS).toHaveProperty('gouvNormalize');
+    expect(SKILLS).toHaveProperty('gouvFacets');
     expect(SKILLS).toHaveProperty('gouvKpi');
     expect(SKILLS).toHaveProperty('gouvDsfrChart');
     expect(SKILLS).toHaveProperty('gouvDatalist');
@@ -222,6 +224,10 @@ describe('builder-ia skills', () => {
         assertAttributesCovered(GouvNormalize as unknown as typeof GouvSource, 'gouvNormalize', 'gouv-normalize');
       });
 
+      it('gouvFacets skill covers all <gouv-facets> attributes', () => {
+        assertAttributesCovered(GouvFacets as unknown as typeof GouvSource, 'gouvFacets', 'gouv-facets');
+      });
+
       it('gouvDsfrChart skill covers all <gouv-dsfr-chart> attributes', () => {
         assertAttributesCovered(GouvDsfrChart as unknown as typeof GouvSource, 'gouvDsfrChart', 'gouv-dsfr-chart');
       });
@@ -292,6 +298,7 @@ describe('builder-ia skills', () => {
         'GouvSource': 'gouvSource',
         'GouvQuery': 'gouvQuery',
         'GouvNormalize': 'gouvNormalize',
+        'GouvFacets': 'gouvFacets',
         'GouvKpi': 'gouvKpi',
         'GouvDatalist': 'gouvDatalist',
         'GouvDsfrChart': 'gouvDsfrChart',

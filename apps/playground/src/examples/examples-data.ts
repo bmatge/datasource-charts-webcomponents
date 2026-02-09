@@ -1,15 +1,18 @@
 /**
  * Playground examples data
  *
- * 20 exemples organises en 2 modes de construction x 10 types de visualisation.
+ * 27 exemples organises en 4 modes de construction :
  *
- * Mode direct  : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
- * Mode requete : gouv-source → gouv-query → composant
+ * Mode direct       : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
+ * Mode requete      : gouv-source → gouv-query → composant
+ * Mode normalisation : gouv-source → gouv-normalize → gouv-query → composant
+ * Mode facettes     : gouv-source → gouv-normalize → gouv-facets → composant
  *
  * Sources de donnees alternees :
  *  - API 1 : Fiscalite locale des particuliers (data.economie.gouv.fr)
  *  - API 2 : Registre des elus municipaux (tabular-api.data.gouv.fr)
  *  - API 3 : Industrie du futur (data.economie.gouv.fr)
+ *  - API 4 : LOVAC logements vacants (tabular-api.data.gouv.fr)
  */
 export const examples: Record<string, string> = {
 
@@ -657,6 +660,353 @@ export const examples: Record<string, string> = {
     pagination="10"
     export="csv">
   </gouv-datalist>
+</div>`,
+
+  // =====================================================================
+  // MODE AVEC NORMALISATION — gouv-source → gouv-normalize → gouv-query → composant
+  // Les donnees passent par gouv-normalize pour etre nettoyees
+  // (conversion numerique, renommage, trim) avant traitement par gouv-query.
+  // =====================================================================
+
+  'normalize-bar': `<!--
+  Barres — Logements vacants par departement (donnees LOVAC nettoyees)
+  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (bar)
+  Source : LOVAC - Logements vacants (tabular-api)
+  Probleme : les cles ont des espaces (" DEP ", " LIB_DEP ") et les
+  nombres sont en string avec separateurs milliers (" 19 805   ").
+  gouv-normalize nettoie les cles (trim), convertit les nombres (numeric-auto)
+  et renomme les colonnes cryptiques en noms lisibles.
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Top 15 departements par logements vacants (2025)</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
+    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+    transform="data">
+  </gouv-source>
+
+  <!-- Nettoyage :
+    - trim nettoie les cles (" DEP " → "DEP") ET les valeurs (" Ain " → "Ain")
+    - numeric-auto convertit " 19 805   " → 19805 (detecte les nombres avec espaces)
+    - rename donne des noms lisibles aux colonnes -->
+  <gouv-normalize id="clean" source="raw"
+    trim
+    numeric-auto
+    rename="LIB_DEP:Departement | pp_vacant_25:Vacants 2025">
+  </gouv-normalize>
+
+  <gouv-query id="top" source="clean"
+    order-by="Vacants 2025:desc"
+    limit="15">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="top"
+    type="bar"
+    label-field="Departement"
+    value-field="Vacants 2025"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'normalize-pie': `<!--
+  Camembert — Part des logements vacants de longue duree
+  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (pie)
+  Source : LOVAC - Logements vacants (tabular-api)
+  Montre la proportion de logements vacants >2 ans parmi les top departements.
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Top 8 departements — Vacants longue duree (>2 ans)</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
+    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+    transform="data">
+  </gouv-source>
+
+  <!-- Nettoyage : trim (cles + valeurs), conversion numerique explicite, renommage -->
+  <gouv-normalize id="clean" source="raw"
+    trim
+    numeric="pp_vacant_plus_2ans_25"
+    rename="LIB_DEP:Departement | pp_vacant_plus_2ans_25:Vacants longue duree">
+  </gouv-normalize>
+
+  <gouv-query id="top" source="clean"
+    order-by="Vacants longue duree:desc"
+    limit="8">
+  </gouv-query>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <gouv-dsfr-chart source="top"
+      type="pie"
+      label-field="Departement"
+      value-field="Vacants longue duree"
+      selected-palette="categorical">
+    </gouv-dsfr-chart>
+  </div>
+</div>`,
+
+  'normalize-line': `<!--
+  Courbe — Parc total de logements prives par departement
+  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (line)
+  Source : LOVAC - Logements vacants (tabular-api)
+  Montre les 20 plus grands parcs de logements departementaux.
+  Les nombres bruts sont en string avec milliers espaces (" 293 837   ").
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Parc de logements prives par departement (top 20)</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
+    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+    transform="data">
+  </gouv-source>
+
+  <!-- Nettoyage : trim cles/valeurs + conversion numerique ciblee + renommage -->
+  <gouv-normalize id="clean" source="raw"
+    trim
+    numeric="pp_total_24, pp_vacant_25"
+    rename="LIB_DEP:Departement | pp_total_24:Logements 2024 | pp_vacant_25:Vacants 2025">
+  </gouv-normalize>
+
+  <gouv-query id="top" source="clean"
+    order-by="Logements 2024:desc"
+    limit="20">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="top"
+    type="line"
+    label-field="Departement"
+    value-field="Logements 2024"
+    selected-palette="default">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'normalize-datalist': `<!--
+  Tableau — Donnees LOVAC nettoyees et lisibles
+  Pipeline : gouv-source → gouv-normalize → gouv-datalist
+  Source : LOVAC - Logements vacants (tabular-api)
+  Les donnees brutes ont des cles avec espaces (" DEP ", " LIB_DEP "),
+  des nombres en string (" 19 805   ") et des noms de colonnes cryptiques.
+  gouv-normalize nettoie tout avant l'affichage en tableau.
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>LOVAC — Logements vacants par departement</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
+    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-datalist
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+    transform="data">
+  </gouv-source>
+
+  <!-- Nettoyage complet :
+    - trim : nettoie les espaces dans les cles ET les valeurs
+    - numeric-auto : detecte et convertit tous les champs numeriques
+    - rename : noms lisibles pour le tableau -->
+  <gouv-normalize id="clean" source="raw"
+    trim
+    numeric-auto
+    rename="DEP:Code | LIB_DEP:Departement | pp_vacant_25:Vacants 2025 | pp_vacant_plus_2ans_25:Vacants >2 ans | pp_total_24:Total logements 2024 | pp_vacant_24:Vacants 2024">
+  </gouv-normalize>
+
+  <gouv-datalist source="clean"
+    colonnes="Code, Departement, Vacants 2025, Vacants >2 ans, Total logements 2024, Vacants 2024"
+    recherche="true"
+    tri="Vacants 2025:desc"
+    pagination="15"
+    export="csv">
+  </gouv-datalist>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Les donnees LOVAC brutes ont des cles avec espaces (<code>" DEP "</code>),
+      des nombres en texte avec separateurs milliers (<code>" 19 805   "</code>),
+      et des noms de colonnes techniques. Avec <code>trim</code> + <code>numeric-auto</code>
+      + <code>rename</code>, les donnees deviennent propres et lisibles.
+    </p>
+  </div>
+</div>`,
+
+  // =====================================================================
+  // MODE FACETTES — gouv-source → gouv-normalize → gouv-facets → composant
+  // Les donnees passent par gouv-facets qui affiche des filtres interactifs.
+  // L'utilisateur selectionne des valeurs et les composants en aval
+  // se mettent a jour automatiquement.
+  // =====================================================================
+
+  'facets-datalist': `<!--
+  Tableau filtrable — Registre des elus avec facettes
+  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-datalist
+  Source : Registre des elus municipaux (tabular-api)
+  gouv-facets affiche des filtres interactifs par departement, fonction et categorie
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Registre des elus — exploration par facettes</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie | Libellé de la région:Region"
+    trim>
+  </gouv-normalize>
+
+  <!-- Facettes : filtres interactifs sur Departement, Fonction et Categorie -->
+  <gouv-facets id="filtered" source="clean"
+    fields="Departement, Fonction, Categorie"
+    labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+    searchable="Departement"
+    disjunctive="Departement"
+    max-values="8">
+  </gouv-facets>
+
+  <gouv-datalist source="filtered"
+    colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+    recherche="true"
+    tri="Nom:asc"
+    pagination="10"
+    export="csv">
+  </gouv-datalist>
+</div>`,
+
+  'facets-bar': `<!--
+  Barres — Beneficiaires Industrie du futur filtres par region
+  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (bar)
+  Source : Industrie du futur
+  gouv-facets filtre par region, gouv-query agrege ensuite les donnees filtrees
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Beneficiaires Industrie du futur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → gouv-dsfr-chart
+  </p>
+
+  <gouv-source id="raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
+    rename="nom_region:Region | nom_departement:Departement"
+    trim>
+  </gouv-normalize>
+
+  <!-- Facettes : filtrer par region avant aggregation -->
+  <gouv-facets id="filtered" source="clean"
+    fields="Region"
+    disjunctive="Region"
+    sort="alpha"
+    max-values="8">
+  </gouv-facets>
+
+  <gouv-query id="stats" source="filtered"
+    group-by="Departement"
+    aggregate="nombre_beneficiaires:sum:Beneficiaires"
+    order-by="Beneficiaires:desc"
+    limit="15">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="stats"
+    type="bar"
+    label-field="Departement"
+    value-field="Beneficiaires"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
+</div>`,
+
+  'facets-map': `<!--
+  Carte + KPI — Fiscalite locale filtree par region et departement
+  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (map) + gouv-kpi
+  Source : Fiscalite locale des particuliers
+  gouv-facets filtre par region, la carte et les KPI refletent les donnees filtrees
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Fiscalite locale — exploration par region</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → carte + KPI
+  </p>
+
+  <gouv-source id="raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    numeric="taux_global_tfb, taux_global_th, mpoid"
+    rename="libreg:Region | libdep:Departement | libcom:Commune"
+    trim>
+  </gouv-normalize>
+
+  <!-- Facettes : filtrer par region -->
+  <gouv-facets id="filtered" source="clean"
+    fields="Region"
+    disjunctive="Region"
+    sort="alpha">
+  </gouv-facets>
+
+  <!-- KPI sur les donnees filtrees -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <gouv-kpi source="filtered"
+      valeur="count"
+      label="Communes"
+      format="nombre">
+    </gouv-kpi>
+
+    <gouv-kpi source="filtered"
+      valeur="avg:taux_global_tfb"
+      label="Taux TFB moyen"
+      format="decimal"
+      unite="%">
+    </gouv-kpi>
+
+    <gouv-kpi source="filtered"
+      valeur="avg:taux_global_th"
+      label="Taux TH moyen"
+      format="decimal"
+      unite="%">
+    </gouv-kpi>
+  </div>
+
+  <!-- Carte sur les donnees filtrees et agregees -->
+  <gouv-query id="stats" source="filtered"
+    group-by="dep"
+    aggregate="taux_global_tfb:avg:taux">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="stats"
+    type="map"
+    code-field="dep"
+    value-field="taux"
+    selected-palette="sequentialAscending">
+  </gouv-dsfr-chart>
 </div>`,
 
 };

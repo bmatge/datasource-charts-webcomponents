@@ -100,11 +100,13 @@ export class AppLayoutDemo extends LitElement {
       { id: 'overview', label: "Vue d'ensemble", href: 'index.html' },
       {
         id: 'components',
-        label: 'Nos composants',
+        label: 'Composants gouv-widgets',
         href: '#',
         children: [
           { id: 'components/gouv-source', label: 'gouv-source', href: 'components/gouv-source.html' },
+          { id: 'components/gouv-normalize', label: 'gouv-normalize', href: 'components/gouv-normalize.html' },
           { id: 'components/gouv-query', label: 'gouv-query', href: 'components/gouv-query.html' },
+          { id: 'components/gouv-facets', label: 'gouv-facets', href: 'components/gouv-facets.html' },
           { id: 'components/gouv-kpi', label: 'gouv-kpi', href: 'components/gouv-kpi.html' },
           { id: 'components/gouv-datalist', label: 'gouv-datalist', href: 'components/gouv-datalist.html' },
           { id: 'components/gouv-dsfr-chart', label: 'gouv-dsfr-chart', href: 'components/gouv-dsfr-chart.html' },
@@ -112,7 +114,7 @@ export class AppLayoutDemo extends LitElement {
       },
       {
         id: 'charts',
-        label: 'Graphiques DSFR',
+        label: 'Composants dsfr-charts',
         href: '#',
         children: [
           { id: 'charts/line-chart', label: 'line-chart', href: 'charts/line-chart.html' },
@@ -185,7 +187,7 @@ export class AppLayoutDemo extends LitElement {
 
     if (parts.length > 1) {
       // Add section (components or charts)
-      const section = parts[0] === 'components' ? 'Nos composants' : 'Graphiques DSFR';
+      const section = parts[0] === 'components' ? 'Composants gouv-widgets' : 'Composants dsfr-charts';
       breadcrumbItems.push({ label: section, href: '#' });
     }
 

@@ -133,12 +133,12 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
 
   // --- Data processing ---
 
-  private _processData(): { x: string; y: string; y2?: string } {
+  private _processData(): { x: string; y: string; y2?: string; labels: string[] } {
     if (!this._data || this._data.length === 0) {
-      return { x: '[[]]', y: '[[]]' };
+      return { x: '[[]]', y: '[[]]', labels: [] };
     }
 
-    const labels: (string | number)[] = [];
+    const labels: string[] = [];
     const values: number[] = [];
     const values2: number[] = [];
 
@@ -155,6 +155,7 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       x: JSON.stringify([labels]),
       y: JSON.stringify([values]),
       y2: this.valueField2 ? JSON.stringify([values2]) : undefined,
+      labels,
     };
   }
 
@@ -205,7 +206,7 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
   }
 
   private _getTypeSpecificAttributes(): { attrs: Record<string, string>; deferred: Record<string, string> } {
-    const { x, y, y2 } = this._processData();
+    const { x, y, y2, labels } = this._processData();
     const attrs: Record<string, string> = {};
     const deferred: Record<string, string> = {};
 
@@ -217,6 +218,15 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
         attrs['target'] = '100';
         break;
       }
+      case 'pie':
+        attrs['x'] = x;
+        attrs['y'] = y;
+        // For pie charts, DSFR Chart expects one name per slice (category),
+        // not one per series. Use labels as legend entries.
+        if (!this.name && labels.length > 0) {
+          attrs['name'] = JSON.stringify(labels);
+        }
+        break;
       case 'bar-line':
         attrs['x'] = x;
         attrs['y-bar'] = y;

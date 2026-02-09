@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-facets - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .attr-table { width: 100%; border-collapse: collapse; }
+    .attr-table th, .attr-table td { border: 1px solid var(--border-default-grey); padding: 0.5rem; text-align: left; }
+    .attr-table th { background: var(--background-contrast-grey); }
+    pre { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    code { font-size: 0.875em; }
+  </style>
+</head>
+<body>
+  <!-- ============================================================
+       Sources de donnees pour les 3 exemples live
+       ============================================================ -->
+
+  <!-- Exemple 1 : Elus municipaux (tabular-api) -->
+  <gouv-source id="elus-raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+  <gouv-normalize id="elus-clean" source="elus-raw"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie | Libellé de la région:Region"
+    trim>
+  </gouv-normalize>
+
+  <!-- Exemple 2 : Industrie du futur -->
+  <gouv-source id="industrie-raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+  <gouv-normalize id="industrie-clean" source="industrie-raw"
+    numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
+    rename="nom_region:Region | nom_departement:Departement"
+    trim>
+  </gouv-normalize>
+
+  <!-- Exemple 3 : Fiscalite locale -->
+  <gouv-source id="fisca-raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+    transform="results">
+  </gouv-source>
+  <gouv-normalize id="fisca-clean" source="fisca-raw"
+    numeric="taux_global_tfb, taux_global_th, mpoid"
+    rename="libreg:Region | libdep:Departement | libcom:Commune"
+    trim>
+  </gouv-normalize>
+
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
+
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-facets"
+    icon="ri-filter-3-line"
+    active-path="components/gouv-facets"
+    base-path="../">
+    <div slot="content">
+        <p class="fr-text--lead">
+          Composant visuel intermediaire qui affiche des filtres interactifs (facettes)
+          bases sur les valeurs categoriques des donnees.
+        </p>
+
+        <div class="fr-callout fr-callout--green-emeraude">
+          <p class="fr-callout__text">
+            <strong>Visuel et intermediaire :</strong> Ce composant affiche des controles de filtre
+            ET redistribue les donnees filtrees aux composants en aval via le systeme d'evenements.
+          </p>
+        </div>
+
+        <h2>Position dans le pipeline</h2>
+        <div class="fr-highlight">
+          <p>
+            <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &rarr; <strong><code>gouv-facets</code></strong> &rarr; <code>gouv-dsfr-chart</code> / <code>gouv-datalist</code>
+          </p>
+          <p>
+            Normaliser <strong>avant</strong> <code>gouv-facets</code> permet d'avoir des valeurs
+            propres et coherentes dans les filtres (pas de doublons dus aux espaces ou casses differentes).
+          </p>
+        </div>
+
+        <h2>Cas d'usage</h2>
+        <ul>
+          <li><strong>Exploration de donnees</strong> : permettre a l'utilisateur de filtrer un jeu de donnees par categories</li>
+          <li><strong>Tableau de bord interactif</strong> : les graphiques et tableaux se mettent a jour en temps reel</li>
+          <li><strong>Recherche a facettes</strong> : comme sur un site e-commerce (filtrer par marque, prix, couleur...)</li>
+        </ul>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Defaut</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td>-</td><td><strong>Requis.</strong> Identifiant de la sortie (donnees filtrees).</td></tr>
+            <tr><td><code>source</code></td><td>String</td><td><code>""</code></td><td><strong>Requis.</strong> ID de la source a ecouter.</td></tr>
+            <tr><td><code>fields</code></td><td>String</td><td><code>""</code></td><td>Champs a exposer comme facettes (virgule-separes). Vide = auto-detection.</td></tr>
+            <tr><td><code>labels</code></td><td>String</td><td><code>""</code></td><td>Labels custom : <code>"field:Label | field2:Label 2"</code></td></tr>
+            <tr><td><code>max-values</code></td><td>Number</td><td><code>6</code></td><td>Nb de valeurs visibles par facette avant "Voir plus".</td></tr>
+            <tr><td><code>disjunctive</code></td><td>String</td><td><code>""</code></td><td>Champs en mode multi-selection OU (virgule-separes).</td></tr>
+            <tr><td><code>sort</code></td><td>String</td><td><code>"count"</code></td><td>Tri des valeurs : <code>count</code>, <code>-count</code>, <code>alpha</code>, <code>-alpha</code>.</td></tr>
+            <tr><td><code>searchable</code></td><td>String</td><td><code>""</code></td><td>Champs avec barre de recherche (virgule-separes).</td></tr>
+            <tr><td><code>hide-empty</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les facettes avec une seule valeur.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="fr-callout fr-mt-3w">
+          <p class="fr-callout__text">
+            <strong>Logique de filtrage :</strong> au sein d'une facette, les selections sont en <strong>OU</strong>
+            (afficher Paris ou Lyon). Entre facettes differentes, c'est du <strong>ET</strong>
+            (region = PACA ET type = Commune). Les compteurs se recalculent dynamiquement.
+          </p>
+        </div>
+
+        <!-- ========================================================
+             Exemple 1 : Facettes + Datalist (Elus municipaux)
+             ======================================================== -->
+        <h2 class="fr-mt-4w">Exemple 1 : tableau filtrable avec facettes</h2>
+        <p>Les facettes <code>Departement</code>, <code>Fonction</code> et <code>Categorie</code> filtrent
+        le tableau des elus municipaux. Le departement est en mode <strong>disjonctif</strong> (multi-selection OU)
+        et dispose d'une <strong>barre de recherche</strong>.</p>
+
+        <gouv-facets id="elus-filtered" source="elus-clean"
+          fields="Departement, Fonction, Categorie"
+          labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+          searchable="Departement"
+          disjunctive="Departement"
+          max-values="8">
+        </gouv-facets>
+
+        <gouv-datalist source="elus-filtered"
+          colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+          recherche="true"
+          tri="Nom:asc"
+          pagination="10">
+        </gouv-datalist>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-source id="raw"
+  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  transform="data"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  rename="Nom de l'elu:Nom | Prenom de l'elu:Prenom | Libelle de la fonction:Fonction | Libelle du departement:Departement | Libelle de la categorie socio-professionnelle:Categorie"
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-facets id="filtered" source="clean"
+  fields="Departement, Fonction, Categorie"
+  labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+  searchable="Departement"
+  disjunctive="Departement"
+  max-values="8"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;gouv-datalist source="filtered"
+  colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+  recherche="true"
+  tri="Nom:asc"
+  pagination="10"&gt;
+&lt;/gouv-datalist&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 2 : Facettes + Query + Barres (Industrie du futur)
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 2 : graphique filtre par region</h2>
+        <p>Les facettes filtrent par <code>Region</code>, puis <code>gouv-query</code> agrege les donnees
+        filtrees pour produire un graphique en barres des beneficiaires par departement.</p>
+
+        <gouv-facets id="industrie-filtered" source="industrie-clean"
+          fields="Region"
+          disjunctive="Region"
+          sort="alpha"
+          max-values="8">
+        </gouv-facets>
+
+        <gouv-query id="industrie-stats" source="industrie-filtered"
+          group-by="Departement"
+          aggregate="nombre_beneficiaires:sum:Beneficiaires"
+          order-by="Beneficiaires:desc"
+          limit="15">
+        </gouv-query>
+
+        <gouv-dsfr-chart source="industrie-stats"
+          type="bar"
+          label-field="Departement"
+          value-field="Beneficiaires"
+          selected-palette="categorical">
+        </gouv-dsfr-chart>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-source id="raw"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  numeric="montant_investissement, nombre_beneficiaires"
+  rename="nom_region:Region | nom_departement:Departement"
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-facets id="filtered" source="clean"
+  fields="Region"
+  disjunctive="Region"
+  sort="alpha"
+  max-values="8"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;gouv-query id="stats" source="filtered"
+  group-by="Departement"
+  aggregate="nombre_beneficiaires:sum:Beneficiaires"
+  order-by="Beneficiaires:desc"
+  limit="15"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="Departement"
+  value-field="Beneficiaires"
+  selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 3 : Facettes + KPI + Carte (Fiscalite locale)
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 3 : carte + KPI filtres par region</h2>
+        <p>Un meme <code>gouv-facets</code> alimente a la fois des <strong>KPI</strong> et une <strong>carte</strong>.
+        Selectionner des regions met a jour simultanement les indicateurs et la carte departementale.</p>
+
+        <gouv-facets id="fisca-filtered" source="fisca-clean"
+          fields="Region"
+          disjunctive="Region"
+          sort="alpha">
+        </gouv-facets>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+          <gouv-kpi source="fisca-filtered"
+            valeur="count"
+            label="Communes"
+            format="nombre">
+          </gouv-kpi>
+
+          <gouv-kpi source="fisca-filtered"
+            valeur="avg:taux_global_tfb"
+            label="Taux TFB moyen"
+            format="decimal"
+            unite="%">
+          </gouv-kpi>
+
+          <gouv-kpi source="fisca-filtered"
+            valeur="avg:taux_global_th"
+            label="Taux TH moyen"
+            format="decimal"
+            unite="%">
+          </gouv-kpi>
+        </div>
+
+        <gouv-query id="fisca-stats" source="fisca-filtered"
+          group-by="dep"
+          aggregate="taux_global_tfb:avg:taux">
+        </gouv-query>
+
+        <gouv-dsfr-chart source="fisca-stats"
+          type="map"
+          code-field="dep"
+          value-field="taux"
+          selected-palette="sequentialAscending">
+        </gouv-dsfr-chart>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-source id="raw"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  numeric="taux_global_tfb, taux_global_th, mpoid"
+  rename="libreg:Region | libdep:Departement | libcom:Commune"
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-facets id="filtered" source="clean"
+  fields="Region"
+  disjunctive="Region"
+  sort="alpha"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;!-- KPI sur les donnees filtrees --&gt;
+&lt;gouv-kpi source="filtered" valeur="count" label="Communes" format="nombre"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="decimal" unite="%"&gt;&lt;/gouv-kpi&gt;
+
+&lt;!-- Carte sur les donnees filtrees et agregees --&gt;
+&lt;gouv-query id="stats" source="filtered"
+  group-by="dep"
+  aggregate="taux_global_tfb:avg:taux"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="map"
+  code-field="dep"
+  value-field="taux"
+  selected-palette="sequentialAscending"&gt;
+&lt;/gouv-dsfr-chart&gt;</code></pre>
+
+    </div>
+  </app-layout-demo>
+
+  <!-- Footer -->
+  <app-footer base-path="../../"></app-footer>
+
+  <!-- DSFR JS -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

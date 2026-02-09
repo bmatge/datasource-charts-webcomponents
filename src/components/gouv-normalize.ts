@@ -51,7 +51,7 @@ export class GouvNormalize extends LitElement {
   @property({ type: String })
   rename = '';
 
-  /** Supprime les espaces en debut/fin de toutes les valeurs string */
+  /** Supprime les espaces en debut/fin de toutes les cles et valeurs string */
   @property({ type: Boolean })
   trim = false;
 
@@ -182,10 +182,12 @@ export class GouvNormalize extends LitElement {
   ): Record<string, unknown> {
     const result: Record<string, unknown> = {};
 
-    for (const [key, value] of Object.entries(row)) {
+    for (const [rawKey, value] of Object.entries(row)) {
+      // 0. Trim key (when trim is enabled, also clean key names)
+      const key = this.trim ? rawKey.trim() : rawKey;
       let normalizedValue = value;
 
-      // 1. Trim
+      // 1. Trim value
       if (this.trim && typeof normalizedValue === 'string') {
         normalizedValue = normalizedValue.trim();
       }
@@ -205,7 +207,7 @@ export class GouvNormalize extends LitElement {
         }
       }
 
-      // 4. Numeric conversion
+      // 4. Numeric conversion (uses trimmed key for field matching)
       if (numericFields.has(key)) {
         normalizedValue = toNumber(normalizedValue);
       } else if (this.numericAuto && typeof normalizedValue === 'string' && looksLikeNumber(normalizedValue)) {
@@ -215,7 +217,7 @@ export class GouvNormalize extends LitElement {
         }
       }
 
-      // 5. Rename key
+      // 5. Rename key (uses trimmed key for map lookup)
       const finalKey = renameMap.get(key) ?? key;
 
       // 6. Lowercase keys

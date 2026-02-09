@@ -12,7 +12,15 @@ describe('playground examples', () => {
     'query-scatter', 'query-barline', 'query-map', 'query-kpi', 'query-datalist'
   ];
 
-  const allKeys = [...directKeys, ...queryKeys];
+  const normalizeKeys = [
+    'normalize-bar', 'normalize-pie', 'normalize-line', 'normalize-datalist'
+  ];
+
+  const facetsKeys = [
+    'facets-datalist', 'facets-bar', 'facets-map'
+  ];
+
+  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...facetsKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -20,8 +28,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 20 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(20);
+  it('should have 27 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(27);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -60,5 +68,20 @@ describe('playground examples', () => {
   it('datalist examples should use gouv-datalist', () => {
     expect(examples['direct-datalist']).toContain('gouv-datalist');
     expect(examples['query-datalist']).toContain('gouv-datalist');
+  });
+
+  it('normalize examples should use gouv-source and gouv-normalize', () => {
+    for (const key of normalizeKeys) {
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
+    }
+  });
+
+  it('facets examples should use gouv-facets and gouv-normalize', () => {
+    for (const key of facetsKeys) {
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
+      expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
+    }
   });
 });
