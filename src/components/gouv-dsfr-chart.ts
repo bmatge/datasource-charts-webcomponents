@@ -190,7 +190,10 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
     if (this.yMax) attrs['y-max'] = this.yMax;
 
     if (this.name) {
-      attrs['name'] = this.name;
+      // DSFR Chart attend un tableau JSON pour name (ex: '["Série 1"]')
+      // Si l'utilisateur passe une string simple, on l'enveloppe automatiquement
+      const trimmed = this.name.trim();
+      attrs['name'] = trimmed.startsWith('[') ? trimmed : JSON.stringify([trimmed]);
     } else if (this.valueField) {
       const names = this.valueField2
         ? [this.valueField, this.valueField2]

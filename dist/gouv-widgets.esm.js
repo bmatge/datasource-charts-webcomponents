@@ -2081,9 +2081,10 @@ let g = (Q = class extends He(x) {
   // --- Attribute builders ---
   _getCommonAttributes() {
     const e = {};
-    if (this.selectedPalette && (e["selected-palette"] = this.selectedPalette), this.unitTooltip && (e["unit-tooltip"] = this.unitTooltip), this.xMin && (e["x-min"] = this.xMin), this.xMax && (e["x-max"] = this.xMax), this.yMin && (e["y-min"] = this.yMin), this.yMax && (e["y-max"] = this.yMax), this.name)
-      e.name = this.name;
-    else if (this.valueField) {
+    if (this.selectedPalette && (e["selected-palette"] = this.selectedPalette), this.unitTooltip && (e["unit-tooltip"] = this.unitTooltip), this.xMin && (e["x-min"] = this.xMin), this.xMax && (e["x-max"] = this.xMax), this.yMin && (e["y-min"] = this.yMin), this.yMax && (e["y-max"] = this.yMax), this.name) {
+      const t = this.name.trim();
+      e.name = t.startsWith("[") ? t : JSON.stringify([t]);
+    } else if (this.valueField) {
       const t = this.valueField2 ? [this.valueField, this.valueField2] : [this.valueField];
       e.name = JSON.stringify(t);
     }
