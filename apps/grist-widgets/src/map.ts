@@ -69,7 +69,11 @@ function showOptionsPanel() {
   panel.classList.add('visible');
   content.style.display = 'none';
 
-  createOptionsPanel(panel, MAP_OPTIONS, currentOptions);
+  createOptionsPanel(panel, MAP_OPTIONS, currentOptions, () => {
+    // Fermer le panneau apres sauvegarde
+    panel.classList.remove('visible');
+    content.style.display = 'block';
+  });
 }
 
 // Initialisation : 3 colonnes attendues

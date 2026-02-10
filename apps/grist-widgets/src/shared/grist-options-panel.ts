@@ -24,7 +24,8 @@ export interface OptionDef {
 export function createOptionsPanel(
   container: HTMLElement,
   definitions: OptionDef[],
-  currentValues: Record<string, unknown>
+  currentValues: Record<string, unknown>,
+  onSave?: () => void
 ): { getValues: () => Record<string, unknown>; save: () => void } {
 
   container.innerHTML = '';
@@ -98,6 +99,7 @@ export function createOptionsPanel(
 
   const save = () => {
     saveGristOptions(getValues());
+    if (onSave) onSave();
   };
 
   container.querySelector('#grist-opts-save')?.addEventListener('click', save);

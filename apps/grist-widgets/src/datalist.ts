@@ -77,7 +77,11 @@ function showOptionsPanel() {
   panel.classList.add('visible');
   content.style.display = 'none';
 
-  createOptionsPanel(panel, DATALIST_OPTIONS, currentOptions);
+  createOptionsPanel(panel, DATALIST_OPTIONS, currentOptions, () => {
+    // Fermer le panneau apres sauvegarde
+    panel.classList.remove('visible');
+    content.style.display = 'block';
+  });
 }
 
 /**
