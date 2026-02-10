@@ -15,7 +15,7 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js" integrity="sha384-xYrR55uYb2Y55H6eELrLA9ARM8YsjB1ksG6QHJZrhL49lzax9l7rHuQPjsZGiTYk" crossorigin="anonymous"></script>
 
   <!-- gouv-widgets UMD -->
-  <script src="../../dist/gouv-widgets.umd.js"></script>
+  <script src="/lib/gouv-widgets.umd.js"></script>
 
   <style>
     body { font-family: 'Marianne', arial, sans-serif; margin: 0; padding: 2rem; background: #f6f6f6; }
@@ -139,7 +139,8 @@
 
     document.getElementById('btn-error').addEventListener('click', () => {
       GouvWidgets.dispatchDataError('grist', new Error('Erreur simulee : colonnes non mappees'));
-      status.textContent = 'Erreur envoyee';
+      GouvWidgets.dispatchDataError('grist-map', new Error('Erreur simulee : colonnes non mappees'));
+      status.textContent = 'Erreur envoyee (grist + grist-map)';
     });
 
     // Auto-inject au chargement
