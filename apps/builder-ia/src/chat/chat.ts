@@ -120,14 +120,25 @@ En attendant, je peux vous aider avec des commandes simples. Essayez :
 
     // Check if response contains an action
     const action = extractAction(response);
-    const textWithoutJson = response.replace(/```json[\s\S]*?```/g, '').trim();
+    const textWithoutJson = stripActionJson(response, action);
 
     if (action?.action === 'createChart' && action.config) {
       applyChartConfig(action.config as ChartConfig);
       const chartConfig = action.config as ChartConfig;
-      const suggestions = chartConfig.type === 'datalist'
-        ? ['Modifier les colonnes', 'Ajouter un filtre', 'Changer la pagination']
-        : ['Changer le type', 'Modifier les couleurs', 'Ajuster le tri'];
+
+      // Build contextual post-chart suggestions
+      const textFields = state.fields.filter(f => f.type === 'texte');
+      const hasCategories = textFields.length >= 2;
+      let suggestions: string[];
+      if (chartConfig.type === 'datalist') {
+        suggestions = hasCategories
+          ? ['Ajouter des facettes interactives', 'Modifier les colonnes', 'Generer le code embarquable']
+          : ['Modifier les colonnes', 'Changer la pagination', 'Generer le code embarquable'];
+      } else {
+        suggestions = ['Changer le type de graphique'];
+        if (hasCategories) suggestions.push('Ajouter des facettes');
+        suggestions.push('Generer le code embarquable');
+      }
       addMessage('assistant', textWithoutJson || (chartConfig.type === 'datalist' ? 'Voici votre tableau !' : 'Voici votre graphique !'), suggestions);
     } else if (action?.action === 'reloadData') {
       const success = await handleReloadData(action);
@@ -176,7 +187,12 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   // Build available skills list for the system prompt
   const skillsList = Object.values(SKILLS).map(s => `- ${s.name}: ${s.description}`).join('\n');
 
-  const actionReminder = `\n\n---\nRAPPEL IMPORTANT: Pour afficher un graphique ou KPI dans l'apercu, genere TOUJOURS un SEUL bloc \`\`\`json avec {"action": "createChart", "config": {...}}. Utilise config.where pour filtrer (ex: "code_departement:eq:48"). Les composants HTML (gouv-source, gouv-query, etc.) sont UNIQUEMENT pour le code embarquable dans l'onglet Code, PAS pour l'apercu.`;
+  const actionReminder = `\n\n---\nRAPPEL CRITIQUE :
+- Pour l'APERCU : genere UN SEUL bloc \`\`\`json avec {"action":"createChart","config":{...}} ou {"action":"reloadData","query":{...}}.
+- Filtre createChart : syntaxe "champ:op:valeur" (ex: "region:eq:IDF"). Operateurs : eq, neq, gt, gte, lt, lte, contains, in.
+- Filtre reloadData : syntaxe ODSQL SQL-like (ex: "population > 10000").
+- Pour le CODE EMBARQUABLE (quand demande) : HTML avec gouv-source, gouv-normalize, gouv-facets, gouv-query, gouv-dsfr-chart, gouv-kpi, gouv-datalist.
+- Utilise UNIQUEMENT les noms de champs listes dans "Donnees actuelles" ci-dessus. Ne les invente pas.`;
 
   const systemPromptWithSkills = config.systemPrompt +
     `\n\nSKILLS DISPONIBLES (seront injectes si pertinents):\n${skillsList}` +
@@ -222,20 +238,53 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
 }
 
 /**
- * Parse the AI response text for a JSON code block containing an action field
+ * Parse the AI response text for a JSON action block.
+ * Tries multiple formats that a 24-34B model might produce:
+ * 1. ```json { "action": ... } ```
+ * 2. ``` { "action": ... } ```  (without "json" tag)
+ * 3. Bare JSON object { "action": ... } in the text (no backticks)
  */
 function extractAction(text: string): Record<string, unknown> | null {
-  const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
-  if (jsonMatch) {
+  // Strategy 1: fenced code block with optional "json" tag
+  const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fencedMatch) {
     try {
-      const parsed = JSON.parse(jsonMatch[1]);
+      const parsed = JSON.parse(fencedMatch[1]);
       if (parsed.action) {
         return parsed;
       }
     } catch (e) {
-      console.warn('Failed to parse action:', e);
+      console.warn('Failed to parse fenced action:', e);
     }
   }
+
+  // Strategy 2: bare JSON object containing "action" key (no backticks)
+  const bareMatch = text.match(/(\{\s*"action"\s*:\s*"(?:createChart|reloadData)"[\s\S]*\})/);
+  if (bareMatch) {
+    try {
+      const parsed = JSON.parse(bareMatch[1]);
+      if (parsed.action) {
+        return parsed;
+      }
+    } catch {
+      // Try to find the balanced braces
+      try {
+        const start = bareMatch.index!;
+        let depth = 0;
+        let end = start;
+        for (let i = start; i < text.length; i++) {
+          if (text[i] === '{') depth++;
+          else if (text[i] === '}') depth--;
+          if (depth === 0) { end = i + 1; break; }
+        }
+        const parsed = JSON.parse(text.slice(start, end));
+        if (parsed.action) return parsed;
+      } catch {
+        console.warn('Failed to parse bare action JSON');
+      }
+    }
+  }
+
   return null;
 }
 

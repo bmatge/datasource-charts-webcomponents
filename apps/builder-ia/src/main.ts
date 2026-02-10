@@ -62,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Welcome message (only if no restored conversation)
   if (state.messages.length === 0) {
-    addMessage('assistant', 'Bonjour ! Selectionnez une source de donnees, puis decrivez le graphique souhaite.', [
-      'Aide',
-      'Suggestion',
+    addMessage('assistant', 'Bonjour ! Selectionnez une source de donnees, puis decrivez le graphique souhaite.\n\nJe peux creer des barres, courbes, camemberts, KPIs, cartes, tableaux... et aussi nettoyer vos donnees ou ajouter des filtres interactifs.', [
+      'Quels types de graphiques ?',
+      'Comment fonctionne le pipeline ?',
     ]);
   }
 

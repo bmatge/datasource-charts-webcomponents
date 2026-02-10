@@ -1195,6 +1195,18 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     }
   }
 
+  // Auto-include gouvNormalize when data cleaning context detected
+  if (lowerMsg.match(/code embarquable|snippet|html|integrer|embarquer|pipeline|dashboard|tableau de bord/) &&
+      !relevant.find(s => s.id === 'gouvNormalize')) {
+    relevant.push(SKILLS.gouvNormalize);
+  }
+
+  // Auto-include gouvFacets when interactive filtering or exploration context detected
+  if (lowerMsg.match(/code embarquable|snippet|html|integrer|embarquer|interactif|explorer|exploration|dashboard|tableau de bord/) &&
+      !relevant.find(s => s.id === 'gouvFacets')) {
+    relevant.push(SKILLS.gouvFacets);
+  }
+
   return relevant;
 }
 
@@ -1204,6 +1216,15 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
 export function buildSkillsContext(relevantSkills: Skill[]): string {
   if (relevantSkills.length === 0) return '';
 
-  return '\n\n---\nCONNAISSANCES DISPONIBLES (reference pour le code embarquable, PAS pour l\'action createChart):\n' +
-    relevantSkills.map(s => s.content).join('\n\n');
+  const actionSkills = relevantSkills.filter(s => s.id.endsWith('Action'));
+  const componentSkills = relevantSkills.filter(s => !s.id.endsWith('Action'));
+
+  let context = '\n\n---\nSKILLS INJECTES :';
+  if (actionSkills.length > 0) {
+    context += '\n\n### Actions (pour l\'apercu interactif)\n' + actionSkills.map(s => s.content).join('\n\n');
+  }
+  if (componentSkills.length > 0) {
+    context += '\n\n### Composants et references (pour le code embarquable)\n' + componentSkills.map(s => s.content).join('\n\n');
+  }
+  return context;
 }

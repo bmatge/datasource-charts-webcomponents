@@ -162,7 +162,7 @@ describe('builder-ia skills', () => {
     it('should include skill content', () => {
       const skills = [SKILLS.dsfrColors];
       const result = buildSkillsContext(skills);
-      expect(result).toContain('CONNAISSANCES DISPONIBLES');
+      expect(result).toContain('SKILLS INJECTES');
       expect(result).toContain('Bleu France');
     });
 

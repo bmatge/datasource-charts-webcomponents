@@ -83,12 +83,31 @@ export function handleSourceChange(): void {
     updateFieldsList();
     updateRawData();
 
+    // Build contextual suggestions based on field types
+    const numericFields = state.fields.filter(f => f.type === 'numerique');
+    const textFields = state.fields.filter(f => f.type === 'texte');
+    const dateFields = state.fields.filter(f => f.type === 'date');
+    const suggestions: string[] = [];
+
+    if (numericFields.length > 0 && textFields.length > 0) {
+      suggestions.push(`Barres de ${numericFields[0].name} par ${textFields[0].name}`);
+    }
+    if (dateFields.length > 0 && numericFields.length > 0) {
+      suggestions.push(`Evolution de ${numericFields[0].name}`);
+    }
+    if (numericFields.length > 0) {
+      suggestions.push(`KPI sur ${numericFields[0].name}`);
+    }
+    if (textFields.length >= 2) {
+      suggestions.push('Tableau avec filtres');
+    }
+    // Fallback if no smart suggestions could be built
+    if (suggestions.length === 0) {
+      suggestions.push('Barres', 'Tableau', 'KPI');
+    }
+
     // Inform the chat
-    addMessage('assistant', `Source "${source.name}" chargee (${source.data.length} lignes, ${state.fields.length} champs). Que voulez-vous visualiser ?`, [
-      'Barres',
-      'Camembert',
-      'Courbe',
-    ]);
+    addMessage('assistant', `Source "${source.name}" chargee (${source.data.length} lignes, ${state.fields.length} champs). Que voulez-vous visualiser ?`, suggestions.slice(0, 3));
 
     // Update status badge
     const statusEl = document.getElementById('fields-status');
