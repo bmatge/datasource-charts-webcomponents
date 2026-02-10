@@ -144,6 +144,21 @@ apres le montage Vue (voir `_createChartElement` dans `src/components/gouv-dsfr-
 Si un nouveau composant DSFR Chart presente le meme comportement, ajouter les attributs
 concernes dans l'objet `deferred` retourne par `_getTypeSpecificAttributes()`.
 
+## Tauri : zoom par defaut
+
+L'app desktop Tauri applique un zoom de 80% au demarrage via `window.set_zoom(0.8)` dans
+`src-tauri/src/lib.rs`. Cela permet d'afficher plus de contenu dans la fenetre sans
+modifier le CSS des composants. Le zoom est applique cote Rust dans le hook `setup`.
+
+## Communication inter-apps (sessionStorage)
+
+Les builders et les favoris envoient du code au playground via `sessionStorage` :
+1. L'app source stocke le code dans `sessionStorage.setItem('playground-code', code)`
+2. Elle navigue vers le playground avec un parametre `?from=builder` (ou `builder-ia`, `favorites`)
+3. Le playground lit le parametre `from`, charge le code depuis sessionStorage, et le supprime
+
+Le parametre `from` doit etre l'un de : `builder`, `builder-ia`, `favorites`.
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
