@@ -289,6 +289,24 @@ function extractAction(text: string): Record<string, unknown> | null {
 }
 
 /**
+ * Strip the action JSON from the AI response, leaving only the human-readable text.
+ * Handles fenced blocks (```json...```, ```...```) and bare JSON objects.
+ */
+function stripActionJson(text: string, action: Record<string, unknown> | null): string {
+  if (!action) return text.trim();
+
+  // Remove fenced code blocks first
+  let cleaned = text.replace(/```(?:json)?\s*[\s\S]*?```/g, '');
+
+  // If we matched a bare JSON, also remove it
+  if (cleaned.includes('"action"')) {
+    cleaned = cleaned.replace(/\{\s*"action"\s*:\s*"(?:createChart|reloadData)"[\s\S]*$/, '');
+  }
+
+  return cleaned.trim();
+}
+
+/**
  * Handle reloadData action from the AI: rebuild API URL with ODSQL params, fetch new data
  */
 async function handleReloadData(actionData: Record<string, unknown>): Promise<boolean> {

@@ -34,7 +34,7 @@
       <!-- Source de donnees + Config IA -->
       <div class="config-section" id="section-source">
         <div class="config-section-header" onclick="toggleSection('section-source')">
-          <h3><span class="step-number">1</span> Source de donnees</h3>
+          <h3><i class="ri-database-2-line"></i> Source de donnees</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
@@ -49,7 +49,7 @@
                 <option value="">-- Choisir --</option>
               </select>
             </div>
-            <button class="fr-btn fr-btn--sm fr-btn--secondary source-btn" id="load-fields-btn" onclick="loadSavedSourceData()">
+            <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline source-btn" id="load-fields-btn" onclick="loadSavedSourceData()">
               <i class="ri-refresh-line"></i> Charger
             </button>
             <div class="source-status" id="fields-status"></div>
@@ -65,12 +65,16 @@
           </div>
         </div>
 
-        <!-- Config IA (collapsible) -->
-        <div class="ia-config-toggle" onclick="toggleIAConfig()">
-          <span><i class="ri-robot-line"></i> Configuration Albert IA</span>
-          <i class="ri-arrow-down-s-line" id="ia-config-arrow"></i>
         </div>
-        <div class="ia-config-content" id="ia-config-content">
+      </div>
+
+      <!-- Configuration Albert IA -->
+      <div class="config-section collapsed" id="section-ia-config">
+        <div class="config-section-header" onclick="toggleSection('section-ia-config')">
+          <h3><i class="ri-robot-line"></i> Configuration Albert IA</h3>
+          <i class="ri-arrow-down-s-line collapse-icon"></i>
+        </div>
+        <div class="config-section-content">
           <div class="fr-input-group">
             <label class="fr-label" for="ia-api-url">URL de l'API</label>
             <input class="fr-input" type="url" id="ia-api-url"
@@ -142,7 +146,6 @@ Sois concis. Reponds en francais.</textarea>
           <button class="fr-btn fr-btn--sm fr-btn--secondary" onclick="saveIAConfig()">
             <i class="ri-save-line"></i> Sauvegarder config
           </button>
-        </div>
         </div>
       </div>
 
@@ -221,6 +224,18 @@ Sois concis. Reponds en francais.</textarea>
 
     </app-preview-panel>
   </app-layout-builder>
+
+  <!-- Modale preview donnees -->
+  <div class="modal-overlay" id="data-preview-modal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3>Apercu des donnees</h3>
+        <button class="modal-close" id="data-preview-close">&times;</button>
+      </div>
+      <div class="modal-body" id="data-preview-body">
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="src/main.ts"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js" integrity="sha384-4dK3hBJJh/bjoOulz9Q1kNO2O09lzuKiFeF5c+0VguV1RT3IiLkv+Pt98Jul84V+" crossorigin="anonymous"></script>

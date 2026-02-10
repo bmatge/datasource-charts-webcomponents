@@ -11,6 +11,7 @@ import {
   handleSavedSourceChange,
   loadFields,
   loadFavoriteState,
+  initDataPreviewModal,
 } from './sources.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { generateChart } from './ui/code-generator.js';
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load saved sources and check for selected source from sources.html
   loadSavedSources();
   checkSelectedSource();
+  initDataPreviewModal();
 
   // Listen for save-favorite and open-playground events from preview panel
   const previewPanel = document.querySelector('app-preview-panel');

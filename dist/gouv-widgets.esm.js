@@ -3164,12 +3164,14 @@ let G = (le = class extends x {
           flex-direction: column;
           flex: 1;
           min-height: 0;
+          overflow: hidden;
         }
 
         .builder-layout-container {
           display: flex;
           flex: 1;
           min-height: 0;
+          overflow: hidden;
         }
 
         .builder-layout-left {

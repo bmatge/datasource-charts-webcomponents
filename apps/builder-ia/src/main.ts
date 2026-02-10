@@ -5,15 +5,14 @@
 
 import './styles/builder-ia.css';
 
-import { loadSavedSources, handleSourceChange, loadSavedSourceData } from './sources.js';
-import { toggleIAConfig, loadIAConfig, saveIAConfig } from './ia/ia-config.js';
+import { loadSavedSources, handleSourceChange, loadSavedSourceData, initDataPreviewModal } from './sources.js';
+import { loadIAConfig, saveIAConfig } from './ia/ia-config.js';
 import { addMessage, sendMessage } from './chat/chat.js';
 import { switchTab, toggleSection, copyCode, openInPlayground, saveFavorite } from './ui/ui-helpers.js';
 import { state } from './state.js';
 
 // Expose functions that are called from inline onclick attributes in HTML
 (window as unknown as Record<string, unknown>).toggleSection = toggleSection;
-(window as unknown as Record<string, unknown>).toggleIAConfig = toggleIAConfig;
 (window as unknown as Record<string, unknown>).saveIAConfig = saveIAConfig;
 (window as unknown as Record<string, unknown>).loadSavedSourceData = loadSavedSourceData;
 (window as unknown as Record<string, unknown>).sendMessage = sendMessage;
@@ -47,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load sources and IA config
   loadSavedSources();
   loadIAConfig();
+  initDataPreviewModal();
 
   // Restore previous conversation if any
   try {

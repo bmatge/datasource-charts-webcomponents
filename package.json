@@ -1,6 +1,6 @@
 {
   "name": "gouv-widgets",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Bibliothèque de Web Components de dataviz pour sites gouvernementaux",
   "type": "module",
   "main": "dist/gouv-widgets.umd.js",

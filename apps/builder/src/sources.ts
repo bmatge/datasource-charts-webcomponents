@@ -4,7 +4,7 @@
  * and favorite state restoration.
  */
 
-import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage, escapeHtml, openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
@@ -105,13 +105,8 @@ export function checkSelectedSource(): void {
     // Trigger the change
     handleSavedSourceChange();
 
-    // Show notification
-    const statusEl = document.getElementById('fields-status');
-    if (statusEl) {
-      statusEl.innerHTML = `
-        <span class="fr-badge fr-badge--success fr-badge--sm">Source charg\u00e9e</span>
-      `;
-    }
+    // Show "Voir les donnees" button
+    showDataPreviewButton();
   }
 }
 
@@ -224,12 +219,7 @@ export function loadFieldsFromLocalData(): void {
   }
   updateMiddlewareSections();
 
-  const statusEl = document.getElementById('fields-status');
-  if (statusEl) {
-    statusEl.innerHTML = `
-      <span class="fr-badge fr-badge--success fr-badge--sm">Source charg\u00e9e</span>
-    `;
-  }
+  showDataPreviewButton();
 }
 
 /**
@@ -365,13 +355,8 @@ export function loadFavoriteState(): void {
         renderChart();
         generateCodeForLocalData();
 
-        // Notification
-        const statusEl = document.getElementById('fields-status');
-        if (statusEl) {
-          statusEl.innerHTML = `
-            <span class="fr-badge fr-badge--success fr-badge--sm">Favori restaur\u00e9</span>
-          `;
-        }
+        // Show "Voir les donnees" button
+        showDataPreviewButton();
 
         // Open relevant sections
         const chartTypeSection = document.getElementById('section-chart-type');
@@ -383,4 +368,58 @@ export function loadFavoriteState(): void {
   } catch (e) {
     console.error('Erreur restauration favori:', e);
   }
+}
+
+/**
+ * Show the "Voir les donnees" button in the status area
+ */
+function showDataPreviewButton(): void {
+  const statusEl = document.getElementById('fields-status');
+  if (statusEl) {
+    statusEl.innerHTML = '<button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline source-btn" id="show-data-preview-btn"><i class="ri-database-2-line"></i> Voir</button>';
+    document.getElementById('show-data-preview-btn')?.addEventListener('click', showDataPreview);
+  }
+}
+
+/**
+ * Open the data preview modal with a table of the first 20 records
+ */
+function showDataPreview(): void {
+  const body = document.getElementById('data-preview-body');
+  if (!body || !state.localData || state.localData.length === 0) return;
+
+  const data = state.localData;
+  const keys = Object.keys(data[0]);
+  const previewRows = data.slice(0, 20);
+
+  const headerCells = keys.map(k => `<th style="white-space:nowrap;font-size:0.8rem;">${escapeHtml(k)}</th>`).join('');
+  const bodyRows = previewRows.map(row => {
+    const cells = keys.map(k => {
+      const val = row[k];
+      const str = val === null || val === undefined ? '\u2014' : String(val);
+      const truncated = str.length > 60 ? str.slice(0, 57) + '...' : str;
+      return `<td style="font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(truncated)}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  body.innerHTML = `
+    <p class="fr-text--sm fr-mb-1w">${data.length} enregistrement(s), ${keys.length} champs \u2014 apercu des 20 premiers</p>
+    <div style="overflow-x:auto;">
+      <table class="fr-table fr-table--sm" style="font-size:0.8rem;">
+        <thead><tr>${headerCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+
+  openModal('data-preview-modal');
+}
+
+/**
+ * Initialize the data preview modal close handlers
+ */
+export function initDataPreviewModal(): void {
+  setupModalOverlayClose('data-preview-modal');
+  document.getElementById('data-preview-close')?.addEventListener('click', () => closeModal('data-preview-modal'));
 }

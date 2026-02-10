@@ -145,6 +145,7 @@ body {
 .source-btn {
   white-space: nowrap;
   height: 40px; /* Meme hauteur que le select DSFR */
+  gap: 0.375rem;
 }
 
 .source-status {

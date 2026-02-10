@@ -476,15 +476,15 @@ describe('builder sources', () => {
       expect(warning.style.display).toBe('none');
     });
 
-    it('updates fields-status to show success badge', () => {
+    it('updates fields-status to show data preview button', () => {
       state.localData = [{ x: 1 }];
       state.savedSource = makeSource({ type: 'manual' });
 
       loadFieldsFromLocalData();
 
       const statusEl = document.getElementById('fields-status')!;
-      expect(statusEl.innerHTML).toContain('fr-badge--success');
-      expect(statusEl.innerHTML).toContain('Source charg\u00e9e');
+      expect(statusEl.innerHTML).toContain('show-data-preview-btn');
+      expect(statusEl.innerHTML).toContain('Voir');
     });
   });
 });
