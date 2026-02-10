@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Graphique DSFR",
+    "url": "chart/index.html",
+    "widgetId": "@gouv-widgets/grist-chart",
+    "published": true,
+    "accessLevel": "read table",
+    "description": "Graphiques conformes DSFR (barres, lignes, camembert, radar, nuage de points, jauge). Mappez vos colonnes Label et Value.",
+    "authors": [
+      {
+        "name": "gouv-widgets",
+        "url": "https://github.com/bmatge/datasource-charts-webcomponents"
+      }
+    ],
+    "lastUpdatedAt": "2026-02-10"
+  },
+  {
+    "name": "KPI DSFR",
+    "url": "kpi/index.html",
+    "widgetId": "@gouv-widgets/grist-kpi",
+    "published": true,
+    "accessLevel": "read table",
+    "description": "Indicateur cle de performance conforme DSFR avec agregation (moyenne, somme, min, max, comptage). Mappez une colonne numerique.",
+    "authors": [
+      {
+        "name": "gouv-widgets",
+        "url": "https://github.com/bmatge/datasource-charts-webcomponents"
+      }
+    ],
+    "lastUpdatedAt": "2026-02-10"
+  },
+  {
+    "name": "Carte DSFR",
+    "url": "map/index.html",
+    "widgetId": "@gouv-widgets/grist-map",
+    "published": true,
+    "accessLevel": "read table",
+    "description": "Carte choroplethe de France (departements ou regions) conforme DSFR. Mappez les colonnes Code INSEE et Valeur.",
+    "authors": [
+      {
+        "name": "gouv-widgets",
+        "url": "https://github.com/bmatge/datasource-charts-webcomponents"
+      }
+    ],
+    "lastUpdatedAt": "2026-02-10"
+  },
+  {
+    "name": "Tableau DSFR",
+    "url": "datalist/index.html",
+    "widgetId": "@gouv-widgets/grist-datalist",
+    "published": true,
+    "accessLevel": "read table",
+    "description": "Tableau de donnees conforme DSFR avec recherche, tri, pagination et export CSV. Affiche automatiquement toutes les colonnes.",
+    "authors": [
+      {
+        "name": "gouv-widgets",
+        "url": "https://github.com/bmatge/datasource-charts-webcomponents"
+      }
+    ],
+    "lastUpdatedAt": "2026-02-10"
+  }
+]
