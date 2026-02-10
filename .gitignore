@@ -6,6 +6,9 @@ dist/
 
 # Compiled JS files in src/ (TypeScript build artifacts)
 src/**/*.js
+src/**/*.d.ts
+src/**/*.d.ts.map
+src/**/*.js.map
 
 # Environment files
 .env
