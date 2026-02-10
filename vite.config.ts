@@ -60,7 +60,14 @@ export default defineConfig({
         target: 'https://albert.api.etalab.gouv.fr',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/albert-proxy/, ''),
-        secure: true
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        }
       },
       // Proxy pour tabular-api.data.gouv.fr
       '/tabular-proxy': {
