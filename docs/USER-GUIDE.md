@@ -48,13 +48,13 @@ La modale de creation s'ouvre avec trois modes de saisie : **Tableau** (saisie d
 
 ### Etape 3 — Ouvrir le Builder et charger la source
 
-Naviguez vers le **Builder**. Dans l'etape 1 "Source de donnees", selectionnez votre source dans la dropdown puis cliquez sur **Charger**. Les champs disponibles apparaissent dans les selecteurs.
+Naviguez vers le **Builder**. Dans la section "Source de donnees", selectionnez votre source dans la dropdown puis cliquez sur **Charger**. Les champs disponibles apparaissent dans les selecteurs.
 
 ![Builder — source chargee](images/guide-A3-builder-source-loaded.png)
 
 ### Etape 4 — Choisir le type de graphique
 
-L'etape 2 propose une grille de 11 types de graphiques : barres, lignes, camembert, radar, carte, KPI, tableau, etc. Cliquez sur le type souhaite (ici **Barres**).
+La section "Type de graphique" propose une grille de 11 types de graphiques : barres, lignes, camembert, radar, carte, KPI, tableau, etc. Cliquez sur le type souhaite (ici **Barres**).
 
 ### Etape 5 — Configurer et generer
 
@@ -106,6 +106,10 @@ Dans le **Builder**, selectionnez la source Grist et chargez les champs. Une sec
 
 - **Donnees integrees** : les donnees sont copiees en dur dans le HTML (statique)
 - **Chargement dynamique** : utilise `<gouv-source>` + `<gouv-query>` + `<gouv-dsfr-chart>` pour charger les donnees en temps reel
+
+En mode dynamique, deux sections supplementaires apparaissent :
+- **Nettoyage des donnees** : configure `<gouv-normalize>` pour nettoyer les donnees (trim, conversion numerique, renommage de champs, remplacement de valeurs)
+- **Filtres a facettes** : configure `<gouv-facets>` pour ajouter des filtres interactifs (cases a cocher, listes deroulantes, multi-selection)
 
 ### Etape 4 — Code genere avec composants dynamiques
 
