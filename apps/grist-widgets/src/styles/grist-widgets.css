@@ -1,0 +1,83 @@
+/**
+ * Styles communs pour les widgets Grist gouv-widgets.
+ * Ces widgets s'affichent dans un iframe Grist, donc pas de header/footer.
+ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto;
+  font-family: 'Marianne', arial, sans-serif;
+}
+
+/* Conteneur principal du widget */
+.grist-widget {
+  padding: 1rem;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.grist-widget-content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Etat de chargement */
+.grist-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-mention-grey);
+}
+
+.grist-loading::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  margin-left: 0.5rem;
+  border: 3px solid var(--border-default-grey);
+  border-top-color: var(--text-action-high-blue-france);
+  border-radius: 50%;
+  animation: grist-spin 0.8s linear infinite;
+}
+
+@keyframes grist-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Etat d'erreur */
+.grist-error {
+  padding: 1rem;
+  color: var(--text-default-error);
+  background-color: var(--background-alt-error);
+  border-radius: 4px;
+}
+
+/* Etat vide (pas encore de mapping) */
+.grist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-mention-grey);
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.grist-empty i {
+  font-size: 2rem;
+}
+
+/* Panneau d'options (mode edition) */
+.grist-options-panel {
+  display: none;
+}
+
+.grist-options-panel.visible {
+  display: block;
+}
