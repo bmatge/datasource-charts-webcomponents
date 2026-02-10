@@ -69,8 +69,17 @@ interface GouvWidgetsApi {
   dispatchDataLoaded(sourceId: string, data: unknown): void;
   dispatchDataError(sourceId: string, error: Error): void;
   dispatchDataLoading(sourceId: string): void;
-  setDataCache(sourceId: string, data: unknown): void;
   getDataCache(sourceId: string): unknown | undefined;
+  subscribeToSource(sourceId: string, callbacks: {
+    onLoaded?: (data: unknown) => void;
+    onError?: (error: Error) => void;
+    onLoading?: () => void;
+  }): () => void;
+  DATA_EVENTS: {
+    LOADED: 'gouv-data-loaded';
+    ERROR: 'gouv-data-error';
+    LOADING: 'gouv-data-loading';
+  };
 }
 
 declare const GouvWidgets: GouvWidgetsApi;
