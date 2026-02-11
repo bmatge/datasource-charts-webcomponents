@@ -200,7 +200,9 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     skillsContext +
     actionReminder;
 
+  // Detect provider from API URL
   const isAnthropic = config.apiUrl.includes('anthropic.com');
+  const isGemini = config.apiUrl.includes('googleapis.com') || config.apiUrl.includes('generativelanguage');
 
   const conversationMessages = [
     ...state.messages.slice(-10).map(m => ({
@@ -211,38 +213,77 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   ];
 
   // Build request body adapted to the provider
-  const requestBody: Record<string, unknown> = {
-    model: config.model,
-  };
+  let requestBody: Record<string, unknown>;
 
-  if (isAnthropic) {
+  if (isGemini) {
+    // Gemini API: contents with role user/model, systemInstruction separate
+    const geminiContents = conversationMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+    requestBody = {
+      contents: geminiContents,
+      systemInstruction: { parts: [{ text: systemPromptWithSkills }] },
+    };
+    // Map extra params into generationConfig
+    const generationConfig: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(config.extraParams || {})) {
+      const num = Number(val);
+      const parsed = !isNaN(num) && val !== '' ? num : val;
+      if (key === 'max_tokens' || key === 'maxOutputTokens') {
+        generationConfig.maxOutputTokens = parsed;
+      } else if (key === 'top_p') {
+        generationConfig.topP = parsed;
+      } else if (key === 'top_k') {
+        generationConfig.topK = parsed;
+      } else {
+        // temperature, topP, topK, etc. pass through as-is
+        generationConfig[key] = parsed;
+      }
+    }
+    if (Object.keys(generationConfig).length > 0) {
+      requestBody.generationConfig = generationConfig;
+    }
+  } else if (isAnthropic) {
     // Anthropic Messages API: system is a top-level field, not in messages
-    requestBody.system = systemPromptWithSkills;
-    requestBody.messages = conversationMessages;
+    requestBody = { model: config.model, system: systemPromptWithSkills, messages: conversationMessages };
+    for (const [key, val] of Object.entries(config.extraParams || {})) {
+      const num = Number(val);
+      requestBody[key] = !isNaN(num) && val !== '' ? num : val;
+    }
   } else {
     // OpenAI-compatible: system prompt is the first message
-    requestBody.messages = [
-      { role: 'system', content: systemPromptWithSkills },
-      ...conversationMessages,
-    ];
+    requestBody = {
+      model: config.model,
+      messages: [
+        { role: 'system', content: systemPromptWithSkills },
+        ...conversationMessages,
+      ],
+    };
+    for (const [key, val] of Object.entries(config.extraParams || {})) {
+      const num = Number(val);
+      requestBody[key] = !isNaN(num) && val !== '' ? num : val;
+    }
   }
 
-  // Merge user-defined extra params (temperature, max_tokens, etc.)
-  for (const [key, val] of Object.entries(config.extraParams || {})) {
-    const num = Number(val);
-    requestBody[key] = !isNaN(num) && val !== '' ? num : val;
+  // For Gemini, API key goes in URL query param, not in headers
+  let targetUrl = config.apiUrl;
+  if (isGemini) {
+    const separator = targetUrl.includes('?') ? '&' : '?';
+    targetUrl = `${targetUrl}${separator}key=${config.token}`;
   }
 
   // Build headers adapted to the provider
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Target-URL': config.apiUrl,
+    'X-Target-URL': targetUrl,
   };
 
   if (isAnthropic) {
     headers['x-api-key'] = config.token;
     headers['anthropic-version'] = '2023-06-01';
-  } else {
+  } else if (!isGemini) {
+    // OpenAI-compatible: Bearer token in Authorization header
     headers['Authorization'] = `Bearer ${config.token}`;
   }
 
@@ -254,12 +295,24 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   }, 30000);
 
   if (!response.ok) {
-    throw new Error(httpErrorMessage(response.status));
+    // Try to extract the actual error message from the provider
+    let detail = '';
+    try {
+      const errBody = await response.json();
+      detail = errBody?.error?.message || errBody?.error?.type || JSON.stringify(errBody?.error) || '';
+    } catch { /* ignore parse errors */ }
+    throw new Error(detail
+      ? `${httpErrorMessage(response.status)} (${detail})`
+      : httpErrorMessage(response.status));
   }
 
   const data = await response.json();
 
   // Parse response based on provider format
+  if (isGemini) {
+    // Gemini: { candidates: [{ content: { parts: [{ text: "..." }] } }] }
+    return data.candidates[0].content.parts[0].text;
+  }
   if (isAnthropic) {
     // Anthropic: { content: [{ type: "text", text: "..." }] }
     return data.content[0].text;
