@@ -2,7 +2,7 @@
  * Chart rendering - applies chart configuration to generate visual output
  */
 
-import { escapeHtml, DSFR_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
+import { escapeHtml, DSFR_COLORS, PALETTE_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
 import { addMessage } from '../chat/chat.js';
@@ -10,6 +10,21 @@ import { generateCode } from './code-generator.js';
 
 /** Chart.js loaded via CDN - access from window */
 const Chart = (window as unknown as Record<string, unknown>).Chart as unknown;
+
+/**
+ * Resolve a palette name to an array of colors, cycling if needed.
+ * Falls back to DSFR_COLORS if the palette name is unknown.
+ */
+function resolvePalette(paletteName: string | undefined, count: number): string[] {
+  const base = (paletteName && PALETTE_COLORS[paletteName])
+    ? [...PALETTE_COLORS[paletteName]]
+    : [...DSFR_COLORS];
+  const result: string[] = [];
+  for (let i = 0; i < count; i++) {
+    result.push(base[i % base.length]);
+  }
+  return result;
+}
 
 /**
  * Apply a where filter to data (same syntax as gouv-query: "field:op:value")
@@ -352,12 +367,16 @@ function renderChart(config: ChartConfig, data: AggregatedResult[]): void {
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
   const isBarLine = config.type === 'bar-line';
 
+  // Resolve colors: palette > color > default
+  const paletteColors = resolvePalette(config.palette, data.length);
+  const primaryColor = config.color || paletteColors[0] || '#000091';
+
   // Build datasets array
   const datasets: Record<string, unknown>[] = [{
     label: config.valueField,
     data: values,
-    backgroundColor: isMultiColor ? DSFR_COLORS.slice(0, data.length) : (config.color || '#000091'),
-    borderColor: config.color || '#000091',
+    backgroundColor: isMultiColor ? paletteColors : primaryColor,
+    borderColor: primaryColor,
     borderWidth: config.type === 'line' ? 2 : 1,
     type: isBarLine ? 'bar' : undefined,
   }];

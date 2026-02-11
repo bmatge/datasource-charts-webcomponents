@@ -188,10 +188,13 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   const skillsList = Object.values(SKILLS).map(s => `- ${s.name}: ${s.description}`).join('\n');
 
   const actionReminder = `\n\n---\nRAPPEL CRITIQUE :
-- Pour l'APERCU : genere UN SEUL bloc \`\`\`json avec {"action":"createChart","config":{...}} ou {"action":"reloadData","query":{...}}.
+- TOUJOURS generer UN SEUL bloc \`\`\`json avec {"action":"createChart","config":{...}} quand l'utilisateur demande un graphique, un changement de type, de couleur, de palette, etc.
+- Pour recharger les donnees avec filtre serveur : {"action":"reloadData","query":{...}}.
 - Filtre createChart : syntaxe "champ:op:valeur" (ex: "region:eq:IDF"). Operateurs : eq, neq, gt, gte, lt, lte, contains, in.
 - Filtre reloadData : syntaxe ODSQL SQL-like (ex: "population > 10000").
-- Pour le CODE EMBARQUABLE (quand demande) : HTML avec gouv-source, gouv-normalize, gouv-facets, gouv-query, gouv-dsfr-chart, gouv-kpi, gouv-datalist.
+- PALETTES disponibles pour config.palette : "categorical", "sequentialAscending", "sequentialDescending", "divergentAscending", "divergentDescending", "neutral". Si l'utilisateur demande un changement de couleur/palette, utilise ce champ.
+- FACETTES / FILTRES INTERACTIFS : gouv-facets n'est PAS disponible dans l'apercu. Quand l'utilisateur demande des facettes, genere le graphique actuel avec createChart ET explique que les facettes sont disponibles via le code embarquable. Propose alors de generer le code.
+- Pour le CODE EMBARQUABLE (uniquement quand l'utilisateur demande explicitement "le code", "embarquer", "integrer", ou accepte ta proposition) : HTML avec gouv-source, gouv-normalize, gouv-facets, gouv-query, gouv-dsfr-chart, gouv-kpi, gouv-datalist.
 - Utilise UNIQUEMENT les noms de champs listes dans "Donnees actuelles" ci-dessus. Ne les invente pas.`;
 
   const systemPromptWithSkills = config.systemPrompt +

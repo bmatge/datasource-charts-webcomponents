@@ -76,7 +76,7 @@ Elle est distincte du code embarquable HTML (voir skills composants gouv-widgets
 | color2 | String | non | Couleur secondaire hex (bar-line) |
 | variant | String | non | Style KPI : info, success, warning, error |
 | unit | String | non | Unite affichee : EUR, %, ou texte libre |
-| palette | String | non | Palette DSFR pour les cartes |
+| palette | String | non | Palette DSFR : categorical, sequentialAscending, sequentialDescending, divergentAscending, divergentDescending, neutral. Fonctionne pour tous les types de graphiques. |
 | colonnes | String | non | Colonnes datalist : "champ:Label, champ2:Label2" |
 | pagination | Number | non | Lignes par page (datalist) |
 
@@ -120,8 +120,11 @@ Le filtre s'applique AVANT l'agregation. Utiliser les noms de champs bruts de la
 \`\`\`json
 {"action":"createChart","config":{"type":"datalist","colonnes":"nom:Nom, email:Email, ville:Ville","pagination":20,"title":"Liste des contacts"}}
 \`\`\`
+\`\`\`json
+{"action":"createChart","config":{"type":"pie","labelField":"region","valueField":"population","aggregation":"sum","palette":"divergentAscending","title":"Population par region"}}
+\`\`\`
 
-Genere TOUJOURS UN SEUL bloc JSON par reponse.`,
+Genere TOUJOURS UN SEUL bloc JSON par reponse. Pour changer la couleur ou palette d'un graphique existant, regenere le meme createChart avec la palette souhaitee.`,
   },
 
   // ---------------------------------------------------------------------------
