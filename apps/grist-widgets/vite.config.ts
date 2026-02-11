@@ -13,8 +13,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         chart: resolve(__dirname, 'chart/index.html'),
-        kpi: resolve(__dirname, 'kpi/index.html'),
-        map: resolve(__dirname, 'map/index.html'),
         datalist: resolve(__dirname, 'datalist/index.html'),
       },
     },

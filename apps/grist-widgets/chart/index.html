@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-widgets — Graphique DSFR (Grist)</title>
+  <title>gouv-widgets — Graphique / Carte / KPI DSFR (Grist)</title>
 
   <!-- DSFR -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
@@ -29,13 +29,8 @@
       <i class="ri-bar-chart-box-line"></i>
       <p>Mappez vos colonnes dans les options du widget</p>
     </div>
-    <div class="grist-widget-content" id="chart-container" style="display: none;">
-      <gouv-dsfr-chart
-        source="grist"
-        type="bar"
-        label-field="Label"
-        value-field="Value">
-      </gouv-dsfr-chart>
+    <div class="grist-widget-content" id="widget-container" style="display: none;">
+      <!-- Widget genere dynamiquement par chart.ts selon le type choisi -->
     </div>
     <div class="grist-options-panel" id="options-panel"></div>
   </div>
