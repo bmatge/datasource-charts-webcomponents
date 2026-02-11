@@ -65,7 +65,7 @@ export default defineConfig({
             const isHttps = parsed.protocol === 'https:';
             const doRequest = isHttps ? httpsRequest : httpRequest;
 
-            const skipHeaders = new Set(['host', 'connection', 'x-target-url', 'transfer-encoding']);
+            const skipHeaders = new Set(['host', 'connection', 'x-target-url', 'transfer-encoding', 'origin', 'referer']);
             const forwardHeaders: Record<string, string> = {};
             for (const [key, val] of Object.entries(req.headers)) {
               if (skipHeaders.has(key)) continue;
