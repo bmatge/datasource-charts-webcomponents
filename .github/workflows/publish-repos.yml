@@ -1,0 +1,257 @@
+# =============================================================================
+# Publish to separate repositories
+# =============================================================================
+#
+# Publie les artefacts de build vers 3 repos de distribution :
+#   - gouv-widgets         : bibliotheque web components (npm-ready)
+#   - gouv-widgets-grist   : plugins Grist (widget chart + datalist)
+#   - gouv-widgets-proxy   : proxy CORS nginx autonome
+#
+# Declenchement : tag v*, push sur main, ou manuel.
+#
+# Prerequis : creer un secret PUBLISH_TOKEN contenant un PAT GitHub
+# avec le scope "repo" (pour creer/pousser vers les repos cibles).
+# =============================================================================
+
+name: Publish to separate repos
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build commun (shared + lib + grist)
+  # ---------------------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build shared package
+        run: npm run build:shared
+
+      - name: Build library
+        run: npm run build
+
+      - name: Build grist-widgets
+        run: npm run build --workspace=@gouv-widgets/app-grist-widgets
+
+      - name: Upload lib dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: lib-dist
+          path: |
+            dist/
+            package.json
+            README.md
+            LICENSE
+
+      - name: Upload grist dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: grist-dist
+          path: |
+            apps/grist-widgets/dist/
+            apps/grist-widgets/README.md
+
+      - name: Upload proxy
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxy-dist
+          path: |
+            proxy/
+
+  # ---------------------------------------------------------------------------
+  # Publish : gouv-widgets (bibliotheque web components)
+  # ---------------------------------------------------------------------------
+  publish-lib:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lib-dist
+          path: artifact
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare repo content
+        run: |
+          mkdir publish && cd publish
+          cp -r ../artifact/dist .
+          cp ../artifact/README.md . 2>/dev/null || true
+          cp ../artifact/LICENSE . 2>/dev/null || true
+
+          # Generate a standalone package.json (no workspaces, no devDeps)
+          node -e "
+            const pkg = require('../artifact/package.json');
+            const standalone = {
+              name: 'gouv-widgets',
+              version: pkg.version,
+              description: pkg.description,
+              main: pkg.main,
+              module: pkg.module,
+              types: pkg.types,
+              files: ['dist'],
+              keywords: pkg.keywords,
+              license: pkg.license,
+              dependencies: pkg.dependencies,
+              repository: {
+                type: 'git',
+                url: 'https://github.com/${{ github.repository_owner }}/gouv-widgets'
+              }
+            };
+            require('fs').writeFileSync('package.json', JSON.stringify(standalone, null, 2) + '\n');
+          "
+
+      - name: Push to gouv-widgets repo
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          cd publish
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create repo if it doesn't exist
+          gh repo view "${{ github.repository_owner }}/gouv-widgets" >/dev/null 2>&1 || \
+            gh repo create "${{ github.repository_owner }}/gouv-widgets" \
+              --public \
+              --description "Bibliotheque de Web Components de dataviz conformes DSFR"
+
+          git add -A
+          git commit -m "publish ${{ steps.version.outputs.tag }} from ${{ github.repository }}"
+          git branch -M main
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository_owner }}/gouv-widgets.git"
+          git push -f origin main
+
+          # Create tag if versioned
+          if [[ "${{ steps.version.outputs.tag }}" != "latest" ]]; then
+            git tag "${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}" --force
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Publish : gouv-widgets-grist (plugins Grist)
+  # ---------------------------------------------------------------------------
+  publish-grist:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: grist-dist
+          path: artifact
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare repo content
+        run: |
+          mkdir publish && cd publish
+          # Flatten: move dist contents to root (chart/, datalist/, assets/, lib/, manifest.json)
+          cp -r ../artifact/apps/grist-widgets/dist/* .
+          cp ../artifact/apps/grist-widgets/README.md . 2>/dev/null || true
+
+      - name: Push to gouv-widgets-grist repo
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          cd publish
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create repo if it doesn't exist
+          gh repo view "${{ github.repository_owner }}/gouv-widgets-grist" >/dev/null 2>&1 || \
+            gh repo create "${{ github.repository_owner }}/gouv-widgets-grist" \
+              --public \
+              --description "Custom widgets DSFR pour Grist (graphiques, cartes, KPI, tableaux)"
+
+          git add -A
+          git commit -m "publish ${{ steps.version.outputs.tag }} from ${{ github.repository }}"
+          git branch -M main
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository_owner }}/gouv-widgets-grist.git"
+          git push -f origin main
+
+          if [[ "${{ steps.version.outputs.tag }}" != "latest" ]]; then
+            git tag "${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}" --force
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Publish : gouv-widgets-proxy (proxy CORS nginx)
+  # ---------------------------------------------------------------------------
+  publish-proxy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: proxy-dist
+          path: artifact
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare repo content
+        run: |
+          mkdir publish && cd publish
+          cp ../artifact/proxy/README.md .
+          cp ../artifact/proxy/nginx/nginx.conf .
+          cp ../artifact/proxy/nginx/docker-compose.yml .
+
+      - name: Push to gouv-widgets-proxy repo
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          cd publish
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create repo if it doesn't exist
+          gh repo view "${{ github.repository_owner }}/gouv-widgets-proxy" >/dev/null 2>&1 || \
+            gh repo create "${{ github.repository_owner }}/gouv-widgets-proxy" \
+              --public \
+              --description "Proxy CORS nginx autonome pour gouv-widgets"
+
+          git add -A
+          git commit -m "publish ${{ steps.version.outputs.tag }} from ${{ github.repository }}"
+          git branch -M main
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository_owner }}/gouv-widgets-proxy.git"
+          git push -f origin main
+
+          if [[ "${{ steps.version.outputs.tag }}" != "latest" ]]; then
+            git tag "${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}" --force
+          fi
