@@ -12,6 +12,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        main: resolve(__dirname, 'index.html'),
         chart: resolve(__dirname, 'chart/index.html'),
         datalist: resolve(__dirname, 'datalist/index.html'),
       },
