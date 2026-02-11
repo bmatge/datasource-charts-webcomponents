@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
+import { escapeHtml } from '@gouv-widgets/shared';
 
 interface ColumnDef {
   key: string;
@@ -53,7 +54,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   @property({ type: Number })
   pagination = 0;
 
-  /** Formats d'export disponibles: "csv" */
+  /** Formats d'export disponibles: "csv", "html" (separables par virgule) */
   @property({ type: String })
   export = '';
 
@@ -234,6 +235,54 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     URL.revokeObjectURL(url);
   }
 
+  private _exportHtml() {
+    const columns = this.parseColumns();
+    const data = this.getFilteredData();
+
+    const headerCells = columns.map(c =>
+      `<th>${escapeHtml(c.label)}</th>`
+    ).join('');
+
+    const bodyRows = data.map(item => {
+      const cells = columns.map(c => {
+        const val = item[c.key];
+        const display = val === null || val === undefined ? '' : escapeHtml(String(val));
+        return `<td>${display}</td>`;
+      }).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('\n');
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Export</title>
+<style>
+table { border-collapse: collapse; width: 100%; font-family: system-ui, sans-serif; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+th { background: #f5f5fe; font-weight: 700; }
+tr:nth-child(even) { background: #f6f6f6; }
+</style>
+</head>
+<body>
+<table>
+<thead><tr>${headerCells}</tr></thead>
+<tbody>
+${bodyRows}
+</tbody>
+</table>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'export.html';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // --- Cell formatting ---
 
   formatCellValue(value: unknown): string {
@@ -275,7 +324,8 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   }
 
   private _renderToolbar() {
-    if (!this.recherche && !this.export?.includes('csv')) return '';
+    const hasExport = this.export?.includes('csv') || this.export?.includes('html');
+    if (!this.recherche && !hasExport) return '';
 
     return html`
       <div class="gouv-datalist__toolbar">
@@ -296,16 +346,29 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
           </div>
         ` : html`<div></div>`}
 
-        ${this.export?.includes('csv') ? html`
-          <button
-            class="fr-btn fr-btn--secondary fr-btn--sm"
-            @click="${this._exportCsv}"
-            type="button"
-          >
-            <span class="fr-icon-download-line fr-icon--sm" aria-hidden="true"></span>
-            Exporter CSV
-          </button>
-        ` : ''}
+        <div class="gouv-datalist__export-buttons">
+          ${this.export?.includes('csv') ? html`
+            <button
+              class="fr-btn fr-btn--secondary fr-btn--sm"
+              @click="${this._exportCsv}"
+              type="button"
+            >
+              <span class="fr-icon-download-line fr-icon--sm" aria-hidden="true"></span>
+              Exporter CSV
+            </button>
+          ` : ''}
+
+          ${this.export?.includes('html') ? html`
+            <button
+              class="fr-btn fr-btn--secondary fr-btn--sm"
+              @click="${this._exportHtml}"
+              type="button"
+            >
+              <span class="fr-icon-code-s-slash-line fr-icon--sm" aria-hidden="true"></span>
+              Exporter HTML
+            </button>
+          ` : ''}
+        </div>
       </div>
     `;
   }
@@ -455,6 +518,9 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
           .gouv-datalist__filters { grid-template-columns: 1fr; }
           .gouv-datalist__toolbar { flex-direction: column; align-items: stretch; }
           .gouv-datalist__toolbar .fr-search-bar { max-width: none; }
+        }
+        .gouv-datalist__export-buttons {
+          display: flex; gap: 0.5rem; flex-wrap: wrap;
         }
         .gouv-datalist__sort-btn {
           background: none; border: none; cursor: pointer;

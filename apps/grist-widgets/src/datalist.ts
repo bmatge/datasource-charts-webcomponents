@@ -39,6 +39,12 @@ const DATALIST_OPTIONS: OptionDef[] = [
     type: 'checkbox',
     defaultValue: true,
   },
+  {
+    key: 'exportHtml',
+    label: 'Export HTML',
+    type: 'checkbox',
+    defaultValue: false,
+  },
 ];
 
 let currentOptions: Record<string, unknown> = {};
@@ -57,10 +63,17 @@ function applyOptions(opts: Record<string, unknown>) {
     datalist.removeAttribute('recherche');
   }
 
-  if (opts.export === true) {
-    datalist.setAttribute('export', 'csv');
-  } else if (opts.export === false) {
-    datalist.removeAttribute('export');
+  if (opts.export !== undefined || opts.exportHtml !== undefined) {
+    const formats: string[] = [];
+    const csvEnabled = opts.export !== undefined ? opts.export : currentOptions.export;
+    const htmlEnabled = opts.exportHtml !== undefined ? opts.exportHtml : currentOptions.exportHtml;
+    if (csvEnabled) formats.push('csv');
+    if (htmlEnabled) formats.push('html');
+    if (formats.length > 0) {
+      datalist.setAttribute('export', formats.join(','));
+    } else {
+      datalist.removeAttribute('export');
+    }
   }
 
   const empty = document.getElementById('empty-state');

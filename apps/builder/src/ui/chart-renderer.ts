@@ -181,6 +181,7 @@ export function renderChart(): void {
     if (state.datalistRecherche) badges.push('Recherche');
     if (state.datalistFiltres) badges.push('Filtres');
     if (state.datalistExportCsv) badges.push('Export CSV');
+    if (state.datalistExportHtml) badges.push('Export HTML');
     const badgesHtml = badges.length > 0
       ? `<p class="fr-text--xs fr-mb-1w" style="color: var(--text-mention-grey);">${badges.join(' \u00b7 ')}</p>`
       : '';
