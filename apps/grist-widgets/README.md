@@ -12,39 +12,69 @@ Utilisez ces URLs dans Grist (Menu widget → Custom → URL) :
 
 | Widget | URL | Description |
 |--------|-----|-------------|
-| **Graphique** | `https://bmatge.github.io/datasource-charts-webcomponents/chart/` | Graphiques DSFR (barres, lignes, camembert, radar, jauge) |
-| **KPI** | `https://bmatge.github.io/datasource-charts-webcomponents/kpi/` | Indicateur clé de performance avec agrégation |
-| **Carte** | `https://bmatge.github.io/datasource-charts-webcomponents/map/` | Carte choroplèthe de France (départements/régions) |
+| **Graphique / Carte / KPI** | `https://bmatge.github.io/datasource-charts-webcomponents/chart/` | Widget polyvalent : graphiques, cartes France, KPI. Choisissez le type dans les options. |
 | **Tableau** | `https://bmatge.github.io/datasource-charts-webcomponents/datalist/` | Tableau avec recherche, tri, pagination, export CSV |
+
+### Widget Graphique / Carte / KPI
+
+Ce widget unique supporte **10 types de visualisations** :
+
+**Graphiques** :
+- bar : Barres verticales
+- line : Lignes
+- pie : Camembert
+- radar : Radar
+- scatter : Nuage de points
+- gauge : Jauge
+- bar-line : Barres + Lignes
+
+**Cartes France** :
+- map : Départements
+- map-reg : Régions
+
+**KPI** :
+- kpi : Indicateur clé de performance
 
 ### Configuration des colonnes
 
-Dans les options du widget Grist, mappez vos colonnes :
+Dans les options du widget Grist, mappez les colonnes dont vous avez besoin selon votre type de visualisation :
 
-#### Graphique
-- **Label** : colonne texte (axe X ou légendes)
-- **Value** : colonne numérique (axe Y principal)
-- **Value2** : colonne numérique optionnelle (axe Y secondaire pour graphiques multi-séries)
+| Colonne | Type | Utilisation | Obligatoire ? |
+|---------|------|-------------|--------------|
+| **Label** | Texte | Étiquettes (graphiques) ou Nom (cartes) | Optionnel |
+| **Value** | Numérique | Valeur principale | **Requis** |
+| **Value2** | Numérique | Série secondaire (graphiques multi-séries) | Optionnel |
+| **Code** | Texte | Code géo INSEE (cartes uniquement) | Pour maps uniquement |
 
-#### KPI
-- **Value** : colonne numérique à agréger (moyenne, somme, min, max, comptage)
-
-#### Carte
-- **Code** : colonne texte avec codes INSEE départementaux (ex: "75", "13", "69")
-- **Value** : colonne numérique à afficher
-- **Label** : colonne texte optionnelle (nom du département/région)
-
-#### Tableau
-- Aucun mapping requis - affiche automatiquement toutes les colonnes
+**Exemples** :
+- **Graphique à barres** : Mapper Label + Value
+- **Carte départements** : Mapper Code + Value (+ Label optionnel)
+- **KPI** : Mapper uniquement Value
 
 ### Options du widget
 
 Cliquez sur l'icône ⚙️ dans Grist pour configurer :
 
-- **Type de graphique** : barre, ligne, camembert, radar, nuage de points, jauge
-- **Palette de couleurs** : catégorique, séquentielle ascendante/descendante, divergente
-- **Titre** : titre du graphique (optionnel)
-- **Format des valeurs** : entier, décimal, pourcentage, euros
+**Options communes** :
+- **Type de visualisation** : choisir parmi les 10 types disponibles
+- **Palette de couleurs** : Bleu France, catégorique, séquentielle, divergente, neutre
+- **Unité (tooltip)** : ex: EUR, %, habitants
+
+**Options pour graphiques** (bar, line uniquement) :
+- Barres horizontales
+- Barres empilées
+
+**Options pour KPI** :
+- Agrégation : moyenne, somme, comptage, min, max
+- Format : nombre, pourcentage, euro, décimal
+- Libellé KPI : texte affiché sous la valeur
+- Icône KPI : classe Remix Icon (ex: ri-line-chart-line)
+- Couleur KPI : bleu, vert, orange, rouge, ou automatique (seuils)
+
+### Widget Tableau
+
+- Aucun mapping requis - affiche automatiquement toutes les colonnes
+- Options : pagination (10/20/50/tout), barre de recherche, export CSV
 
 ## Développement local
 
@@ -65,19 +95,17 @@ Le serveur démarre sur `http://localhost:5173/` (ou 5174 si le port est occupé
 
 ### URLs de dev
 
-- Test local sans Grist : http://localhost:5173/test-local.html
-- Widget Chart : http://localhost:5173/chart/index.html
-- Widget KPI : http://localhost:5173/kpi/index.html
-- Widget Map : http://localhost:5173/map/index.html
-- Widget Datalist : http://localhost:5173/datalist/index.html
+- **Test local sans Grist** : http://localhost:5173/test-local.html
+- **Widget Chart** : http://localhost:5173/chart/index.html
+- **Widget Datalist** : http://localhost:5173/datalist/index.html
 
 ### Tester dans Grist en local
 
 1. Créez une table avec des données dans Grist
 2. Ajoutez un widget Custom
 3. Dans "Custom URL", utilisez : `http://localhost:5173/chart/index.html`
-4. Mappez les colonnes
-5. Testez le panneau d'options
+4. Mappez les colonnes nécessaires selon votre type de visualisation
+5. Testez le panneau d'options (⚙️) pour changer le type de visualisation
 
 ## Build et déploiement
 
@@ -88,7 +116,8 @@ npm run build --workspace=@gouv-widgets/app-grist-widgets
 ```
 
 Génère le dossier `dist/` avec :
-- `chart/`, `kpi/`, `map/`, `datalist/` : HTML des widgets
+- `chart/` : Widget multi-types (graphiques + cartes + KPI)
+- `datalist/` : Widget tableau
 - `assets/` : JavaScript et CSS bundlés
 - `lib/gouv-widgets.umd.js` : build UMD de la bibliothèque
 - `manifest.json` : manifeste Grist
@@ -109,16 +138,18 @@ Le déploiement :
 
 ```
 apps/grist-widgets/
-├── chart/index.html          # Widget Graphique
-├── kpi/index.html            # Widget KPI
-├── map/index.html            # Widget Carte
-├── datalist/index.html       # Widget Tableau
+├── chart/index.html          # Widget multi-types (graphiques + cartes + KPI)
+├── datalist/index.html       # Widget tableau
 ├── src/
-│   ├── chart.ts              # Entry point Chart
-│   ├── kpi.ts                # Entry point KPI
-│   ├── map.ts                # Entry point Map
-│   ├── datalist.ts           # Entry point Datalist
-│   └── grist-options-panel.ts # Panneau d'options partagé
+│   ├── chart.ts              # Entry point widget multi-types
+│   ├── datalist.ts           # Entry point widget tableau
+│   ├── shared/
+│   │   ├── grist-bridge.ts           # Pont avec l'API Grist
+│   │   └── grist-options-panel.ts    # Panneau d'options partagé
+│   ├── styles/
+│   │   └── grist-widgets.css         # Styles communs (zoom 80%)
+│   └── types/
+│       └── grist-plugin-api.d.ts     # Types TypeScript
 ├── test-local.html           # Page de test sans Grist
 ├── manifest.json             # Manifeste Grist (déployé sur Pages)
 └── vite.config.ts            # Config Vite
