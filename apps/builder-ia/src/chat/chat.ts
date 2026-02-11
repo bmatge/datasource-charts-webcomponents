@@ -209,12 +209,6 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     { role: 'user', content: userMessage },
   ];
 
-  // Use proxy for Albert API to avoid CORS
-  let apiUrl = config.apiUrl;
-  if (apiUrl.includes('albert.api.etalab.gouv.fr')) {
-    apiUrl = apiUrl.replace('https://albert.api.etalab.gouv.fr', '/albert-proxy');
-  }
-
   // Build request body: model + messages + extra params from config
   const requestBody: Record<string, unknown> = {
     model: config.model,
@@ -228,14 +222,17 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     requestBody[key] = !isNaN(num) && val !== '' ? num : val;
   }
 
-  const response = await fetchWithTimeout(apiUrl, {
+  // All API calls go through /ia-proxy/ to bypass CORS + CSP
+  // The actual target URL is passed via X-Target-URL header
+  const response = await fetchWithTimeout('/ia-proxy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.token}`,
+      'X-Target-URL': config.apiUrl,
     },
     body: JSON.stringify(requestBody),
-  }, 15000);
+  }, 30000);
 
   if (!response.ok) {
     throw new Error(httpErrorMessage(response.status));
