@@ -175,9 +175,16 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
   // Build context with data info
   let dataContext = '';
   if (state.localData && state.fields.length > 0) {
-    dataContext = `\n\nDonnees actuelles (${state.localData.length} enregistrements) :
+    const isOds = state.source?.url?.includes('opendatasoft.com');
+    const totalNote = state.source?.recordCount && state.source.recordCount > state.localData.length
+      ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
+      : '';
+    const paginationNote = isOds
+      ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000).`
+      : '';
+    dataContext = `\n\nDonnees actuelles (${state.localData.length} enregistrements${totalNote}) :
 Champs : ${state.fields.map(f => `${f.name} (${f.type})`).join(', ')}
-Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
+Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}${paginationNote}`;
   }
 
   // Inject relevant skills based on the user message
@@ -194,6 +201,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
 - Filtre reloadData : syntaxe ODSQL SQL-like (ex: "population > 10000").
 - PALETTES disponibles pour config.palette : "categorical", "sequentialAscending", "sequentialDescending", "divergentAscending", "divergentDescending", "neutral". Si l'utilisateur demande un changement de couleur/palette, utilise ce champ.
 - FACETTES / FILTRES INTERACTIFS : gouv-facets n'est PAS disponible dans l'apercu. Quand l'utilisateur demande des facettes, genere le graphique actuel avec createChart ET explique que les facettes sont disponibles via le code embarquable. Propose alors de generer le code.
+- CARTES (map, map-reg) : l'apercu n'affiche que les donnees chargees localement (souvent 100 sur les APIs ODS). Si l'utilisateur veut une carte complete (101 departements), previens-le et propose le code embarquable avec gouv-query api-type="opendatasoft" qui pagine automatiquement.
 - Pour le CODE EMBARQUABLE (uniquement quand l'utilisateur demande explicitement "le code", "embarquer", "integrer", ou accepte ta proposition) : HTML avec gouv-source, gouv-normalize, gouv-facets, gouv-query, gouv-dsfr-chart, gouv-kpi, gouv-datalist.
 - Utilise UNIQUEMENT les noms de champs listes dans "Donnees actuelles" ci-dessus. Ne les invente pas.`;
 
