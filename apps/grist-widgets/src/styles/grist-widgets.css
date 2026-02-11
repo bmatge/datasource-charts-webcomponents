@@ -10,7 +10,6 @@ html, body {
   height: 100%;
   overflow: auto;
   font-family: 'Marianne', arial, sans-serif;
-  zoom: 0.8;
 }
 
 /* Conteneur principal du widget */
