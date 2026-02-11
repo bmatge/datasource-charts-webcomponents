@@ -1,6 +1,7 @@
 /**
  * Styles communs pour les widgets Grist gouv-widgets.
  * Ces widgets s'affichent dans un iframe Grist, donc pas de header/footer.
+ * Zoom 80% pour afficher plus de contenu et reduire les marges DSFR.
  */
 
 html, body {
@@ -9,11 +10,12 @@ html, body {
   height: 100%;
   overflow: auto;
   font-family: 'Marianne', arial, sans-serif;
+  zoom: 0.8;
 }
 
 /* Conteneur principal du widget */
 .grist-widget {
-  padding: 1rem;
+  padding: 0.5rem;
   height: 100%;
   box-sizing: border-box;
   display: flex;
