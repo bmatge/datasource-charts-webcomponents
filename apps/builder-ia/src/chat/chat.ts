@@ -200,8 +200,9 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     skillsContext +
     actionReminder;
 
-  const messages = [
-    { role: 'system', content: systemPromptWithSkills },
+  const isAnthropic = config.apiUrl.includes('anthropic.com');
+
+  const conversationMessages = [
     ...state.messages.slice(-10).map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content,
@@ -209,28 +210,46 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     { role: 'user', content: userMessage },
   ];
 
-  // Build request body: model + messages + extra params from config
+  // Build request body adapted to the provider
   const requestBody: Record<string, unknown> = {
     model: config.model,
-    messages: messages,
   };
+
+  if (isAnthropic) {
+    // Anthropic Messages API: system is a top-level field, not in messages
+    requestBody.system = systemPromptWithSkills;
+    requestBody.messages = conversationMessages;
+  } else {
+    // OpenAI-compatible: system prompt is the first message
+    requestBody.messages = [
+      { role: 'system', content: systemPromptWithSkills },
+      ...conversationMessages,
+    ];
+  }
 
   // Merge user-defined extra params (temperature, max_tokens, etc.)
   for (const [key, val] of Object.entries(config.extraParams || {})) {
-    // Auto-convert numeric strings to numbers
     const num = Number(val);
     requestBody[key] = !isNaN(num) && val !== '' ? num : val;
   }
 
+  // Build headers adapted to the provider
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Target-URL': config.apiUrl,
+  };
+
+  if (isAnthropic) {
+    headers['x-api-key'] = config.token;
+    headers['anthropic-version'] = '2023-06-01';
+  } else {
+    headers['Authorization'] = `Bearer ${config.token}`;
+  }
+
   // All API calls go through /ia-proxy/ to bypass CORS + CSP
-  // The actual target URL is passed via X-Target-URL header
   const response = await fetchWithTimeout('/ia-proxy', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.token}`,
-      'X-Target-URL': config.apiUrl,
-    },
+    headers,
     body: JSON.stringify(requestBody),
   }, 30000);
 
@@ -239,6 +258,13 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
   }
 
   const data = await response.json();
+
+  // Parse response based on provider format
+  if (isAnthropic) {
+    // Anthropic: { content: [{ type: "text", text: "..." }] }
+    return data.content[0].text;
+  }
+  // OpenAI-compatible: { choices: [{ message: { content: "..." } }] }
   return data.choices[0].message.content;
 }
 
