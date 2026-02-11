@@ -172,9 +172,10 @@ jobs:
       - name: Prepare repo content
         run: |
           mkdir publish && cd publish
-          # Flatten: move dist contents to root (chart/, datalist/, assets/, lib/, manifest.json)
-          cp -r ../artifact/apps/grist-widgets/dist/* .
-          cp ../artifact/apps/grist-widgets/README.md . 2>/dev/null || true
+          # upload-artifact@v4 strips common prefix (apps/grist-widgets/)
+          # so dist contents are at artifact/dist/
+          cp -r ../artifact/dist/* .
+          cp ../artifact/README.md . 2>/dev/null || true
 
       - name: Push to gouv-widgets-grist repo
         env:
@@ -226,9 +227,11 @@ jobs:
       - name: Prepare repo content
         run: |
           mkdir publish && cd publish
-          cp ../artifact/proxy/README.md .
-          cp ../artifact/proxy/nginx/nginx.conf .
-          cp ../artifact/proxy/nginx/docker-compose.yml .
+          # upload-artifact@v4 strips common prefix (proxy/)
+          # so files are at artifact/README.md and artifact/nginx/
+          cp ../artifact/README.md .
+          cp ../artifact/nginx/nginx.conf .
+          cp ../artifact/nginx/docker-compose.yml .
 
       - name: Push to gouv-widgets-proxy repo
         env:
