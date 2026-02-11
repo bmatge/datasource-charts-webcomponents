@@ -12,6 +12,23 @@ const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
 
 /**
+ * Auto-detect a geographic code field from the available fields.
+ * Looks for common patterns: code_departement, code_dep, code_region, etc.
+ */
+function autoDetectCodeField(): string | undefined {
+  const patterns = [
+    /^code.?dep/i, /^dep.?code/i, /^code.?region/i, /^reg.?code/i,
+    /^departement$/i, /^region$/i, /^code_geo/i, /^code_insee/i,
+  ];
+  for (const f of state.fields) {
+    for (const p of patterns) {
+      if (p.test(f.name)) return f.name;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Returns true if the current source has more records than we fetched locally
  * (e.g. ODS returned total_count > 100). This means generated code should use
  * gouv-query with pagination instead of raw fetch or embedded data.
@@ -302,6 +319,9 @@ new Chart(document.getElementById('myChart'), {
 // ---------------------------------------------------------------------------
 
 function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string {
+  // Fallback: use labelField if codeField is missing (same as chart-renderer)
+  const codeField = config.codeField || config.labelField || autoDetectCodeField();
+
   // Transform data to DSFR format: {"code": value, ...}
   const mapData: Record<string, number> = {};
   data.forEach(d => {
@@ -353,14 +373,14 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
-    group-by="${config.codeField}"
+    group-by="${codeField}"
     aggregate="${aggregateAttr}"${whereAttr}>
   </gouv-query>
 
   <gouv-dsfr-chart
     source="map-data"
     type="${config.type}"
-    code-field="${config.codeField}"
+    code-field="${codeField}"
     value-field="${valueFieldResult}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
@@ -400,7 +420,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
   <gouv-dsfr-chart
     source="map-data"
     type="${config.type}"
-    code-field="${config.codeField}"
+    code-field="${codeField}"
     value-field="${config.valueField}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
