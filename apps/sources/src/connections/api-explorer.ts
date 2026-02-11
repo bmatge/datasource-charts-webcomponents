@@ -44,6 +44,7 @@ export async function loadApiData(): Promise<void> {
       (conn as Record<string, unknown>).apiUrl as string,
     );
     let pageCount = 0;
+    let apiTotalCount = -1; // Total records reported by API (e.g. ODS total_count)
     const maxPages = 100; // Safety limit
 
     while (currentUrl && pageCount < maxPages) {
@@ -61,6 +62,19 @@ export async function loadApiData(): Promise<void> {
       }
 
       const jsonResponse = await response.json();
+
+      // Capture total count from response body (ODS: total_count) or headers
+      if (apiTotalCount < 0) {
+        if (typeof jsonResponse.total_count === 'number') {
+          apiTotalCount = jsonResponse.total_count;
+        } else if (typeof jsonResponse.count === 'number') {
+          apiTotalCount = jsonResponse.count;
+        } else {
+          const headerTotal = response.headers.get('X-Total-Count')
+            || response.headers.get('X-Total');
+          if (headerTotal) apiTotalCount = parseInt(headerTotal, 10);
+        }
+      }
 
       // Extract data using dataPath
       let pageData: unknown = jsonResponse;
@@ -130,6 +144,7 @@ export async function loadApiData(): Promise<void> {
     }
 
     state.tableData = data;
+    state.apiTotalCount = apiTotalCount;
 
     if (data.length === 0) {
       info.textContent = 'Aucune donnee';
@@ -159,7 +174,8 @@ export async function loadApiData(): Promise<void> {
     if (tbody) tbody.innerHTML = bodyHtml;
 
     const paginationInfo = pageCount > 1 ? ` (${pageCount} pages)` : '';
-    info.textContent = `${data.length} enregistrements${paginationInfo}`;
+    const totalInfo = apiTotalCount > data.length ? ` / ${apiTotalCount} total` : '';
+    info.textContent = `${data.length} enregistrements${totalInfo}${paginationInfo}`;
 
     // Save as current source for builder
     saveApiAsSource();
@@ -192,7 +208,7 @@ export function saveApiAsSource(): void {
     headers: (conn as Record<string, unknown>).headers as string | null,
     dataPath: (conn as Record<string, unknown>).dataPath as string | null,
     data: state.tableData as Record<string, unknown>[],
-    recordCount: state.tableData.length,
+    recordCount: state.apiTotalCount > 0 ? state.apiTotalCount : state.tableData.length,
   };
 
   localStorage.setItem(STORAGE_KEYS.SELECTED_SOURCE, JSON.stringify(source));

@@ -6,6 +6,22 @@ import { escapeHtml, DSFR_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
 
+const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
+
+/** Regex to parse an ODS v2.1 records URL into [baseUrl, datasetId] */
+const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
+
+/**
+ * Returns true if the current source has more records than we fetched locally
+ * (e.g. ODS returned total_count > 100). This means generated code should use
+ * gouv-query with pagination instead of raw fetch or embedded data.
+ */
+function needsPagination(): boolean {
+  return !!(state.source?.recordCount
+    && state.localData
+    && state.source.recordCount > state.localData.length);
+}
+
 /**
  * Convert where filter syntax "field:op:value" to ODSQL WHERE clause.
  * Example: "code_departement:eq:48, prix:gte:100" -> "code_departement='48' AND prix>=100"
@@ -299,85 +315,97 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     }
   });
 
-  // API-dynamic variant
+  // API-dynamic variant using gouv-query + gouv-dsfr-chart (auto-pagination)
   if (state.source?.type === 'api' && state.source?.url) {
-    const valueExpr = config.aggregation === 'count'
-      ? 'count(*) as value'
-      : `${config.aggregation}(${config.valueField}) as value`;
+    const odsMatch = state.source.url.match(ODS_URL_RE);
 
-    const params = new URLSearchParams({
-      select: `${config.codeField}, ${valueExpr}`,
-      group_by: config.codeField!,
-    });
-    if (config.where) {
-      params.set('where', whereToOdsql(config.where));
-    }
+    if (odsMatch && needsPagination()) {
+      // ODS source: use gouv-query with api-type="opendatasoft" for automatic pagination
+      const baseUrl = odsMatch[1];
+      const datasetId = odsMatch[2];
+      const aggregation = config.aggregation || 'sum';
+      const aggregateAttr = aggregation === 'count'
+        ? 'count:count'
+        : `${config.valueField}:${aggregation}`;
+      const valueFieldResult = aggregation === 'count'
+        ? 'count__count'
+        : `${config.valueField}__${aggregation}`;
+      const whereAttr = config.where
+        ? `\n    where="${whereToOdsql(config.where)}"` : '';
 
-    const apiUrl = `${state.source.url}?${params}`;
-
-    return `<!-- Carte generee avec gouv-widgets Builder IA -->
-<!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
+      return `<!-- Carte generee avec gouv-widgets Builder IA -->
+<!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
-  <div id="map-container"></div>
-</div>
 
-<script type="module">
-const API_URL = '${apiUrl}';
+  <gouv-query
+    id="map-data"
+    api-type="opendatasoft"
+    base-url="${baseUrl}"
+    dataset-id="${datasetId}"
+    group-by="${config.codeField}"
+    aggregate="${aggregateAttr}"${whereAttr}>
+  </gouv-query>
 
-// Valide un code de departement francais
-function isValidDeptCode(code) {
-  if (!code || typeof code !== 'string') return false;
-  if (['N/A', 'null', 'undefined', '00', ''].includes(code)) return false;
-  if (code === '2A' || code === '2B') return true;
-  if (/^97[1-6]$/.test(code)) return true;
-  if (/^(0[1-9]|[1-8]\\d|9[0-5])$/.test(code)) return true;
-  return false;
-}
+  <gouv-dsfr-chart
+    source="map-data"
+    type="${config.type}"
+    code-field="${config.codeField}"
+    value-field="${valueFieldResult}"
+    name="${escapeHtml(config.title || 'Carte')}"
+    selected-palette="${config.palette || 'sequentialAscending'}">
+  </gouv-dsfr-chart>
+</div>`;
+    }
 
-async function loadMap() {
-  try {
-    const response = await fetch(API_URL);
-    const json = await response.json();
-    const records = json.results || [];
+    // Non-ODS API: fall back to gouv-source + gouv-dsfr-chart
+    let sourceUrl = state.source.url;
+    if (config.where) {
+      const url = new URL(sourceUrl);
+      url.searchParams.set('where', whereToOdsql(config.where));
+      sourceUrl = url.toString();
+    }
 
-    // Transformer les donnees en format carte: {"code": valeur, ...}
-    const mapData = {};
-    records.forEach(d => {
-      let code = String(d['${config.codeField}'] || '').trim();
-      if (/^\\d+$/.test(code) && code.length < 3) {
-        code = code.padStart(2, '0');
-      }
-      const value = d.value || 0;
-      if (isValidDeptCode(code)) {
-        mapData[code] = Math.round(value * 100) / 100;
-      }
-    });
+    return `<!-- Carte generee avec gouv-widgets Builder IA -->
+<!-- Source API dynamique -->
 
-    const mapTag = '${config.type === 'map-reg' ? 'map-chart-reg' : 'map-chart'}';
-    document.getElementById('map-container').innerHTML = \`
-      <\${mapTag}
-        data='\${JSON.stringify(mapData)}'
-        name="${escapeHtml(config.title || 'Carte')}"
-        selected-palette="${config.palette || 'sequentialAscending'}"
-      ></\${mapTag}>
-    \`;
-  } catch (error) {
-    console.error('Erreur chargement carte:', error);
-    document.getElementById('map-container').innerHTML = '<p class="fr-text--error">Erreur de chargement</p>';
-  }
-}
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
-loadMap();
-<\/script>`;
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-source
+    id="map-data"
+    url="${sourceUrl}"
+    transform="results">
+  </gouv-source>
+
+  <gouv-dsfr-chart
+    source="map-data"
+    type="${config.type}"
+    code-field="${config.codeField}"
+    value-field="${config.valueField}"
+    name="${escapeHtml(config.title || 'Carte')}"
+    selected-palette="${config.palette || 'sequentialAscending'}">
+  </gouv-dsfr-chart>
+</div>`;
   }
 
   // Embedded-data variant
@@ -407,8 +435,6 @@ loadMap();
 // ---------------------------------------------------------------------------
 
 function generateDatalistCode(config: ChartConfig): string {
-  const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
-
   // Build colonnes attribute: from config or auto-detect from fields
   let colonnes: string;
   if (config.colonnes) {
@@ -423,10 +449,49 @@ function generateDatalistCode(config: ChartConfig): string {
 
   // API-dynamic variant
   if (state.source?.type === 'api' && state.source?.url) {
+    const whereOds = config.where ? whereToOdsql(config.where) : '';
+
+    // ODS with pagination: use gouv-query for auto-pagination
+    const odsMatch = state.source.url.match(ODS_URL_RE);
+    if (odsMatch && needsPagination()) {
+      const whereAttr = whereOds ? `\n    where="${whereOds}"` : '';
+
+      return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+<!-- Source API dynamique avec pagination automatique -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="table-data"
+    api-type="opendatasoft"
+    base-url="${odsMatch[1]}"
+    dataset-id="${odsMatch[2]}"${whereAttr}>
+  </gouv-query>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${pagination}"
+    export="csv">
+  </gouv-datalist>
+</div>`;
+    }
+
+    // Standard API: use gouv-source
     let sourceUrl = state.source.url;
-    if (config.where) {
+    if (whereOds) {
       const url = new URL(sourceUrl);
-      url.searchParams.set('where', whereToOdsql(config.where));
+      url.searchParams.set('where', whereOds);
       sourceUrl = url.toString();
     }
 
@@ -502,13 +567,71 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
   const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, data.length || 10));
 
-  // API-dynamic variant
+  // ODS with pagination needed: use gouv-query + gouv-dsfr-chart
+  if (state.source?.type === 'api' && state.source?.url && needsPagination()) {
+    const odsMatch = state.source.url.match(ODS_URL_RE);
+    if (odsMatch) {
+      return generateStandardChartCodeODS(config, odsMatch[1], odsMatch[2]);
+    }
+  }
+
+  // API-dynamic variant (single-page fetch)
   if (state.source?.type === 'api' && state.source?.url) {
     return generateStandardChartCodeAPI(config, isMultiColor, colorsArray);
   }
 
   // Embedded-data variant
   return generateStandardChartCodeEmbedded(config, data, isMultiColor, colorsArray);
+}
+
+function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, datasetId: string): string {
+  const aggregation = config.aggregation || 'sum';
+  const aggregateAttr = aggregation === 'count'
+    ? 'count:count'
+    : `${config.valueField}:${aggregation}`;
+  const valueFieldResult = aggregation === 'count'
+    ? 'count__count'
+    : `${config.valueField}__${aggregation}`;
+  const whereAttr = config.where
+    ? `\n    where="${whereToOdsql(config.where)}"` : '';
+  const orderAttr = config.sortOrder && config.labelField
+    ? `\n    order-by="${config.labelField}:${config.sortOrder}"` : '';
+  const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
+  const horizontalAttr = config.type === 'horizontalBar' ? '\n    horizontal' : '';
+
+  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+<!-- Source API dynamique avec pagination automatique -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="chart-data"
+    api-type="opendatasoft"
+    base-url="${baseUrl}"
+    dataset-id="${datasetId}"
+    group-by="${config.labelField}"
+    aggregate="${aggregateAttr}"${whereAttr}${orderAttr}>
+  </gouv-query>
+
+  <gouv-dsfr-chart
+    source="chart-data"
+    type="${chartType}"
+    label-field="${config.labelField}"
+    value-field="${valueFieldResult}"
+    name="${escapeHtml(config.title || 'Mon graphique')}"${horizontalAttr}
+    selected-palette="${config.palette || 'categorical'}">
+  </gouv-dsfr-chart>
+</div>`;
 }
 
 function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean, colorsArray: string): string {

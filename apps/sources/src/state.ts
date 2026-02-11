@@ -84,6 +84,8 @@ export interface SourcesState {
   tableData: GristRecord[] | Record<string, unknown>[];
   editingConnectionIndex: number | null;
   previewedSource: Source | null;
+  /** Total record count reported by API (e.g. ODS total_count), -1 if unknown */
+  apiTotalCount: number;
 }
 
 // ============================================================
@@ -109,6 +111,7 @@ export function createInitialState(): SourcesState {
     tableData: [],
     editingConnectionIndex: null,
     previewedSource: null,
+    apiTotalCount: -1,
   };
 }
 
