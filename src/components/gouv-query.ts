@@ -735,6 +735,23 @@ export class GouvQuery extends LitElement {
 
     if (this.select) {
       url.searchParams.set('select', this.select);
+    } else if (this.aggregate && this.groupBy) {
+      // Auto-convert aggregate="field:func" to ODS select syntax
+      // e.g. aggregate="population:sum, count:count" + group-by="region"
+      // => select="sum(population) as population__sum, count(*) as count__count, region"
+      const aggregates = this._parseAggregates(this.aggregate);
+      const selectParts: string[] = [];
+      for (const agg of aggregates) {
+        const odsFunc = agg.function === 'count' ? 'count(*)' : `${agg.function}(${agg.field})`;
+        const alias = agg.alias || `${agg.field}__${agg.function}`;
+        selectParts.push(`${odsFunc} as ${alias}`);
+      }
+      // Include group-by fields in select
+      const groupFields = this.groupBy.split(',').map(f => f.trim()).filter(Boolean);
+      for (const gf of groupFields) {
+        selectParts.push(gf);
+      }
+      url.searchParams.set('select', selectParts.join(', '));
     }
 
     const whereClause = this.where || this.filter;
