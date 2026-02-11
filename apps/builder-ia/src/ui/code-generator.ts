@@ -12,6 +12,23 @@ const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
 
 /**
+ * Build ODSQL select expression from aggregation config + group-by field.
+ * Example: aggregation="sum", valueField="montant", groupBy="dept"
+ * => "sum(montant) as montant__sum, dept"
+ * This outputs the native ODS select param so the component doesn't need
+ * to do aggregate-to-select conversion (works with any UMD version).
+ */
+function buildOdsSelect(aggregation: string, valueField: string, groupByField: string): { selectExpr: string; resultField: string } {
+  const func = aggregation || 'sum';
+  const odsFunc = func === 'count' ? 'count(*)' : `${func}(${valueField})`;
+  const alias = func === 'count' ? 'count__count' : `${valueField}__${func}`;
+  return {
+    selectExpr: `${odsFunc} as ${alias}, ${groupByField}`,
+    resultField: alias,
+  };
+}
+
+/**
  * Auto-detect a geographic code field from the available fields.
  * Looks for common patterns: code_departement, code_dep, code_region, etc.
  */
@@ -343,13 +360,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
       // ODS source: use gouv-query with api-type="opendatasoft" for automatic pagination
       const baseUrl = odsMatch[1];
       const datasetId = odsMatch[2];
-      const aggregation = config.aggregation || 'sum';
-      const aggregateAttr = aggregation === 'count'
-        ? 'count:count'
-        : `${config.valueField}:${aggregation}`;
-      const valueFieldResult = aggregation === 'count'
-        ? 'count__count'
-        : `${config.valueField}__${aggregation}`;
+      const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, codeField!);
       const whereAttr = config.where
         ? `\n    where="${whereToOdsql(config.where)}"` : '';
 
@@ -373,15 +384,15 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
-    group-by="${codeField}"
-    aggregate="${aggregateAttr}"${whereAttr}>
+    select="${selectExpr}"
+    group-by="${codeField}"${whereAttr}>
   </gouv-query>
 
   <gouv-dsfr-chart
     source="map-data"
     type="${config.type}"
     code-field="${codeField}"
-    value-field="${valueFieldResult}"
+    value-field="${resultField}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
   </gouv-dsfr-chart>
@@ -605,13 +616,7 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
 }
 
 function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, datasetId: string): string {
-  const aggregation = config.aggregation || 'sum';
-  const aggregateAttr = aggregation === 'count'
-    ? 'count:count'
-    : `${config.valueField}:${aggregation}`;
-  const valueFieldResult = aggregation === 'count'
-    ? 'count__count'
-    : `${config.valueField}__${aggregation}`;
+  const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, config.labelField!);
   const whereAttr = config.where
     ? `\n    where="${whereToOdsql(config.where)}"` : '';
   const orderAttr = config.sortOrder && config.labelField
@@ -639,15 +644,15 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
-    group-by="${config.labelField}"
-    aggregate="${aggregateAttr}"${whereAttr}${orderAttr}>
+    select="${selectExpr}"
+    group-by="${config.labelField}"${whereAttr}${orderAttr}>
   </gouv-query>
 
   <gouv-dsfr-chart
     source="chart-data"
     type="${chartType}"
     label-field="${config.labelField}"
-    value-field="${valueFieldResult}"
+    value-field="${resultField}"
     name="${escapeHtml(config.title || 'Mon graphique')}"${horizontalAttr}
     selected-palette="${config.palette || 'categorical'}">
   </gouv-dsfr-chart>
