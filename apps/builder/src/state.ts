@@ -150,6 +150,7 @@ export interface BuilderState {
   datalistRecherche: boolean;
   datalistFiltres: boolean;
   datalistExportCsv: boolean;
+  datalistExportHtml: boolean;
   datalistColumns: DatalistColumn[];
   normalizeConfig: NormalizeConfig;
   facetsConfig: FacetsConfig;
@@ -185,6 +186,7 @@ export const state: BuilderState = {
   datalistRecherche: true,
   datalistFiltres: false,
   datalistExportCsv: true,
+  datalistExportHtml: false,
   datalistColumns: [],
   normalizeConfig: {
     enabled: false,

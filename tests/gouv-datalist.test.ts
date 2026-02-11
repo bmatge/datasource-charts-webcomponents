@@ -262,6 +262,44 @@ describe('GouvDatalist logic', () => {
     });
   });
 
+  describe('HTML export logic', () => {
+    it('escapes HTML special characters in values', () => {
+      const val = '<script>alert("xss")</script>';
+      const escaped = val
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+      expect(escaped).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+    });
+
+    it('escapes ampersands in values', () => {
+      const val = 'A&B';
+      const escaped = val
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      expect(escaped).toBe('A&amp;B');
+    });
+
+    it('produces valid table structure', () => {
+      const columns = [{ key: 'name', label: 'Nom' }, { key: 'score', label: 'Score' }];
+      const data = [{ name: 'Alice', score: 95 }];
+
+      const headerCells = columns.map(c => `<th>${c.label}</th>`).join('');
+      const bodyRows = data.map(item =>
+        '<tr>' + columns.map(c => `<td>${item[c.key] ?? ''}</td>`).join('') + '</tr>'
+      ).join('');
+
+      const table = `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+      expect(table).toContain('<th>Nom</th>');
+      expect(table).toContain('<th>Score</th>');
+      expect(table).toContain('<td>Alice</td>');
+      expect(table).toContain('<td>95</td>');
+    });
+  });
+
   describe('Pagination logic', () => {
     it('calculates correct total pages', () => {
       const dataLength = 25;

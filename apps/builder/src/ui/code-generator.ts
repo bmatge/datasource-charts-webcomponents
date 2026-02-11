@@ -301,7 +301,11 @@ function buildColonnesAttr(): string {
 function buildDatalistAttrs(): string {
   let attrs = '';
   if (state.datalistRecherche) attrs += '\n    recherche';
-  if (state.datalistExportCsv) attrs += '\n    export="csv"';
+  const exportFormats: string[] = [];
+  if (state.datalistExportCsv) exportFormats.push('csv');
+  if (state.datalistExportHtml) exportFormats.push('html');
+  if (exportFormats.length > 0) attrs += `\n    export="${exportFormats.join(',')}"`;
+
   const filtrables = state.datalistColumns.filter(c => c.visible && c.filtrable).map(c => c.field);
   if (state.datalistFiltres && filtrables.length > 0) {
     attrs += `\n    filtres="${filtrables.join(',')}"`;

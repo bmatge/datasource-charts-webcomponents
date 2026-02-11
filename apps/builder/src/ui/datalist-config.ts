@@ -88,6 +88,7 @@ export function setupDatalistListeners(): void {
   const rechercheEl = document.getElementById('datalist-recherche') as HTMLInputElement | null;
   const filtresEl = document.getElementById('datalist-filtres') as HTMLInputElement | null;
   const exportEl = document.getElementById('datalist-export') as HTMLInputElement | null;
+  const exportHtmlEl = document.getElementById('datalist-export-html') as HTMLInputElement | null;
   const columnsBtn = document.getElementById('datalist-columns-btn');
   const saveBtn = document.getElementById('datalist-columns-save');
   const closeBtn = document.getElementById('datalist-columns-close');
@@ -109,6 +110,13 @@ export function setupDatalistListeners(): void {
   if (exportEl) {
     exportEl.addEventListener('change', () => {
       state.datalistExportCsv = exportEl.checked;
+      renderChart();
+    });
+  }
+
+  if (exportHtmlEl) {
+    exportHtmlEl.addEventListener('change', () => {
+      state.datalistExportHtml = exportHtmlEl.checked;
       renderChart();
     });
   }

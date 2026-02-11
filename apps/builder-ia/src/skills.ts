@@ -691,11 +691,11 @@ ce tableau en format DSFR Chart (tableaux imbriques x/y).
   gouvDatalist: {
     id: 'gouvDatalist',
     name: 'gouv-datalist',
-    description: 'Tableau de donnees avec recherche, filtres, tri, pagination et export CSV',
-    trigger: ['tableau', 'table', 'liste', 'colonnes', 'pagination', 'exporter', 'csv', 'recherche', 'datalist'],
+    description: 'Tableau de donnees avec recherche, filtres, tri, pagination et export CSV/HTML',
+    trigger: ['tableau', 'table', 'liste', 'colonnes', 'pagination', 'exporter', 'csv', 'html', 'recherche', 'datalist'],
     content: `## <gouv-datalist> - Tableau de donnees
 
-Affiche un tableau DSFR filtrable, triable, paginable avec export CSV.
+Affiche un tableau DSFR filtrable, triable, paginable avec export CSV et/ou HTML.
 Se connecte a une gouv-source ou gouv-query via l'attribut \`source\`.
 
 ### Format des donnees
@@ -712,7 +712,7 @@ les cles du premier objet sont utilisees comme colonnes.
 | filtres | String | \`""\` | non | Colonnes filtrables (dropdown) : \`"col1,col2"\` |
 | tri | String | \`""\` | non | Tri par defaut : \`"col:asc"\` ou \`"col:desc"\` |
 | pagination | Number | \`0\` | non | Lignes par page (0 = tout afficher sans pagination) |
-| export | String | \`""\` | non | Formats d'export disponibles : \`"csv"\` |
+| export | String | \`""\` | non | Formats d'export : \`"csv"\`, \`"html"\` ou \`"csv,html"\` |
 
 ### Exemples
 \`\`\`html
@@ -728,7 +728,7 @@ les cles du premier objet sont utilisees comme colonnes.
   filtres="ministere"
   tri="score_rgaa:desc"
   pagination="20"
-  export="csv">
+  export="csv,html">
 </gouv-datalist>
 \`\`\``,
   },
