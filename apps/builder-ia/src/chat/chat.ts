@@ -175,7 +175,7 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
   // Build context with data info
   let dataContext = '';
   if (state.localData && state.fields.length > 0) {
-    const isOds = state.source?.url?.includes('opendatasoft.com');
+    const isOds = state.source?.apiUrl && /\/api\/explore\/v2\.1\/catalog\/datasets\//.test(state.source.apiUrl);
     const totalNote = state.source?.recordCount && state.source.recordCount > state.localData.length
       ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
       : '';
@@ -409,7 +409,7 @@ function stripActionJson(text: string, action: Record<string, unknown> | null): 
  * Handle reloadData action from the AI: rebuild API URL with ODSQL params, fetch new data
  */
 async function handleReloadData(actionData: Record<string, unknown>): Promise<boolean> {
-  if (!state.source?.url) {
+  if (!state.source?.apiUrl) {
     addMessage('assistant', "Je ne peux pas recharger les donnees car aucune URL source n'est disponible.");
     return false;
   }
@@ -419,7 +419,7 @@ async function handleReloadData(actionData: Record<string, unknown>): Promise<bo
 
   try {
     // Build query URL
-    const url = new URL(state.source.url);
+    const url = new URL(state.source.apiUrl);
     const query = (actionData.query || {}) as Record<string, unknown>;
 
     if (query.select) url.searchParams.set('select', String(query.select));

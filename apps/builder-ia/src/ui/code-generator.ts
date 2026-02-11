@@ -119,7 +119,7 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
   const unit = config.unit || '';
 
   // API-dynamic variant
-  if (state.source?.type === 'api' && state.source?.url) {
+  if (state.source?.type === 'api' && state.source?.apiUrl) {
     const valueExpr = config.aggregation === 'count'
       ? 'count(*) as value'
       : `${config.aggregation}(${config.valueField}) as value`;
@@ -128,7 +128,7 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
     if (config.where) {
       params.set('where', whereToOdsql(config.where));
     }
-    const apiUrl = `${state.source.url}?${params}`;
+    const apiUrl = `${state.source.apiUrl}?${params}`;
 
     return `<!-- KPI genere avec gouv-widgets Builder IA -->
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
@@ -316,8 +316,8 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
   });
 
   // API-dynamic variant using gouv-query + gouv-dsfr-chart (auto-pagination)
-  if (state.source?.type === 'api' && state.source?.url) {
-    const odsMatch = state.source.url.match(ODS_URL_RE);
+  if (state.source?.type === 'api' && state.source?.apiUrl) {
+    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
 
     if (odsMatch && needsPagination()) {
       // ODS source: use gouv-query with api-type="opendatasoft" for automatic pagination
@@ -369,7 +369,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     }
 
     // Non-ODS API: fall back to gouv-source + gouv-dsfr-chart
-    let sourceUrl = state.source.url;
+    let sourceUrl = state.source.apiUrl;
     if (config.where) {
       const url = new URL(sourceUrl);
       url.searchParams.set('where', whereToOdsql(config.where));
@@ -448,11 +448,11 @@ function generateDatalistCode(config: ChartConfig): string {
   const pagination = config.pagination || 10;
 
   // API-dynamic variant
-  if (state.source?.type === 'api' && state.source?.url) {
+  if (state.source?.type === 'api' && state.source?.apiUrl) {
     const whereOds = config.where ? whereToOdsql(config.where) : '';
 
     // ODS with pagination: use gouv-query for auto-pagination
-    const odsMatch = state.source.url.match(ODS_URL_RE);
+    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
     if (odsMatch && needsPagination()) {
       const whereAttr = whereOds ? `\n    where="${whereOds}"` : '';
 
@@ -488,7 +488,7 @@ function generateDatalistCode(config: ChartConfig): string {
     }
 
     // Standard API: use gouv-source
-    let sourceUrl = state.source.url;
+    let sourceUrl = state.source.apiUrl;
     if (whereOds) {
       const url = new URL(sourceUrl);
       url.searchParams.set('where', whereOds);
@@ -568,15 +568,15 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
   const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, data.length || 10));
 
   // ODS with pagination needed: use gouv-query + gouv-dsfr-chart
-  if (state.source?.type === 'api' && state.source?.url && needsPagination()) {
-    const odsMatch = state.source.url.match(ODS_URL_RE);
+  if (state.source?.type === 'api' && state.source?.apiUrl && needsPagination()) {
+    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
     if (odsMatch) {
       return generateStandardChartCodeODS(config, odsMatch[1], odsMatch[2]);
     }
   }
 
   // API-dynamic variant (single-page fetch)
-  if (state.source?.type === 'api' && state.source?.url) {
+  if (state.source?.type === 'api' && state.source?.apiUrl) {
     return generateStandardChartCodeAPI(config, isMultiColor, colorsArray);
   }
 
@@ -648,7 +648,7 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
     params.set('where', whereToOdsql(config.where));
   }
 
-  const apiUrl = `${state.source!.url}?${params}`;
+  const apiUrl = `${state.source!.apiUrl}?${params}`;
 
   return `<!-- Graphique genere avec gouv-widgets Builder IA -->
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->

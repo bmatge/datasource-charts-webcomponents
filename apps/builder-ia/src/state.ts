@@ -7,7 +7,7 @@ export interface Source {
   id: string;
   name: string;
   type: 'api' | 'grist' | 'manual';
-  url?: string;
+  apiUrl?: string;
   data?: Record<string, unknown>[];
   recordCount?: number;
 }
