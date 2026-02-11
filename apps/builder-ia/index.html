@@ -68,32 +68,52 @@
         </div>
       </div>
 
-      <!-- Configuration Albert IA -->
+      <!-- Configuration IA -->
       <div class="config-section collapsed" id="section-ia-config">
         <div class="config-section-header" onclick="toggleSection('section-ia-config')">
-          <h3><i class="ri-robot-line"></i> Configuration Albert IA</h3>
+          <h3><i class="ri-robot-line"></i> Configuration IA</h3>
           <i class="ri-arrow-down-s-line collapse-icon"></i>
         </div>
         <div class="config-section-content">
           <div class="fr-input-group">
-            <label class="fr-label" for="ia-api-url">URL de l'API</label>
+            <label class="fr-label" for="ia-api-url">URL de l'API
+              <span class="fr-hint-text">Endpoint compatible OpenAI Chat Completions (Albert, OpenAI, Anthropic, Gemini...)</span>
+            </label>
             <input class="fr-input" type="url" id="ia-api-url"
                    value="https://albert.api.etalab.gouv.fr/v1/chat/completions"
-                   placeholder="https://albert.api.etalab.gouv.fr/v1/chat/completions">
+                   placeholder="https://api.openai.com/v1/chat/completions">
           </div>
           <div class="fr-input-group">
-            <label class="fr-label" for="ia-model">Modele</label>
-            <select class="fr-select" id="ia-model">
-              <option value="albert-small">albert-small — Llama 3.1 8B (rapide)</option>
-              <option value="albert-large" selected>albert-large — Mistral Small 24B (recommande)</option>
-              <option value="albert-code">albert-code — Qwen Coder 32B</option>
-              <option value="openweight-large">openweight-large — GPT OSS 120B (lent)</option>
-              <option value="openweight-code">openweight-code — Qwen3 Coder 30B</option>
-            </select>
+            <label class="fr-label" for="ia-model">Modele
+              <span class="fr-hint-text">Identifiant du modele (ex: albert-large, gpt-4o, claude-sonnet-4-5-20250929...)</span>
+            </label>
+            <input class="fr-input" type="text" id="ia-model"
+                   value="albert-large"
+                   placeholder="albert-large">
           </div>
           <div class="fr-input-group">
             <label class="fr-label" for="ia-token">Token API</label>
-            <input class="fr-input" type="password" id="ia-token" placeholder="Votre token Albert">
+            <input class="fr-input" type="password" id="ia-token" placeholder="Votre cle API (Bearer token)">
+          </div>
+          <div class="fr-input-group">
+            <label class="fr-label">Parametres supplementaires
+              <span class="fr-hint-text">Paires cle:valeur ajoutees au body de la requete (ex: max_tokens, temperature...)</span>
+            </label>
+            <div id="ia-extra-params">
+              <div class="ia-extra-param-row" style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center;">
+                <input class="fr-input" type="text" placeholder="cle" value="temperature" style="flex:1;">
+                <input class="fr-input" type="text" placeholder="valeur" value="0.7" style="flex:1;">
+                <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" type="button" onclick="this.parentElement.remove()" title="Supprimer"><i class="ri-delete-bin-line"></i></button>
+              </div>
+              <div class="ia-extra-param-row" style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center;">
+                <input class="fr-input" type="text" placeholder="cle" value="max_tokens" style="flex:1;">
+                <input class="fr-input" type="text" placeholder="valeur" value="4096" style="flex:1;">
+                <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" type="button" onclick="this.parentElement.remove()" title="Supprimer"><i class="ri-delete-bin-line"></i></button>
+              </div>
+            </div>
+            <button class="fr-btn fr-btn--sm fr-btn--tertiary" type="button" onclick="addExtraParam()">
+              <i class="ri-add-line"></i> Ajouter un parametre
+            </button>
           </div>
           <div class="fr-input-group">
             <label class="fr-label" for="ia-system-prompt">System prompt</label>

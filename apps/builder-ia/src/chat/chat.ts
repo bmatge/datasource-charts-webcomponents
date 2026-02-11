@@ -97,7 +97,7 @@ export async function sendMessage(): Promise<void> {
   // Check if we have a token
   const config = getIAConfig();
   if (!config.token) {
-    addMessage('assistant', `Je n'ai pas de token API configure. Veuillez ouvrir "Configuration Albert IA" et entrer votre token.
+    addMessage('assistant', `Je n'ai pas de token API configure. Veuillez ouvrir "Configuration IA" et entrer votre cle API.
 
 En attendant, je peux vous aider avec des commandes simples. Essayez :
 - "barres [champ_label] [champ_valeur]"
@@ -215,18 +215,26 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}`;
     apiUrl = apiUrl.replace('https://albert.api.etalab.gouv.fr', '/albert-proxy');
   }
 
+  // Build request body: model + messages + extra params from config
+  const requestBody: Record<string, unknown> = {
+    model: config.model,
+    messages: messages,
+  };
+
+  // Merge user-defined extra params (temperature, max_tokens, etc.)
+  for (const [key, val] of Object.entries(config.extraParams || {})) {
+    // Auto-convert numeric strings to numbers
+    const num = Number(val);
+    requestBody[key] = !isNaN(num) && val !== '' ? num : val;
+  }
+
   const response = await fetchWithTimeout(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.token}`,
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 1000,
-    }),
+    body: JSON.stringify(requestBody),
   }, 15000);
 
   if (!response.ok) {

@@ -1,5 +1,7 @@
 /**
- * IA configuration management (Albert API settings)
+ * IA configuration management (generic API settings)
+ * Supports any OpenAI-compatible chat completions API
+ * (Albert, OpenAI, Anthropic, Gemini, Mistral, etc.)
  */
 
 import { toastSuccess } from '@gouv-widgets/shared';
@@ -10,6 +12,7 @@ export interface IAConfig {
   model: string;
   token: string;
   systemPrompt: string;
+  extraParams: Record<string, string>;
 }
 
 const IA_CONFIG_KEY = 'gouv_widgets_ia_config';
@@ -25,6 +28,57 @@ export function toggleIAConfig(): void {
 }
 
 /**
+ * Add an empty key:value row to the extra params container
+ */
+export function addExtraParam(key = '', value = ''): void {
+  const container = document.getElementById('ia-extra-params');
+  if (!container) return;
+
+  const row = document.createElement('div');
+  row.className = 'ia-extra-param-row';
+  row.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center;';
+  row.innerHTML = `
+    <input class="fr-input" type="text" placeholder="cle" value="${key}" style="flex:1;">
+    <input class="fr-input" type="text" placeholder="valeur" value="${value}" style="flex:1;">
+    <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" type="button" onclick="this.parentElement.remove()" title="Supprimer"><i class="ri-delete-bin-line"></i></button>
+  `;
+  container.appendChild(row);
+}
+
+/**
+ * Read extra params from the DOM rows
+ */
+function getExtraParamsFromDOM(): Record<string, string> {
+  const container = document.getElementById('ia-extra-params');
+  if (!container) return {};
+
+  const params: Record<string, string> = {};
+  const rows = container.querySelectorAll('.ia-extra-param-row');
+  for (const row of rows) {
+    const inputs = row.querySelectorAll('input');
+    const key = inputs[0]?.value.trim();
+    const val = inputs[1]?.value.trim();
+    if (key) {
+      params[key] = val;
+    }
+  }
+  return params;
+}
+
+/**
+ * Render extra params rows in the DOM from a config object
+ */
+function renderExtraParams(params: Record<string, string>): void {
+  const container = document.getElementById('ia-extra-params');
+  if (!container) return;
+
+  container.innerHTML = '';
+  for (const [key, value] of Object.entries(params)) {
+    addExtraParam(key, value);
+  }
+}
+
+/**
  * Load IA config from localStorage into the form fields
  */
 export function loadIAConfig(): void {
@@ -37,13 +91,16 @@ export function loadIAConfig(): void {
       (document.getElementById('ia-api-url') as HTMLInputElement).value = config.apiUrl;
     }
     if (config.model) {
-      (document.getElementById('ia-model') as HTMLSelectElement).value = config.model;
+      (document.getElementById('ia-model') as HTMLInputElement).value = config.model;
     }
     if (config.token) {
       (document.getElementById('ia-token') as HTMLInputElement).value = config.token;
     }
     if (config.systemPrompt) {
       (document.getElementById('ia-system-prompt') as HTMLTextAreaElement).value = config.systemPrompt;
+    }
+    if (config.extraParams && Object.keys(config.extraParams).length > 0) {
+      renderExtraParams(config.extraParams);
     }
   } catch {
     // Ignore parse errors
@@ -56,9 +113,10 @@ export function loadIAConfig(): void {
 export function saveIAConfig(): void {
   const config: IAConfig = {
     apiUrl: (document.getElementById('ia-api-url') as HTMLInputElement).value,
-    model: (document.getElementById('ia-model') as HTMLSelectElement).value,
+    model: (document.getElementById('ia-model') as HTMLInputElement).value,
     token: (document.getElementById('ia-token') as HTMLInputElement).value,
     systemPrompt: (document.getElementById('ia-system-prompt') as HTMLTextAreaElement).value,
+    extraParams: getExtraParamsFromDOM(),
   };
   localStorage.setItem(IA_CONFIG_KEY, JSON.stringify(config));
   toastSuccess('Configuration sauvegardee !');
@@ -70,8 +128,9 @@ export function saveIAConfig(): void {
 export function getIAConfig(): IAConfig {
   return {
     apiUrl: (document.getElementById('ia-api-url') as HTMLInputElement).value,
-    model: (document.getElementById('ia-model') as HTMLSelectElement).value,
+    model: (document.getElementById('ia-model') as HTMLInputElement).value,
     token: (document.getElementById('ia-token') as HTMLInputElement).value,
     systemPrompt: (document.getElementById('ia-system-prompt') as HTMLTextAreaElement).value,
+    extraParams: getExtraParamsFromDOM(),
   };
 }
