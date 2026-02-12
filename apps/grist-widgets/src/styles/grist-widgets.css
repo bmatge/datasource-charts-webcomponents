@@ -94,7 +94,7 @@ html, body {
 /* Panneau de code HTML */
 .grist-code-panel {
   border-top: 1px solid var(--border-default-grey, #ddd);
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 .grist-code-header {

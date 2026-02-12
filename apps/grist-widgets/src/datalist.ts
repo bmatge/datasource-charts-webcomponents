@@ -100,26 +100,23 @@ function generateExportHtml(): string {
   const exportPart = exportAttr ? ` export="${exportAttr}"` : '';
   const jsonData = JSON.stringify(data);
 
-  return `<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export tableau - gouv-widgets</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
-</head>
-<body>
+  const deps = [
+    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>',
+  ];
+
+  return `${deps.join('\n')}
+
+<!-- Widget tableau -->
 <gouv-datalist source="export" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></gouv-datalist>
 <script>
   customElements.whenDefined('gouv-datalist').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
-<\/script>
-</body>
-</html>`;
+<\\/script>`;
 }
 
 function updateCodePanel() {

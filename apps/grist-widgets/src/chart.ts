@@ -212,6 +212,14 @@ function generateExportHtml(): string {
   const opts = currentOptions;
   const jsonData = JSON.stringify(data);
 
+  // Dependances CDN (a ajouter dans le <head> de la page hote)
+  const deps = [
+    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
+  ];
+
   if (type === 'kpi') {
     const agg = (opts.aggregation || 'avg') as string;
     const format = (opts.format || 'nombre') as string;
@@ -219,29 +227,24 @@ function generateExportHtml(): string {
     const icone = opts.icone ? ` icone="${opts.icone}"` : '';
     const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
 
-    return `<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export KPI - gouv-widgets</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
-</head>
-<body>
+    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+
+    return `${deps.join('\n')}
+
+<!-- Widget KPI -->
 <gouv-kpi source="export" valeur="${agg}:Value" format="${format}" label="${label}"${icone}${couleur}></gouv-kpi>
 <script>
   customElements.whenDefined('gouv-kpi').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
-<\/script>
-</body>
-</html>`;
+<\/script>`;
   }
 
   // Chart types: bar, line, pie, radar, scatter, gauge, bar-line, map, map-reg
+  deps.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">');
+  deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>');
+  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+
   const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
   const horizontal = opts.horizontal === true ? ' horizontal' : '';
   const stacked = opts.stacked === true ? ' stacked' : '';
@@ -250,28 +253,15 @@ function generateExportHtml(): string {
   const hasValue2 = data.length > 0 && 'Value2' in data[0];
   const valueField2 = hasValue2 ? ' value-field-2="Value2"' : '';
 
-  return `<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export graphique - gouv-widgets</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
-</head>
-<body>
+  return `${deps.join('\n')}
+
+<!-- Widget graphique -->
 <gouv-dsfr-chart source="export" type="${type}" label-field="Label" value-field="Value"${codeField}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></gouv-dsfr-chart>
 <script>
   customElements.whenDefined('gouv-dsfr-chart').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
-<\/script>
-</body>
-</html>`;
+<\/script>`;
 }
 
 let codeVisible = false;
