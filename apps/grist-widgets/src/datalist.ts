@@ -9,7 +9,7 @@
  */
 
 import './styles/grist-widgets.css';
-import { onGristOptions } from './shared/grist-bridge.js';
+import { onGristOptions, detectGristApi, getGristApiInfo } from './shared/grist-bridge.js';
 import { createOptionsPanel, type OptionDef } from './shared/grist-options-panel.js';
 
 const GRIST_SOURCE_ID = 'grist';
@@ -85,8 +85,10 @@ function applyOptions(opts: Record<string, unknown>) {
 // --- Code HTML panel ---
 
 let codeVisible = false;
+let activeTab: 'fixed' | 'dynamic' = 'fixed';
+let dataColumnKeys: string[] = [];
 
-function generateExportHtml(): string {
+function generateFixedHtml(): string {
   const data = GouvWidgets.getDataCache(GRIST_SOURCE_ID) as Record<string, unknown>[] | undefined;
   if (!data || data.length === 0) return '';
 
@@ -119,10 +121,60 @@ function generateExportHtml(): string {
 <\\/script>`;
 }
 
+function generateDynamicHtml(): string {
+  const { apiBaseUrl, tableId } = getGristApiInfo();
+  if (!apiBaseUrl || !tableId) return '(Information API Grist non disponible.\nLe widget doit etre charge dans Grist pour detecter l\'URL du document.)';
+
+  const match = apiBaseUrl.match(/\/api\/docs\/([^/]+)/);
+  if (!match) return '(URL API Grist non reconnue)';
+  const docId = match[1];
+
+  const proxyUrl = `https://chartsbuilder.matge.com/grist-gouv-proxy/api/docs/${docId}/tables/${tableId}/records`;
+
+  const datalist = document.querySelector('gouv-datalist');
+  const pagination = datalist?.getAttribute('pagination') || '20';
+  const hasRecherche = datalist?.hasAttribute('recherche');
+  const exportAttr = datalist?.getAttribute('export') || '';
+
+  const recherche = hasRecherche ? ' recherche' : '';
+  const exportPart = exportAttr ? ` export="${exportAttr}"` : '';
+
+  // Colonnes avec prefix fields. pour le format Grist API
+  const colonnes = dataColumnKeys.map(k => `fields.${k}:${k}`).join(' | ');
+
+  const deps = [
+    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>',
+  ];
+
+  return `${deps.join('\n')}
+
+<!-- Source Grist (document public requis) -->
+<gouv-source
+  id="grist-data"
+  url="${proxyUrl}"
+  transform="records">
+</gouv-source>
+
+<!-- Widget tableau -->
+<gouv-datalist source="grist-data" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></gouv-datalist>`;
+}
+
 function updateCodePanel() {
   const codeContent = document.getElementById('code-content');
   if (!codeContent) return;
-  codeContent.textContent = generateExportHtml() || '(aucune donnee)';
+  const htmlContent = activeTab === 'dynamic' ? generateDynamicHtml() : generateFixedHtml();
+  codeContent.textContent = htmlContent || '(aucune donnee)';
+}
+
+function switchTab(tab: 'fixed' | 'dynamic') {
+  activeTab = tab;
+  document.getElementById('tab-fixed')?.classList.toggle('active', tab === 'fixed');
+  document.getElementById('tab-dynamic')?.classList.toggle('active', tab === 'dynamic');
+  updateCodePanel();
 }
 
 function toggleCode() {
@@ -203,6 +255,7 @@ grist.ready({
   onEditOptions: showOptionsPanel,
 });
 
+detectGristApi();
 GouvWidgets.dispatchDataLoading(GRIST_SOURCE_ID);
 
 grist.onRecords((records) => {
@@ -215,6 +268,11 @@ grist.onRecords((records) => {
     }
     return row;
   });
+
+  // Stocker les noms de colonnes pour l'export dynamique
+  if (cleaned.length > 0 && dataColumnKeys.length === 0) {
+    dataColumnKeys = Object.keys(cleaned[0]);
+  }
 
   autoConfigureColumns(cleaned);
   GouvWidgets.dispatchDataLoaded(GRIST_SOURCE_ID, cleaned);
@@ -240,3 +298,5 @@ document.addEventListener('gouv-data-loaded', () => {
 // Bind buttons
 document.getElementById('btn-toggle-code')?.addEventListener('click', toggleCode);
 document.getElementById('btn-copy-code')?.addEventListener('click', copyCode);
+document.getElementById('tab-fixed')?.addEventListener('click', () => switchTab('fixed'));
+document.getElementById('tab-dynamic')?.addEventListener('click', () => switchTab('dynamic'));

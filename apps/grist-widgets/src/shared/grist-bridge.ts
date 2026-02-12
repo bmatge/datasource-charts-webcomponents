@@ -7,6 +7,35 @@
 
 export const GRIST_SOURCE_ID = 'grist';
 
+let gristApiBaseUrl: string | null = null;
+let gristTableId: string | null = null;
+let gristColumnMappings: Record<string, string> | null = null;
+
+/**
+ * Detecte l'URL API Grist et le table ID (fire-and-forget).
+ */
+export function detectGristApi(): void {
+  Promise.all([
+    grist.docApi.getAccessToken({ readOnly: true }).then(info => {
+      gristApiBaseUrl = info.baseUrl;
+    }),
+    grist.selectedTable?.getTableId().then(id => {
+      gristTableId = id;
+    }),
+  ]).catch(() => { /* API non disponible */ });
+}
+
+/**
+ * Retourne les infos API Grist detectees (baseUrl, tableId, mappings colonnes).
+ */
+export function getGristApiInfo(): {
+  apiBaseUrl: string | null;
+  tableId: string | null;
+  columnMappings: Record<string, string> | null;
+} {
+  return { apiBaseUrl: gristApiBaseUrl, tableId: gristTableId, columnMappings: gristColumnMappings };
+}
+
 /**
  * Initialise le pont Grist -> data-bridge.
  *
@@ -25,9 +54,13 @@ export function initGristBridge(
     onEditOptions: options?.onEditOptions,
   });
 
+  detectGristApi();
   GouvWidgets.dispatchDataLoading(GRIST_SOURCE_ID);
 
   grist.onRecords((records, mappings) => {
+    if (mappings) {
+      gristColumnMappings = mappings as Record<string, string>;
+    }
     const mapped = grist.mapColumnNames(records, mappings);
     if (!mapped) {
       GouvWidgets.dispatchDataError(GRIST_SOURCE_ID, new Error(

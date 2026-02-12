@@ -11,7 +11,7 @@
  */
 
 import './styles/grist-widgets.css';
-import { initGristBridge, onGristOptions } from './shared/grist-bridge.js';
+import { initGristBridge, onGristOptions, getGristApiInfo } from './shared/grist-bridge.js';
 import { createOptionsPanel, type OptionDef } from './shared/grist-options-panel.js';
 
 const ALL_OPTIONS: OptionDef[] = [
@@ -204,7 +204,9 @@ function applyOptions(opts: Record<string, unknown>) {
 
 // --- Export HTML ---
 
-function generateExportHtml(): string {
+let activeTab: 'fixed' | 'dynamic' = 'fixed';
+
+function generateFixedHtml(): string {
   const data = GouvWidgets.getDataCache('grist') as Record<string, unknown>[] | undefined;
   if (!data || data.length === 0) return '';
 
@@ -264,13 +266,91 @@ function generateExportHtml(): string {
 <\/script>`;
 }
 
+function generateDynamicHtml(): string {
+  const { apiBaseUrl, tableId, columnMappings } = getGristApiInfo();
+  if (!apiBaseUrl || !tableId) return '(Information API Grist non disponible.\nLe widget doit etre charge dans Grist pour detecter l\'URL du document.)';
+
+  const match = apiBaseUrl.match(/\/api\/docs\/([^/]+)/);
+  if (!match) return '(URL API Grist non reconnue)';
+  const docId = match[1];
+
+  const proxyUrl = `https://chartsbuilder.matge.com/grist-gouv-proxy/api/docs/${docId}/tables/${tableId}/records`;
+
+  const type = currentType;
+  const opts = currentOptions;
+
+  const labelCol = columnMappings?.Label || 'Label';
+  const valueCol = columnMappings?.Value || 'Value';
+  const value2Col = columnMappings?.Value2 as string | undefined;
+  const codeCol = columnMappings?.Code as string | undefined;
+
+  const deps = [
+    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
+  ];
+
+  if (type === 'kpi') {
+    const agg = (opts.aggregation || 'avg') as string;
+    const format = (opts.format || 'nombre') as string;
+    const label = (opts.label || 'Indicateur') as string;
+    const icone = opts.icone ? ` icone="${opts.icone}"` : '';
+    const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
+
+    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>');
+
+    return `${deps.join('\n')}
+
+<!-- Source Grist (document public requis) -->
+<gouv-source
+  id="grist-data"
+  url="${proxyUrl}"
+  transform="records">
+</gouv-source>
+
+<!-- Widget KPI -->
+<gouv-kpi source="grist-data" valeur="${agg}:fields.${valueCol}" format="${format}" label="${label}"${icone}${couleur}></gouv-kpi>`;
+  }
+
+  deps.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">');
+  deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\\/script>');
+  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>');
+
+  const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
+  const horizontal = opts.horizontal === true ? ' horizontal' : '';
+  const stacked = opts.stacked === true ? ' stacked' : '';
+  const unitTooltip = opts.unitTooltip ? ` unit-tooltip="${opts.unitTooltip}"` : '';
+  const codeFieldAttr = (type === 'map' || type === 'map-reg') && codeCol ? ` code-field="fields.${codeCol}"` : '';
+  const valueField2 = value2Col ? ` value-field-2="fields.${value2Col}"` : '';
+
+  return `${deps.join('\n')}
+
+<!-- Source Grist (document public requis) -->
+<gouv-source
+  id="grist-data"
+  url="${proxyUrl}"
+  transform="records">
+</gouv-source>
+
+<!-- Widget graphique -->
+<gouv-dsfr-chart source="grist-data" type="${type}" label-field="fields.${labelCol}" value-field="fields.${valueCol}"${codeFieldAttr}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></gouv-dsfr-chart>`;
+}
+
 let codeVisible = false;
 
 function updateCodePanel() {
   const codeContent = document.getElementById('code-content');
   if (!codeContent) return;
-  const htmlContent = generateExportHtml();
+  const htmlContent = activeTab === 'dynamic' ? generateDynamicHtml() : generateFixedHtml();
   codeContent.textContent = htmlContent || '(aucune donnee)';
+}
+
+function switchTab(tab: 'fixed' | 'dynamic') {
+  activeTab = tab;
+  document.getElementById('tab-fixed')?.classList.toggle('active', tab === 'fixed');
+  document.getElementById('tab-dynamic')?.classList.toggle('active', tab === 'dynamic');
+  updateCodePanel();
 }
 
 function toggleCode() {
@@ -365,3 +445,5 @@ document.addEventListener('gouv-data-loaded', () => {
 // Bind buttons
 document.getElementById('btn-toggle-code')?.addEventListener('click', toggleCode);
 document.getElementById('btn-copy-code')?.addEventListener('click', copyCode);
+document.getElementById('tab-fixed')?.addEventListener('click', () => switchTab('fixed'));
+document.getElementById('tab-dynamic')?.addEventListener('click', () => switchTab('dynamic'));

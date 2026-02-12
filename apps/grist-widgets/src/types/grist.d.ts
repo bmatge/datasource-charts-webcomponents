@@ -47,6 +47,7 @@ interface GristApi {
 }
 
 interface GristTableApi {
+  getTableId(): Promise<string>;
   getRecords(options?: { filters?: Record<string, unknown[]> }): Promise<GristRecord[]>;
   create(records: Record<string, unknown>): Promise<number[]>;
   update(records: Record<string, unknown>): Promise<void>;
@@ -57,6 +58,7 @@ interface GristDocApi {
   getDocName(): Promise<string>;
   listTables(): Promise<string[]>;
   fetchTable(tableId: string): Promise<Record<string, unknown[]>>;
+  getAccessToken(options: { readOnly: boolean }): Promise<{ baseUrl: string; token: string; ttl: number }>;
 }
 
 declare const grist: GristApi;
