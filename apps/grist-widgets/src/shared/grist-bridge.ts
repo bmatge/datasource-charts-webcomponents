@@ -17,28 +17,67 @@ let gristColumnMappings: Record<string, string> | null = null;
  * Essaie selectedTable puis getTable() pour le table ID.
  */
 export function detectGristApi(): void {
+  console.log('[grist-bridge] detectGristApi() called');
+  console.log('[grist-bridge] document.referrer =', document.referrer);
+  console.log('[grist-bridge] typeof grist =', typeof grist);
+  console.log('[grist-bridge] grist.docApi =', grist.docApi);
+  console.log('[grist-bridge] typeof getAccessToken =', typeof grist.docApi?.getAccessToken);
+  console.log('[grist-bridge] grist.selectedTable =', grist.selectedTable);
+
   // 1. Detect API base URL
   try {
     if (typeof grist.docApi?.getAccessToken === 'function') {
+      console.log('[grist-bridge] Trying getAccessToken...');
       grist.docApi.getAccessToken({ readOnly: true })
-        .then(info => { gristApiBaseUrl = info.baseUrl; })
-        .catch(() => { detectBaseUrlFromReferrer(); });
+        .then(info => {
+          console.log('[grist-bridge] getAccessToken OK:', info);
+          gristApiBaseUrl = info.baseUrl;
+        })
+        .catch((err) => {
+          console.log('[grist-bridge] getAccessToken FAILED:', err);
+          detectBaseUrlFromReferrer();
+        });
     } else {
+      console.log('[grist-bridge] getAccessToken not available, trying referrer');
       detectBaseUrlFromReferrer();
     }
-  } catch {
+  } catch (err) {
+    console.log('[grist-bridge] getAccessToken exception:', err);
     detectBaseUrlFromReferrer();
   }
 
   // 2. Detect table ID
   try {
-    const table = grist.selectedTable ?? grist.getTable();
-    if (table && typeof table.getTableId === 'function') {
-      table.getTableId()
-        .then(id => { gristTableId = id; })
-        .catch(() => {});
+    console.log('[grist-bridge] Trying to get table...');
+    let table;
+    try {
+      table = grist.selectedTable;
+      console.log('[grist-bridge] grist.selectedTable =', table);
+    } catch (e) {
+      console.log('[grist-bridge] grist.selectedTable error:', e);
     }
-  } catch { /* getTable() not available */ }
+    if (!table) {
+      try {
+        table = grist.getTable();
+        console.log('[grist-bridge] grist.getTable() =', table);
+      } catch (e) {
+        console.log('[grist-bridge] grist.getTable() error:', e);
+      }
+    }
+    if (table && typeof table.getTableId === 'function') {
+      console.log('[grist-bridge] Trying getTableId...');
+      table.getTableId()
+        .then(id => {
+          console.log('[grist-bridge] getTableId OK:', id);
+          gristTableId = id;
+        })
+        .catch((err) => { console.log('[grist-bridge] getTableId FAILED:', err); });
+    } else {
+      console.log('[grist-bridge] No table object available');
+    }
+  } catch (err) {
+    console.log('[grist-bridge] table detection exception:', err);
+  }
 }
 
 /**
@@ -49,13 +88,24 @@ export function detectGristApi(): void {
 function detectBaseUrlFromReferrer(): void {
   try {
     const referrer = document.referrer;
-    if (!referrer) return;
+    console.log('[grist-bridge] detectBaseUrlFromReferrer, referrer =', referrer);
+    if (!referrer) {
+      console.log('[grist-bridge] No referrer available');
+      return;
+    }
     const url = new URL(referrer);
+    console.log('[grist-bridge] Referrer pathname =', url.pathname);
     const match = url.pathname.match(/^(\/o\/[^/]+)\/([^/]+)/);
+    console.log('[grist-bridge] Referrer regex match =', match);
     if (match) {
       gristApiBaseUrl = `${url.origin}${match[1]}/api/docs/${match[2]}`;
+      console.log('[grist-bridge] Detected API base URL from referrer:', gristApiBaseUrl);
+    } else {
+      console.log('[grist-bridge] Referrer did not match expected pattern');
     }
-  } catch { /* parsing failed */ }
+  } catch (err) {
+    console.log('[grist-bridge] detectBaseUrlFromReferrer error:', err);
+  }
 }
 
 /**
