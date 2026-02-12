@@ -202,18 +202,107 @@ function applyOptions(opts: Record<string, unknown>) {
   }
 }
 
+// --- Export HTML ---
+
+function generateExportHtml(): string {
+  const data = GouvWidgets.getDataCache('grist') as Record<string, unknown>[] | undefined;
+  if (!data || data.length === 0) return '';
+
+  const type = currentType;
+  const opts = currentOptions;
+  const jsonData = JSON.stringify(data);
+
+  if (type === 'kpi') {
+    const agg = (opts.aggregation || 'avg') as string;
+    const format = (opts.format || 'nombre') as string;
+    const label = (opts.label || 'Indicateur') as string;
+    const icone = opts.icone ? ` icone="${opts.icone}"` : '';
+    const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
+
+    return `<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export KPI - gouv-widgets</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
+</head>
+<body>
+<gouv-kpi source="export" valeur="${agg}:Value" format="${format}" label="${label}"${icone}${couleur}></gouv-kpi>
+<script>
+  customElements.whenDefined('gouv-kpi').then(function() {
+    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+  });
+<\/script>
+</body>
+</html>`;
+  }
+
+  // Chart types: bar, line, pie, radar, scatter, gauge, bar-line, map, map-reg
+  const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
+  const horizontal = opts.horizontal === true ? ' horizontal' : '';
+  const stacked = opts.stacked === true ? ' stacked' : '';
+  const unitTooltip = opts.unitTooltip ? ` unit-tooltip="${opts.unitTooltip}"` : '';
+  const codeField = (type === 'map' || type === 'map-reg') ? ' code-field="Code"' : '';
+  const hasValue2 = data.length > 0 && 'Value2' in data[0];
+  const valueField2 = hasValue2 ? ' value-field-2="Value2"' : '';
+
+  return `<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export graphique - gouv-widgets</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
+</head>
+<body>
+<gouv-dsfr-chart source="export" type="${type}" label-field="Label" value-field="Value"${codeField}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></gouv-dsfr-chart>
+<script>
+  customElements.whenDefined('gouv-dsfr-chart').then(function() {
+    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+  });
+<\/script>
+</body>
+</html>`;
+}
+
+function downloadHtml() {
+  const htmlContent = generateExportHtml();
+  if (!htmlContent) return;
+
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentType === 'kpi' ? 'export-kpi.html' : 'export-chart.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function showOptionsPanel() {
   const panel = document.getElementById('options-panel');
   const content = document.getElementById('widget-container');
+  const toolbar = document.getElementById('chart-toolbar');
   if (!panel || !content) return;
 
   panel.classList.add('visible');
   content.style.display = 'none';
+  if (toolbar) toolbar.style.display = 'none';
 
   createOptionsPanel(panel, ALL_OPTIONS, currentOptions, () => {
     // Fermer le panneau apres sauvegarde
     panel.classList.remove('visible');
     content.style.display = 'block';
+    // Re-afficher la toolbar si des donnees sont presentes
+    if (toolbar && GouvWidgets.getDataCache('grist')) toolbar.style.display = 'flex';
   });
 }
 
@@ -241,7 +330,12 @@ document.addEventListener('gouv-data-loaded', () => {
   const empty = document.getElementById('empty-state');
   const container = document.getElementById('widget-container');
   const panel = document.getElementById('options-panel');
+  const toolbar = document.getElementById('chart-toolbar');
   if (empty) empty.style.display = 'none';
   if (container) container.style.display = 'block';
+  if (toolbar) toolbar.style.display = 'flex';
   if (panel) panel.classList.remove('visible');
 });
+
+// Bind export button
+document.getElementById('btn-export-html')?.addEventListener('click', downloadHtml);

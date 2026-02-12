@@ -82,3 +82,11 @@ html, body {
 .grist-options-panel.visible {
   display: block;
 }
+
+/* Toolbar (export buttons) */
+.grist-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.25rem 0;
+  gap: 0.5rem;
+}
