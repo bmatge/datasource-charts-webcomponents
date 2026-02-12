@@ -30,13 +30,23 @@
       <p>Mappez vos colonnes dans les options du widget</p>
     </div>
     <div class="grist-toolbar" id="chart-toolbar" style="display: none;">
-      <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" id="btn-export-html" type="button">
-        <span class="fr-icon-code-s-slash-line fr-icon--sm" aria-hidden="true"></span>
-        Exporter HTML
+      <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" id="btn-toggle-code" type="button">
+        <span class="ri-code-s-slash-line" aria-hidden="true"></span>
+        Voir le code
       </button>
     </div>
     <div class="grist-widget-content" id="widget-container" style="display: none;">
       <!-- Widget genere dynamiquement par chart.ts selon le type choisi -->
+    </div>
+    <div class="grist-code-panel" id="code-panel" style="display: none;">
+      <div class="grist-code-header">
+        <span>Code HTML</span>
+        <button class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" id="btn-copy-code" type="button">
+          <span class="ri-clipboard-line" aria-hidden="true"></span>
+          Copier
+        </button>
+      </div>
+      <pre class="grist-code-block"><code id="code-content"></code></pre>
     </div>
     <div class="grist-options-panel" id="options-panel"></div>
   </div>

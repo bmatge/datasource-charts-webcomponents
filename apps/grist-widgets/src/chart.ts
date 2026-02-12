@@ -274,35 +274,67 @@ function generateExportHtml(): string {
 </html>`;
 }
 
-function downloadHtml() {
-  const htmlContent = generateExportHtml();
-  if (!htmlContent) return;
+let codeVisible = false;
 
-  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = currentType === 'kpi' ? 'export-kpi.html' : 'export-chart.html';
-  a.click();
-  URL.revokeObjectURL(url);
+function updateCodePanel() {
+  const codeContent = document.getElementById('code-content');
+  if (!codeContent) return;
+  const htmlContent = generateExportHtml();
+  codeContent.textContent = htmlContent || '(aucune donnee)';
+}
+
+function toggleCode() {
+  const codePanel = document.getElementById('code-panel');
+  const btn = document.getElementById('btn-toggle-code');
+  if (!codePanel || !btn) return;
+
+  codeVisible = !codeVisible;
+  if (codeVisible) {
+    updateCodePanel();
+    codePanel.style.display = 'block';
+    btn.innerHTML = '<span class="ri-code-s-slash-line" aria-hidden="true"></span> Masquer le code';
+  } else {
+    codePanel.style.display = 'none';
+    btn.innerHTML = '<span class="ri-code-s-slash-line" aria-hidden="true"></span> Voir le code';
+  }
+}
+
+function copyCode() {
+  const codeContent = document.getElementById('code-content');
+  const btn = document.getElementById('btn-copy-code');
+  if (!codeContent || !btn) return;
+
+  const text = codeContent.textContent || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="ri-check-line" aria-hidden="true"></span> Copie !';
+    setTimeout(() => { btn.innerHTML = original; }, 1500);
+  });
 }
 
 function showOptionsPanel() {
   const panel = document.getElementById('options-panel');
   const content = document.getElementById('widget-container');
   const toolbar = document.getElementById('chart-toolbar');
+  const codePanel = document.getElementById('code-panel');
   if (!panel || !content) return;
 
   panel.classList.add('visible');
   content.style.display = 'none';
   if (toolbar) toolbar.style.display = 'none';
+  if (codePanel) codePanel.style.display = 'none';
 
   createOptionsPanel(panel, ALL_OPTIONS, currentOptions, () => {
     // Fermer le panneau apres sauvegarde
     panel.classList.remove('visible');
     content.style.display = 'block';
     // Re-afficher la toolbar si des donnees sont presentes
-    if (toolbar && GouvWidgets.getDataCache('grist')) toolbar.style.display = 'flex';
+    const hasData = GouvWidgets.getDataCache('grist');
+    if (toolbar && hasData) toolbar.style.display = 'flex';
+    if (codePanel && codeVisible && hasData) {
+      updateCodePanel();
+      codePanel.style.display = 'block';
+    }
   });
 }
 
@@ -331,11 +363,15 @@ document.addEventListener('gouv-data-loaded', () => {
   const container = document.getElementById('widget-container');
   const panel = document.getElementById('options-panel');
   const toolbar = document.getElementById('chart-toolbar');
+  const codePanel = document.getElementById('code-panel');
   if (empty) empty.style.display = 'none';
   if (container) container.style.display = 'block';
   if (toolbar) toolbar.style.display = 'flex';
   if (panel) panel.classList.remove('visible');
+  // Mettre a jour le code si le panneau est visible
+  if (codePanel && codeVisible) updateCodePanel();
 });
 
-// Bind export button
-document.getElementById('btn-export-html')?.addEventListener('click', downloadHtml);
+// Bind buttons
+document.getElementById('btn-toggle-code')?.addEventListener('click', toggleCode);
+document.getElementById('btn-copy-code')?.addEventListener('click', copyCode);

@@ -82,18 +82,103 @@ function applyOptions(opts: Record<string, unknown>) {
   if (container) container.style.display = 'block';
 }
 
+// --- Code HTML panel ---
+
+let codeVisible = false;
+
+function generateExportHtml(): string {
+  const data = GouvWidgets.getDataCache(GRIST_SOURCE_ID) as Record<string, unknown>[] | undefined;
+  if (!data || data.length === 0) return '';
+
+  const datalist = document.querySelector('gouv-datalist');
+  const colonnes = datalist?.getAttribute('colonnes') || '';
+  const pagination = datalist?.getAttribute('pagination') || '20';
+  const hasRecherche = datalist?.hasAttribute('recherche');
+  const exportAttr = datalist?.getAttribute('export') || '';
+
+  const recherche = hasRecherche ? ' recherche' : '';
+  const exportPart = exportAttr ? ` export="${exportAttr}"` : '';
+  const jsonData = JSON.stringify(data);
+
+  return `<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export tableau - gouv-widgets</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>
+</head>
+<body>
+<gouv-datalist source="export" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></gouv-datalist>
+<script>
+  customElements.whenDefined('gouv-datalist').then(function() {
+    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+  });
+<\/script>
+</body>
+</html>`;
+}
+
+function updateCodePanel() {
+  const codeContent = document.getElementById('code-content');
+  if (!codeContent) return;
+  codeContent.textContent = generateExportHtml() || '(aucune donnee)';
+}
+
+function toggleCode() {
+  const codePanel = document.getElementById('code-panel');
+  const btn = document.getElementById('btn-toggle-code');
+  if (!codePanel || !btn) return;
+
+  codeVisible = !codeVisible;
+  if (codeVisible) {
+    updateCodePanel();
+    codePanel.style.display = 'block';
+    btn.innerHTML = '<span class="ri-code-s-slash-line" aria-hidden="true"></span> Masquer le code';
+  } else {
+    codePanel.style.display = 'none';
+    btn.innerHTML = '<span class="ri-code-s-slash-line" aria-hidden="true"></span> Voir le code';
+  }
+}
+
+function copyCode() {
+  const codeContent = document.getElementById('code-content');
+  const btn = document.getElementById('btn-copy-code');
+  if (!codeContent || !btn) return;
+
+  const text = codeContent.textContent || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="ri-check-line" aria-hidden="true"></span> Copie !';
+    setTimeout(() => { btn.innerHTML = original; }, 1500);
+  });
+}
+
 function showOptionsPanel() {
   const panel = document.getElementById('options-panel');
   const content = document.getElementById('datalist-container');
+  const toolbar = document.getElementById('datalist-toolbar');
+  const codePanel = document.getElementById('code-panel');
   if (!panel || !content) return;
 
   panel.classList.add('visible');
   content.style.display = 'none';
+  if (toolbar) toolbar.style.display = 'none';
+  if (codePanel) codePanel.style.display = 'none';
 
   createOptionsPanel(panel, DATALIST_OPTIONS, currentOptions, () => {
     // Fermer le panneau apres sauvegarde
     panel.classList.remove('visible');
     content.style.display = 'block';
+    const hasData = GouvWidgets.getDataCache(GRIST_SOURCE_ID);
+    if (toolbar && hasData) toolbar.style.display = 'flex';
+    if (codePanel && codeVisible && hasData) {
+      updateCodePanel();
+      codePanel.style.display = 'block';
+    }
   });
 }
 
@@ -146,7 +231,15 @@ document.addEventListener('gouv-data-loaded', () => {
   const empty = document.getElementById('empty-state');
   const container = document.getElementById('datalist-container');
   const panel = document.getElementById('options-panel');
+  const toolbar = document.getElementById('datalist-toolbar');
+  const codePanel = document.getElementById('code-panel');
   if (empty) empty.style.display = 'none';
   if (container) container.style.display = 'block';
+  if (toolbar) toolbar.style.display = 'flex';
   if (panel) panel.classList.remove('visible');
+  if (codePanel && codeVisible) updateCodePanel();
 });
+
+// Bind buttons
+document.getElementById('btn-toggle-code')?.addEventListener('click', toggleCode);
+document.getElementById('btn-copy-code')?.addEventListener('click', copyCode);
