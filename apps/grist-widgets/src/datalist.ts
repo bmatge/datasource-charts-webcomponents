@@ -251,7 +251,7 @@ function autoConfigureColumns(data: Record<string, unknown>[]) {
 
 // Initialisation : acces complet a la table (toutes les colonnes)
 grist.ready({
-  requiredAccess: 'read table',
+  requiredAccess: 'full',
   onEditOptions: showOptionsPanel,
 });
 
