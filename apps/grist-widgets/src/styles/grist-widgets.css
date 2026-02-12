@@ -24,6 +24,7 @@ html, body {
 .grist-widget-content {
   flex: 1;
   min-height: 0;
+  overflow: auto;
 }
 
 /* Etat de chargement */
@@ -93,8 +94,10 @@ html, body {
 
 /* Panneau de code HTML */
 .grist-code-panel {
+  flex-shrink: 0;
   border-top: 1px solid var(--border-default-grey, #ddd);
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
+  background: var(--background-default-grey, #fff);
 }
 
 .grist-code-header {

@@ -13,16 +13,49 @@ let gristColumnMappings: Record<string, string> | null = null;
 
 /**
  * Detecte l'URL API Grist et le table ID (fire-and-forget).
+ * Essaie getAccessToken puis fallback sur document.referrer.
+ * Essaie selectedTable puis getTable() pour le table ID.
  */
 export function detectGristApi(): void {
-  Promise.all([
-    grist.docApi.getAccessToken({ readOnly: true }).then(info => {
-      gristApiBaseUrl = info.baseUrl;
-    }),
-    grist.selectedTable?.getTableId().then(id => {
-      gristTableId = id;
-    }),
-  ]).catch(() => { /* API non disponible */ });
+  // 1. Detect API base URL
+  try {
+    if (typeof grist.docApi?.getAccessToken === 'function') {
+      grist.docApi.getAccessToken({ readOnly: true })
+        .then(info => { gristApiBaseUrl = info.baseUrl; })
+        .catch(() => { detectBaseUrlFromReferrer(); });
+    } else {
+      detectBaseUrlFromReferrer();
+    }
+  } catch {
+    detectBaseUrlFromReferrer();
+  }
+
+  // 2. Detect table ID
+  try {
+    const table = grist.selectedTable ?? grist.getTable();
+    if (table && typeof table.getTableId === 'function') {
+      table.getTableId()
+        .then(id => { gristTableId = id; })
+        .catch(() => {});
+    }
+  } catch { /* getTable() not available */ }
+}
+
+/**
+ * Fallback : parse l'URL API depuis document.referrer.
+ * Page URL: https://HOST/o/ORG/DOC_ID/slug/p/N
+ * API URL:  https://HOST/o/ORG/api/docs/DOC_ID
+ */
+function detectBaseUrlFromReferrer(): void {
+  try {
+    const referrer = document.referrer;
+    if (!referrer) return;
+    const url = new URL(referrer);
+    const match = url.pathname.match(/^(\/o\/[^/]+)\/([^/]+)/);
+    if (match) {
+      gristApiBaseUrl = `${url.origin}${match[1]}/api/docs/${match[2]}`;
+    }
+  } catch { /* parsing failed */ }
 }
 
 /**
