@@ -298,7 +298,7 @@ function generateDynamicHtml(): string {
     const icone = opts.icone ? ` icone="${opts.icone}"` : '';
     const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
 
-    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>');
+    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
 
     return `${deps.join('\n')}
 
@@ -314,8 +314,8 @@ function generateDynamicHtml(): string {
   }
 
   deps.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">');
-  deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\\/script>');
-  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>');
+  deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>');
+  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
 
   const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
   const horizontal = opts.horizontal === true ? ' horizontal' : '';

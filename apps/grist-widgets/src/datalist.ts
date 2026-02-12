@@ -107,7 +107,7 @@ function generateFixedHtml(): string {
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
-    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>',
   ];
 
   return `${deps.join('\n')}
@@ -118,7 +118,7 @@ function generateFixedHtml(): string {
   customElements.whenDefined('gouv-datalist').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
-<\\/script>`;
+<\/script>`;
 }
 
 function generateDynamicHtml(): string {
@@ -147,7 +147,7 @@ function generateDynamicHtml(): string {
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
-    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\\/script>',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>',
   ];
 
   return `${deps.join('\n')}
