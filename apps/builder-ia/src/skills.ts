@@ -736,6 +736,73 @@ les cles du premier objet sont utilisees comme colonnes.
 \`\`\``,
   },
 
+  gouvDisplay: {
+    id: 'gouvDisplay',
+    name: 'gouv-display',
+    description: 'Affichage dynamique de donnees via template HTML (cartes, tuiles, listes)',
+    trigger: ['cartes', 'carte', 'tuiles', 'tuile', 'cards', 'tiles', 'display', 'template', 'affichage', 'liste de resultats', 'motif repetitif'],
+    content: `## <gouv-display> - Affichage dynamique via template
+
+Genere des elements HTML repetitifs (cartes DSFR, tuiles, callouts, etc.) a partir
+d'un template et d'une source de donnees. Chaque element du tableau de donnees produit
+une instance du template avec les valeurs injectees.
+
+### Syntaxe du template
+Le template est defini dans un element \`<template>\` enfant du composant.
+Les placeholders sont remplaces pour chaque element de donnees :
+
+| Syntaxe | Description |
+|---------|-------------|
+| \`{{champ}}\` | Valeur echappee (HTML-safe) |
+| \`{{{champ}}}\` | Valeur brute (non echappee — utiliser avec precaution) |
+| \`{{champ|defaut}}\` | Valeur avec fallback si null/undefined |
+| \`{{champ.sous.cle}}\` | Acces aux proprietes imbriquees (dot notation) |
+| \`{{$index}}\` | Index de l'element dans le tableau (0-based) |
+
+### Attributs
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | \`""\` | oui | ID de la source, query ou normalize |
+| cols | Number | \`1\` | non | Nombre de colonnes dans la grille (1-6) |
+| pagination | Number | \`0\` | non | Elements par page (0 = tout afficher) |
+| empty | String | \`"Aucun resultat"\` | non | Message quand le tableau est vide |
+| gap | String | \`"fr-grid-row--gutters"\` | non | Classe CSS de gap pour la grille |
+
+### Exemples
+\`\`\`html
+<!-- Cartes DSFR en grille 3 colonnes avec pagination -->
+<gouv-display source="data" cols="3" pagination="12">
+  <template>
+    <div class="fr-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">{{titre}}</h3>
+          <p class="fr-card__desc">{{description}}</p>
+        </div>
+        <div class="fr-card__footer">
+          <p class="fr-badge fr-badge--sm">{{categorie}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+
+<!-- Tuiles DSFR simples -->
+<gouv-display source="data" cols="4">
+  <template>
+    <div class="fr-tile">
+      <div class="fr-tile__body">
+        <div class="fr-tile__content">
+          <h3 class="fr-tile__title">{{nom}}</h3>
+          <p class="fr-tile__desc">{{description|Pas de description}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+\`\`\``,
+  },
+
   // ---------------------------------------------------------------------------
   // Composants DSFR Chart natifs
   // ---------------------------------------------------------------------------

@@ -11,6 +11,7 @@ export { GouvNormalize } from './components/gouv-normalize.js';
 export { GouvFacets } from './components/gouv-facets.js';
 export { GouvKpi } from './components/gouv-kpi.js';
 export { GouvDatalist } from './components/gouv-datalist.js';
+export { GouvDisplay } from './components/gouv-display.js';
 export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
 
 // Composants de layout

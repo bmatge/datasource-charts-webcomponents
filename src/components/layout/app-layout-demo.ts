@@ -109,6 +109,7 @@ export class AppLayoutDemo extends LitElement {
           { id: 'components/gouv-facets', label: 'gouv-facets', href: 'components/gouv-facets.html' },
           { id: 'components/gouv-kpi', label: 'gouv-kpi', href: 'components/gouv-kpi.html' },
           { id: 'components/gouv-datalist', label: 'gouv-datalist', href: 'components/gouv-datalist.html' },
+          { id: 'components/gouv-display', label: 'gouv-display', href: 'components/gouv-display.html' },
           { id: 'components/gouv-dsfr-chart', label: 'gouv-dsfr-chart', href: 'components/gouv-dsfr-chart.html' },
         ]
       },
