@@ -388,9 +388,9 @@ export const examples: Record<string, string> = {
 
   'query-pie': `<!--
   Camembert — Elus par categorie socio-professionnelle
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
+  Mode requete : gouv-query (tabular) → gouv-dsfr-chart (pie)
   Source : Registre des elus municipaux (tabular-api)
-  gouv-query regroupe par categorie et compte le nombre d'elus
+  gouv-query en mode tabular regroupe cote serveur par categorie et compte le nombre d'elus
 -->
 
 <div class="fr-container fr-my-4w">
@@ -399,12 +399,9 @@ export const examples: Record<string, string> = {
     Source : tabular-api.data.gouv.fr — Repertoire national des elus
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
-    transform="data">
-  </gouv-source>
-
-  <gouv-query id="q-pie" source="data"
+  <gouv-query id="q-pie"
+    api-type="tabular"
+    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Code sexe:count:nombre"
     order-by="nombre:desc"
@@ -588,7 +585,7 @@ export const examples: Record<string, string> = {
 
   'query-kpi': `<!--
   KPI — Statistiques des elus avec filtre
-  Mode requete : gouv-source → gouv-query (filtre) → gouv-kpi
+  Mode requete : gouv-query (tabular) → gouv-query (filtre) → gouv-kpi
   Source : Registre des elus municipaux (tabular-api)
   Combine des KPI sur les donnees brutes et sur un sous-ensemble filtre
 -->
@@ -599,12 +596,14 @@ export const examples: Record<string, string> = {
     Source : tabular-api.data.gouv.fr — Repertoire national des elus
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <!-- Requete tabular : recupere les donnees cote serveur -->
+  <gouv-query id="data"
+    api-type="tabular"
+    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
+    limit="50">
+  </gouv-query>
 
-  <!-- Filtre : uniquement les Maires -->
+  <!-- Filtre client-side : uniquement les Maires -->
   <gouv-query id="q-maires" source="data"
     filter="Libellé de la fonction:contains:Maire">
   </gouv-query>
@@ -626,17 +625,18 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      Le filtre <code>Libellé de la fonction:contains:Maire</code>
-      isole un sous-ensemble, chaque KPI souscrit a sa propre source.
+      <code>gouv-query</code> en mode <code>tabular</code> recupere les donnees
+      via l'API Tabular. Le second <code>gouv-query</code> filtre ensuite
+      cote client avec <code>Libellé de la fonction:contains:Maire</code>.
     </p>
   </div>
 </div>`,
 
   'query-datalist': `<!--
   Tableau — Elus filtres par region
-  Mode requete : gouv-source → gouv-query (filtre) → gouv-datalist
+  Mode requete : gouv-query (tabular) → gouv-datalist
   Source : Registre des elus municipaux (tabular-api)
-  gouv-query filtre les elus d'une region specifique
+  gouv-query en mode tabular filtre les elus cote serveur
 -->
 
 <div class="fr-container fr-my-4w">
@@ -645,13 +645,11 @@ export const examples: Record<string, string> = {
     Source : tabular-api.data.gouv.fr — Repertoire national des elus
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
-    transform="data">
-  </gouv-source>
-
-  <gouv-query id="q-datalist" source="data"
-    filter="Libellé de la région:contains:Ile">
+  <gouv-query id="q-datalist"
+    api-type="tabular"
+    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
+    filter="Libellé de la région:contains:Ile"
+    limit="50">
   </gouv-query>
 
   <gouv-datalist source="q-datalist"
@@ -996,25 +994,23 @@ export const examples: Record<string, string> = {
 
   'query-display': `<!--
   Cartes DSFR — Elus municipaux avec filtre
-  Mode requete : gouv-source → gouv-query (filtre) → gouv-display (cartes)
+  Mode requete : gouv-query (tabular) → gouv-display (cartes)
   Source : Registre des elus municipaux (tabular-api)
-  Combine un filtre par fonction avec un affichage en cartes
+  gouv-query en mode tabular filtre les Maires cote serveur
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires municipaux</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus
-    <br>Pipeline : gouv-source → <strong>gouv-query</strong> → gouv-display
+    <br>Pipeline : <strong>gouv-query</strong> (tabular) → gouv-display
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
-    transform="data">
-  </gouv-source>
-
-  <gouv-query id="maires" source="data"
-    filter="Libellé de la fonction:eq:Maire">
+  <gouv-query id="maires"
+    api-type="tabular"
+    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
+    filter="Libellé de la fonction:eq:Maire"
+    limit="50">
   </gouv-query>
 
   <gouv-display source="maires" cols="4" pagination="8">
@@ -1092,6 +1088,226 @@ export const examples: Record<string, string> = {
       via <code>gouv-display</code>.
     </p>
   </div>
+</div>`,
+
+  // =====================================================================
+  // MODE RECHERCHE — gouv-source → gouv-normalize → gouv-search → composant
+  // gouv-search affiche un champ de recherche DSFR et filtre les donnees
+  // en amont. Se combine naturellement avec gouv-facets et gouv-display.
+  // =====================================================================
+
+  'search-datalist': `<!--
+  Tableau filtrable — Elus municipaux avec recherche textuelle
+  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-datalist
+  Source : Registre des elus municipaux (tabular-api)
+  gouv-search filtre en temps reel, le tableau affiche les resultats
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Recherche textuelle — Elus municipaux</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-datalist
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie"
+    trim>
+  </gouv-normalize>
+
+  <gouv-search id="searched" source="clean"
+    fields="Nom, Prenom, Fonction"
+    placeholder="Nom, prenom ou fonction..."
+    operator="words"
+    min-length="2"
+    count>
+  </gouv-search>
+
+  <gouv-datalist source="searched"
+    colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+    tri="Nom:asc"
+    pagination="10">
+  </gouv-datalist>
+</div>`,
+
+  'search-display': `<!--
+  Cartes avec recherche — Industrie du futur
+  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-display (cartes)
+  Source : Industrie du futur
+  gouv-search filtre les donnees, gouv-display affiche les resultats en cartes
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Recherche — Industrie du futur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-display
+  </p>
+
+  <gouv-source id="raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    numeric="montant_investissement, nombre_beneficiaires"
+    rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
+    trim>
+  </gouv-normalize>
+
+  <gouv-search id="searched" source="clean"
+    fields="Entreprise, Region, Departement"
+    placeholder="Entreprise, region ou departement..."
+    operator="words"
+    count>
+  </gouv-search>
+
+  <gouv-display source="searched" cols="3" pagination="9">
+    <template>
+      <div class="fr-card">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{Entreprise}}</h3>
+            <p class="fr-card__desc">
+              {{Departement}} — {{Region}}<br>
+              Beneficiaires : {{nombre_beneficiaires}}
+            </p>
+          </div>
+          <div class="fr-card__footer">
+            <p class="fr-badge fr-badge--sm fr-badge--blue-ecume">
+              {{montant_investissement}} EUR
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+</div>`,
+
+  'search-facets-display': `<!--
+  Recherche + facettes + cartes — Elus municipaux
+  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-facets → gouv-display
+  Source : Registre des elus municipaux (tabular-api)
+  gouv-search reduit le jeu de donnees, gouv-facets affine, gouv-display affiche
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Recherche + facettes — Elus municipaux</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie"
+    trim>
+  </gouv-normalize>
+
+  <gouv-search id="searched" source="clean"
+    fields="Nom, Prenom, Departement, Fonction"
+    placeholder="Rechercher un elu..."
+    operator="words"
+    count>
+  </gouv-search>
+
+  <gouv-facets id="filtered" source="searched"
+    fields="Fonction, Departement"
+    labels="Fonction:Fonction | Departement:Departement"
+    max-values="6">
+  </gouv-facets>
+
+  <gouv-display source="filtered" cols="3" pagination="9">
+    <template>
+      <div class="fr-card">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
+            <p class="fr-card__desc">{{Fonction}}</p>
+          </div>
+          <div class="fr-card__footer">
+            <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+</div>`,
+
+  'search-kpi-chart': `<!--
+  Recherche + KPI + graphique — Industrie du futur
+  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-kpi + gouv-query → gouv-dsfr-chart
+  Source : Industrie du futur
+  Les KPI et le graphique se recalculent en temps reel selon la recherche
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Recherche dynamique — Industrie du futur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → KPI + graphique
+  </p>
+
+  <gouv-source id="raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
+    rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
+    trim>
+  </gouv-normalize>
+
+  <gouv-search id="searched" source="clean"
+    fields="Entreprise, Region, Departement"
+    placeholder="Entreprise, region, departement..."
+    operator="words"
+    count>
+  </gouv-search>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+    <gouv-kpi source="searched"
+      valeur="count"
+      label="Projets"
+      couleur="bleu">
+    </gouv-kpi>
+
+    <gouv-kpi source="searched"
+      valeur="sum:montant_investissement"
+      label="Investissement total"
+      format="euro">
+    </gouv-kpi>
+
+    <gouv-kpi source="searched"
+      valeur="sum:nombre_beneficiaires"
+      label="Beneficiaires"
+      format="nombre">
+    </gouv-kpi>
+  </div>
+
+  <gouv-query id="stats" source="searched"
+    group-by="Region"
+    aggregate="nombre_beneficiaires:sum:Beneficiaires"
+    order-by="Beneficiaires:desc"
+    limit="10">
+  </gouv-query>
+
+  <gouv-dsfr-chart source="stats"
+    type="bar"
+    label-field="Region"
+    value-field="Beneficiaires"
+    selected-palette="categorical">
+  </gouv-dsfr-chart>
 </div>`,
 
   'facets-map': `<!--

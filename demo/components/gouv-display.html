@@ -45,6 +45,7 @@
             <tr><td><code>pagination</code></td><td>Number</td><td>Nombre d'elements par page (0 = tout afficher)</td></tr>
             <tr><td><code>empty</code></td><td>String</td><td>Message quand aucune donnee (defaut: "Aucun resultat")</td></tr>
             <tr><td><code>gap</code></td><td>String</td><td>Classe CSS de gap pour la grille (defaut: "fr-grid-row--gutters")</td></tr>
+            <tr><td><code>uid-field</code></td><td>String</td><td>Champ de donnees a utiliser comme identifiant unique par element (vide = index)</td></tr>
           </tbody>
         </table>
 
@@ -60,6 +61,7 @@
             <tr><td><code>{{champ|defaut}}</code></td><td>Valeur avec fallback si null/undefined</td></tr>
             <tr><td><code>{{champ.sous.cle}}</code></td><td>Acces aux proprietes imbriquees</td></tr>
             <tr><td><code>{{$index}}</code></td><td>Index de l'element (0-based)</td></tr>
+            <tr><td><code>{{$uid}}</code></td><td>Identifiant unique de l'element</td></tr>
           </tbody>
         </table>
 
