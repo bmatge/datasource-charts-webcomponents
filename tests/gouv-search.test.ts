@@ -10,6 +10,11 @@ const SAMPLE_DATA = [
   { Nom: 'Internet Plus', Region: 'Bretagne', SIRET: '33333333333333' },
 ];
 
+/** Helper: set URL search params in jsdom */
+function setUrlParams(search: string) {
+  window.history.replaceState({}, '', search ? `?${search}` : window.location.pathname);
+}
+
 describe('GouvSearch', () => {
   let search: GouvSearch;
 
@@ -17,12 +22,14 @@ describe('GouvSearch', () => {
     clearDataCache('test-search');
     clearDataCache('test-source');
     search = new GouvSearch();
+    setUrlParams('');
   });
 
   afterEach(() => {
     if (search.isConnected) {
       search.disconnectedCallback();
     }
+    setUrlParams('');
   });
 
   // --- Normalize ---
@@ -514,6 +521,103 @@ describe('GouvSearch', () => {
       const elapsed = performance.now() - start;
 
       expect(elapsed).toBeLessThan(50);
+    });
+  });
+
+  // --- URL search param ---
+
+  describe('url-search-param', () => {
+    it('reads search term from URL param on first data arrival', () => {
+      setUrlParams('q=net');
+
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.urlSearchParam = 'q';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(3); // NetCommerce, NetPoint, Internet Plus
+    });
+
+    it('uses custom param name', () => {
+      setUrlParams('recherche=campus');
+
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.urlSearchParam = 'recherche';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(1);
+      expect(result[0].Nom).toBe('Campus Online');
+    });
+
+    it('does nothing when param is not in URL', () => {
+      setUrlParams('other=value');
+
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.urlSearchParam = 'q';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+
+    it('does nothing when url-search-param attribute is empty', () => {
+      setUrlParams('q=net');
+
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.urlSearchParam = '';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+
+    it('applies URL param only once (not on every data update)', () => {
+      setUrlParams('q=net');
+
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.urlSearchParam = 'q';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      let result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(3);
+
+      // User clears the search
+      search.clear();
+      result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+
+      // New data arrives — should NOT re-apply URL param
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+
+    it('_applyUrlSearchParam sets _term from URL', () => {
+      setUrlParams('q=hello');
+      search.urlSearchParam = 'q';
+      search._applyUrlSearchParam();
+      expect(search._term).toBe('hello');
+    });
+
+    it('_applyUrlSearchParam does nothing without urlSearchParam', () => {
+      setUrlParams('q=hello');
+      search.urlSearchParam = '';
+      search._applyUrlSearchParam();
+      expect(search._term).toBe('');
     });
   });
 });

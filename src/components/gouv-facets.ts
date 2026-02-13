@@ -76,6 +76,18 @@ export class GouvFacets extends LitElement {
   @property({ type: String })
   display = '';
 
+  /** Active la lecture des parametres d'URL comme pre-selections de facettes */
+  @property({ type: Boolean, attribute: 'url-params' })
+  urlParams = false;
+
+  /** Mapping URL param -> champ facette : "param:field | param2:field2". Si vide, correspondance directe */
+  @property({ type: String, attribute: 'url-param-map' })
+  urlParamMap = '';
+
+  /** Synchronise l'URL quand l'utilisateur change les facettes (pushState) */
+  @property({ type: Boolean, attribute: 'url-sync' })
+  urlSync = false;
+
   @state()
   private _rawData: Record<string, unknown>[] = [];
 
@@ -95,6 +107,8 @@ export class GouvFacets extends LitElement {
   private _openMultiselectField: string | null = null;
 
   private _unsubscribe: (() => void) | null = null;
+  private _popstateHandler: (() => void) | null = null;
+  private _urlParamsApplied = false;
 
   createRenderRoot() {
     return this;
@@ -105,11 +119,23 @@ export class GouvFacets extends LitElement {
     sendWidgetBeacon('gouv-facets');
     this._initialize();
     document.addEventListener('click', this._onClickOutsideMultiselect);
+    if (this.urlSync) {
+      this._popstateHandler = () => {
+        this._applyUrlParams();
+        this._buildFacetGroups();
+        this._applyFilters();
+      };
+      window.addEventListener('popstate', this._popstateHandler);
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('click', this._onClickOutsideMultiselect);
+    if (this._popstateHandler) {
+      window.removeEventListener('popstate', this._popstateHandler);
+      this._popstateHandler = null;
+    }
     if (this._unsubscribe) {
       this._unsubscribe();
       this._unsubscribe = null;
@@ -174,6 +200,10 @@ export class GouvFacets extends LitElement {
 
   private _onData(data: unknown) {
     this._rawData = Array.isArray(data) ? data : [];
+    if (this.urlParams && !this._urlParamsApplied) {
+      this._applyUrlParams();
+      this._urlParamsApplied = true;
+    }
     this._buildFacetGroups();
     this._applyFilters();
   }
@@ -396,6 +426,7 @@ export class GouvFacets extends LitElement {
     this._activeSelections = selections;
     this._buildFacetGroups();
     this._applyFilters();
+    if (this.urlSync) this._syncUrl();
   }
 
   private _handleSelectChange(field: string, e: Event) {
@@ -412,6 +443,7 @@ export class GouvFacets extends LitElement {
     this._activeSelections = selections;
     this._buildFacetGroups();
     this._applyFilters();
+    if (this.urlSync) this._syncUrl();
   }
 
   private _clearFieldSelections(field: string) {
@@ -420,6 +452,7 @@ export class GouvFacets extends LitElement {
     this._activeSelections = selections;
     this._buildFacetGroups();
     this._applyFilters();
+    if (this.urlSync) this._syncUrl();
   }
 
   private _toggleMultiselectDropdown(field: string) {
@@ -455,6 +488,80 @@ export class GouvFacets extends LitElement {
     this._searchQueries = {};
     this._buildFacetGroups();
     this._applyFilters();
+    if (this.urlSync) this._syncUrl();
+  }
+
+  // --- URL params ---
+
+  /** Parse url-param-map attribute into a map of URL param name -> facet field name */
+  _parseUrlParamMap(): Map<string, string> {
+    const map = new Map<string, string>();
+    if (!this.urlParamMap) return map;
+
+    const pairs = this.urlParamMap.split('|');
+    for (const pair of pairs) {
+      const colonIndex = pair.indexOf(':');
+      if (colonIndex === -1) continue;
+      const paramName = pair.substring(0, colonIndex).trim();
+      const fieldName = pair.substring(colonIndex + 1).trim();
+      if (paramName && fieldName) {
+        map.set(paramName, fieldName);
+      }
+    }
+    return map;
+  }
+
+  /** Read URL search params and apply as facet pre-selections */
+  _applyUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const paramMap = this._parseUrlParamMap();
+    const selections: Record<string, Set<string>> = {};
+
+    for (const [paramName, paramValue] of params.entries()) {
+      // Determine the target field name
+      const fieldName = paramMap.size > 0
+        ? (paramMap.get(paramName) ?? null)
+        : paramName;
+
+      if (!fieldName) continue;
+
+      // Support comma-separated values in a single param: ?region=IDF,PACA
+      const values = paramValue.split(',').map(v => v.trim()).filter(Boolean);
+
+      if (!selections[fieldName]) {
+        selections[fieldName] = new Set();
+      }
+      for (const v of values) {
+        selections[fieldName].add(v);
+      }
+    }
+
+    if (Object.keys(selections).length > 0) {
+      this._activeSelections = selections;
+    }
+  }
+
+  /** Sync current facet selections back to URL (replaceState) */
+  private _syncUrl() {
+    const params = new URLSearchParams();
+    const paramMap = this._parseUrlParamMap();
+    // Build reverse map: field -> URL param name
+    const reverseMap = new Map<string, string>();
+    for (const [paramName, fieldName] of paramMap) {
+      reverseMap.set(fieldName, paramName);
+    }
+
+    for (const [field, values] of Object.entries(this._activeSelections)) {
+      if (values.size === 0) continue;
+      const paramName = reverseMap.get(field) ?? field;
+      params.set(paramName, [...values].join(','));
+    }
+
+    const search = params.toString();
+    const newUrl = search
+      ? `${window.location.pathname}?${search}${window.location.hash}`
+      : `${window.location.pathname}${window.location.hash}`;
+    window.history.replaceState(null, '', newUrl);
   }
 
   // --- Rendering ---
