@@ -24,13 +24,13 @@
        Sources de donnees pour les exemples live
        ============================================================ -->
 
-  <!-- Exemple 1 & 2 : Elus municipaux (tabular-api) -->
+  <!-- Exemple 1 & 2 : Maires de France (tabular-api) -->
   <gouv-source id="elus-raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
     transform="data">
   </gouv-source>
   <gouv-normalize id="elus-clean" source="elus-raw"
-    rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; de la fonction:Fonction | Libell&eacute; du  d&eacute;partement:Departement | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Libell&eacute; de la r&eacute;gion:Region"
+    rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; du d&eacute;partement:Departement | Libell&eacute; de la commune:Commune | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
     trim>
   </gouv-normalize>
 
@@ -120,34 +120,34 @@
              Exemple 1 : Recherche seule + Datalist
              ======================================================== -->
         <h2 class="fr-mt-4w">Exemple 1 : recherche simple + tableau</h2>
-        <p>Recherche textuelle sur les champs <code>Nom</code>, <code>Prenom</code> et <code>Fonction</code>.
+        <p>Recherche textuelle sur les champs <code>Nom</code>, <code>Prenom</code> et <code>Commune</code>.
         Le tableau se filtre en temps reel avec un compteur de resultats.</p>
 
         <gouv-search id="elus-searched" source="elus-clean"
-          fields="Nom, Prenom, Fonction"
-          placeholder="Nom, prenom ou fonction..."
+          fields="Nom, Prenom, Commune"
+          placeholder="Nom, prenom ou commune..."
           operator="words"
           min-length="2"
           count>
         </gouv-search>
 
         <gouv-datalist source="elus-searched"
-          colonnes="Nom, Prenom, Fonction, Departement"
+          colonnes="Nom, Prenom, Commune, Departement"
           tri="Nom:asc"
           pagination="10">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Fonction"
-  placeholder="Nom, prenom ou fonction..."
+  fields="Nom, Prenom, Commune"
+  placeholder="Nom, prenom ou commune..."
   operator="words"
   min-length="2"
   count&gt;
 &lt;/gouv-search&gt;
 
 &lt;gouv-datalist source="searched"
-  colonnes="Nom, Prenom, Fonction, Departement"
+  colonnes="Nom, Prenom, Commune, Departement"
   tri="Nom:asc"
   pagination="10"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
@@ -160,15 +160,15 @@
         les facettes affinent. Les cartes affichent les resultats.</p>
 
         <gouv-search id="elus-search-facets" source="elus-clean"
-          fields="Nom, Prenom, Departement, Fonction"
-          placeholder="Rechercher un elu..."
+          fields="Nom, Prenom, Commune, Departement"
+          placeholder="Rechercher un maire..."
           operator="words"
           count>
         </gouv-search>
 
         <gouv-facets id="elus-search-filtered" source="elus-search-facets"
-          fields="Fonction, Departement"
-          labels="Fonction:Fonction | Departement:Departement"
+          fields="Departement, Categorie"
+          labels="Departement:Departement | Categorie:Categorie socio-pro"
           max-values="6">
         </gouv-facets>
 
@@ -178,7 +178,7 @@
               <div class="fr-card__body">
                 <div class="fr-card__content">
                   <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
-                  <p class="fr-card__desc">{{Fonction}}</p>
+                  <p class="fr-card__desc">{{Commune}}</p>
                 </div>
                 <div class="fr-card__footer">
                   <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>
@@ -190,15 +190,15 @@
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Departement, Fonction"
-  placeholder="Rechercher un elu..."
+  fields="Nom, Prenom, Commune, Departement"
+  placeholder="Rechercher un maire..."
   operator="words"
   count&gt;
 &lt;/gouv-search&gt;
 
 &lt;gouv-facets id="filtered" source="searched"
-  fields="Fonction, Departement"
-  labels="Fonction:Fonction | Departement:Departement"
+  fields="Departement, Categorie"
+  labels="Departement:Departement | Categorie:Categorie socio-pro"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
@@ -208,7 +208,7 @@
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
           &lt;h3 class="fr-card__title"&gt;{{Prenom}} {{Nom}}&lt;/h3&gt;
-          &lt;p class="fr-card__desc"&gt;{{Fonction}}&lt;/p&gt;
+          &lt;p class="fr-card__desc"&gt;{{Commune}}&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class="fr-card__footer"&gt;
           &lt;p class="fr-badge fr-badge--sm"&gt;{{Departement}}&lt;/p&gt;

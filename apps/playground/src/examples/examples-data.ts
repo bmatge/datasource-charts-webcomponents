@@ -287,27 +287,27 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'direct-datalist': `<!--
-  Tableau — Registre des elus municipaux
+  Tableau — Maires de France
   Mode direct : gouv-source → gouv-datalist
-  Source : Registre des elus municipaux (tabular-api)
+  Source : Registre des maires (tabular-api)
   Affiche un tableau avec recherche, filtres, tri et export
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Registre des elus municipaux</h2>
+  <h2>Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
   </p>
 
   <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=50"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
     transform="data">
   </gouv-source>
 
   <gouv-datalist source="data"
-    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction, Libellé du  département:Departement, Libellé de la catégorie socio-professionnelle:Categorie"
+    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
     recherche="true"
-    filtres="Libellé du  département"
+    filtres="Libellé du département"
     tri="Nom de l'élu:asc"
     pagination="10"
     export="csv">
@@ -387,21 +387,24 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-pie': `<!--
-  Camembert — Elus par categorie socio-professionnelle
-  Mode requete : gouv-query (tabular) → gouv-dsfr-chart (pie)
-  Source : Registre des elus municipaux (tabular-api)
-  gouv-query en mode tabular regroupe cote serveur par categorie et compte le nombre d'elus
+  Camembert — Maires par categorie socio-professionnelle
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
+  Source : Registre des maires (tabular-api)
+  gouv-query regroupe par categorie et compte le nombre de maires
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Elus par categorie socio-professionnelle</h2>
+  <h2>Maires par categorie socio-professionnelle</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
   </p>
 
-  <gouv-query id="q-pie"
-    api-type="tabular"
-    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="q-pie" source="data"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Code sexe:count:nombre"
     order-by="nombre:desc"
@@ -584,40 +587,38 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-kpi': `<!--
-  KPI — Statistiques des elus avec filtre
-  Mode requete : gouv-query (tabular) → gouv-query (filtre) → gouv-kpi
-  Source : Registre des elus municipaux (tabular-api)
-  Combine des KPI sur les donnees brutes et sur un sous-ensemble filtre
+  KPI — Statistiques des maires avec filtre
+  Mode requete : gouv-source → gouv-query (filtre) → gouv-kpi
+  Source : Registre des maires (tabular-api)
+  Compare le total des maires au nombre de femmes maires
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Statistiques des elus municipaux</h2>
+  <h2>Statistiques des maires</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
   </p>
 
-  <!-- Requete tabular : recupere les donnees cote serveur -->
-  <gouv-query id="data"
-    api-type="tabular"
-    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
-    limit="50">
-  </gouv-query>
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+    transform="data">
+  </gouv-source>
 
-  <!-- Filtre client-side : uniquement les Maires -->
-  <gouv-query id="q-maires" source="data"
-    filter="Libellé de la fonction:contains:Maire">
+  <!-- Filtre client-side : uniquement les femmes -->
+  <gouv-query id="q-femmes" source="data"
+    filter="Code sexe:eq:F">
   </gouv-query>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
     <gouv-kpi source="data"
       valeur="count"
-      label="Total des elus"
+      label="Total des maires"
       format="nombre">
     </gouv-kpi>
 
-    <gouv-kpi source="q-maires"
+    <gouv-kpi source="q-femmes"
       valeur="count"
-      label="Dont Maires"
+      label="Dont femmes"
       format="nombre"
       couleur="bleu">
     </gouv-kpi>
@@ -625,35 +626,36 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <code>gouv-query</code> en mode <code>tabular</code> recupere les donnees
-      via l'API Tabular. Le second <code>gouv-query</code> filtre ensuite
-      cote client avec <code>Libellé de la fonction:contains:Maire</code>.
+      <code>gouv-query</code> filtre cote client avec <code>Code sexe:eq:F</code>
+      pour isoler les femmes maires. Les deux KPI partagent la meme source.
     </p>
   </div>
 </div>`,
 
   'query-datalist': `<!--
-  Tableau — Elus filtres par region
-  Mode requete : gouv-query (tabular) → gouv-datalist
-  Source : Registre des elus municipaux (tabular-api)
-  gouv-query en mode tabular filtre les elus cote serveur
+  Tableau — Maires filtres par departement
+  Mode requete : gouv-source → gouv-query → gouv-datalist
+  Source : Registre des maires (tabular-api)
+  gouv-query filtre les maires d'un departement
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Elus municipaux — Ile-de-France</h2>
+  <h2>Maires — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
   </p>
 
-  <gouv-query id="q-datalist"
-    api-type="tabular"
-    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
-    filter="Libellé de la région:contains:Ile"
-    limit="50">
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="q-datalist" source="data"
+    filter="Libellé du département:contains:Ain">
   </gouv-query>
 
   <gouv-datalist source="q-datalist"
-    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la fonction:Fonction, Libellé du  département:Departement"
+    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la commune:Commune"
     recherche="true"
     tri="Nom de l'élu:asc"
     pagination="10"
@@ -850,40 +852,40 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'facets-datalist': `<!--
-  Tableau filtrable — Registre des elus avec facettes
+  Tableau filtrable — Maires avec facettes
   Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-datalist
-  Source : Registre des elus municipaux (tabular-api)
-  gouv-facets affiche des filtres interactifs par departement, fonction et categorie
+  Source : Registre des maires (tabular-api)
+  gouv-facets affiche des filtres interactifs par departement et categorie
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Registre des elus — exploration par facettes</h2>
+  <h2>Maires de France — exploration par facettes</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
   </p>
 
   <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie | Libellé de la région:Region"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
     trim>
   </gouv-normalize>
 
-  <!-- Facettes : filtres interactifs sur Departement, Fonction et Categorie -->
+  <!-- Facettes : filtres interactifs sur Departement, Categorie et Sexe -->
   <gouv-facets id="filtered" source="clean"
-    fields="Departement, Fonction, Categorie"
-    labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+    fields="Departement, Categorie, Sexe"
+    labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
     searchable="Departement"
     disjunctive="Departement"
     max-values="8">
   </gouv-facets>
 
   <gouv-datalist source="filtered"
-    colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+    colonnes="Nom, Prenom, Commune, Departement, Categorie"
     recherche="true"
     tri="Nom:asc"
     pagination="10"
@@ -993,38 +995,40 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-display': `<!--
-  Cartes DSFR — Elus municipaux avec filtre
-  Mode requete : gouv-query (tabular) → gouv-display (cartes)
-  Source : Registre des elus municipaux (tabular-api)
-  gouv-query en mode tabular filtre les Maires cote serveur
+  Cartes DSFR — Maires par departement
+  Mode requete : gouv-source → gouv-query → gouv-display (cartes)
+  Source : Registre des maires (tabular-api)
+  gouv-query filtre les maires d'un departement
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Maires municipaux</h2>
+  <h2>Maires — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
-    <br>Pipeline : <strong>gouv-query</strong> (tabular) → gouv-display
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>Pipeline : gouv-source → <strong>gouv-query</strong> → gouv-display
   </p>
 
-  <gouv-query id="maires"
-    api-type="tabular"
-    resource="a595be27-cfab-4810-b9d4-22e193bffe35"
-    filter="Libellé de la fonction:eq:Maire"
-    limit="50">
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="dept" source="data"
+    filter="Libellé du département:contains:Ain">
   </gouv-query>
 
-  <gouv-display source="maires" cols="4" pagination="8">
+  <gouv-display source="dept" cols="4" pagination="8">
     <template>
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
           <div class="fr-card__content">
             <h3 class="fr-card__title">{{Nom de l'élu}} {{Prénom de l'élu}}</h3>
             <p class="fr-card__desc">
-              {{Libellé de la fonction}}
+              {{Libellé de la commune}}
             </p>
             <div class="fr-card__start">
               <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">
-                {{Libellé du  département}}
+                {{Libellé du département}}
               </p>
             </div>
           </div>
@@ -1097,39 +1101,39 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'search-datalist': `<!--
-  Tableau filtrable — Elus municipaux avec recherche textuelle
+  Tableau filtrable — Maires avec recherche textuelle
   Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-datalist
-  Source : Registre des elus municipaux (tabular-api)
+  Source : Registre des maires (tabular-api)
   gouv-search filtre en temps reel, le tableau affiche les resultats
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Recherche textuelle — Elus municipaux</h2>
+  <h2>Recherche textuelle — Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-datalist
   </p>
 
   <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
     trim>
   </gouv-normalize>
 
   <gouv-search id="searched" source="clean"
-    fields="Nom, Prenom, Fonction"
-    placeholder="Nom, prenom ou fonction..."
+    fields="Nom, Prenom, Commune"
+    placeholder="Nom, prenom ou commune..."
     operator="words"
     min-length="2"
     count>
   </gouv-search>
 
   <gouv-datalist source="searched"
-    colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+    colonnes="Nom, Prenom, Commune, Departement, Categorie"
     tri="Nom:asc"
     pagination="10">
   </gouv-datalist>
@@ -1190,39 +1194,39 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'search-facets-display': `<!--
-  Recherche + facettes + cartes — Elus municipaux
+  Recherche + facettes + cartes — Maires
   Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-facets → gouv-display
-  Source : Registre des elus municipaux (tabular-api)
+  Source : Registre des maires (tabular-api)
   gouv-search reduit le jeu de donnees, gouv-facets affine, gouv-display affiche
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Recherche + facettes — Elus municipaux</h2>
+  <h2>Recherche + facettes — Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
   </p>
 
   <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
     transform="data">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
     trim>
   </gouv-normalize>
 
   <gouv-search id="searched" source="clean"
-    fields="Nom, Prenom, Departement, Fonction"
-    placeholder="Rechercher un elu..."
+    fields="Nom, Prenom, Departement, Commune"
+    placeholder="Rechercher un maire..."
     operator="words"
     count>
   </gouv-search>
 
   <gouv-facets id="filtered" source="searched"
-    fields="Fonction, Departement"
-    labels="Fonction:Fonction | Departement:Departement"
+    fields="Departement, Categorie"
+    labels="Departement:Departement | Categorie:Categorie socio-pro"
     max-values="6">
   </gouv-facets>
 
@@ -1232,7 +1236,7 @@ export const examples: Record<string, string> = {
         <div class="fr-card__body">
           <div class="fr-card__content">
             <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
-            <p class="fr-card__desc">{{Fonction}}</p>
+            <p class="fr-card__desc">{{Commune}}</p>
           </div>
           <div class="fr-card__footer">
             <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>

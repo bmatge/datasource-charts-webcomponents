@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-display — Exemples - Guide - gouv-widgets</title>
+  <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    .guide-layout { display: flex; gap: 2rem; }
+    .guide-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .guide-content { flex: 1; min-width: 0; }
+    @media (max-width: 992px) {
+      .guide-layout { flex-direction: column; }
+      .guide-sidemenu { position: static; flex: none; max-height: none; }
+    }
+    .guide-content h2 { padding-top: 2rem; border-top: 1px solid var(--border-default-grey); margin-top: 3rem; }
+    .guide-content h2:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .guide-content h3 { margin-top: 2rem; }
+    .guide-content h4 { margin-top: 1.5rem; }
+    .guide-content pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; margin: 0; }
+    .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
+    .guide-content li { margin-bottom: 0.25rem; }
+    .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
+    .example-container { border: 1px solid var(--border-default-grey); border-radius: 4px; padding: 1rem; background: white; min-height: 100px; }
+    .example-loading { padding: 2rem; text-align: center; color: var(--text-mention-grey); border: 1px solid var(--border-default-grey); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <app-header current-page="guide" base-path="../"></app-header>
+
+  <main class="fr-container fr-py-4w" id="main-content">
+    <div class="guide-layout">
+
+      <nav class="fr-sidemenu guide-sidemenu" role="navigation" aria-labelledby="guide-sidemenu-title">
+        <div class="fr-sidemenu__inner">
+          <button class="fr-sidemenu__btn" hidden aria-controls="guide-sidemenu-wrapper" aria-expanded="true">Menu</button>
+          <div class="fr-collapse" id="guide-sidemenu-wrapper">
+            <div class="fr-sidemenu__title" id="guide-sidemenu-title">Guide utilisateur</div>
+            <ul class="fr-sidemenu__list">
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide.html">Vue d'ensemble</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-parcours.html">Parcours utilisateur</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-source.html">gouv-source</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-normalize.html">gouv-normalize</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-query.html">gouv-query</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-search.html">gouv-search</a>
+              </li>
+              <li class="fr-sidemenu__item fr-sidemenu__item--active">
+                <a class="fr-sidemenu__link" href="guide-exemples-display.html" aria-current="true">gouv-display</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="guide-content">
+
+        <h1><i class="ri-layout-grid-line fr-mr-1w"></i>gouv-display</h1>
+        <p class="fr-text--lead">
+          <code>gouv-display</code> repete un template HTML pour chaque element de donnees.
+          Syntaxe : <code>{{champ}}</code> (echappe), <code>{{{champ}}}</code> (brut), <code>{{champ|defaut}}</code> (fallback), <code>{{$index}}</code> (index).
+        </p>
+
+        <!-- direct-display -->
+        <h4>Cartes — Industrie du futur</h4>
+        <p>Grille de cartes DSFR generees dynamiquement via template, avec pagination.
+          <a href="../apps/playground/index.html?example=direct-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-cards">Code source</button></h3>
+          <div class="fr-collapse" id="code-disp-cards">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=12"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-display source="data" cols="3" pagination="6"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{nom_departement}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;
+            Region : {{nom_region}}&lt;br&gt;
+            Beneficiaires : {{nombre_beneficiaires}}
+          &lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class="fr-card__footer"&gt;
+          &lt;p class="fr-badge fr-badge--sm"&gt;{{montant_investissement}} EUR&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-display (FIXED: maires dataset) -->
+        <h4>Cartes — Maires par departement</h4>
+        <p>Filtre les maires d'un departement avec <code>gouv-query</code> puis affiche en cartes via <code>gouv-display</code>.
+          <a href="../apps/playground/index.html?example=query-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-query">Code source</button></h3>
+          <div class="fr-collapse" id="code-disp-query">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="dept" source="data"
+  filter="Libell&#233; du d&#233;partement:contains:Ain"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-display source="dept" cols="4" pagination="8"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card fr-card--shadow"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{Nom de l'&#233;lu}} {{Pr&#233;nom de l'&#233;lu}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{Libell&#233; de la commune}}&lt;/p&gt;
+          &lt;div class="fr-card__start"&gt;
+            &lt;p class="fr-badge fr-badge--sm fr-badge--green-emeraude"&gt;{{Libell&#233; du d&#233;partement}}&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+        </section>
+
+        <!-- normalize-display -->
+        <h4>Tuiles — LOVAC logements vacants</h4>
+        <p>Donnees LOVAC nettoyees par <code>gouv-normalize</code> puis affichees sous forme de tuiles DSFR.
+          <a href="../apps/playground/index.html?example=normalize-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-tiles">Code source</button></h3>
+          <div class="fr-collapse" id="code-disp-tiles">
+<pre class="example-code">&lt;gouv-source id="raw"
+  url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  trim numeric-auto
+  rename="LIB_DEP:Departement | pp_vacant_25:Vacants | pp_total_24:Total logements | DEP:Code"&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-query id="top" source="clean"
+  order-by="Vacants:desc" limit="9"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-display source="top" cols="3"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-tile"&gt;
+      &lt;div class="fr-tile__body"&gt;
+        &lt;div class="fr-tile__content"&gt;
+          &lt;h3 class="fr-tile__title"&gt;{{Departement}}&lt;/h3&gt;
+          &lt;p class="fr-tile__detail"&gt;Dept. {{Code}}&lt;/p&gt;
+          &lt;p class="fr-tile__desc"&gt;
+            {{Vacants}} logements vacants sur {{Total logements}} au total
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <app-footer base-path="../"></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let exampleIndex = 0;
+      function getCodeForExample(placeholder) {
+        const accordion = placeholder.nextElementSibling;
+        if (!accordion) return null;
+        const pre = accordion.querySelector('.example-code');
+        return pre ? pre.textContent : null;
+      }
+      function makeIdsUnique(html, prefix) {
+        const idRegex = /\bid="([^"]+)"/g;
+        const ids = new Set();
+        let match;
+        while ((match = idRegex.exec(html)) !== null) ids.add(match[1]);
+        let result = html;
+        for (const id of ids) {
+          result = result.replaceAll('id="' + id + '"', 'id="' + prefix + '-' + id + '"');
+          result = result.replaceAll('source="' + id + '"', 'source="' + prefix + '-' + id + '"');
+        }
+        return result;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const placeholder = entry.target;
+          observer.unobserve(placeholder);
+          const code = getCodeForExample(placeholder);
+          if (!code) return;
+          const prefix = 'ex' + (exampleIndex++);
+          const uniqueCode = makeIdsUnique(code, prefix);
+          const container = document.createElement('div');
+          container.className = 'example-container';
+          container.innerHTML = uniqueCode;
+          placeholder.replaceWith(container);
+        });
+      }, { rootMargin: '200px 0px' });
+      document.querySelectorAll('[data-example]').forEach(el => observer.observe(el));
+    });
+  </script>
+</body>
+</html>

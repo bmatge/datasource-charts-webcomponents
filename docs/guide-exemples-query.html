@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-query — Exemples - Guide - gouv-widgets</title>
+  <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    .guide-layout { display: flex; gap: 2rem; }
+    .guide-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .guide-content { flex: 1; min-width: 0; }
+    @media (max-width: 992px) {
+      .guide-layout { flex-direction: column; }
+      .guide-sidemenu { position: static; flex: none; max-height: none; }
+    }
+    .guide-content h2 { padding-top: 2rem; border-top: 1px solid var(--border-default-grey); margin-top: 3rem; }
+    .guide-content h2:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .guide-content h3 { margin-top: 2rem; }
+    .guide-content h4 { margin-top: 1.5rem; }
+    .guide-content pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; margin: 0; }
+    .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
+    .guide-content li { margin-bottom: 0.25rem; }
+    .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
+    .example-container { border: 1px solid var(--border-default-grey); border-radius: 4px; padding: 1rem; background: white; min-height: 100px; }
+    .example-loading { padding: 2rem; text-align: center; color: var(--text-mention-grey); border: 1px solid var(--border-default-grey); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <app-header current-page="guide" base-path="../"></app-header>
+
+  <main class="fr-container fr-py-4w" id="main-content">
+    <div class="guide-layout">
+
+      <nav class="fr-sidemenu guide-sidemenu" role="navigation" aria-labelledby="guide-sidemenu-title">
+        <div class="fr-sidemenu__inner">
+          <button class="fr-sidemenu__btn" hidden aria-controls="guide-sidemenu-wrapper" aria-expanded="true">Menu</button>
+          <div class="fr-collapse" id="guide-sidemenu-wrapper">
+            <div class="fr-sidemenu__title" id="guide-sidemenu-title">Guide utilisateur</div>
+            <ul class="fr-sidemenu__list">
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide.html">Vue d'ensemble</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-parcours.html">Parcours utilisateur</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-source.html">gouv-source</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-normalize.html">gouv-normalize</a>
+              </li>
+              <li class="fr-sidemenu__item fr-sidemenu__item--active">
+                <a class="fr-sidemenu__link" href="guide-exemples-query.html" aria-current="true">gouv-query</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-search.html">gouv-search</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-display.html">gouv-display</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="guide-content">
+
+        <h1><i class="ri-filter-3-line fr-mr-1w"></i>gouv-query</h1>
+        <p class="fr-text--lead">
+          <code>gouv-query</code> filtre, regroupe et agrege les donnees avant de les transmettre aux composants de visualisation.
+          Supporte <code>group-by</code>, <code>aggregate</code>, <code>filter</code>, <code>order-by</code> et <code>limit</code>.
+        </p>
+
+        <!-- query-bar -->
+        <h4>Barres — Beneficiaires agreges par region</h4>
+        <p>Regroupe par region et somme les beneficiaires avec <code>group-by</code> + <code>aggregate</code>.
+          <a href="../apps/playground/index.html?example=query-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-bar">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-bar">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="nom_region"
+  aggregate="nombre_beneficiaires:sum:beneficiaires"
+  order-by="beneficiaires:desc" limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="bar"
+  label-field="nom_region" value-field="beneficiaires"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-line -->
+        <h4>Courbe — Taux moyen TFB par region</h4>
+        <p>Calcule la moyenne du taux de taxe fonciere par region.
+          <a href="../apps/playground/index.html?example=query-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-line">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-line">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:taux_moyen"
+  order-by="taux_moyen:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="line"
+  label-field="libreg" value-field="taux_moyen" unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-pie (FIXED: maires dataset) -->
+        <h4>Camembert — Maires par categorie socio-professionnelle</h4>
+        <p>Compte les maires par categorie socio-professionnelle via <code>count</code>.
+          <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-pie">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-pie">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  aggregate="Code sexe:count:nombre"
+  order-by="nombre:desc" limit="8"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="pie"
+  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  value-field="nombre"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-radar -->
+        <h4>Radar — Investissement moyen par region</h4>
+        <p>Calcule l'investissement moyen par region (limite a 6 pour lisibilite).
+          <a href="../apps/playground/index.html?example=query-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-radar">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-radar">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="nom_region"
+  aggregate="montant_investissement:avg:investissement"
+  limit="6"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="radar"
+  label-field="nom_region" value-field="investissement"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-gauge -->
+        <h4>Jauge — Taux moyen TFB regional</h4>
+        <p>Calcule la moyenne du taux de taxe fonciere par region, trie par taux decroissant et affiche le plus eleve (limit=1). Les taux TFB varient de 30 a 55%.
+          <a href="../apps/playground/index.html?example=query-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-gauge">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-gauge">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:taux_moyen"
+  order-by="taux_moyen:desc" limit="1"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="gauge"
+  value-field="taux_moyen"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-scatter -->
+        <h4>Nuage — TFB vs TH par departement</h4>
+        <p>Double agregation : moyenne TFB (axe X) et TH (axe Y) par departement.
+          <a href="../apps/playground/index.html?example=query-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-scatter">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-scatter">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="libdep"
+  aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+  limit="30"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="scatter"
+  label-field="tfb" value-field="th"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-barline -->
+        <h4>Barres + ligne — TFB et TH par region</h4>
+        <p>Barres pour le TFB moyen et ligne pour le TH moyen, combines via <code>value-field-2</code>.
+          <a href="../apps/playground/index.html?example=query-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-barline">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-barline">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="libreg"
+  aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
+  order-by="tfb:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="bar-line"
+  label-field="libreg" value-field="tfb" value-field-2="th"
+  name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
+  unit-tooltip="%"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-map -->
+        <h4>Carte — Taux TFB par departement</h4>
+        <p>Moyenne du taux TFB par code departement, affichee sur la carte de France.
+          <a href="../apps/playground/index.html?example=query-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-map">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-map">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="dep"
+  aggregate="taux_global_tfb:avg:taux"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="map"
+  code-field="dep" value-field="taux"
+  selected-palette="sequentialAscending"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-kpi (FIXED: maires dataset, filter by sex) -->
+        <h4>KPI — Statistiques des maires avec filtre</h4>
+        <p>Compare le nombre total de maires au nombre de femmes maires via <code>filter</code>.
+          <a href="../apps/playground/index.html?example=query-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-kpi">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-kpi">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-femmes" source="data"
+  filter="Code sexe:eq:F"&gt;
+&lt;/gouv-query&gt;
+
+&lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
+  &lt;gouv-kpi source="data" valeur="count"
+    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="q-femmes" valeur="count"
+    label="Dont femmes" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+&lt;/div&gt;</pre>
+          </div>
+        </section>
+
+        <!-- query-datalist (FIXED: maires dataset, filter by department) -->
+        <h4>Tableau — Maires filtres par departement</h4>
+        <p>Filtre les maires de Paris et affiche le resultat dans un tableau interactif.
+          <a href="../apps/playground/index.html?example=query-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-datalist">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-datalist">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  filter="Libell&#233; du d&#233;partement:contains:Ain"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-datalist source="q"
+  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; de la commune:Commune"
+  recherche="true" tri="Nom de l'&#233;lu:asc" pagination="10" export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <app-footer base-path="../"></app-footer>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let exampleIndex = 0;
+      function getCodeForExample(placeholder) {
+        const accordion = placeholder.nextElementSibling;
+        if (!accordion) return null;
+        const pre = accordion.querySelector('.example-code');
+        return pre ? pre.textContent : null;
+      }
+      function makeIdsUnique(html, prefix) {
+        const idRegex = /\bid="([^"]+)"/g;
+        const ids = new Set();
+        let match;
+        while ((match = idRegex.exec(html)) !== null) ids.add(match[1]);
+        let result = html;
+        for (const id of ids) {
+          result = result.replaceAll('id="' + id + '"', 'id="' + prefix + '-' + id + '"');
+          result = result.replaceAll('source="' + id + '"', 'source="' + prefix + '-' + id + '"');
+        }
+        return result;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const placeholder = entry.target;
+          observer.unobserve(placeholder);
+          const code = getCodeForExample(placeholder);
+          if (!code) return;
+          const prefix = 'ex' + (exampleIndex++);
+          const uniqueCode = makeIdsUnique(code, prefix);
+          const container = document.createElement('div');
+          container.className = 'example-container';
+          container.innerHTML = uniqueCode;
+          placeholder.replaceWith(container);
+        });
+      }, { rootMargin: '200px 0px' });
+      document.querySelectorAll('[data-example]').forEach(el => observer.observe(el));
+    });
+  </script>
+</body>
+</html>

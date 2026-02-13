@@ -417,17 +417,17 @@ Les donnees de la source sont transmises directement au composant de visualisati
 </div>
 ```
 
-#### Tableau — Registre des elus
+#### Tableau — Maires de France
 
 ```html
 <gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=50"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
   transform="data"></gouv-source>
 
 <gouv-datalist source="data"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
-  recherche="true" filtres="Libelle du  departement"
-  tri="Nom de l'elu:asc" pagination="10" export="csv">
+  colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
+  recherche="true" filtres="Libellé du département"
+  tri="Nom de l'élu:asc" pagination="10" export="csv">
 </gouv-datalist>
 ```
 
@@ -461,20 +461,20 @@ Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion num
 </gouv-dsfr-chart>
 ```
 
-#### Tableau — Nettoyage complet des donnees
+#### Tableau — Renommage de champs accentes
 
 ```html
 <gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
   transform="data"></gouv-source>
 
 <gouv-normalize id="clean" source="data"
   trim
-  numeric-auto
-  replace="N/A: | n.d.: | -:">
+  rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Code sexe:Sexe">
 </gouv-normalize>
 
 <gouv-datalist source="clean"
+  colonnes="Nom, Prenom, Commune, Departement, Sexe"
   recherche pagination="10" export="csv">
 </gouv-datalist>
 ```
@@ -519,21 +519,21 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 </gouv-dsfr-chart>
 ```
 
-#### Camembert — Elus par categorie socio-pro
+#### Camembert — Maires par categorie socio-pro
 
 ```html
 <gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
   transform="data"></gouv-source>
 
 <gouv-query id="q" source="data"
-  group-by="Libelle de la categorie socio-professionnelle"
+  group-by="Libellé de la catégorie socio-professionnelle"
   aggregate="Code sexe:count:nombre"
   order-by="nombre:desc" limit="8">
 </gouv-query>
 
 <gouv-dsfr-chart source="q" type="pie"
-  label-field="Libelle de la categorie socio-professionnelle"
+  label-field="Libellé de la catégorie socio-professionnelle"
   value-field="nombre">
 </gouv-dsfr-chart>
 ```
@@ -556,39 +556,39 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 </gouv-dsfr-chart>
 ```
 
-#### KPI — Statistiques des elus avec filtre
+#### KPI — Statistiques des maires avec filtre
 
 ```html
 <gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
   transform="data"></gouv-source>
 
-<gouv-query id="q-maires" source="data"
-  filter="Libelle de la fonction:contains:Maire">
+<gouv-query id="q-femmes" source="data"
+  filter="Code sexe:eq:F">
 </gouv-query>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
   <gouv-kpi source="data" valeur="count"
-    label="Total des elus" format="nombre"></gouv-kpi>
-  <gouv-kpi source="q-maires" valeur="count"
-    label="Dont Maires" format="nombre" couleur="bleu"></gouv-kpi>
+    label="Total des maires" format="nombre"></gouv-kpi>
+  <gouv-kpi source="q-femmes" valeur="count"
+    label="Dont femmes" format="nombre" couleur="bleu"></gouv-kpi>
 </div>
 ```
 
-#### Tableau — Elus filtres par region
+#### Tableau — Maires filtres par departement
 
 ```html
 <gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
   transform="data"></gouv-source>
 
 <gouv-query id="q" source="data"
-  filter="Libelle de la region:contains:Ile">
+  filter="Libellé du département:contains:Ain">
 </gouv-query>
 
 <gouv-datalist source="q"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle de la fonction:Fonction"
-  recherche="true" tri="Nom de l'elu:asc" pagination="10" export="csv">
+  colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la commune:Commune, Libellé du département:Departement"
+  recherche="true" tri="Nom de l'élu:asc" pagination="10" export="csv">
 </gouv-datalist>
 ```
 

@@ -13,10 +13,10 @@
   </style>
 </head>
 <body>
-  <!-- Source de donnees pour les exemples client-side -->
+  <!-- Source de donnees pour les exemples client-side (maires de France) -->
   <gouv-source
     id="demo-communes"
-    url="https://tabular-api.data.gouv.fr/api/resources/d0566522-604d-4571-848c-73c73c254230/data/?page_size=50"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
     transform="data">
   </gouv-source>
 
@@ -198,17 +198,17 @@
           <div class="code-block"><pre>&lt;gouv-query
   id="tabular-stats"
   api-type="tabular"
-  resource="d0566522-604d-4571-848c-73c73c254230"
-  group-by="departement"
-  aggregate="population:sum"
-  order-by="population__sum:desc"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  group-by="Libell&eacute; du d&eacute;partement"
+  aggregate="Code sexe:count"
+  order-by="Code sexe__count:desc"
   limit="10"
 &gt;&lt;/gouv-query&gt;
 
 &lt;gouv-kpi
   source="tabular-stats"
   valeur="count"
-  label="Nombre d'enregistrements"
+  label="Nombre de maires"
   format="nombre"
 &gt;&lt;/gouv-kpi&gt;</pre></div>
         </section>

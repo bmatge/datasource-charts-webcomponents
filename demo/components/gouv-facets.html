@@ -24,13 +24,13 @@
        Sources de donnees pour les 3 exemples live
        ============================================================ -->
 
-  <!-- Exemple 1 : Elus municipaux (tabular-api) -->
+  <!-- Exemple 1 : Maires de France (tabular-api) -->
   <gouv-source id="elus-raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
     transform="data">
   </gouv-source>
   <gouv-normalize id="elus-clean" source="elus-raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé de la fonction:Fonction | Libellé du  département:Departement | Libellé de la catégorie socio-professionnelle:Categorie | Libellé de la région:Region"
+    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
     trim>
   </gouv-normalize>
 
@@ -135,20 +135,20 @@
              Exemple 1 : Facettes + Datalist (Elus municipaux)
              ======================================================== -->
         <h2 class="fr-mt-4w">Exemple 1 : tableau filtrable avec facettes</h2>
-        <p>Les facettes <code>Departement</code>, <code>Fonction</code> et <code>Categorie</code> filtrent
-        le tableau des elus municipaux. Le departement est en mode <strong>disjonctif</strong> (multi-selection OU)
+        <p>Les facettes <code>Departement</code>, <code>Categorie</code> et <code>Sexe</code> filtrent
+        le tableau des maires. Le departement est en mode <strong>disjonctif</strong> (multi-selection OU)
         et dispose d'une <strong>barre de recherche</strong>.</p>
 
         <gouv-facets id="elus-filtered" source="elus-clean"
-          fields="Departement, Fonction, Categorie"
-          labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+          fields="Departement, Categorie, Sexe"
+          labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
           searchable="Departement"
           disjunctive="Departement"
           max-values="8">
         </gouv-facets>
 
         <gouv-datalist source="elus-filtered"
-          colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+          colonnes="Nom, Prenom, Commune, Departement, Categorie"
           recherche="true"
           tri="Nom:asc"
           pagination="10">
@@ -156,25 +156,25 @@
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-source id="raw"
-  url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
   transform="data"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'elu:Nom | Prenom de l'elu:Prenom | Libelle de la fonction:Fonction | Libelle du departement:Departement | Libelle de la categorie socio-professionnelle:Categorie"
+  rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; du d&eacute;partement:Departement | Libell&eacute; de la commune:Commune | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
   trim&gt;
 &lt;/gouv-normalize&gt;
 
 &lt;gouv-facets id="filtered" source="clean"
-  fields="Departement, Fonction, Categorie"
-  labels="Departement:Departement | Fonction:Fonction | Categorie:Categorie socio-pro"
+  fields="Departement, Categorie, Sexe"
+  labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
   searchable="Departement"
   disjunctive="Departement"
   max-values="8"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Fonction, Departement, Categorie"
+  colonnes="Nom, Prenom, Commune, Departement, Categorie"
   recherche="true"
   tri="Nom:asc"
   pagination="10"&gt;
@@ -323,33 +323,33 @@
              Exemple 4 : Modes d'affichage mixtes
              ======================================================== -->
         <h2 class="fr-mt-6w">Exemple 4 : modes d'affichage mixtes</h2>
-        <p>Trois facettes avec des modes differents : <code>select</code> pour la Region (liste deroulante exclusive),
+        <p>Trois facettes avec des modes differents : <code>select</code> pour le Sexe (liste deroulante exclusive),
         <code>multiselect</code> pour le Departement (dropdown multi-selection avec recherche),
-        et <code>checkbox</code> (defaut) pour la Fonction.</p>
+        et <code>checkbox</code> (defaut) pour la Categorie.</p>
 
         <gouv-facets id="elus-display-demo" source="elus-clean"
-          fields="Region, Departement, Fonction"
-          labels="Region:Region | Departement:Departement | Fonction:Fonction"
-          display="Region:select | Departement:multiselect"
+          fields="Sexe, Departement, Categorie"
+          labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie"
+          display="Sexe:select | Departement:multiselect"
           max-values="6">
         </gouv-facets>
 
         <gouv-datalist source="elus-display-demo"
-          colonnes="Nom, Prenom, Fonction, Departement"
+          colonnes="Nom, Prenom, Commune, Departement"
           recherche="true"
           pagination="5">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-facets id="filtered" source="clean"
-  fields="Region, Departement, Fonction"
-  labels="Region:Region | Departement:Departement | Fonction:Fonction"
-  display="Region:select | Departement:multiselect"
+  fields="Sexe, Departement, Categorie"
+  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie"
+  display="Sexe:select | Departement:multiselect"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Fonction, Departement"
+  colonnes="Nom, Prenom, Commune, Departement"
   recherche="true"
   pagination="5"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
