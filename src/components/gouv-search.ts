@@ -73,6 +73,14 @@ export class GouvSearch extends LitElement {
   @property({ type: Boolean })
   count = false;
 
+  /** Nom du parametre d'URL a lire comme terme de recherche initial. Vide = desactive */
+  @property({ type: String, attribute: 'url-search-param' })
+  urlSearchParam = '';
+
+  /** Synchronise l'URL quand l'utilisateur tape (replaceState) */
+  @property({ type: Boolean, attribute: 'url-sync' })
+  urlSync = false;
+
   @state()
   private _allData: Record<string, unknown>[] = [];
 
@@ -87,6 +95,7 @@ export class GouvSearch extends LitElement {
 
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private _unsubscribe: (() => void) | null = null;
+  private _urlParamApplied = false;
 
   createRenderRoot() {
     return this;
@@ -194,7 +203,21 @@ export class GouvSearch extends LitElement {
 
   private _onData(data: unknown) {
     this._allData = Array.isArray(data) ? data : [];
+    if (this.urlSearchParam && !this._urlParamApplied) {
+      this._applyUrlSearchParam();
+      this._urlParamApplied = true;
+    }
     this._applyFilter();
+  }
+
+  /** Read URL search param and set as initial search term */
+  _applyUrlSearchParam() {
+    if (!this.urlSearchParam) return;
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get(this.urlSearchParam);
+    if (value) {
+      this._term = value;
+    }
   }
 
   _applyFilter() {
@@ -312,6 +335,10 @@ export class GouvSearch extends LitElement {
 
     dispatchDataLoaded(this.id, this._filteredData);
 
+    if (this.urlSync && this.urlSearchParam) {
+      this._syncUrl();
+    }
+
     document.dispatchEvent(new CustomEvent('gouv-search-change', {
       bubbles: true,
       composed: true,
@@ -321,6 +348,21 @@ export class GouvSearch extends LitElement {
         count: this._filteredData.length
       }
     }));
+  }
+
+  /** Sync current search term back to URL (replaceState) */
+  private _syncUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if (this._term) {
+      params.set(this.urlSearchParam, this._term);
+    } else {
+      params.delete(this.urlSearchParam);
+    }
+    const search = params.toString();
+    const newUrl = search
+      ? `${window.location.pathname}?${search}${window.location.hash}`
+      : `${window.location.pathname}${window.location.hash}`;
+    window.history.replaceState(null, '', newUrl);
   }
 
   render() {

@@ -506,6 +506,9 @@ Sortie : meme tableau, filtre selon les selections de l'utilisateur.
 | searchable | String | \`""\` | non | Champs avec barre de recherche (virgule-separes) |
 | hide-empty | Boolean | \`false\` | non | Masquer les facettes avec une seule valeur |
 | display | String | \`""\` | non | Mode d'affichage par facette : \`"field:select | field2:multiselect"\`. Modes : checkbox (defaut), select, multiselect |
+| url-params | Boolean | \`false\` | non | Active la lecture des parametres d'URL comme pre-selections de facettes |
+| url-param-map | String | \`""\` | non | Mapping URL param -> champ : \`"r:region | t:type"\`. Si vide, correspondance directe |
+| url-sync | Boolean | \`false\` | non | Synchronise l'URL quand l'utilisateur change les facettes (replaceState) |
 
 ### Modes d'affichage
 - **checkbox** (defaut) : checkboxes inline avec compteurs, "Voir plus/moins", recherche optionnelle
@@ -547,6 +550,17 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
   display="region:select | departement:multiselect"
   labels="region:Region | departement:Departement | statut:Statut">
 </gouv-facets>
+
+<!-- Pre-selection via URL params (ex: ?region=PACA&type=Commune) -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, type" url-params>
+</gouv-facets>
+
+<!-- URL params avec mapping et synchronisation -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, type" url-params url-sync
+  url-param-map="r:region | t:type">
+</gouv-facets>
 \`\`\``,
   },
 
@@ -581,6 +595,8 @@ Les compteurs de facettes se recalculent dynamiquement.
 | operator | String | "contains" | non | Mode : contains, starts, words |
 | sr-label | Boolean | false | non | Label en sr-only (masque visuellement) |
 | count | Boolean | false | non | Affiche compteur de resultats |
+| url-search-param | String | "" | non | Nom du parametre d'URL a lire comme terme de recherche initial |
+| url-sync | Boolean | false | non | Synchronise l'URL quand l'utilisateur tape (replaceState) |
 
 ### Modes de recherche
 - **contains** (defaut) : sous-chaine insensible a la casse et aux accents
@@ -616,6 +632,16 @@ Les compteurs de facettes se recalculent dynamiquement.
     <p>{{{_highlight}}}</p>
   </template>
 </gouv-display>
+
+<!-- Recherche pre-remplie depuis URL (ex: ?q=ecole) -->
+<gouv-search id="searched" source="clean"
+  url-search-param="q" count>
+</gouv-search>
+
+<!-- Recherche avec sync URL bidirectionnelle -->
+<gouv-search id="searched" source="clean"
+  url-search-param="q" url-sync count>
+</gouv-search>
 \`\`\``,
   },
 
@@ -879,6 +905,7 @@ Les placeholders sont remplaces pour chaque element de donnees :
 | \`{{champ|defaut}}\` | Valeur avec fallback si null/undefined |
 | \`{{champ.sous.cle}}\` | Acces aux proprietes imbriquees (dot notation) |
 | \`{{$index}}\` | Index de l'element dans le tableau (0-based) |
+| \`{{$uid}}\` | Identifiant unique de l'element (base sur uid-field ou index) |
 
 ### Attributs
 | Attribut | Type | Defaut | Requis | Description |
@@ -888,6 +915,7 @@ Les placeholders sont remplaces pour chaque element de donnees :
 | pagination | Number | \`0\` | non | Elements par page (0 = tout afficher) |
 | empty | String | \`"Aucun resultat"\` | non | Message quand le tableau est vide |
 | gap | String | \`"fr-grid-row--gutters"\` | non | Classe CSS de gap pour la grille |
+| uid-field | String | \`""\` | non | Champ de donnees pour l'ID unique par item. Chaque item recoit un id="item-{valeur}" pour ancrage URL |
 
 ### Exemples
 \`\`\`html
@@ -916,6 +944,22 @@ Les placeholders sont remplaces pour chaque element de donnees :
         <div class="fr-tile__content">
           <h3 class="fr-tile__title">{{nom}}</h3>
           <p class="fr-tile__desc">{{description|Pas de description}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+
+<!-- Cartes avec identifiants uniques et ancrage URL (ex: page.html#item-42) -->
+<gouv-display source="data" cols="3" pagination="12" uid-field="id">
+  <template>
+    <div class="fr-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a href="#{{$uid}}">{{titre}}</a>
+          </h3>
+          <p class="fr-card__desc">{{description}}</p>
         </div>
       </div>
     </div>

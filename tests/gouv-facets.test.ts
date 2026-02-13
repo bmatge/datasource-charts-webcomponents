@@ -15,6 +15,11 @@ const SAMPLE_DATA = [
   { nom: 'Rennes', region: 'Bretagne', type: 'Prefecture', population: 220000 },
 ];
 
+/** Helper: set URL search params in jsdom */
+function setUrlParams(search: string) {
+  window.history.replaceState({}, '', search ? `?${search}` : window.location.pathname);
+}
+
 describe('GouvFacets', () => {
   let facets: GouvFacets;
 
@@ -22,12 +27,15 @@ describe('GouvFacets', () => {
     clearDataCache('test-facets');
     clearDataCache('test-source');
     facets = new GouvFacets();
+    // Reset URL to clean state
+    setUrlParams('');
   });
 
   afterEach(() => {
     if (facets.isConnected) {
       facets.disconnectedCallback();
     }
+    setUrlParams('');
   });
 
   // --- Parsing helpers ---
@@ -567,6 +575,153 @@ describe('GouvFacets', () => {
         facets._toggleValue('type', 'Prefecture');
         expect(facets._activeSelections['type']?.size).toBe(1);
         expect(facets._activeSelections['type']?.has('Prefecture')).toBe(true);
+      });
+    });
+  });
+
+  // --- URL params ---
+
+  describe('url-params', () => {
+    describe('_parseUrlParamMap', () => {
+      it('returns empty map when attribute is empty', () => {
+        facets.urlParamMap = '';
+        expect(facets._parseUrlParamMap().size).toBe(0);
+      });
+
+      it('parses pipe-separated param:field pairs', () => {
+        facets.urlParamMap = 'r:region | t:type';
+        const map = facets._parseUrlParamMap();
+        expect(map.get('r')).toBe('region');
+        expect(map.get('t')).toBe('type');
+      });
+
+      it('ignores entries without colon', () => {
+        facets.urlParamMap = 'novalue | r:region';
+        const map = facets._parseUrlParamMap();
+        expect(map.size).toBe(1);
+        expect(map.get('r')).toBe('region');
+      });
+    });
+
+    describe('_applyUrlParams (direct mapping)', () => {
+      it('reads URL params matching field names', () => {
+        setUrlParams('type=Commune');
+        facets.urlParams = true;
+        facets._applyUrlParams();
+
+        expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+      });
+
+      it('supports multiple values via repeated params', () => {
+        setUrlParams('region=PACA&region=Bretagne');
+        facets.urlParams = true;
+        facets._applyUrlParams();
+
+        expect(facets._activeSelections['region']?.has('PACA')).toBe(true);
+        expect(facets._activeSelections['region']?.has('Bretagne')).toBe(true);
+      });
+
+      it('supports comma-separated values in a single param', () => {
+        setUrlParams('region=PACA,Bretagne');
+        facets.urlParams = true;
+        facets._applyUrlParams();
+
+        expect(facets._activeSelections['region']?.size).toBe(2);
+        expect(facets._activeSelections['region']?.has('PACA')).toBe(true);
+        expect(facets._activeSelections['region']?.has('Bretagne')).toBe(true);
+      });
+
+      it('does nothing when no URL params match', () => {
+        setUrlParams('foo=bar');
+        facets.urlParams = true;
+        facets._applyUrlParams();
+
+        // foo is set but it's not a known facet field — still stored
+        expect(facets._activeSelections['foo']?.has('bar')).toBe(true);
+      });
+
+      it('does nothing when URL has no params', () => {
+        setUrlParams('');
+        facets.urlParams = true;
+        facets._applyUrlParams();
+
+        expect(Object.keys(facets._activeSelections)).toHaveLength(0);
+      });
+    });
+
+    describe('_applyUrlParams (with url-param-map)', () => {
+      it('maps URL param names to field names', () => {
+        setUrlParams('r=PACA&t=Commune');
+        facets.urlParams = true;
+        facets.urlParamMap = 'r:region | t:type';
+        facets._applyUrlParams();
+
+        expect(facets._activeSelections['region']?.has('PACA')).toBe(true);
+        expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+      });
+
+      it('ignores URL params not in the map', () => {
+        setUrlParams('r=PACA&unknown=value');
+        facets.urlParams = true;
+        facets.urlParamMap = 'r:region';
+        facets._applyUrlParams();
+
+        expect(facets._activeSelections['region']?.has('PACA')).toBe(true);
+        expect(facets._activeSelections['unknown']).toBeUndefined();
+      });
+    });
+
+    describe('integration: url-params with data', () => {
+      it('pre-selects facets from URL when data arrives', () => {
+        setUrlParams('type=Prefecture');
+
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region, type';
+        facets.urlParams = true;
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+        const result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(4);
+        expect(result.every(r => r.type === 'Prefecture')).toBe(true);
+      });
+
+      it('applies URL params only once (not on every data update)', () => {
+        setUrlParams('type=Prefecture');
+
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region, type';
+        facets.urlParams = true;
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+        // User clears the filter
+        facets._activeSelections = {};
+        facets._applyFilters();
+        let result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(SAMPLE_DATA.length);
+
+        // New data arrives — should NOT re-apply URL params
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+        result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(SAMPLE_DATA.length);
+      });
+
+      it('combines URL params across multiple facets', () => {
+        setUrlParams('type=Commune&region=PACA');
+
+        facets.id = 'test-facets';
+        facets.source = 'test-source';
+        facets.fields = 'region, type';
+        facets.urlParams = true;
+        facets.connectedCallback();
+        dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+        const result = getDataCache('test-facets') as Record<string, unknown>[];
+        expect(result).toHaveLength(2); // Marseille + Nice
+        expect(result.every(r => r.type === 'Commune' && r.region === 'PACA')).toBe(true);
       });
     });
   });

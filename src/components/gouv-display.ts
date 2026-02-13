@@ -59,6 +59,10 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
   @property({ type: String })
   gap = 'fr-grid-row--gutters';
 
+  /** Champ de donnees a utiliser comme identifiant unique par item. Si vide, utilise l'index */
+  @property({ type: String, attribute: 'uid-field' })
+  uidField = '';
+
   @state()
   private _data: Record<string, unknown>[] = [];
 
@@ -66,6 +70,8 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
   private _currentPage = 1;
 
   private _templateContent = '';
+
+  private _hashScrollDone = false;
 
   // Light DOM pour les styles DSFR
   createRenderRoot() {
@@ -81,6 +87,19 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
   onSourceData(data: unknown): void {
     this._data = Array.isArray(data) ? data as Record<string, unknown>[] : [];
     this._currentPage = 1;
+    this._hashScrollDone = false;
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (!this._hashScrollDone && this._data.length > 0 && window.location.hash) {
+      this._hashScrollDone = true;
+      const targetId = window.location.hash.substring(1);
+      requestAnimationFrame(() => {
+        const el = this.querySelector(`#${CSS.escape(targetId)}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
   }
 
   private _captureTemplate(): void {
@@ -111,10 +130,13 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     return result;
   }
 
-  /** Resout une expression : champ, champ.nested, champ|defaut, $index */
+  /** Resout une expression : champ, champ.nested, champ|defaut, $index, $uid */
   private _resolveExpression(item: Record<string, unknown>, expr: string, index: number): string {
     // Variable speciale : $index
     if (expr === '$index') return String(index);
+
+    // Variable speciale : $uid
+    if (expr === '$uid') return this._getItemUid(item, index);
 
     // Gestion du fallback : champ|valeur_defaut
     let fieldPath = expr;
@@ -157,6 +179,17 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
 
   // --- Render ---
 
+  /** Generate the unique ID string for an item */
+  _getItemUid(item: Record<string, unknown>, index: number): string {
+    if (this.uidField) {
+      const val = getByPath(item, this.uidField);
+      if (val !== null && val !== undefined && val !== '') {
+        return `item-${String(val).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+      }
+    }
+    return `item-${index}`;
+  }
+
   private _renderGrid(items: Record<string, unknown>[]) {
     const colClass = this._getColClass();
     const startIndex = this.pagination > 0
@@ -166,7 +199,8 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     const itemsHtml = items.map((item, i) => {
       const globalIndex = startIndex + i;
       const rendered = this._renderItem(item, globalIndex);
-      return `<div class="${colClass}">${rendered}</div>`;
+      const uid = this._getItemUid(item, globalIndex);
+      return `<div class="${colClass}" id="${uid}">${rendered}</div>`;
     }).join('');
 
     const gridHtml = `<div class="fr-grid-row ${this.gap}">${itemsHtml}</div>`;
