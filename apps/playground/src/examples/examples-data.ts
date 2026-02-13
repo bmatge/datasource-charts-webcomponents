@@ -1353,15 +1353,13 @@ export const examples: Record<string, string> = {
     <gouv-kpi source="filtered"
       valeur="avg:taux_global_tfb"
       label="Taux TFB moyen"
-      format="decimal"
-      unite="%">
+      format="pourcentage">
     </gouv-kpi>
 
     <gouv-kpi source="filtered"
       valeur="avg:taux_global_th"
       label="Taux TH moyen"
-      format="decimal"
-      unite="%">
+      format="pourcentage">
     </gouv-kpi>
   </div>
 

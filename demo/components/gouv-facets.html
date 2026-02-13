@@ -263,15 +263,13 @@
           <gouv-kpi source="fisca-filtered"
             valeur="avg:taux_global_tfb"
             label="Taux TFB moyen"
-            format="decimal"
-            unite="%">
+            format="pourcentage">
           </gouv-kpi>
 
           <gouv-kpi source="fisca-filtered"
             valeur="avg:taux_global_th"
             label="Taux TH moyen"
-            format="decimal"
-            unite="%">
+            format="pourcentage">
           </gouv-kpi>
         </div>
 
@@ -307,7 +305,7 @@
 
 &lt;!-- KPI sur les donnees filtrees --&gt;
 &lt;gouv-kpi source="filtered" valeur="count" label="Communes" format="nombre"&gt;&lt;/gouv-kpi&gt;
-&lt;gouv-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="decimal" unite="%"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="pourcentage"&gt;&lt;/gouv-kpi&gt;
 
 &lt;!-- Carte sur les donnees filtrees et agregees --&gt;
 &lt;gouv-query id="stats" source="filtered"
