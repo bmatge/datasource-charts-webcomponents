@@ -418,7 +418,7 @@ export const examples: Record<string, string> = {
 
   <gouv-query id="q"
     api-type="tabular"
-    dataset-id="2876a346-d50c-4911-934e-19ee07b0e503"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Nom de l'élu:count:nombre"
     order-by="nombre:desc"

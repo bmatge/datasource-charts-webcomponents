@@ -279,6 +279,11 @@ Apres agregation, les champs sont nommes automatiquement : \`champ__fonction\`
 | opendatasoft | Requete serveur ODSQL | Attributs \`base-url\` + \`dataset-id\` |
 | tabular | Requete serveur Tabular API | Attributs \`base-url\` + \`resource\` |
 
+**Mode tabular — Multi-page automatique** : en mode tabular avec \`resource\`,
+gouv-query recupere automatiquement **toutes les pages** du dataset (100 records par page)
+avant d'appliquer les agregations client-side. Cela permet d'agreger (group-by, count, sum...)
+sur des datasets de plusieurs dizaines de milliers d'enregistrements, pas seulement les 100 premiers.
+
 ### Attributs
 | Attribut | Type | Defaut | Requis | Description |
 |----------|------|--------|--------|-------------|
@@ -873,6 +878,12 @@ les cles du premier objet sont utilisees comme colonnes.
 | pagination | Number | \`0\` | non | Lignes par page (0 = tout afficher sans pagination) |
 | export | String | \`""\` | non | Formats d'export : \`"csv"\`, \`"html"\` ou \`"csv,html"\` |
 
+### Pagination serveur
+Quand la source est un \`gouv-source\` avec \`paginate\`, gouv-datalist detecte automatiquement
+la pagination serveur via les metadonnees (\`meta.total\`, \`meta.page_size\`).
+Chaque changement de page declenche un nouvel appel API (pas de pagination client).
+Le total affiche vient de \`meta.total\`. La recherche et le tri ne s'appliquent qu'a la page courante.
+
 ### Exemples
 \`\`\`html
 <!-- Tableau simple -->
@@ -925,6 +936,12 @@ Les placeholders sont remplaces pour chaque element de donnees :
 | empty | String | \`"Aucun resultat"\` | non | Message quand le tableau est vide |
 | gap | String | \`"fr-grid-row--gutters"\` | non | Classe CSS de gap pour la grille |
 | uid-field | String | \`""\` | non | Champ de donnees pour l'ID unique par item. Chaque item recoit un id="item-{valeur}" pour ancrage URL |
+
+### Pagination serveur
+Quand la source est un \`gouv-source\` avec \`paginate\`, gouv-display detecte automatiquement
+la pagination serveur via les metadonnees (\`meta.total\`, \`meta.page_size\`).
+Chaque changement de page declenche un nouvel appel API. Les donnees recues sont affichees
+telles quelles (pas de slicing client). Le nombre total de pages vient de \`meta.total / meta.page_size\`.
 
 ### Exemples
 \`\`\`html
