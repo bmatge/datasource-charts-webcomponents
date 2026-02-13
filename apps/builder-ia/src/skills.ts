@@ -239,7 +239,11 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
   url="https://tabular-api.data.gouv.fr/api/resources/RESOURCE_ID/data/?page_size=50"
   transform="data">
 </gouv-source>
-\`\`\``,
+\`\`\`
+
+> **Note** : les APIs Grist et ODS v1 renvoient des donnees imbriquees sous \`fields\`.
+> Utilisez \`<gouv-normalize flatten="fields">\` pour les aplatir avant de les passer
+> aux facettes, datalist ou graphiques. Voir la doc de gouv-normalize.`,
   },
 
   gouvQuery: {
@@ -363,7 +367,7 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
     id: 'gouvNormalize',
     name: 'gouv-normalize',
     description: 'Nettoyage et normalisation des donnees avant traitement',
-    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation'],
+    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation', 'grist', 'airtable', 'flatten', 'aplatir', 'nested', 'ods v1', 'records.fields'],
     content: `## <gouv-normalize> - Normalisation de donnees
 
 Composant invisible intermediaire qui nettoie et normalise les donnees avant traitement.
@@ -384,6 +388,7 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 | Attribut | Type | Defaut | Requis | Description |
 |----------|------|--------|--------|-------------|
 | source | String | \`""\` | oui | ID de la source a ecouter |
+| flatten | String | \`""\` | non | Cle du sous-objet a extraire au premier niveau. Utilise pour les APIs Grist, ODS v1, Airtable qui wrappent les donnees sous \`fields\`. Supporte la dot notation (\`data.attributes\`). |
 | numeric | String | \`""\` | non | Champs a forcer en nombre (virgule-separes) : \`"population, surface"\` |
 | numeric-auto | Boolean | \`false\` | non | Detection et conversion auto des champs numeriques |
 | rename | String | \`""\` | non | Renommage : \`"ancien:nouveau | ancien2:nouveau2"\` (pipe-separe) |
@@ -392,10 +397,49 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 | replace | String | \`""\` | non | Remplace des valeurs : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
 | lowercase-keys | Boolean | \`false\` | non | Met toutes les cles en minuscules |
 
+### Ordre d'execution des transformations
+1. **flatten** — aplatit le sous-objet designe
+2. rename — renomme les cles
+3. replace — remplace les valeurs
+4. trim — nettoie les espaces
+5. strip-html — supprime le HTML
+6. numeric / numeric-auto — conversion en nombres
+7. lowercase-keys — cles en minuscules
+
 ### Separateurs
 - \`numeric\` : champs separes par virgule
 - \`rename\` et \`replace\` : paires separees par \`|\`, cle et valeur separees par \`:\`
   Le \`:\` separe le pattern de sa valeur de remplacement (valeur vide = suppression).
+
+### Aplatir des donnees imbriquees (Grist, ODS v1, Airtable)
+
+Certaines APIs renvoient chaque enregistrement sous la forme \`{id, fields: {…}}\`.
+L'attribut \`flatten\` extrait les cles du sous-objet et les remonte au premier niveau,
+rendant les donnees compatibles avec tous les composants (facettes, datalist, graphiques, KPI).
+
+\`\`\`html
+<!-- Grist -->
+<gouv-source id="raw"
+  url="https://grist.example.com/api/docs/XXX/tables/MaTable/records"
+  transform="records">
+</gouv-source>
+<gouv-normalize id="clean" source="raw" flatten="fields" trim numeric-auto></gouv-normalize>
+
+<!-- ODS v1 (legacy) -->
+<gouv-source id="raw-v1"
+  url="https://data.gouv.fr/api/records/1.0/search/?dataset=mon-dataset&rows=100"
+  transform="records">
+</gouv-source>
+<gouv-normalize id="clean-v1" source="raw-v1" flatten="fields" trim></gouv-normalize>
+
+<!-- Airtable -->
+<gouv-source id="airtable"
+  url="https://api.airtable.com/v0/appXXX/Table"
+  headers='{"Authorization": "Bearer pat..."}'
+  transform="records">
+</gouv-source>
+<gouv-normalize id="clean-at" source="airtable" flatten="fields" trim></gouv-normalize>
+\`\`\`
 
 ### Exemples
 \`\`\`html
@@ -408,6 +452,14 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 </gouv-normalize>
 <gouv-query id="stats" source="clean" group-by="Departement" aggregate="population:sum"></gouv-query>
 <gouv-dsfr-chart source="stats" type="bar" label-field="Departement" value-field="population__sum"></gouv-dsfr-chart>
+
+<!-- Grist : aplatir + nettoyer + forcer les types numeriques -->
+<gouv-normalize id="clean" source="raw"
+  flatten="fields"
+  trim
+  numeric="Montant_de_la_sanction_"
+  rename="Montant_de_la_sanction_:Montant | Nom_de_l_entreprise:Entreprise">
+</gouv-normalize>
 
 <!-- Nettoyage complet : trim + strip HTML + remplacement de valeurs vides -->
 <gouv-normalize id="propre" source="raw"
@@ -935,6 +987,41 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 <gouv-dsfr-chart source="top5" type="pie" label-field="region" value-field="montant__sum"></gouv-dsfr-chart>
 \`\`\`
 
+### Pipeline Grist / ODS v1 : Source -> Normalize(flatten) -> Visualisation
+
+Pour les APIs qui wrappent les donnees sous un sous-objet (\`fields\`, \`properties\`),
+\`gouv-normalize\` avec \`flatten\` permet de conserver un pipeline 100% declaratif :
+
+\`\`\`html
+<gouv-source id="raw"
+  url="https://grist.example.com/api/docs/DOC_ID/tables/TABLE/records"
+  transform="records">
+</gouv-source>
+
+<gouv-normalize id="clean" source="raw"
+  flatten="fields"
+  trim numeric-auto>
+</gouv-normalize>
+
+<gouv-facets id="filtered" source="clean"
+  fields="categorie, region"
+  labels="categorie:Categorie | region:Region">
+</gouv-facets>
+
+<gouv-display source="filtered" cols="3" pagination="12">
+  <template>
+    <div class="fr-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">{{nom}}</h3>
+          <p class="fr-badge fr-badge--sm">{{categorie}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+\`\`\`
+
 ### Format de sortie : snippet embarquable (PAS une page HTML complete)
 Le code genere doit etre un **snippet** pret a copier-coller dans une page existante.
 - **NE PAS** generer \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\` ni \`<meta>\`.
@@ -1062,7 +1149,15 @@ gouv-query mode generic (\`"champ:operateur:valeur"\`). Ce sont deux systemes di
 | start=N | offset=N |
 | q=texte | where=search(champ,"texte") |
 | refine.champ=val | where=champ="val" |
-| record.fields.X | record.X |`,
+| record.fields.X | record.X |
+
+### API v1 avec gouv-widgets
+L'API v1 renvoie \`records[].fields\`. Utiliser \`transform="records"\` sur gouv-source
+puis \`flatten="fields"\` sur gouv-normalize :
+\`\`\`html
+<gouv-source id="raw" url="…/1.0/search/?dataset=X&rows=100" transform="records"></gouv-source>
+<gouv-normalize id="clean" source="raw" flatten="fields" trim></gouv-normalize>
+\`\`\``,
   },
 
   // ---------------------------------------------------------------------------
@@ -1213,7 +1308,17 @@ Ne pas melanger les deux !
 ### 6. Attributs HTML en kebab-case
 Les attributs HTML sont en kebab-case : \`label-field\`, \`value-field\`, \`api-type\`, \`code-field\`, etc.
 Ne pas utiliser camelCase dans le HTML (\`labelField\` ne fonctionnera pas).
-En revanche, les proprietes JavaScript sont en camelCase (\`element.labelField\`).`,
+En revanche, les proprietes JavaScript sont en camelCase (\`element.labelField\`).
+
+### 7. Facettes / datalist vides avec Grist ou ODS v1
+Les APIs Grist, ODS v1, et Airtable wrappent les donnees sous \`records[].fields\`.
+Les composants gouv-facets, gouv-datalist, gouv-query et gouv-kpi attendent des
+cles de premier niveau.
+
+**Solution** : ajouter \`flatten="fields"\` sur gouv-normalize :
+\`\`\`html
+<gouv-normalize id="clean" source="raw" flatten="fields" trim></gouv-normalize>
+\`\`\``,
   },
 };
 
@@ -1265,8 +1370,8 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     }
   }
 
-  // Auto-include gouvNormalize when data cleaning context detected
-  if (lowerMsg.match(/code embarquable|snippet|html|integrer|embarquer|pipeline|dashboard|tableau de bord/) &&
+  // Auto-include gouvNormalize when data cleaning or nested data context detected
+  if (lowerMsg.match(/code embarquable|snippet|html|integrer|embarquer|pipeline|dashboard|tableau de bord|grist|airtable|flatten|aplatir|nested|ods v1|records\.fields/) &&
       !relevant.find(s => s.id === 'gouvNormalize')) {
     relevant.push(SKILLS.gouvNormalize);
   }

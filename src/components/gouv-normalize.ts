@@ -63,6 +63,10 @@ export class GouvNormalize extends LitElement {
   @property({ type: String })
   replace = '';
 
+  /** Cle du sous-objet a aplatir au premier niveau. Supporte la dot notation (ex: "data.attributes"). */
+  @property({ type: String })
+  flatten = '';
+
   /** Met toutes les cles en minuscules */
   @property({ type: Boolean, attribute: 'lowercase-keys' })
   lowercaseKeys = false;
@@ -104,7 +108,7 @@ export class GouvNormalize extends LitElement {
     }
 
     // Re-traiter si les regles de normalisation changent
-    const normalizationAttrs = ['numeric', 'numericAuto', 'rename', 'trim', 'stripHtml', 'replace', 'lowercaseKeys'];
+    const normalizationAttrs = ['flatten', 'numeric', 'numericAuto', 'rename', 'trim', 'stripHtml', 'replace', 'lowercaseKeys'];
     const hasNormalizationChange = normalizationAttrs.some(attr => changedProperties.has(attr));
     if (hasNormalizationChange) {
       const cachedData = this.source ? getDataCache(this.source) : undefined;
@@ -155,7 +159,18 @@ export class GouvNormalize extends LitElement {
     try {
       dispatchDataLoading(this.id);
 
-      const rows = Array.isArray(rawData) ? rawData : [rawData];
+      let rows = Array.isArray(rawData) ? rawData : [rawData];
+
+      // Flatten: extract nested sub-object keys to top level (before all other transforms)
+      if (this.flatten) {
+        rows = rows.map(row => {
+          if (row === null || row === undefined || typeof row !== 'object' || Array.isArray(row)) {
+            return row;
+          }
+          return this._flattenRow(row as Record<string, unknown>, this.flatten);
+        });
+      }
+
       const numericFields = this._parseNumericFields();
       const renameMap = this._parsePipeMap(this.rename);
       const replaceMap = this._parsePipeMap(this.replace);
@@ -227,6 +242,34 @@ export class GouvNormalize extends LitElement {
     }
 
     return result;
+  }
+
+  /** Aplatit un sous-objet au premier niveau d'un enregistrement */
+  private _flattenRow(row: Record<string, unknown>, path: string): Record<string, unknown> {
+    const nested = this._resolvePath(row, path);
+
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      const result = { ...row };
+      this._deleteByPath(result, path);
+      Object.assign(result, nested as Record<string, unknown>);
+      return result;
+    }
+
+    return row;
+  }
+
+  /** Resout un chemin en dot notation sur un objet */
+  private _resolvePath(obj: Record<string, unknown>, path: string): unknown {
+    return path.split('.').reduce<unknown>((acc, key) => {
+      return acc != null && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined;
+    }, obj);
+  }
+
+  /** Supprime une cle par chemin dot notation (supprime aussi la racine du chemin) */
+  private _deleteByPath(obj: Record<string, unknown>, path: string): void {
+    const parts = path.split('.');
+    // Always delete the top-level key to remove the entire nested path
+    delete obj[parts[0]];
   }
 
   /** Parse l'attribut numeric en Set de noms de champs */
