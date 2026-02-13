@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-search - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .attr-table { width: 100%; border-collapse: collapse; }
+    .attr-table th, .attr-table td { border: 1px solid var(--border-default-grey); padding: 0.5rem; text-align: left; }
+    .attr-table th { background: var(--background-contrast-grey); }
+    pre { background: var(--background-contrast-grey); padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    code { font-size: 0.875em; }
+  </style>
+</head>
+<body>
+  <!-- ============================================================
+       Sources de donnees pour les exemples live
+       ============================================================ -->
+
+  <!-- Exemple 1 & 2 : Elus municipaux (tabular-api) -->
+  <gouv-source id="elus-raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+  <gouv-normalize id="elus-clean" source="elus-raw"
+    rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; de la fonction:Fonction | Libell&eacute; du  d&eacute;partement:Departement | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Libell&eacute; de la r&eacute;gion:Region"
+    trim>
+  </gouv-normalize>
+
+  <!-- Exemple 3 : Industrie du futur -->
+  <gouv-source id="industrie-raw"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+    transform="results">
+  </gouv-source>
+  <gouv-normalize id="industrie-clean" source="industrie-raw"
+    numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
+    rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
+    trim>
+  </gouv-normalize>
+
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
+
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-search"
+    icon="ri-search-line"
+    active-path="components/gouv-search"
+    base-path="../">
+    <div slot="content">
+        <p class="fr-text--lead">
+          Composant visuel intermediaire qui affiche un champ de recherche DSFR et filtre
+          les donnees en amont avant de les redistribuer aux composants en aval.
+        </p>
+
+        <div class="fr-callout fr-callout--green-emeraude">
+          <p class="fr-callout__text">
+            <strong>Visuel et intermediaire :</strong> Ce composant affiche un champ de recherche
+            ET redistribue les donnees filtrees aux composants en aval via le systeme d'evenements.
+            Il se combine naturellement avec <code>gouv-facets</code>.
+          </p>
+        </div>
+
+        <h2>Position dans le pipeline</h2>
+        <div class="fr-highlight">
+          <p>
+            <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &rarr; <strong><code>gouv-search</code></strong> &rarr; <code>gouv-facets</code> &rarr; <code>gouv-display</code> / <code>gouv-datalist</code>
+          </p>
+          <p>
+            La recherche reduit le jeu de donnees, les facettes affinent ensuite.
+            Les compteurs de facettes se recalculent dynamiquement.
+          </p>
+        </div>
+
+        <h2>Cas d'usage</h2>
+        <ul>
+          <li><strong>Recherche textuelle</strong> : filtrer des cartes, tableaux ou graphiques par texte libre</li>
+          <li><strong>Recherche + facettes</strong> : combiner recherche textuelle et filtres categoriques</li>
+          <li><strong>KPI dynamiques</strong> : les indicateurs se recalculent selon la recherche</li>
+          <li><strong>Recherche avec highlight</strong> : mettre en surbrillance les termes trouves dans les cartes</li>
+        </ul>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Defaut</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td>-</td><td><strong>Requis.</strong> Identifiant de la sortie (donnees filtrees).</td></tr>
+            <tr><td><code>source</code></td><td>String</td><td><code>""</code></td><td><strong>Requis.</strong> ID de la source a ecouter.</td></tr>
+            <tr><td><code>fields</code></td><td>String</td><td><code>""</code></td><td>Champs a rechercher (virgule-separes). Vide = tous les champs.</td></tr>
+            <tr><td><code>placeholder</code></td><td>String</td><td><code>"Rechercher..."</code></td><td>Placeholder du champ de saisie.</td></tr>
+            <tr><td><code>label</code></td><td>String</td><td><code>"Rechercher"</code></td><td>Label du champ (accessible).</td></tr>
+            <tr><td><code>debounce</code></td><td>Number</td><td><code>300</code></td><td>Delai en ms avant declenchement du filtre.</td></tr>
+            <tr><td><code>min-length</code></td><td>Number</td><td><code>0</code></td><td>Nombre minimum de caracteres avant declenchement.</td></tr>
+            <tr><td><code>highlight</code></td><td>Boolean</td><td><code>false</code></td><td>Ajoute <code>_highlight</code> avec <code>&lt;mark&gt;</code> pour gouv-display.</td></tr>
+            <tr><td><code>operator</code></td><td>String</td><td><code>"contains"</code></td><td>Mode : <code>contains</code>, <code>starts</code>, <code>words</code>.</td></tr>
+            <tr><td><code>sr-label</code></td><td>Boolean</td><td><code>false</code></td><td>Label en sr-only (masque visuellement, accessible).</td></tr>
+            <tr><td><code>count</code></td><td>Boolean</td><td><code>false</code></td><td>Affiche un compteur de resultats.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="fr-callout fr-mt-3w">
+          <p class="fr-callout__text">
+            <strong>Modes de recherche :</strong><br>
+            <code>contains</code> (defaut) : sous-chaine insensible a la casse et aux accents.<br>
+            <code>starts</code> : chaque mot du champ doit commencer par le terme.<br>
+            <code>words</code> : tous les mots saisis doivent etre presents (dans n'importe quel champ, n'importe quel ordre). Le plus utile pour la recherche multi-criteres.
+          </p>
+        </div>
+
+        <!-- ========================================================
+             Exemple 1 : Recherche seule + Datalist
+             ======================================================== -->
+        <h2 class="fr-mt-4w">Exemple 1 : recherche simple + tableau</h2>
+        <p>Recherche textuelle sur les champs <code>Nom</code>, <code>Prenom</code> et <code>Fonction</code>.
+        Le tableau se filtre en temps reel avec un compteur de resultats.</p>
+
+        <gouv-search id="elus-searched" source="elus-clean"
+          fields="Nom, Prenom, Fonction"
+          placeholder="Nom, prenom ou fonction..."
+          operator="words"
+          min-length="2"
+          count>
+        </gouv-search>
+
+        <gouv-datalist source="elus-searched"
+          colonnes="Nom, Prenom, Fonction, Departement"
+          tri="Nom:asc"
+          pagination="10">
+        </gouv-datalist>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-search id="searched" source="clean"
+  fields="Nom, Prenom, Fonction"
+  placeholder="Nom, prenom ou fonction..."
+  operator="words"
+  min-length="2"
+  count&gt;
+&lt;/gouv-search&gt;
+
+&lt;gouv-datalist source="searched"
+  colonnes="Nom, Prenom, Fonction, Departement"
+  tri="Nom:asc"
+  pagination="10"&gt;
+&lt;/gouv-datalist&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 2 : Recherche + Facettes + Display
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 2 : recherche + facettes + cartes</h2>
+        <p>La recherche et les facettes se combinent. La recherche reduit le jeu de donnees,
+        les facettes affinent. Les cartes affichent les resultats.</p>
+
+        <gouv-search id="elus-search-facets" source="elus-clean"
+          fields="Nom, Prenom, Departement, Fonction"
+          placeholder="Rechercher un elu..."
+          operator="words"
+          count>
+        </gouv-search>
+
+        <gouv-facets id="elus-search-filtered" source="elus-search-facets"
+          fields="Fonction, Departement"
+          labels="Fonction:Fonction | Departement:Departement"
+          max-values="6">
+        </gouv-facets>
+
+        <gouv-display source="elus-search-filtered" cols="3" pagination="9">
+          <template>
+            <div class="fr-card">
+              <div class="fr-card__body">
+                <div class="fr-card__content">
+                  <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
+                  <p class="fr-card__desc">{{Fonction}}</p>
+                </div>
+                <div class="fr-card__footer">
+                  <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>
+                </div>
+              </div>
+            </div>
+          </template>
+        </gouv-display>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-search id="searched" source="clean"
+  fields="Nom, Prenom, Departement, Fonction"
+  placeholder="Rechercher un elu..."
+  operator="words"
+  count&gt;
+&lt;/gouv-search&gt;
+
+&lt;gouv-facets id="filtered" source="searched"
+  fields="Fonction, Departement"
+  labels="Fonction:Fonction | Departement:Departement"
+  max-values="6"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;gouv-display source="filtered" cols="3" pagination="9"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{Prenom}} {{Nom}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{Fonction}}&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class="fr-card__footer"&gt;
+          &lt;p class="fr-badge fr-badge--sm"&gt;{{Departement}}&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 3 : Recherche + KPI dynamiques + Graphique
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 3 : recherche + KPI + graphique</h2>
+        <p>Les KPI et le graphique se recalculent en temps reel selon la recherche.
+        Rechercher par nom d'entreprise, departement ou region.</p>
+
+        <gouv-search id="industrie-searched" source="industrie-clean"
+          fields="Entreprise, Region, Departement"
+          placeholder="Entreprise, region, departement..."
+          operator="words"
+          count>
+        </gouv-search>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+          <gouv-kpi source="industrie-searched"
+            valeur="count"
+            label="Projets"
+            couleur="bleu">
+          </gouv-kpi>
+
+          <gouv-kpi source="industrie-searched"
+            valeur="sum:montant_investissement"
+            label="Investissement total"
+            format="euro">
+          </gouv-kpi>
+
+          <gouv-kpi source="industrie-searched"
+            valeur="sum:nombre_beneficiaires"
+            label="Beneficiaires"
+            format="nombre">
+          </gouv-kpi>
+        </div>
+
+        <gouv-query id="industrie-search-stats" source="industrie-searched"
+          group-by="Region"
+          aggregate="nombre_beneficiaires:sum:Beneficiaires"
+          order-by="Beneficiaires:desc"
+          limit="10">
+        </gouv-query>
+
+        <gouv-dsfr-chart source="industrie-search-stats"
+          type="bar"
+          label-field="Region"
+          value-field="Beneficiaires"
+          selected-palette="categorical">
+        </gouv-dsfr-chart>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-search id="searched" source="clean"
+  fields="Entreprise, Region, Departement"
+  placeholder="Entreprise, region, departement..."
+  operator="words"
+  count&gt;
+&lt;/gouv-search&gt;
+
+&lt;gouv-kpi source="searched" valeur="count" label="Projets" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="searched" valeur="sum:montant_investissement" label="Investissement" format="euro"&gt;&lt;/gouv-kpi&gt;
+
+&lt;gouv-query id="stats" source="searched"
+  group-by="Region"
+  aggregate="nombre_beneficiaires:sum:Beneficiaires"
+  order-by="Beneficiaires:desc"
+  limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="Region"
+  value-field="Beneficiaires"
+  selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</code></pre>
+
+    </div>
+  </app-layout-demo>
+
+  <!-- Footer -->
+  <app-footer base-path="../../"></app-footer>
+
+  <!-- DSFR JS -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

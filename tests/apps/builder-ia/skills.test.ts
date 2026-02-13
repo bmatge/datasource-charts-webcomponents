@@ -15,6 +15,7 @@ import { GouvDsfrChart } from '../../../src/components/gouv-dsfr-chart.js';
 import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
 import { GouvFacets } from '../../../src/components/gouv-facets.js';
 import { GouvDisplay } from '../../../src/components/gouv-display.js';
+import { GouvSearch } from '../../../src/components/gouv-search.js';
 
 // Type/constant imports for alignment checks
 import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
@@ -42,8 +43,8 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 17 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(17);
+  it('should have 18 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(18);
   });
 
   it('should have expected skill IDs', () => {
@@ -53,6 +54,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('gouvQuery');
     expect(SKILLS).toHaveProperty('gouvNormalize');
     expect(SKILLS).toHaveProperty('gouvFacets');
+    expect(SKILLS).toHaveProperty('gouvSearch');
     expect(SKILLS).toHaveProperty('gouvKpi');
     expect(SKILLS).toHaveProperty('gouvDsfrChart');
     expect(SKILLS).toHaveProperty('gouvDatalist');
@@ -230,6 +232,10 @@ describe('builder-ia skills', () => {
         assertAttributesCovered(GouvFacets as unknown as typeof GouvSource, 'gouvFacets', 'gouv-facets');
       });
 
+      it('gouvSearch skill covers all <gouv-search> attributes', () => {
+        assertAttributesCovered(GouvSearch as unknown as typeof GouvSource, 'gouvSearch', 'gouv-search');
+      });
+
       it('gouvDsfrChart skill covers all <gouv-dsfr-chart> attributes', () => {
         assertAttributesCovered(GouvDsfrChart as unknown as typeof GouvSource, 'gouvDsfrChart', 'gouv-dsfr-chart');
       });
@@ -305,6 +311,7 @@ describe('builder-ia skills', () => {
         'GouvQuery': 'gouvQuery',
         'GouvNormalize': 'gouvNormalize',
         'GouvFacets': 'gouvFacets',
+        'GouvSearch': 'gouvSearch',
         'GouvKpi': 'gouvKpi',
         'GouvDatalist': 'gouvDatalist',
         'GouvDisplay': 'gouvDisplay',

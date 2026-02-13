@@ -550,6 +550,75 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
 \`\`\``,
   },
 
+  gouvSearch: {
+    id: 'gouvSearch',
+    name: 'gouv-search',
+    description: 'Recherche textuelle avec champ DSFR, filtre les donnees en amont',
+    trigger: ['recherche', 'search', 'chercher', 'filtrer texte', 'barre de recherche', 'full-text'],
+    content: `## <gouv-search> - Recherche textuelle
+
+Composant visuel intermediaire qui affiche un champ de recherche DSFR et filtre
+les donnees avant de les redistribuer aux composants en aval. Se place entre
+une source/normalize et les facettes/visualisations.
+
+### Position dans le pipeline
+\`\`\`
+gouv-source -> gouv-normalize -> gouv-search -> gouv-facets -> gouv-display
+\`\`\`
+La recherche reduit le jeu de donnees, les facettes affinent ensuite.
+Les compteurs de facettes se recalculent dynamiquement.
+
+### Attributs
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| source | String | "" | oui | ID de la source a ecouter |
+| fields | String | "" | non | Champs a rechercher (virgule-separes). Vide = tous les champs |
+| placeholder | String | "Rechercher..." | non | Placeholder du champ |
+| label | String | "Rechercher" | non | Label accessible |
+| debounce | Number | 300 | non | Delai en ms avant filtrage |
+| min-length | Number | 0 | non | Nb minimum de caracteres |
+| highlight | Boolean | false | non | Ajoute _highlight avec <mark> pour gouv-display |
+| operator | String | "contains" | non | Mode : contains, starts, words |
+| sr-label | Boolean | false | non | Label en sr-only (masque visuellement) |
+| count | Boolean | false | non | Affiche compteur de resultats |
+
+### Modes de recherche
+- **contains** (defaut) : sous-chaine insensible a la casse et aux accents
+- **starts** : chaque mot du champ doit commencer par le terme
+- **words** : tous les mots saisis doivent etre presents (dans n'importe quel champ)
+
+### Exemples
+\`\`\`html
+<!-- Recherche simple -->
+<gouv-search id="searched" source="clean"
+  placeholder="Rechercher..." count>
+</gouv-search>
+<gouv-display source="searched" cols="2" pagination="12">
+  <template>...</template>
+</gouv-display>
+
+<!-- Recherche + facettes -->
+<gouv-search id="searched" source="clean"
+  fields="nom, description, code"
+  operator="words" count>
+</gouv-search>
+<gouv-facets id="filtered" source="searched"
+  fields="categorie, region">
+</gouv-facets>
+<gouv-display source="filtered" ...>...</gouv-display>
+
+<!-- Recherche avec highlight -->
+<gouv-search id="searched" source="clean" highlight count>
+</gouv-search>
+<gouv-display source="searched" cols="1">
+  <template>
+    <h3>{{nom}}</h3>
+    <p>{{{_highlight}}}</p>
+  </template>
+</gouv-display>
+\`\`\``,
+  },
+
   gouvKpi: {
     id: 'gouvKpi',
     name: 'gouv-kpi',
@@ -1022,6 +1091,38 @@ Pour les APIs qui wrappent les donnees sous un sous-objet (\`fields\`, \`propert
 </gouv-display>
 \`\`\`
 
+### Pipeline avec recherche : Source -> Search -> Facets -> Visualisation
+\`\`\`html
+<gouv-source id="data" url="https://api.exemple.fr/records" transform="results"></gouv-source>
+<gouv-normalize id="clean" source="data" trim></gouv-normalize>
+
+<gouv-search id="searched" source="clean"
+  fields="nom, description"
+  placeholder="Rechercher..."
+  operator="words" count>
+</gouv-search>
+
+<gouv-facets id="filtered" source="searched"
+  fields="categorie, region">
+</gouv-facets>
+
+<gouv-display source="filtered" cols="3" pagination="12">
+  <template>
+    <div class="fr-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">{{nom}}</h3>
+          <p class="fr-badge fr-badge--sm">{{categorie}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+\`\`\`
+
+La recherche et les facettes se combinent : la recherche reduit le jeu,
+les facettes affinent. Les KPI et graphiques en aval se mettent a jour en temps reel.
+
 ### Format de sortie : snippet embarquable (PAS une page HTML complete)
 Le code genere doit etre un **snippet** pret a copier-coller dans une page existante.
 - **NE PAS** generer \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\` ni \`<meta>\`.
@@ -1310,6 +1411,13 @@ Les attributs HTML sont en kebab-case : \`label-field\`, \`value-field\`, \`api-
 Ne pas utiliser camelCase dans le HTML (\`labelField\` ne fonctionnera pas).
 En revanche, les proprietes JavaScript sont en camelCase (\`element.labelField\`).
 
+### 8. La recherche ne filtre rien / cherche dans les mauvais champs
+- Verifier que \`fields\` liste les bons noms de champs (sensible a la casse)
+- Verifier que \`source\` pointe vers une source avec des donnees aplaties
+  (si Grist : s'assurer que flatten="fields" est actif sur le normalize)
+- Si \`fields\` est vide, la recherche porte sur TOUS les champs, y compris
+  les champs techniques (id, SIRET...). Preciser les champs pour plus de precision.
+
 ### 7. Facettes / datalist vides avec Grist ou ODS v1
 Les APIs Grist, ODS v1, et Airtable wrappent les donnees sous \`records[].fields\`.
 Les composants gouv-facets, gouv-datalist, gouv-query et gouv-kpi attendent des
@@ -1368,6 +1476,12 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     if (!relevant.find(s => s.id === 'gouvQuery')) {
       relevant.push(SKILLS.gouvQuery);
     }
+  }
+
+  // Auto-include gouvSearch when search/filtering with display context detected
+  if (lowerMsg.match(/recherche|search|chercher|barre de recherche|full-text|filtrer texte/) &&
+      !relevant.find(s => s.id === 'gouvSearch')) {
+    relevant.push(SKILLS.gouvSearch);
   }
 
   // Auto-include gouvNormalize when data cleaning or nested data context detected
