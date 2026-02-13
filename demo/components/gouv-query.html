@@ -58,7 +58,7 @@
             </tr>
             <tr>
               <td><code>tabular</code></td>
-              <td>Requete directe a l'API Tabular de data.gouv.fr. Necessite les attributs <code>dataset-id</code> et <code>resource</code>.</td>
+              <td>Requete directe a l'API Tabular de data.gouv.fr. Necessite l'attribut <code>resource</code>.</td>
             </tr>
           </tbody>
         </table>
@@ -71,7 +71,7 @@
             <tr><td><code>api-type</code></td><td>String</td><td>Mode de fonctionnement : <code>generic</code> (defaut), <code>opendatasoft</code> ou <code>tabular</code></td></tr>
             <tr><td><code>source</code></td><td>String</td><td>ID de la <code>&lt;gouv-source&gt;</code> a ecouter (mode <code>generic</code> uniquement)</td></tr>
             <tr><td><code>base-url</code></td><td>String</td><td>URL de base de l'API (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
-            <tr><td><code>dataset-id</code></td><td>String</td><td>Identifiant du dataset (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
+            <tr><td><code>dataset-id</code></td><td>String</td><td>Identifiant du dataset (mode <code>opendatasoft</code>)</td></tr>
             <tr><td><code>resource</code></td><td>String</td><td>Identifiant de la ressource (mode <code>tabular</code> uniquement)</td></tr>
             <tr><td><code>select</code></td><td>String</td><td>Clause SELECT avec agregations en syntaxe ODSQL (mode <code>opendatasoft</code>). Ex: <code>"sum(population) as total, region"</code></td></tr>
             <tr><td><code>where</code></td><td>String</td><td>Filtres. OpenDataSoft : syntaxe ODSQL. Generic/Tabular : format <code>"champ:operateur:valeur"</code></td></tr>

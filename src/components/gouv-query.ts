@@ -580,8 +580,12 @@ export class GouvQuery extends LitElement {
    * Mode API: fait une requête directe à l'API
    */
   private async _fetchFromApi() {
-    if (!this.datasetId) {
-      console.warn('gouv-query: attribut "dataset" requis pour les requêtes API');
+    if (this.apiType === 'opendatasoft' && !this.datasetId) {
+      console.warn('gouv-query: attribut "dataset-id" requis pour les requêtes OpenDataSoft');
+      return;
+    }
+    if (this.apiType === 'tabular' && !this.resource) {
+      console.warn('gouv-query: attribut "resource" requis pour les requêtes Tabular');
       return;
     }
 
