@@ -130,8 +130,8 @@
 &lt;gouv-dsfr-chart
   source="filtered-data"
   type="bar"
-  label-key="nom"
-  value-key="population"
+  label-field="nom"
+  value-field="population"
 &gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
         </section>
 
@@ -159,9 +159,8 @@
 &lt;gouv-dsfr-chart
   source="stats-region"
   type="bar"
-  label-key="region"
-  value-key="population__sum"
-  title="Population par region"
+  label-field="region"
+  value-field="population__sum"
 &gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
         </section>
 
@@ -186,9 +185,8 @@
 &lt;gouv-dsfr-chart
   source="ods-stats"
   type="bar"
-  label-key="nom_reg"
-  value-key="total_pop"
-  title="Population par region (OpenDataSoft)"
+  label-field="nom_reg"
+  value-field="total_pop"
 &gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
         </section>
 
@@ -209,8 +207,9 @@
 
 &lt;gouv-kpi
   source="tabular-stats"
-  value-key="population__sum"
-  label="Population totale"
+  valeur="count"
+  label="Nombre d'enregistrements"
+  format="nombre"
 &gt;&lt;/gouv-kpi&gt;</pre></div>
         </section>
 

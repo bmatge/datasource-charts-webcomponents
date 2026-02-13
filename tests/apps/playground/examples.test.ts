@@ -24,7 +24,11 @@ describe('playground examples', () => {
     'facets-datalist', 'facets-bar', 'facets-map'
   ];
 
-  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys];
+  const searchKeys = [
+    'search-datalist', 'search-display', 'search-facets-display', 'search-kpi-chart'
+  ];
+
+  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -32,8 +36,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 30 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(30);
+  it('should have 34 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(34);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -59,15 +63,21 @@ describe('playground examples', () => {
 
   it('display examples should use gouv-display', () => {
     for (const key of displayKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      // Tabular mode examples use gouv-query directly without gouv-source
+      if (!examples[key].includes('api-type="tabular"')) {
+        expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      }
       expect(examples[key], `${key} should use gouv-display`).toContain('gouv-display');
       expect(examples[key], `${key} should use template`).toContain('<template>');
     }
   });
 
-  it('query examples should use gouv-source and gouv-query', () => {
+  it('query examples should use gouv-source or tabular api-type, and gouv-query', () => {
     for (const key of queryKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      // Tabular mode examples use gouv-query directly without gouv-source
+      if (!examples[key].includes('api-type="tabular"')) {
+        expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      }
       expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
     }
   });
@@ -94,6 +104,13 @@ describe('playground examples', () => {
       expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
       expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
+    }
+  });
+
+  it('search examples should use gouv-search', () => {
+    for (const key of searchKeys) {
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
     }
   });
 });
