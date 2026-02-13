@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvDatalist } from '../src/components/gouv-datalist.js';
-import { clearDataCache, dispatchDataLoaded } from '../src/utils/data-bridge.js';
+import { clearDataCache, dispatchDataLoaded, setDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
 /**
  * Tests for GouvDatalist component logic.
@@ -331,6 +331,7 @@ describe('GouvDatalist component', () => {
 
   beforeEach(() => {
     clearDataCache('test-dl-src');
+    clearDataMeta('test-dl-src');
     datalist = new GouvDatalist();
   });
 
@@ -394,8 +395,9 @@ describe('GouvDatalist component', () => {
       expect((datalist as any)._data).toEqual([]);
     });
 
-    it('resets current page on new data', () => {
+    it('resets current page on new data (no server meta)', () => {
       (datalist as any)._currentPage = 5;
+      datalist.source = '';
       datalist.onSourceData([{ id: 1 }]);
       expect((datalist as any)._currentPage).toBe(1);
     });
@@ -481,6 +483,53 @@ describe('GouvDatalist component', () => {
       datalist.connectedCallback();
 
       expect((datalist as any)._sort).toEqual({ key: 'name', direction: 'asc' });
+    });
+  });
+
+  describe('server pagination', () => {
+    it('detects server pagination when meta is present', () => {
+      datalist.source = 'test-dl-src';
+      setDataMeta('test-dl-src', { page: 1, pageSize: 20, total: 500 });
+      datalist.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((datalist as any)._serverPagination).toBe(true);
+      expect((datalist as any)._serverTotal).toBe(500);
+      expect((datalist as any)._serverPageSize).toBe(20);
+    });
+
+    it('uses meta.page as current page (does not reset to 1)', () => {
+      datalist.source = 'test-dl-src';
+      setDataMeta('test-dl-src', { page: 5, pageSize: 20, total: 500 });
+      datalist.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((datalist as any)._currentPage).toBe(5);
+    });
+
+    it('returns all data (no client slicing) in server mode', () => {
+      datalist.source = 'test-dl-src';
+      datalist.pagination = 10;
+      setDataMeta('test-dl-src', { page: 1, pageSize: 20, total: 500 });
+      datalist.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((datalist as any)._getPaginatedData()).toHaveLength(20);
+    });
+
+    it('computes total pages from server meta', () => {
+      datalist.source = 'test-dl-src';
+      datalist.pagination = 10;
+      setDataMeta('test-dl-src', { page: 1, pageSize: 20, total: 500 });
+      datalist.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((datalist as any)._getTotalPages()).toBe(25);
+    });
+
+    it('falls back to client mode when no meta', () => {
+      datalist.source = 'test-dl-src';
+      datalist.pagination = 10;
+      datalist.onSourceData(Array.from({ length: 25 }, (_, i) => ({ id: i })));
+
+      expect((datalist as any)._serverPagination).toBe(false);
+      expect((datalist as any)._getTotalPages()).toBe(3);
     });
   });
 

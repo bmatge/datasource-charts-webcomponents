@@ -7,8 +7,13 @@ import {
   dispatchDataError,
   dispatchDataLoading,
   clearDataCache,
+  clearDataMeta,
   subscribeToSource,
-  getDataCache
+  getDataCache,
+  getDataMeta,
+  setDataMeta,
+  subscribeToPageRequests,
+  dispatchPageRequest
 } from '../utils/data-bridge.js';
 
 /**
@@ -72,6 +77,7 @@ export class GouvNormalize extends LitElement {
   lowercaseKeys = false;
 
   private _unsubscribe: (() => void) | null = null;
+  private _unsubscribePageRequests: (() => void) | null = null;
 
   createRenderRoot() {
     return this;
@@ -93,8 +99,13 @@ export class GouvNormalize extends LitElement {
       this._unsubscribe();
       this._unsubscribe = null;
     }
+    if (this._unsubscribePageRequests) {
+      this._unsubscribePageRequests();
+      this._unsubscribePageRequests = null;
+    }
     if (this.id) {
       clearDataCache(this.id);
+      clearDataMeta(this.id);
     }
   }
 
@@ -133,6 +144,10 @@ export class GouvNormalize extends LitElement {
     if (this._unsubscribe) {
       this._unsubscribe();
     }
+    if (this._unsubscribePageRequests) {
+      this._unsubscribePageRequests();
+      this._unsubscribePageRequests = null;
+    }
 
     // Verifier le cache avant de s'abonner (evite une race condition
     // si la source a deja emis ses donnees avant l'abonnement)
@@ -152,6 +167,11 @@ export class GouvNormalize extends LitElement {
       onError: (error: Error) => {
         dispatchDataError(this.id, error);
       }
+    });
+
+    // Relayer les demandes de page vers la source upstream
+    this._unsubscribePageRequests = subscribeToPageRequests(this.id, (page: number) => {
+      dispatchPageRequest(this.source, page);
     });
   }
 
@@ -183,6 +203,12 @@ export class GouvNormalize extends LitElement {
       });
 
       dispatchDataLoaded(this.id, result);
+
+      // Pass-through de la meta de pagination de la source upstream
+      const sourceMeta = getDataMeta(this.source);
+      if (sourceMeta) {
+        setDataMeta(this.id, sourceMeta);
+      }
     } catch (error) {
       dispatchDataError(this.id, error as Error);
       console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, error);

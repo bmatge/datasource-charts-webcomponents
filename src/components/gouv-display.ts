@@ -4,6 +4,7 @@ import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
 import { escapeHtml } from '@gouv-widgets/shared';
 import { sendWidgetBeacon } from '../utils/beacon.js';
+import { getDataMeta, dispatchPageRequest } from '../utils/data-bridge.js';
 
 /**
  * <gouv-display> - Affichage dynamique de donnees via template HTML
@@ -69,6 +70,13 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
   @state()
   private _currentPage = 1;
 
+  /** True quand la source fournit des metadonnees de pagination serveur */
+  @state()
+  private _serverPagination = false;
+
+  private _serverTotal = 0;
+  private _serverPageSize = 0;
+
   private _templateContent = '';
 
   private _hashScrollDone = false;
@@ -86,8 +94,20 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
 
   onSourceData(data: unknown): void {
     this._data = Array.isArray(data) ? data as Record<string, unknown>[] : [];
-    this._currentPage = 1;
     this._hashScrollDone = false;
+
+    // Detecter la pagination serveur via les metadonnees
+    const meta = this.source ? getDataMeta(this.source) : undefined;
+    if (meta && meta.total > 0) {
+      this._serverPagination = true;
+      this._serverTotal = meta.total;
+      this._serverPageSize = meta.pageSize;
+      // En mode serveur, la page courante vient de la meta (ne pas reset a 1)
+      this._currentPage = meta.page;
+    } else {
+      this._serverPagination = false;
+      this._currentPage = 1;
+    }
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -155,18 +175,27 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
   // --- Pagination ---
 
   private _getPaginatedData(): Record<string, unknown>[] {
+    // En mode serveur, les donnees recues sont deja la bonne page
+    if (this._serverPagination) return this._data;
     if (!this.pagination || this.pagination <= 0) return this._data;
     const start = (this._currentPage - 1) * this.pagination;
     return this._data.slice(start, start + this.pagination);
   }
 
   private _getTotalPages(): number {
+    if (this._serverPagination) {
+      return Math.ceil(this._serverTotal / this._serverPageSize);
+    }
     if (!this.pagination || this.pagination <= 0) return 1;
     return Math.ceil(this._data.length / this.pagination);
   }
 
   private _handlePageChange(page: number) {
     this._currentPage = page;
+    // En mode serveur, demander la page a la source
+    if (this._serverPagination && this.source) {
+      dispatchPageRequest(this.source, page);
+    }
   }
 
   // --- Grid ---
@@ -264,7 +293,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
 
     const paginatedData = this._getPaginatedData();
     const totalPages = this._getTotalPages();
-    const totalItems = this._data.length;
+    const totalItems = this._serverPagination ? this._serverTotal : this._data.length;
 
     return html`
       <div class="gouv-display" role="region" aria-label="Liste de resultats">

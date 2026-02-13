@@ -46,6 +46,8 @@
             <tr><td><code>params</code></td><td>String</td><td>Parametres de requete ou body POST en JSON</td></tr>
             <tr><td><code>transform</code></td><td>String</td><td>Chemin JSON pour extraire les donnees : <code>"data.items"</code></td></tr>
             <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
+            <tr><td><code>paginate</code></td><td>Boolean</td><td>Active la pagination serveur. Injecte <code>page</code> et <code>page_size</code> dans l'URL. Auto-extrait <code>json.data</code> quand aucun <code>transform</code> n'est defini.</td></tr>
+            <tr><td><code>page-size</code></td><td>Number</td><td>Taille de page pour la pagination serveur (defaut : 20)</td></tr>
           </tbody>
         </table>
 
@@ -71,6 +73,34 @@
   transform="data.items"
   refresh="60"
 &gt;&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Pagination serveur (API Tabular)</h3>
+          <p>
+            Avec <code>paginate</code>, chaque changement de page dans un <code>gouv-datalist</code>
+            ou <code>gouv-display</code> en aval declenche un nouvel appel API avec <code>?page=N&amp;page_size=M</code>.
+            Permet de naviguer dans des datasets de dizaines de milliers d'enregistrements sans tout charger.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="maires"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+  paginate
+  page-size="20"
+&gt;&lt;/gouv-source&gt;
+
+&lt;!-- Le datalist detecte automatiquement la pagination serveur --&gt;
+&lt;gouv-datalist source="maires"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle du departement:Departement"
+  pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre></div>
+          <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Auto-extraction :</strong> en mode <code>paginate</code>, pas besoin de <code>transform="data"</code>.
+              Les donnees sont automatiquement extraites depuis <code>json.data</code> et les metadonnees de pagination
+              (<code>json.meta</code>) sont stockees pour calculer le nombre total de pages.
+            </p>
+          </div>
         </section>
 
         <section class="demo-section">

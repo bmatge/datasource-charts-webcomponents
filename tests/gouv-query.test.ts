@@ -565,10 +565,143 @@ describe('GouvQuery', () => {
       expect(url).toContain('population__sum__sort=desc');
     });
 
-    it('respects max page_size of 50', () => {
+    it('uses limit as page_size when no override', () => {
       query.limit = 100;
       const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('page_size=50');
+      expect(url).toContain('page_size=100');
+    });
+
+    it('accepts pageSizeOverride and pageOverride', () => {
+      query.limit = 50;
+      const url = (query as any)._buildTabularUrl(100, 3);
+      expect(url).toContain('page_size=100');
+      expect(url).toContain('page=3');
+    });
+  });
+
+  describe('Tabular API multi-page pagination', () => {
+    beforeEach(() => {
+      query.id = 'test-query';
+      query.apiType = 'tabular';
+      query.resource = 'resource-456';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.limit = 0; // fetch all
+    });
+
+    it('fetches multiple pages via links.next', async () => {
+      // Page 1: 100 results, has next
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
+          links: { next: 'https://tabular-api.data.gouv.fr/api/resources/resource-456/data/?page=2&page_size=100' },
+          meta: { page: 1, page_size: 100, total: 150 }
+        })
+      });
+      // Page 2: 50 results, no next
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 50 }, (_, i) => ({ id: 100 + i })),
+          links: {},
+          meta: { page: 2, page_size: 100, total: 150 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromTabularWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(query.getData()).toHaveLength(150);
+    });
+
+    it('stops when meta.total is reached', async () => {
+      // Single page with all data
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 30 }, (_, i) => ({ id: i })),
+          links: {},
+          meta: { page: 1, page_size: 100, total: 30 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromTabularWithPagination();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(30);
+    });
+
+    it('trims to limit when limit > 0', async () => {
+      query.limit = 50;
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
+          links: {},
+          meta: { page: 1, page_size: 100, total: 200 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromTabularWithPagination();
+
+      // _processClientSide applies limit, so result should be 50
+      expect(query.getData()).toHaveLength(50);
+    });
+
+    it('applies group-by and aggregate after multi-page fetch', async () => {
+      query.groupBy = 'region';
+      query.aggregate = 'value:sum:Total';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [
+            { region: 'A', value: 10 },
+            { region: 'B', value: 20 },
+            { region: 'A', value: 30 },
+          ],
+          links: {},
+          meta: { page: 1, page_size: 100, total: 3 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromTabularWithPagination();
+
+      const data = query.getData() as Record<string, unknown>[];
+      expect(data).toHaveLength(2);
+      const regionA = data.find(d => d.region === 'A');
+      expect(regionA?.Total).toBe(40);
+    });
+
+    it('extracts page number from links.next URL', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
+          links: { next: 'https://tabular-api.data.gouv.fr/api/resources/resource-456/data/?page=2&page_size=100' },
+          meta: { page: 1, page_size: 100, total: 200 }
+        })
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 100 }, (_, i) => ({ id: 100 + i })),
+          links: {},
+          meta: { page: 2, page_size: 100, total: 200 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchFromTabularWithPagination();
+
+      // Second call should use page=2
+      const secondCallUrl = mockFetch.mock.calls[1][0] as string;
+      expect(secondCallUrl).toContain('page=2');
     });
   });
 

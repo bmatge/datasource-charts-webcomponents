@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GouvNormalize } from '../src/components/gouv-normalize.js';
-import { clearDataCache, dispatchDataLoaded, getDataCache } from '../src/utils/data-bridge.js';
+import { clearDataCache, dispatchDataLoaded, getDataCache, setDataMeta, getDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
 describe('GouvNormalize', () => {
   let normalize: GouvNormalize;
@@ -8,6 +8,8 @@ describe('GouvNormalize', () => {
   beforeEach(() => {
     clearDataCache('test-normalize');
     clearDataCache('test-source');
+    clearDataMeta('test-normalize');
+    clearDataMeta('test-source');
     normalize = new GouvNormalize();
   });
 
@@ -597,6 +599,50 @@ describe('GouvNormalize', () => {
       const result = getDataCache('test-normalize') as Record<string, unknown>[];
       expect(result).toHaveLength(1);
       expect(result[0].nom).toBe('Lyon');
+    });
+  });
+
+  describe('Pagination meta pass-through', () => {
+    it('forwards pagination meta from source to own id', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+
+      // Set meta on source before data emission
+      setDataMeta('test-source', { page: 2, pageSize: 20, total: 100 });
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ nom: 'Paris' }]);
+
+      const meta = getDataMeta('test-normalize');
+      expect(meta).toBeDefined();
+      expect(meta!.page).toBe(2);
+      expect(meta!.pageSize).toBe(20);
+      expect(meta!.total).toBe(100);
+    });
+
+    it('does not set meta when source has no meta', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ nom: 'Paris' }]);
+
+      const meta = getDataMeta('test-normalize');
+      expect(meta).toBeUndefined();
+    });
+
+    it('cleans up meta on disconnect', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+
+      setDataMeta('test-source', { page: 1, pageSize: 20, total: 50 });
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ nom: 'Paris' }]);
+
+      expect(getDataMeta('test-normalize')).toBeDefined();
+
+      normalize.disconnectedCallback();
+      expect(getDataMeta('test-normalize')).toBeUndefined();
     });
   });
 });

@@ -282,6 +282,34 @@
           </div>
         </section>
 
+        <!-- Pagination serveur -->
+        <h2 class="fr-mt-6w">Pagination serveur</h2>
+        <p>
+          Avec l'attribut <code>paginate</code>, <code>gouv-source</code> active la pagination cote serveur :
+          chaque changement de page declenche un nouvel appel API. Cela permet de naviguer dans des datasets
+          de plusieurs dizaines de milliers d'enregistrements sans tout charger en memoire.
+        </p>
+
+        <h4>Tableau pagine cote serveur — Maires de France (34 874 records)</h4>
+        <p>La pagination est geree par l'API Tabular : cliquer sur "page 2" appelle <code>?page=2&amp;page_size=20</code>.
+          <a href="../apps/playground/index.html?example=server-paginate-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-paginate">Code source</button></h3>
+          <div class="fr-collapse" id="code-d-paginate">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+  paginate page-size="20"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-datalist source="data"
+  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
+  recherche="true" tri="Nom de l'&#233;lu:asc" pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>

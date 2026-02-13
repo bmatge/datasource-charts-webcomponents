@@ -196,12 +196,44 @@
           </div>
         </section>
 
+        <!-- Variante 8: Pagination serveur -->
+        <section class="demo-section" id="server-pagination">
+          <h3>8. Pagination serveur</h3>
+          <p>
+            Quand la source utilise <code>paginate</code>, <code>gouv-datalist</code> detecte automatiquement
+            la pagination serveur. Chaque changement de page declenche un nouvel appel API. Le nombre total
+            d'enregistrements et de pages vient des metadonnees de l'API.
+          </p>
+
+          <div class="code-block">
+            <pre>&lt;gouv-source id="maires"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/"
+  paginate page-size="20"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-datalist source="maires"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle du departement:Departement"
+  recherche="true"
+  tri="Nom de l'elu:asc"
+  pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+          <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Comportement :</strong> en mode pagination serveur, le total affiche (ex: "34 874 resultats")
+              vient de <code>meta.total</code>. La recherche, le tri et les filtres ne s'appliquent qu'aux donnees
+              de la page courante. Pour filtrer sur tout le dataset, utilisez les parametres API via <code>params</code>.
+            </p>
+          </div>
+        </section>
+
         <!-- Conseils d'utilisation -->
         <h2 class="fr-mt-4w">Conseils d'utilisation</h2>
         <div class="fr-callout">
           <p class="fr-callout__text">
             <strong>Performance :</strong> Pour les grands ensembles de donnees, utilisez toujours la pagination
-            pour eviter de surcharger le navigateur.
+            pour eviter de surcharger le navigateur. Avec <code>paginate</code> sur <code>gouv-source</code>,
+            la pagination est geree cote serveur et seule la page courante est en memoire.
           </p>
         </div>
 

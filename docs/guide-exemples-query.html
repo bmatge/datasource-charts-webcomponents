@@ -330,6 +330,38 @@
           </div>
         </section>
 
+        <!-- Multi-page Tabular -->
+        <h2 class="fr-mt-6w">Multi-page Tabular</h2>
+        <p>
+          Avec <code>api-type="tabular"</code>, <code>gouv-query</code> charge automatiquement <strong>toutes les pages</strong>
+          du dataset (par tranches de 100 records) avant d'appliquer les agregations client-side.
+          Cela permet de faire un camembert ou un KPI sur l'ensemble d'un dataset de 35 000 records, pas seulement les 100 premiers.
+        </p>
+
+        <h4>Camembert — Tous les maires par categorie (dataset complet)</h4>
+        <p>Charge les 34 874 maires page par page, puis compte par categorie socio-professionnelle.
+          <a href="../apps/playground/index.html?example=query-tabular-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-tabular">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-tabular">
+<pre class="example-code">&lt;gouv-query id="q"
+  api-type="tabular"
+  dataset-id="2876a346-d50c-4911-934e-19ee07b0e503"
+  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  aggregate="Nom de l'&#233;lu:count:nombre"
+  order-by="nombre:desc" limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="pie"
+  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  value-field="nombre"
+  selected-palette="categorical"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>

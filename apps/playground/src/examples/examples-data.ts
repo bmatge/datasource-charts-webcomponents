@@ -315,10 +315,134 @@ export const examples: Record<string, string> = {
 </div>`,
 
   // =====================================================================
+  // PAGINATION SERVEUR — gouv-source paginate → composant
+  // gouv-source gere la pagination cote serveur : chaque changement
+  // de page declenche un nouvel appel API avec page=N&page_size=M.
+  // =====================================================================
+
+  'server-paginate-datalist': `<!--
+  Tableau avec pagination serveur — Maires de France (34 874 records)
+  Mode direct : gouv-source (paginate) → gouv-datalist
+  Source : Registre des maires (tabular-api)
+  Chaque page est chargee depuis l'API, pas de chargement complet en memoire
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Maires de France — Pagination serveur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>34 874 enregistrements navigables page par page via l'API
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+    paginate page-size="20">
+  </gouv-source>
+
+  <gouv-datalist source="data"
+    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
+    recherche="true"
+    tri="Nom de l'élu:asc"
+    pagination="20">
+  </gouv-datalist>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Avec <code>paginate</code> et <code>page-size="20"</code>, <code>gouv-source</code>
+      injecte <code>?page=N&amp;page_size=20</code> dans l'URL. Pas besoin de <code>transform="data"</code> :
+      en mode pagination, les donnees sont auto-extraites depuis <code>json.data</code>.
+      Cliquer sur une page declenche un nouvel appel API.
+    </p>
+  </div>
+</div>`,
+
+  'server-paginate-display': `<!--
+  Cartes avec pagination serveur — Maires de France
+  Mode direct : gouv-source (paginate) → gouv-display (cartes)
+  Source : Registre des maires (tabular-api)
+  Naviguez dans les 34 874 maires avec des cartes DSFR, page par page
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Maires de France — Cartes paginee serveur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>Pagination cote serveur : chaque page = un appel API
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+    paginate page-size="12">
+  </gouv-source>
+
+  <gouv-display source="data" cols="3" pagination="12">
+    <template>
+      <div class="fr-card fr-card--shadow">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{Nom de l'élu}} {{Prénom de l'élu}}</h3>
+            <p class="fr-card__desc">{{Libellé de la commune}}</p>
+            <div class="fr-card__start">
+              <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">
+                {{Libellé du département}}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+</div>`,
+
+  // =====================================================================
   // MODE AVEC REQUETE — gouv-source → gouv-query → composant
   // Les donnees passent par gouv-query qui les filtre, regroupe
   // et/ou agrege avant de les transmettre au composant de visualisation.
   // =====================================================================
+
+  'query-tabular-pie': `<!--
+  Camembert — Tous les maires par categorie (dataset complet, multi-page)
+  Mode requete : gouv-query (api-type="tabular") → gouv-dsfr-chart (pie)
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge automatiquement TOUTES les pages (par tranches de 100)
+  puis compte par categorie socio-professionnelle.
+  Permet d'agreger sur l'ensemble d'un dataset, pas seulement les 100 premiers.
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Maires par categorie — Dataset complet (34 874)</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>Chargement multi-page automatique : toutes les pages sont recuperees avant aggregation
+  </p>
+
+  <gouv-query id="q"
+    api-type="tabular"
+    dataset-id="2876a346-d50c-4911-934e-19ee07b0e503"
+    group-by="Libellé de la catégorie socio-professionnelle"
+    aggregate="Nom de l'élu:count:nombre"
+    order-by="nombre:desc"
+    limit="10">
+  </gouv-query>
+
+  <div style="max-width: 500px; margin: 0 auto;">
+    <gouv-dsfr-chart source="q"
+      type="pie"
+      label-field="Libellé de la catégorie socio-professionnelle"
+      value-field="nombre"
+      selected-palette="categorical">
+    </gouv-dsfr-chart>
+  </div>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Avec <code>api-type="tabular"</code>, <code>gouv-query</code> recupere automatiquement
+      toutes les pages du dataset (100 records par page). Le chargement peut prendre quelques secondes
+      pour les gros datasets. Les agregations (group-by, count, sum...) sont ensuite appliquees
+      sur l'ensemble des donnees.
+    </p>
+  </div>
+</div>`,
 
   'query-bar': `<!--
   Barres — Beneficiaires agreges par region

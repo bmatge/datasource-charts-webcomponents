@@ -214,6 +214,43 @@
           </div>
         </section>
 
+        <!-- Variante 5: Pagination serveur -->
+        <section class="demo-section" id="server-pagination">
+          <h3>5. Pagination serveur</h3>
+          <p>
+            Quand la source utilise <code>paginate</code>, <code>gouv-display</code> detecte automatiquement
+            la pagination serveur. Chaque changement de page declenche un nouvel appel API au lieu de paginer en local.
+            Le nombre total de pages est calcule depuis les metadonnees de l'API (<code>meta.total</code>).
+          </p>
+
+          <div class="code-block">
+            <pre>&lt;gouv-source id="elus"
+  url="https://tabular-api.data.gouv.fr/api/resources/.../data/"
+  paginate page-size="12"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-display source="elus" cols="3" pagination="12"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{Nom}} {{Prenom}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{Commune}}&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+          <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Comportement :</strong> en mode pagination serveur, les donnees recues sont affichees telles quelles
+              (pas de slicing client). Le total affiche (ex: "1 743 pages") vient de <code>meta.total / meta.page_size</code>.
+              La recherche et le tri ne s'appliquent qu'aux donnees de la page courante.
+            </p>
+          </div>
+        </section>
+
         <!-- Conseils d'utilisation -->
         <h2 class="fr-mt-4w">Conseils d'utilisation</h2>
         <div class="fr-callout">

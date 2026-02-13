@@ -14,7 +14,7 @@ globalThis.fetch = mockFetch;
 
 // We need to import after setting up fetch mock
 import { GouvSource } from '../src/components/gouv-source.js';
-import { getDataCache, clearDataCache } from '../src/utils/data-bridge.js';
+import { getDataCache, clearDataCache, getDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
 describe('GouvSource', () => {
   let source: GouvSource;
@@ -218,6 +218,117 @@ describe('GouvSource', () => {
       // Should NOT set error state for abort
       expect(source.getError()).toBeNull();
       errorSpy.mockRestore();
+    });
+  });
+
+  describe('server pagination', () => {
+    beforeEach(() => {
+      clearDataMeta('test-source');
+    });
+
+    it('injects page and page_size in URL when paginate=true', () => {
+      source.url = 'https://tabular-api.data.gouv.fr/api/resources/abc/data/';
+      source.paginate = true;
+      source.pageSize = 20;
+      source.method = 'GET';
+      source.params = '';
+
+      const url = (source as any)._buildUrl();
+      expect(url).toContain('page=1');
+      expect(url).toContain('page_size=20');
+    });
+
+    it('does not inject pagination params when paginate=false', () => {
+      source.url = 'https://api.example.com/data';
+      source.paginate = false;
+      source.method = 'GET';
+      source.params = '';
+
+      const url = (source as any)._buildUrl();
+      expect(url).not.toContain('page=');
+      expect(url).not.toContain('page_size=');
+    });
+
+    it('stores pagination meta from API response', async () => {
+      const testData = {
+        data: [{ id: 1 }, { id: 2 }],
+        meta: { page: 1, page_size: 20, total: 100 }
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      source.url = 'https://tabular-api.data.gouv.fr/api/resources/abc/data/';
+      source.id = 'test-source';
+      source.paginate = true;
+      source.pageSize = 20;
+      source.transform = '';
+
+      await (source as any)._fetchData();
+
+      const meta = getDataMeta('test-source');
+      expect(meta).toBeDefined();
+      expect(meta!.page).toBe(1);
+      expect(meta!.pageSize).toBe(20);
+      expect(meta!.total).toBe(100);
+    });
+
+    it('auto-extracts json.data when paginate=true and no transform', async () => {
+      const testData = {
+        data: [{ id: 1 }, { id: 2 }],
+        meta: { page: 1, page_size: 20, total: 2 },
+        links: {}
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      source.url = 'https://tabular-api.data.gouv.fr/api/resources/abc/data/';
+      source.id = 'test-source';
+      source.paginate = true;
+      source.pageSize = 20;
+      source.transform = '';
+
+      await (source as any)._fetchData();
+
+      // Should extract json.data, not the whole json
+      expect(source.getData()).toEqual([{ id: 1 }, { id: 2 }]);
+    });
+
+    it('uses transform over auto-extract when both available', async () => {
+      const testData = {
+        data: [{ id: 1 }],
+        results: [{ id: 99 }],
+        meta: { page: 1, page_size: 20, total: 1 }
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      source.url = 'https://tabular-api.data.gouv.fr/api/resources/abc/data/';
+      source.id = 'test-source';
+      source.paginate = true;
+      source.pageSize = 20;
+      source.transform = 'results';
+
+      await (source as any)._fetchData();
+
+      expect(source.getData()).toEqual([{ id: 99 }]);
+    });
+
+    it('updates currentPage on page request', () => {
+      source.url = 'https://tabular-api.data.gouv.fr/api/resources/abc/data/';
+      source.paginate = true;
+      source.pageSize = 20;
+      source.method = 'GET';
+      source.params = '';
+
+      (source as any)._currentPage = 3;
+      const url = (source as any)._buildUrl();
+      expect(url).toContain('page=3');
     });
   });
 

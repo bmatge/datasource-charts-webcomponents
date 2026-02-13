@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvDisplay } from '../src/components/gouv-display.js';
-import { clearDataCache, dispatchDataLoaded, dispatchDataLoading, dispatchDataError } from '../src/utils/data-bridge.js';
+import { clearDataCache, dispatchDataLoaded, dispatchDataLoading, dispatchDataError, setDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
 describe('GouvDisplay', () => {
   let display: GouvDisplay;
 
   beforeEach(() => {
     clearDataCache('test-display-src');
+    clearDataMeta('test-display-src');
     display = new GouvDisplay();
   });
 
@@ -105,8 +106,9 @@ describe('GouvDisplay', () => {
       expect((display as any)._data).toEqual([]);
     });
 
-    it('resets page to 1', () => {
+    it('resets page to 1 (no server meta)', () => {
       (display as any)._currentPage = 3;
+      display.source = '';
       display.onSourceData([{ a: 1 }]);
       expect((display as any)._currentPage).toBe(1);
     });
@@ -240,6 +242,55 @@ describe('GouvDisplay', () => {
       (display as any)._templateContent = '<span>{{$uid}}</span>';
       const result = (display as any)._renderItem({ nom: 'Test' }, 5);
       expect(result).toContain('item-5');
+    });
+  });
+
+  describe('server pagination', () => {
+    it('detects server pagination when meta is present', () => {
+      display.source = 'test-display-src';
+      setDataMeta('test-display-src', { page: 1, pageSize: 20, total: 100 });
+      display.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((display as any)._serverPagination).toBe(true);
+      expect((display as any)._serverTotal).toBe(100);
+      expect((display as any)._serverPageSize).toBe(20);
+    });
+
+    it('uses meta.page as current page (does not reset to 1)', () => {
+      display.source = 'test-display-src';
+      setDataMeta('test-display-src', { page: 3, pageSize: 20, total: 100 });
+      display.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((display as any)._currentPage).toBe(3);
+    });
+
+    it('returns all data (no client slicing) in server mode', () => {
+      display.source = 'test-display-src';
+      display.pagination = 10;
+      setDataMeta('test-display-src', { page: 1, pageSize: 20, total: 100 });
+      display.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      // In server mode, should return all 20 items (the full page from server)
+      expect((display as any)._getPaginatedData()).toHaveLength(20);
+    });
+
+    it('computes total pages from server meta', () => {
+      display.source = 'test-display-src';
+      display.pagination = 10;
+      setDataMeta('test-display-src', { page: 1, pageSize: 20, total: 100 });
+      display.onSourceData(Array.from({ length: 20 }, (_, i) => ({ id: i })));
+
+      expect((display as any)._getTotalPages()).toBe(5);
+    });
+
+    it('falls back to client mode when no meta', () => {
+      display.source = 'test-display-src';
+      display.pagination = 10;
+      display.onSourceData(Array.from({ length: 25 }, (_, i) => ({ id: i })));
+
+      expect((display as any)._serverPagination).toBe(false);
+      expect((display as any)._getTotalPages()).toBe(3);
+      expect((display as any)._getPaginatedData()).toHaveLength(10);
     });
   });
 

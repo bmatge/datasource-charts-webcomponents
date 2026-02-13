@@ -17,15 +17,30 @@ export interface DataLoadingEvent {
   sourceId: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface PageRequestEvent {
+  sourceId: string;
+  page: number;
+}
+
 // Noms des événements custom
 export const DATA_EVENTS = {
   LOADED: 'gouv-data-loaded',
   ERROR: 'gouv-data-error',
-  LOADING: 'gouv-data-loading'
+  LOADING: 'gouv-data-loading',
+  PAGE_REQUEST: 'gouv-page-request'
 } as const;
 
 // Cache global des données par sourceId
 const dataCache = new Map<string, unknown>();
+
+// Cache des métadonnées de pagination par sourceId
+const metaCache = new Map<string, PaginationMeta>();
 
 /**
  * Enregistre des données dans le cache global
@@ -46,6 +61,27 @@ export function getDataCache(sourceId: string): unknown | undefined {
  */
 export function clearDataCache(sourceId: string): void {
   dataCache.delete(sourceId);
+}
+
+/**
+ * Enregistre des métadonnées de pagination
+ */
+export function setDataMeta(sourceId: string, meta: PaginationMeta): void {
+  metaCache.set(sourceId, meta);
+}
+
+/**
+ * Récupère les métadonnées de pagination
+ */
+export function getDataMeta(sourceId: string): PaginationMeta | undefined {
+  return metaCache.get(sourceId);
+}
+
+/**
+ * Supprime les métadonnées de pagination
+ */
+export function clearDataMeta(sourceId: string): void {
+  metaCache.delete(sourceId);
 }
 
 /**
@@ -87,6 +123,36 @@ export function dispatchDataLoading(sourceId: string): void {
   });
 
   document.dispatchEvent(event);
+}
+
+/**
+ * Dispatch un événement de demande de page
+ */
+export function dispatchPageRequest(sourceId: string, page: number): void {
+  const event = new CustomEvent<PageRequestEvent>(DATA_EVENTS.PAGE_REQUEST, {
+    bubbles: true,
+    composed: true,
+    detail: { sourceId, page }
+  });
+
+  document.dispatchEvent(event);
+}
+
+/**
+ * S'abonne aux demandes de changement de page pour une source
+ */
+export function subscribeToPageRequests(
+  sourceId: string,
+  callback: (page: number) => void
+): () => void {
+  const handler = (e: Event) => {
+    const event = e as CustomEvent<PageRequestEvent>;
+    if (event.detail.sourceId === sourceId) {
+      callback(event.detail.page);
+    }
+  };
+  document.addEventListener(DATA_EVENTS.PAGE_REQUEST, handler);
+  return () => document.removeEventListener(DATA_EVENTS.PAGE_REQUEST, handler);
 }
 
 /**

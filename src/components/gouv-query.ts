@@ -18,6 +18,12 @@ const ODS_PAGE_SIZE = 100;
 /** Maximum pages to fetch for ODS pagination (safety limit) */
 const ODS_MAX_PAGES = 10;
 
+/** Tabular API maximum records per request */
+const TABULAR_PAGE_SIZE = 100;
+
+/** Maximum pages to fetch for Tabular pagination (safety limit: 50K records) */
+const TABULAR_MAX_PAGES = 500;
+
 /**
  * Types d'API supportés
  */
@@ -601,6 +607,8 @@ export class GouvQuery extends LitElement {
     try {
       if (this.apiType === 'opendatasoft') {
         await this._fetchFromOdsWithPagination();
+      } else if (this.apiType === 'tabular') {
+        await this._fetchFromTabularWithPagination();
       } else {
         await this._fetchSinglePage();
       }
@@ -715,6 +723,84 @@ export class GouvQuery extends LitElement {
   }
 
   /**
+   * Fetch from Tabular API with automatic pagination via links.next.
+   * The Tabular API returns { data: [...], links: { next, prev }, meta: { page, page_size, total } }.
+   *
+   * - limit > 0: fetch that many records (across multiple pages if needed)
+   * - limit = 0 (default): fetch ALL available records using meta.total
+   */
+  private async _fetchFromTabularWithPagination(): Promise<void> {
+    const fetchAll = this.limit <= 0;
+    const requestedLimit = fetchAll ? TABULAR_MAX_PAGES * TABULAR_PAGE_SIZE : this.limit;
+    let allResults: unknown[] = [];
+    let totalCount = -1;
+    let currentPage = 1;
+
+    for (let i = 0; i < TABULAR_MAX_PAGES; i++) {
+      const remaining = requestedLimit - allResults.length;
+      if (remaining <= 0) break;
+
+      const url = this._buildTabularUrl(TABULAR_PAGE_SIZE, currentPage);
+
+      const response = await fetch(url, {
+        signal: this._abortController!.signal
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      const pageResults = json.data || [];
+      allResults = allResults.concat(pageResults);
+
+      if (json.meta && typeof json.meta.total === 'number') {
+        totalCount = json.meta.total;
+      }
+
+      // Determine next page from links.next
+      let hasNext = false;
+      if (json.links?.next) {
+        try {
+          const nextUrl = new URL(json.links.next, 'https://tabular-api.data.gouv.fr');
+          const nextPage = Number(nextUrl.searchParams.get('page'));
+          if (nextPage > 0) {
+            currentPage = nextPage;
+            hasNext = true;
+          }
+        } catch {
+          // Invalid URL, stop pagination
+        }
+      }
+
+      if (
+        !hasNext ||
+        (totalCount >= 0 && allResults.length >= totalCount) ||
+        pageResults.length < TABULAR_PAGE_SIZE
+      ) {
+        break;
+      }
+    }
+
+    // Trim to requested limit if specified
+    if (!fetchAll && allResults.length > requestedLimit) {
+      allResults = allResults.slice(0, requestedLimit);
+    }
+
+    // Verify: warn if pagination incomplete
+    if (totalCount >= 0 && allResults.length < totalCount && allResults.length < requestedLimit) {
+      console.warn(
+        `gouv-query[${this.id}]: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
+        `(limite de securite: ${TABULAR_MAX_PAGES} pages de ${TABULAR_PAGE_SIZE})`
+      );
+    }
+
+    // Store raw data for client-side processing (group-by, aggregate, sort, limit)
+    this._rawData = allResults as Record<string, unknown>[];
+    this._processClientSide();
+  }
+
+  /**
    * Construit l'URL de requête selon le type d'API
    */
   private _buildApiUrl(): string {
@@ -789,7 +875,7 @@ export class GouvQuery extends LitElement {
   /**
    * Construit une URL Tabular API (data.gouv.fr)
    */
-  private _buildTabularUrl(): string {
+  private _buildTabularUrl(pageSizeOverride?: number, pageOverride?: number): string {
     let base: string;
     if (this.baseUrl) {
       base = this.baseUrl;
@@ -852,9 +938,15 @@ export class GouvQuery extends LitElement {
       url.searchParams.set(`${field}__sort`, direction);
     }
 
-    // Limite
-    if (this.limit > 0) {
-      url.searchParams.set('page_size', String(Math.min(this.limit, 50)));
+    // Pagination
+    if (pageSizeOverride) {
+      url.searchParams.set('page_size', String(pageSizeOverride));
+    } else if (this.limit > 0) {
+      url.searchParams.set('page_size', String(this.limit));
+    }
+
+    if (pageOverride) {
+      url.searchParams.set('page', String(pageOverride));
     }
 
     return url.toString();

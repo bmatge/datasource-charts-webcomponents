@@ -7,7 +7,10 @@ import {
   dispatchDataLoaded,
   dispatchDataError,
   dispatchDataLoading,
-  clearDataCache
+  clearDataCache,
+  setDataMeta,
+  clearDataMeta,
+  subscribeToPageRequests
 } from '../utils/data-bridge.js';
 
 /**
@@ -62,6 +65,19 @@ export class GouvSource extends LitElement {
   @property({ type: String })
   transform = '';
 
+  /**
+   * Active la pagination serveur.
+   * Quand true, injecte page/page_size dans l'URL et stocke la meta de pagination.
+   */
+  @property({ type: Boolean })
+  paginate = false;
+
+  /**
+   * Taille de page pour la pagination serveur (nombre de records par page)
+   */
+  @property({ type: Number, attribute: 'page-size' })
+  pageSize = 20;
+
   @state()
   private _loading = false;
 
@@ -71,8 +87,10 @@ export class GouvSource extends LitElement {
   @state()
   private _data: unknown = null;
 
+  private _currentPage = 1;
   private _refreshInterval: number | null = null;
   private _abortController: AbortController | null = null;
+  private _unsubscribePageRequests: (() => void) | null = null;
 
   // Pas de rendu - composant invisible
   createRenderRoot() {
@@ -91,6 +109,7 @@ export class GouvSource extends LitElement {
     // caused a double-fetch where the first was immediately aborted
     // (NS_BINDING_ABORTED in Firefox).
     this._setupRefresh();
+    this._setupPageRequestListener();
   }
 
   disconnectedCallback() {
@@ -98,15 +117,23 @@ export class GouvSource extends LitElement {
     this._cleanup();
     if (this.id) {
       clearDataCache(this.id);
+      clearDataMeta(this.id);
     }
   }
 
   updated(changedProperties: Map<string, unknown>) {
     if (changedProperties.has('url') || changedProperties.has('params') || changedProperties.has('transform')) {
+      // Reset to page 1 when the URL or params change
+      if (this.paginate && (changedProperties.has('url') || changedProperties.has('params'))) {
+        this._currentPage = 1;
+      }
       this._fetchData();
     }
     if (changedProperties.has('refresh')) {
       this._setupRefresh();
+    }
+    if (changedProperties.has('paginate') || changedProperties.has('pageSize')) {
+      this._setupPageRequestListener();
     }
   }
 
@@ -118,6 +145,10 @@ export class GouvSource extends LitElement {
     if (this._abortController) {
       this._abortController.abort();
       this._abortController = null;
+    }
+    if (this._unsubscribePageRequests) {
+      this._unsubscribePageRequests();
+      this._unsubscribePageRequests = null;
     }
   }
 
@@ -169,8 +200,24 @@ export class GouvSource extends LitElement {
 
       const json = await response.json();
 
+      // En mode pagination serveur, stocker la meta et auto-extraire les données
+      if (this.paginate && json.meta) {
+        setDataMeta(this.id, {
+          page: json.meta.page ?? this._currentPage,
+          pageSize: json.meta.page_size ?? this.pageSize,
+          total: json.meta.total ?? 0
+        });
+      }
+
       // Applique la transformation si spécifiée
-      this._data = this.transform ? getByPath(json, this.transform) : json;
+      if (this.transform) {
+        this._data = getByPath(json, this.transform);
+      } else if (this.paginate && json.data && !this.transform) {
+        // En mode paginate sans transform explicite, auto-extraire json.data
+        this._data = json.data;
+      } else {
+        this._data = json;
+      }
 
       dispatchDataLoaded(this.id, this._data);
     } catch (error) {
@@ -202,6 +249,12 @@ export class GouvSource extends LitElement {
       }
     }
 
+    // Injecter les paramètres de pagination serveur
+    if (this.paginate) {
+      url.searchParams.set('page', String(this._currentPage));
+      url.searchParams.set('page_size', String(this.pageSize));
+    }
+
     return url.toString();
   }
 
@@ -229,6 +282,23 @@ export class GouvSource extends LitElement {
     }
 
     return options;
+  }
+
+  private _setupPageRequestListener() {
+    // Clean up previous listener
+    if (this._unsubscribePageRequests) {
+      this._unsubscribePageRequests();
+      this._unsubscribePageRequests = null;
+    }
+
+    if (this.paginate && this.id) {
+      this._unsubscribePageRequests = subscribeToPageRequests(this.id, (page: number) => {
+        if (page !== this._currentPage) {
+          this._currentPage = page;
+          this._fetchData();
+        }
+      });
+    }
   }
 
   /**

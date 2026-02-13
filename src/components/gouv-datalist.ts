@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
 import { escapeHtml } from '@gouv-widgets/shared';
+import { getDataMeta, dispatchPageRequest } from '../utils/data-bridge.js';
 
 interface ColumnDef {
   key: string;
@@ -73,6 +74,13 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   @state()
   private _currentPage = 1;
 
+  /** True quand la source fournit des metadonnees de pagination serveur */
+  @state()
+  private _serverPagination = false;
+
+  private _serverTotal = 0;
+  private _serverPageSize = 0;
+
   // Light DOM pour les styles DSFR
   createRenderRoot() {
     return this;
@@ -95,7 +103,18 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   onSourceData(data: unknown): void {
     this._data = Array.isArray(data) ? data as Record<string, unknown>[] : [];
-    this._currentPage = 1;
+
+    // Detecter la pagination serveur via les metadonnees
+    const meta = this.source ? getDataMeta(this.source) : undefined;
+    if (meta && meta.total > 0) {
+      this._serverPagination = true;
+      this._serverTotal = meta.total;
+      this._serverPageSize = meta.pageSize;
+      this._currentPage = meta.page;
+    } else {
+      this._serverPagination = false;
+      this._currentPage = 1;
+    }
   }
 
   // --- Parsing ---
@@ -174,6 +193,8 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   private _getPaginatedData(): Record<string, unknown>[] {
     const filtered = this.getFilteredData();
+    // En mode serveur, les donnees recues sont deja la bonne page
+    if (this._serverPagination) return filtered;
     if (!this.pagination || this.pagination <= 0) return filtered;
 
     const start = (this._currentPage - 1) * this.pagination;
@@ -181,6 +202,9 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   }
 
   private _getTotalPages(): number {
+    if (this._serverPagination) {
+      return Math.ceil(this._serverTotal / this._serverPageSize);
+    }
     if (!this.pagination || this.pagination <= 0) return 1;
     return Math.ceil(this.getFilteredData().length / this.pagination);
   }
@@ -207,6 +231,10 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   private _handlePageChange(page: number) {
     this._currentPage = page;
+    // En mode serveur, demander la page a la source
+    if (this._serverPagination && this.source) {
+      dispatchPageRequest(this.source, page);
+    }
   }
 
   // --- Export ---
@@ -474,7 +502,7 @@ ${bodyRows}
     const filterableColumns = this._getFilterableColumns();
     const paginatedData = this._getPaginatedData();
     const totalPages = this._getTotalPages();
-    const totalFiltered = this.getFilteredData().length;
+    const totalFiltered = this._serverPagination ? this._serverTotal : this.getFilteredData().length;
 
     return html`
       <div class="gouv-datalist" role="region" aria-label="Liste de données">
@@ -494,7 +522,7 @@ ${bodyRows}
         ` : html`
           <p class="fr-text--sm" aria-live="polite">
             ${totalFiltered} résultat${totalFiltered > 1 ? 's' : ''}
-            ${this._searchQuery || Object.values(this._activeFilters).some(v => v) ? ' (filtré)' : ''}
+            ${!this._serverPagination && (this._searchQuery || Object.values(this._activeFilters).some(v => v)) ? ' (filtré)' : ''}
           </p>
           ${this._renderTable(columns, paginatedData)}
           ${this._renderPagination(totalPages)}

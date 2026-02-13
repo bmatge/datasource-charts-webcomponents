@@ -7,7 +7,12 @@ describe('playground examples', () => {
     'direct-scatter', 'direct-barline', 'direct-map', 'direct-kpi', 'direct-datalist'
   ];
 
+  const serverPaginateKeys = [
+    'server-paginate-datalist', 'server-paginate-display'
+  ];
+
   const queryKeys = [
+    'query-tabular-pie',
     'query-bar', 'query-line', 'query-pie', 'query-radar', 'query-gauge',
     'query-scatter', 'query-barline', 'query-map', 'query-kpi', 'query-datalist'
   ];
@@ -28,7 +33,7 @@ describe('playground examples', () => {
     'search-datalist', 'search-display', 'search-facets-display', 'search-kpi-chart'
   ];
 
-  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys];
+  const allKeys = [...directKeys, ...serverPaginateKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -36,8 +41,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 34 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(34);
+  it('should have 37 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(37);
   });
 
   it('should have non-empty code for all examples', () => {

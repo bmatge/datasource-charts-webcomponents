@@ -206,6 +206,8 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 | params | String | \`""\` | non | Parametres query (GET) ou body (POST) en JSON |
 | transform | String | \`""\` | non | Chemin JSONPath vers les donnees : \`"results"\`, \`"data.items"\`, \`"records"\` |
 | refresh | Number | \`0\` | non | Rafraichissement auto en secondes (0 = desactive) |
+| paginate | Boolean | \`false\` | non | Active la pagination serveur (injecte page/page_size dans l'URL, stocke la meta) |
+| page-size | Number | \`20\` | non | Taille de page pour la pagination serveur (nombre de records par page) |
 
 ### Evenements emis
 - \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)
@@ -238,6 +240,13 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 <gouv-source id="communes"
   url="https://tabular-api.data.gouv.fr/api/resources/RESOURCE_ID/data/?page_size=50"
   transform="data">
+</gouv-source>
+
+<!-- API Tabular avec pagination serveur (navigation page par page) -->
+<gouv-source id="elus"
+  url="https://tabular-api.data.gouv.fr/api/resources/RESOURCE_ID/data/"
+  paginate
+  page-size="20">
 </gouv-source>
 \`\`\`
 

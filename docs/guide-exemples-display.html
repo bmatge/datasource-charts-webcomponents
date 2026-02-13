@@ -186,6 +186,47 @@
           </div>
         </section>
 
+        <!-- Pagination serveur + cartes -->
+        <h2 class="fr-mt-6w">Pagination serveur</h2>
+        <p>
+          Avec <code>gouv-source paginate</code>, chaque changement de page declenche un nouvel appel API.
+          <code>gouv-display</code> detecte automatiquement la pagination serveur et affiche le nombre total
+          de pages calcule depuis les metadonnees de l'API.
+        </p>
+
+        <h4>Cartes paginee cote serveur — Maires de France</h4>
+        <p>Naviguez dans les 34 874 maires page par page. Chaque page charge 12 enregistrements depuis l'API.
+          <a href="../apps/playground/index.html?example=server-paginate-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-paginate">Code source</button></h3>
+          <div class="fr-collapse" id="code-disp-paginate">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+  paginate page-size="12"&gt;
+&lt;/gouv-source&gt;
+
+&lt;gouv-display source="data" cols="3" pagination="12"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card fr-card--shadow"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{Nom de l'&#233;lu}} {{Pr&#233;nom de l'&#233;lu}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{Libell&#233; de la commune}}&lt;/p&gt;
+          &lt;div class="fr-card__start"&gt;
+            &lt;p class="fr-badge fr-badge--sm fr-badge--green-emeraude"&gt;
+              {{Libell&#233; du d&#233;partement}}
+            &lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>
