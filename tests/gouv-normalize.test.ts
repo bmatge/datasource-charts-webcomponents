@@ -352,6 +352,182 @@ describe('GouvNormalize', () => {
     });
   });
 
+  describe('Flatten', () => {
+    it('flattens simple sub-object (Grist format)', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { id: 1, fields: { Nom: 'A', Score: 42 } },
+        { id: 2, fields: { Nom: 'B', Score: 87 } },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ id: 1, Nom: 'A', Score: 42 });
+      expect(result[1]).toEqual({ id: 2, Nom: 'B', Score: 87 });
+    });
+
+    it('overwrites parent key on collision (sub-object wins)', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { id: 1, fields: { id: 'fiche-001', Nom: 'X' } },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].id).toBe('fiche-001');
+    });
+
+    it('supports dot notation for deep nesting', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'data.attributes';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { data: { attributes: { name: 'X', score: 42 } }, type: 'item' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ type: 'item', name: 'X', score: 42 });
+      expect(result[0].data).toBeUndefined();
+    });
+
+    it('passes through when sub-object is null', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ id: 1, fields: null }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ id: 1, fields: null });
+    });
+
+    it('passes through when sub-object key is absent', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ id: 1, other: 'value' }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ id: 1, other: 'value' });
+    });
+
+    it('passes through when sub-object is an array', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ id: 1, fields: [1, 2, 3] }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ id: 1, fields: [1, 2, 3] });
+    });
+
+    it('handles mix of records with and without sub-object', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { id: 1, fields: { Nom: 'A' } },
+        { id: 2, Nom: 'B' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ id: 1, Nom: 'A' });
+      expect(result[1]).toEqual({ id: 2, Nom: 'B' });
+    });
+
+    it('does nothing when flatten is empty', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = '';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ id: 1, fields: { Nom: 'A' } }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].fields).toBeDefined();
+    });
+
+    it('chains with rename', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+      normalize.rename = 'nom_long:Ville';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ fields: { nom_long: 'Paris' } }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ Ville: 'Paris' });
+    });
+
+    it('chains with trim + numeric', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+      normalize.trim = true;
+      normalize.numeric = 'Montant';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { fields: { Nom: '  X  ', Montant: '42000' } },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].Nom).toBe('X');
+      expect(result[0].Montant).toBe(42000);
+    });
+
+    it('handles deep dot notation where intermediate path is missing', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'a.b.c';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ id: 1, x: 'value' }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]).toEqual({ id: 1, x: 'value' });
+    });
+
+    it('handles 1000 records efficiently', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.flatten = 'fields';
+
+      const input = Array.from({ length: 1000 }, (_, i) => ({
+        id: i,
+        fields: { name: `Item ${i}`, value: i * 10 },
+      }));
+
+      normalize.connectedCallback();
+      const start = performance.now();
+      dispatchDataLoaded('test-source', input);
+      const duration = performance.now() - start;
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result).toHaveLength(1000);
+      expect(result[0]).toEqual({ id: 0, name: 'Item 0', value: 0 });
+      expect(result[999]).toEqual({ id: 999, name: 'Item 999', value: 9990 });
+      expect(duration).toBeLessThan(100);
+    });
+  });
+
   describe('Passthrough (no transformation)', () => {
     it('passes data through unchanged when no attributes set', () => {
       normalize.id = 'test-normalize';
