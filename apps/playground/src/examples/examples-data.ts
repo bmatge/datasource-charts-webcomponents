@@ -1,12 +1,13 @@
 /**
  * Playground examples data
  *
- * 27 exemples organises en 4 modes de construction :
+ * 30 exemples organises en 5 modes de construction :
  *
  * Mode direct       : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
  * Mode requete      : gouv-source → gouv-query → composant
  * Mode normalisation : gouv-source → gouv-normalize → gouv-query → composant
  * Mode facettes     : gouv-source → gouv-normalize → gouv-facets → composant
+ * Mode display      : gouv-source → gouv-display (template HTML dynamique)
  *
  * Sources de donnees alternees :
  *  - API 1 : Fiscalite locale des particuliers (data.economie.gouv.fr)
@@ -938,6 +939,159 @@ export const examples: Record<string, string> = {
     value-field="Beneficiaires"
     selected-palette="categorical">
   </gouv-dsfr-chart>
+</div>`,
+
+  // =====================================================================
+  // MODE DISPLAY — gouv-source → gouv-display (template HTML dynamique)
+  // gouv-display repete un template HTML pour chaque element de donnees,
+  // ideal pour creer des cartes DSFR, tuiles ou tout motif repetitif.
+  // =====================================================================
+
+  'direct-display': `<!--
+  Cartes DSFR — Beneficiaires Industrie du futur
+  Mode direct : gouv-source → gouv-display (cartes)
+  Source : Industrie du futur
+  Affiche une grille de cartes DSFR generees dynamiquement via template
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Beneficiaires Industrie du futur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Industrie du futur
+  </p>
+
+  <gouv-source id="data"
+    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=12"
+    transform="results">
+  </gouv-source>
+
+  <gouv-display source="data" cols="3" pagination="6">
+    <template>
+      <div class="fr-card">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{nom_departement}}</h3>
+            <p class="fr-card__desc">
+              Region : {{nom_region}}<br>
+              Beneficiaires : {{nombre_beneficiaires}}
+            </p>
+          </div>
+          <div class="fr-card__footer">
+            <p class="fr-badge fr-badge--sm fr-badge--blue-ecume">
+              Investissement : {{montant_investissement}} EUR
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Le template <code>&lt;template&gt;</code> est repete pour chaque element.
+      Les placeholders <code>\{\{champ\}\}</code> sont remplaces par les valeurs de chaque enregistrement.
+    </p>
+  </div>
+</div>`,
+
+  'query-display': `<!--
+  Cartes DSFR — Elus municipaux avec filtre
+  Mode requete : gouv-source → gouv-query (filtre) → gouv-display (cartes)
+  Source : Registre des elus municipaux (tabular-api)
+  Combine un filtre par fonction avec un affichage en cartes
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Maires municipaux</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus
+    <br>Pipeline : gouv-source → <strong>gouv-query</strong> → gouv-display
+  </p>
+
+  <gouv-source id="data"
+    url="https://tabular-api.data.gouv.fr/api/resources/a595be27-cfab-4810-b9d4-22e193bffe35/data/?page_size=100"
+    transform="data">
+  </gouv-source>
+
+  <gouv-query id="maires" source="data"
+    filter="Libellé de la fonction:eq:Maire">
+  </gouv-query>
+
+  <gouv-display source="maires" cols="4" pagination="8">
+    <template>
+      <div class="fr-card fr-card--shadow">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{Nom de l'élu}} {{Prénom de l'élu}}</h3>
+            <p class="fr-card__desc">
+              {{Libellé de la fonction}}
+            </p>
+            <div class="fr-card__start">
+              <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">
+                {{Libellé du  département}}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+</div>`,
+
+  'normalize-display': `<!--
+  Tuiles DSFR — LOVAC logements vacants (donnees nettoyees)
+  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-display (tuiles)
+  Source : LOVAC - Logements vacants (tabular-api)
+  Les donnees brutes sont nettoyees puis affichees sous forme de tuiles DSFR
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Top 9 departements — Logements vacants (2025)</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
+    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-display
+  </p>
+
+  <gouv-source id="raw"
+    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
+    transform="data">
+  </gouv-source>
+
+  <gouv-normalize id="clean" source="raw"
+    trim
+    numeric-auto
+    rename="LIB_DEP:Departement | pp_vacant_25:Vacants | pp_total_24:Total logements | DEP:Code">
+  </gouv-normalize>
+
+  <gouv-query id="top" source="clean"
+    order-by="Vacants:desc"
+    limit="9">
+  </gouv-query>
+
+  <gouv-display source="top" cols="3">
+    <template>
+      <div class="fr-tile">
+        <div class="fr-tile__body">
+          <div class="fr-tile__content">
+            <h3 class="fr-tile__title">{{Departement}}</h3>
+            <p class="fr-tile__detail">Dept. {{Code}}</p>
+            <p class="fr-tile__desc">
+              {{Vacants}} logements vacants
+              sur {{Total logements}} au total
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      Les donnees LOVAC brutes ont des cles avec espaces et des nombres en texte.
+      <code>gouv-normalize</code> nettoie tout avant l'affichage en tuiles DSFR
+      via <code>gouv-display</code>.
+    </p>
+  </div>
 </div>`,
 
   'facets-map': `<!--

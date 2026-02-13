@@ -14,6 +14,7 @@ import { GouvDatalist } from '../../../src/components/gouv-datalist.js';
 import { GouvDsfrChart } from '../../../src/components/gouv-dsfr-chart.js';
 import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
 import { GouvFacets } from '../../../src/components/gouv-facets.js';
+import { GouvDisplay } from '../../../src/components/gouv-display.js';
 
 // Type/constant imports for alignment checks
 import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
@@ -41,8 +42,8 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 16 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(16);
+  it('should have 17 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(17);
   });
 
   it('should have expected skill IDs', () => {
@@ -55,6 +56,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('gouvKpi');
     expect(SKILLS).toHaveProperty('gouvDsfrChart');
     expect(SKILLS).toHaveProperty('gouvDatalist');
+    expect(SKILLS).toHaveProperty('gouvDisplay');
     expect(SKILLS).toHaveProperty('dsfrChartNative');
     expect(SKILLS).toHaveProperty('compositionPatterns');
     expect(SKILLS).toHaveProperty('odsql');
@@ -231,6 +233,10 @@ describe('builder-ia skills', () => {
       it('gouvDsfrChart skill covers all <gouv-dsfr-chart> attributes', () => {
         assertAttributesCovered(GouvDsfrChart as unknown as typeof GouvSource, 'gouvDsfrChart', 'gouv-dsfr-chart');
       });
+
+      it('gouvDisplay skill covers all <gouv-display> attributes', () => {
+        assertAttributesCovered(GouvDisplay as unknown as typeof GouvSource, 'gouvDisplay', 'gouv-display');
+      });
     });
 
     describe('chart types coverage', () => {
@@ -301,6 +307,7 @@ describe('builder-ia skills', () => {
         'GouvFacets': 'gouvFacets',
         'GouvKpi': 'gouvKpi',
         'GouvDatalist': 'gouvDatalist',
+        'GouvDisplay': 'gouvDisplay',
         'GouvDsfrChart': 'gouvDsfrChart',
       };
 

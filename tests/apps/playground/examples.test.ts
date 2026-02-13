@@ -16,11 +16,15 @@ describe('playground examples', () => {
     'normalize-bar', 'normalize-pie', 'normalize-line', 'normalize-datalist'
   ];
 
+  const displayKeys = [
+    'direct-display', 'query-display', 'normalize-display'
+  ];
+
   const facetsKeys = [
     'facets-datalist', 'facets-bar', 'facets-map'
   ];
 
-  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...facetsKeys];
+  const allKeys = [...directKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -28,8 +32,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 27 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(27);
+  it('should have 30 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(30);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -47,9 +51,17 @@ describe('playground examples', () => {
   it('direct examples should use gouv-source without gouv-query', () => {
     for (const key of directKeys) {
       expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      if (!['direct-kpi', 'direct-datalist'].includes(key)) {
+      if (!['direct-kpi', 'direct-datalist', 'direct-display'].includes(key)) {
         expect(examples[key], `${key} should use gouv-dsfr-chart`).toContain('gouv-dsfr-chart');
       }
+    }
+  });
+
+  it('display examples should use gouv-display', () => {
+    for (const key of displayKeys) {
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use gouv-display`).toContain('gouv-display');
+      expect(examples[key], `${key} should use template`).toContain('<template>');
     }
   });
 

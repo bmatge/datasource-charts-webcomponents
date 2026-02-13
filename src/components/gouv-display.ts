@@ -1,0 +1,281 @@
+import { LitElement, html } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
+import { getByPath } from '../utils/json-path.js';
+import { escapeHtml } from '@gouv-widgets/shared';
+import { sendWidgetBeacon } from '../utils/beacon.js';
+
+/**
+ * <gouv-display> - Affichage dynamique de donnees via template HTML
+ *
+ * Recupere les donnees d'une source et les injecte dans un template HTML
+ * defini par l'utilisateur, en generant autant d'elements qu'il y a de
+ * resultats. Ideal pour creer des listes de cartes, tuiles, ou tout
+ * autre motif repetitif DSFR.
+ *
+ * Le template utilise des placeholders :
+ * - {{champ}}           : valeur echappee (HTML-safe)
+ * - {{{champ}}}         : valeur brute (non echappee)
+ * - {{champ|defaut}}    : valeur avec fallback si null/undefined
+ * - {{champ.sous.cle}}  : acces aux proprietes imbriquees
+ * - {{$index}}          : index de l'element (0-based)
+ *
+ * @example
+ * <gouv-source id="data" url="/api/results" transform="records"></gouv-source>
+ * <gouv-display source="data" cols="3" pagination="12">
+ *   <template>
+ *     <div class="fr-card">
+ *       <div class="fr-card__body">
+ *         <div class="fr-card__content">
+ *           <h3 class="fr-card__title">{{titre}}</h3>
+ *           <p class="fr-card__desc">{{description}}</p>
+ *         </div>
+ *         <div class="fr-card__footer">
+ *           <p class="fr-badge fr-badge--sm">{{categorie}}</p>
+ *         </div>
+ *       </div>
+ *     </div>
+ *   </template>
+ * </gouv-display>
+ */
+@customElement('gouv-display')
+export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
+  @property({ type: String })
+  source = '';
+
+  /** Nombre de colonnes dans la grille (1-6, defaut 1 = pleine largeur) */
+  @property({ type: Number })
+  cols = 1;
+
+  /** Nombre d'elements par page (0 = tout afficher) */
+  @property({ type: Number })
+  pagination = 0;
+
+  /** Message quand aucune donnee */
+  @property({ type: String })
+  empty = 'Aucun resultat';
+
+  /** Classe CSS de gap pour la grille (defaut: fr-grid-row--gutters) */
+  @property({ type: String })
+  gap = 'fr-grid-row--gutters';
+
+  @state()
+  private _data: Record<string, unknown>[] = [];
+
+  @state()
+  private _currentPage = 1;
+
+  private _templateContent = '';
+
+  // Light DOM pour les styles DSFR
+  createRenderRoot() {
+    return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    sendWidgetBeacon('gouv-display');
+    this._captureTemplate();
+  }
+
+  onSourceData(data: unknown): void {
+    this._data = Array.isArray(data) ? data as Record<string, unknown>[] : [];
+    this._currentPage = 1;
+  }
+
+  private _captureTemplate(): void {
+    const tpl = this.querySelector('template');
+    if (tpl) {
+      this._templateContent = tpl.innerHTML;
+    }
+  }
+
+  /** Remplace les placeholders dans le template pour un item donne */
+  private _renderItem(item: Record<string, unknown>, index: number): string {
+    if (!this._templateContent) return '';
+
+    let result = this._templateContent;
+
+    // {{{champ}}} - valeur brute (triple braces, non echappee)
+    result = result.replace(/\{\{\{([^}]+)\}\}\}/g, (_match, expr: string) => {
+      const value = this._resolveExpression(item, expr.trim(), index);
+      return value;
+    });
+
+    // {{champ}} ou {{champ|defaut}} - valeur echappee
+    result = result.replace(/\{\{([^}]+)\}\}/g, (_match, expr: string) => {
+      const value = this._resolveExpression(item, expr.trim(), index);
+      return escapeHtml(value);
+    });
+
+    return result;
+  }
+
+  /** Resout une expression : champ, champ.nested, champ|defaut, $index */
+  private _resolveExpression(item: Record<string, unknown>, expr: string, index: number): string {
+    // Variable speciale : $index
+    if (expr === '$index') return String(index);
+
+    // Gestion du fallback : champ|valeur_defaut
+    let fieldPath = expr;
+    let defaultValue = '';
+    const pipeIndex = expr.indexOf('|');
+    if (pipeIndex !== -1) {
+      fieldPath = expr.substring(0, pipeIndex).trim();
+      defaultValue = expr.substring(pipeIndex + 1).trim();
+    }
+
+    const value = getByPath(item, fieldPath);
+    if (value === null || value === undefined) return defaultValue;
+    return String(value);
+  }
+
+  // --- Pagination ---
+
+  private _getPaginatedData(): Record<string, unknown>[] {
+    if (!this.pagination || this.pagination <= 0) return this._data;
+    const start = (this._currentPage - 1) * this.pagination;
+    return this._data.slice(start, start + this.pagination);
+  }
+
+  private _getTotalPages(): number {
+    if (!this.pagination || this.pagination <= 0) return 1;
+    return Math.ceil(this._data.length / this.pagination);
+  }
+
+  private _handlePageChange(page: number) {
+    this._currentPage = page;
+  }
+
+  // --- Grid ---
+
+  private _getColClass(): string {
+    const cols = Math.max(1, Math.min(6, this.cols));
+    const colSize = Math.floor(12 / cols);
+    return `fr-col-12 fr-col-md-${colSize}`;
+  }
+
+  // --- Render ---
+
+  private _renderGrid(items: Record<string, unknown>[]) {
+    const colClass = this._getColClass();
+    const startIndex = this.pagination > 0
+      ? (this._currentPage - 1) * this.pagination
+      : 0;
+
+    const itemsHtml = items.map((item, i) => {
+      const globalIndex = startIndex + i;
+      const rendered = this._renderItem(item, globalIndex);
+      return `<div class="${colClass}">${rendered}</div>`;
+    }).join('');
+
+    const gridHtml = `<div class="fr-grid-row ${this.gap}">${itemsHtml}</div>`;
+    return html`<div .innerHTML="${gridHtml}"></div>`;
+  }
+
+  private _renderPagination(totalPages: number) {
+    if (this.pagination <= 0 || totalPages <= 1) return '';
+
+    const pages: number[] = [];
+    for (let i = Math.max(1, this._currentPage - 2); i <= Math.min(totalPages, this._currentPage + 2); i++) {
+      pages.push(i);
+    }
+
+    return html`
+      <nav class="fr-pagination fr-mt-2w" aria-label="Pagination">
+        <ul class="fr-pagination__list">
+          <li>
+            <button class="fr-pagination__link fr-pagination__link--first"
+              ?disabled="${this._currentPage === 1}"
+              @click="${() => this._handlePageChange(1)}"
+              aria-label="Premiere page" type="button">Premiere page</button>
+          </li>
+          <li>
+            <button class="fr-pagination__link fr-pagination__link--prev"
+              ?disabled="${this._currentPage === 1}"
+              @click="${() => this._handlePageChange(this._currentPage - 1)}"
+              aria-label="Page precedente" type="button">Page precedente</button>
+          </li>
+          ${pages.map(page => html`
+            <li>
+              <button
+                class="fr-pagination__link ${page === this._currentPage ? 'fr-pagination__link--active' : ''}"
+                @click="${() => this._handlePageChange(page)}"
+                aria-current="${page === this._currentPage ? 'page' : 'false'}"
+                type="button"
+              >${page}</button>
+            </li>
+          `)}
+          <li>
+            <button class="fr-pagination__link fr-pagination__link--next"
+              ?disabled="${this._currentPage === totalPages}"
+              @click="${() => this._handlePageChange(this._currentPage + 1)}"
+              aria-label="Page suivante" type="button">Page suivante</button>
+          </li>
+          <li>
+            <button class="fr-pagination__link fr-pagination__link--last"
+              ?disabled="${this._currentPage === totalPages}"
+              @click="${() => this._handlePageChange(totalPages)}"
+              aria-label="Derniere page" type="button">Derniere page</button>
+          </li>
+        </ul>
+      </nav>
+    `;
+  }
+
+  render() {
+    if (!this._templateContent) {
+      this._captureTemplate();
+    }
+
+    const paginatedData = this._getPaginatedData();
+    const totalPages = this._getTotalPages();
+    const totalItems = this._data.length;
+
+    return html`
+      <div class="gouv-display" role="region" aria-label="Liste de resultats">
+        ${this._sourceLoading ? html`
+          <div class="gouv-display__loading" aria-live="polite">
+            <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
+            Chargement...
+          </div>
+        ` : this._sourceError ? html`
+          <div class="gouv-display__error" aria-live="assertive">
+            <span class="fr-icon-error-line" aria-hidden="true"></span>
+            Erreur de chargement
+          </div>
+        ` : totalItems === 0 ? html`
+          <div class="gouv-display__empty" aria-live="polite">
+            ${this.empty}
+          </div>
+        ` : html`
+          <p class="fr-text--sm fr-mb-1w" aria-live="polite">
+            ${totalItems} resultat${totalItems > 1 ? 's' : ''}
+          </p>
+          ${this._renderGrid(paginatedData)}
+          ${this._renderPagination(totalPages)}
+        `}
+      </div>
+
+      <style>
+        .gouv-display__loading,
+        .gouv-display__error {
+          display: flex; align-items: center; justify-content: center;
+          gap: 0.5rem; padding: 2rem; color: var(--text-mention-grey, #666);
+          font-size: 0.875rem;
+        }
+        .gouv-display__error { color: var(--text-default-error, #ce0500); }
+        .gouv-display__empty {
+          text-align: center; color: var(--text-mention-grey, #666);
+          padding: 2rem; font-size: 0.875rem;
+        }
+      </style>
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'gouv-display': GouvDisplay;
+  }
+}
