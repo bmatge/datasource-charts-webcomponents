@@ -240,7 +240,7 @@ export class GouvQuery extends LitElement {
 
   // Server-side overlay state (set by downstream components via gouv-source-command)
   private _serverPage = 1;
-  private _serverWhere = '';
+  private _serverWheres = new Map<string, string>();
   private _serverOrderBy = '';
 
   // Pas de rendu - composant invisible
@@ -280,7 +280,7 @@ export class GouvQuery extends LitElement {
                              'orderBy', 'limit', 'transform', 'pageSize'];
         if (staticProps.some(prop => changedProperties.has(prop))) {
           this._serverPage = 1;
-          this._serverWhere = '';
+          this._serverWheres.clear();
           this._serverOrderBy = '';
         }
       }
@@ -867,13 +867,21 @@ export class GouvQuery extends LitElement {
         needsFetch = true;
       }
 
-      if (cmd.where !== undefined && cmd.where !== this._serverWhere) {
-        this._serverWhere = cmd.where;
-        // Reset page when search changes
-        if (cmd.page === undefined) {
-          this._serverPage = 1;
+      if (cmd.where !== undefined) {
+        const key = cmd.whereKey || '_default';
+        const oldMerged = this._getMergedWhere();
+        if (cmd.where) {
+          this._serverWheres.set(key, cmd.where);
+        } else {
+          this._serverWheres.delete(key);
         }
-        needsFetch = true;
+        if (this._getMergedWhere() !== oldMerged) {
+          // Reset page when search/filter changes
+          if (cmd.page === undefined) {
+            this._serverPage = 1;
+          }
+          needsFetch = true;
+        }
       }
 
       if (cmd.orderBy !== undefined && cmd.orderBy !== this._serverOrderBy) {
@@ -889,6 +897,30 @@ export class GouvQuery extends LitElement {
         this._fetchFromApi();
       }
     });
+  }
+
+  /**
+   * Retourne le where dynamique fusionne de toutes les sources (search, facets, etc.)
+   */
+  private _getMergedWhere(): string {
+    return [...this._serverWheres.values()].filter(Boolean).join(' AND ');
+  }
+
+  /**
+   * Retourne le where effectif complet (statique + dynamique),
+   * en excluant optionnellement une cle specifique.
+   * Utilise par gouv-facets server-facets pour construire l'URL facets API
+   * sans inclure ses propres filtres dans les compteurs.
+   */
+  getEffectiveWhere(excludeKey?: string): string {
+    const parts: string[] = [];
+    const staticWhere = this.where || this.filter;
+    if (staticWhere) parts.push(staticWhere);
+    for (const [key, w] of this._serverWheres) {
+      if (excludeKey && key === excludeKey) continue;
+      if (w) parts.push(w);
+    }
+    return parts.join(' AND ');
   }
 
   /**
@@ -966,12 +998,10 @@ export class GouvQuery extends LitElement {
       url.searchParams.set('select', selectParts.join(', '));
     }
 
-    // WHERE: merge static (attribute) + dynamic (overlay from search)
-    const staticWhere = this.where || this.filter;
-    const dynamicWhere = this._serverWhere;
-    const whereParts = [staticWhere, dynamicWhere].filter(Boolean);
-    if (whereParts.length > 0) {
-      url.searchParams.set('where', whereParts.join(' AND '));
+    // WHERE: merge static (attribute) + dynamic (overlay from search/facets)
+    const effectiveWhere = this.getEffectiveWhere();
+    if (effectiveWhere) {
+      url.searchParams.set('where', effectiveWhere);
     }
 
     // GROUP BY

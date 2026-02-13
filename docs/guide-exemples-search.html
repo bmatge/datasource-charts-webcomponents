@@ -62,6 +62,9 @@
                 <a class="fr-sidemenu__link" href="guide-exemples-search.html" aria-current="true">gouv-search</a>
               </li>
               <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-facets.html">gouv-facets</a>
+              </li>
+              <li class="fr-sidemenu__item">
                 <a class="fr-sidemenu__link" href="guide-exemples-display.html">gouv-display</a>
               </li>
             </ul>
@@ -76,71 +79,65 @@
           <code>gouv-search</code> affiche un champ de recherche DSFR et filtre les donnees en amont avant de les redistribuer aux composants en aval. Se combine avec <code>gouv-facets</code> et <code>gouv-display</code>.
         </p>
 
-        <!-- search-datalist (FIXED: maires dataset) -->
-        <h4>Tableau — Recherche textuelle sur les maires</h4>
-        <p>Recherche sur les champs Nom, Prenom et Commune avec l'operateur <code>words</code> (tous les mots saisis doivent etre presents). Le tableau se filtre en temps reel avec un compteur de resultats.
+        <!-- search-datalist (server-side ODS) -->
+        <h4>Tableau — Recherche serveur sur les rappels de produits</h4>
+        <p>Recherche full-text deleguee au serveur ODS via <code>gouv-search server-search</code>. Le tableau supporte le tri serveur via <code>server-tri</code> et la pagination serveur. Chaque action (recherche, tri, page) declenche un nouvel appel API.
           <a href="../apps/playground/index.html?example=search-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-s-datalist">
-<pre class="example-code">&lt;gouv-source id="raw"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+  dataset-id="rappelconso0"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"
+  order-by="date_de_publication:desc"&gt;
+&lt;/gouv-query&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'&#233;lu:Nom | Pr&#233;nom de l'&#233;lu:Prenom | Libell&#233; du d&#233;partement:Departement | Libell&#233; de la commune:Commune | Libell&#233; de la cat&#233;gorie socio-professionnelle:Categorie"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Commune"
-  placeholder="Nom, prenom ou commune..."
-  operator="words"
+&lt;gouv-search id="s" source="q"
+  server-search
+  placeholder="Rechercher un produit rappele..."
   min-length="2"
   count&gt;
 &lt;/gouv-search&gt;
 
-&lt;gouv-datalist source="searched"
-  colonnes="Nom, Prenom, Commune, Departement, Categorie"
-  tri="Nom:asc" pagination="10"&gt;
+&lt;gouv-datalist source="q"
+  colonnes="noms_des_modeles_ou_references:Produit, categorie_de_produit:Categorie, nom_de_la_marque_du_produit:Marque, date_de_publication:Date"
+  server-tri
+  pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>
 
-        <!-- search-display -->
-        <h4>Cartes — Recherche sur Industrie du futur</h4>
-        <p>Recherche textuelle combinee avec <code>gouv-display</code> pour afficher les resultats sous forme de cartes DSFR.
+        <!-- search-display (server-side ODS) -->
+        <h4>Cartes — Recherche serveur sur Industrie du futur</h4>
+        <p>Recherche full-text serveur combinee avec <code>gouv-display</code> pour afficher les resultats sous forme de cartes DSFR. La pagination est geree cote serveur.
           <a href="../apps/playground/index.html?example=search-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-display">Code source</button></h3>
           <div class="fr-collapse" id="code-s-display">
-<pre class="example-code">&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="9"&gt;
+&lt;/gouv-query&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  numeric="montant_investissement, nombre_beneficiaires"
-  rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-search id="searched" source="clean"
-  fields="Entreprise, Region, Departement"
+&lt;gouv-search id="s" source="q"
+  server-search
   placeholder="Entreprise, region ou departement..."
-  operator="words" count&gt;
+  count&gt;
 &lt;/gouv-search&gt;
 
-&lt;gouv-display source="searched" cols="3" pagination="9"&gt;
+&lt;gouv-display source="q" cols="3" pagination="9"&gt;
   &lt;template&gt;
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
-          &lt;h3 class="fr-card__title"&gt;{{Entreprise}}&lt;/h3&gt;
-          &lt;p class="fr-card__desc"&gt;{{Departement}} — {{Region}}&lt;/p&gt;
+          &lt;h3 class="fr-card__title"&gt;{{nom_entreprise}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{nom_departement}} — {{nom_region}}&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class="fr-card__footer"&gt;
           &lt;p class="fr-badge fr-badge--sm"&gt;{{montant_investissement}} EUR&lt;/p&gt;

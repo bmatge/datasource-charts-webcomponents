@@ -1137,24 +1137,26 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'direct-display': `<!--
-  Cartes DSFR — Beneficiaires Industrie du futur
-  Mode direct : gouv-source → gouv-display (cartes)
-  Source : Industrie du futur
-  Affiche une grille de cartes DSFR generees dynamiquement via template
+  Cartes DSFR — Beneficiaires Industrie du futur (pagination serveur)
+  Pipeline : gouv-query (server-side) → gouv-display
+  Source : OpenDataSoft — Industrie du futur
+  Pagination serveur : chaque page = un appel API
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Beneficiaires Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
+    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-display
   </p>
 
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=12"
-    transform="results">
-  </gouv-source>
+  <gouv-query id="q" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="6">
+  </gouv-query>
 
-  <gouv-display source="data" cols="3" pagination="6">
+  <gouv-display source="q" cols="3" pagination="6">
     <template>
       <div class="fr-card">
         <div class="fr-card__body">
@@ -1177,47 +1179,45 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      Le template <code>&lt;template&gt;</code> est repete pour chaque element.
-      Les placeholders <code>\{\{champ\}\}</code> sont remplaces par les valeurs de chaque enregistrement.
+      <strong>Pagination serveur</strong> : <code>gouv-query server-side</code> ne charge qu'une page a la fois.
+      Chaque clic sur la pagination declenche un nouvel appel API.
+      Le template <code>&lt;template&gt;</code> est repete pour chaque element de la page.
     </p>
   </div>
 </div>`,
 
   'query-display': `<!--
-  Cartes DSFR — Maires par departement
-  Mode requete : gouv-source → gouv-query → gouv-display (cartes)
-  Source : Registre des maires (tabular-api)
-  gouv-query filtre les maires d'un departement
+  Cartes DSFR — Communes de l'Ain (pagination serveur)
+  Pipeline : gouv-query (server-side, Tabular) → gouv-display
+  Source : Tabular API — Code officiel geographique (communes)
+  Filtre server-side par departement, pagination serveur
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Maires — Departement de l'Ain</h2>
+  <h2>Communes — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : gouv-source → <strong>gouv-query</strong> → gouv-display
+    Source : tabular-api.data.gouv.fr — Code officiel geographique (communes)
+    <br>Pipeline : <strong>gouv-query server-side</strong> (Tabular, filter) → gouv-display
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
-
-  <gouv-query id="dept" source="data"
-    filter="Libellé du département:contains:Ain">
+  <gouv-query id="q" api-type="tabular"
+    resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+    filter="DEP:eq:01"
+    server-side page-size="8">
   </gouv-query>
 
-  <gouv-display source="dept" cols="4" pagination="8">
+  <gouv-display source="q" cols="4" pagination="8">
     <template>
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <h3 class="fr-card__title">{{Nom de l'élu}} {{Prénom de l'élu}}</h3>
+            <h3 class="fr-card__title">{{LIBELLE}}</h3>
             <p class="fr-card__desc">
-              {{Libellé de la commune}}
+              Code commune : {{COM}}
             </p>
             <div class="fr-card__start">
               <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">
-                {{Libellé du département}}
+                Dept. {{DEP}} — Region {{REG}}
               </p>
             </div>
           </div>
@@ -1290,84 +1290,74 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'search-datalist': `<!--
-  Tableau filtrable — Maires avec recherche textuelle
-  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-datalist
-  Source : Registre des maires (tabular-api)
-  gouv-search filtre en temps reel, le tableau affiche les resultats
+  Tableau filtrable — Rappels de produits avec recherche serveur
+  Pipeline : gouv-query (server-side) → gouv-search (server-search) → gouv-datalist (server-tri)
+  Source : OpenDataSoft — RappelConso
+  Recherche full-text deleguee au serveur, tri et pagination serveur
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Recherche textuelle — Maires de France</h2>
+  <h2>Recherche serveur — Rappels de produits</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-datalist
+    Source : data.economie.gouv.fr — RappelConso
+    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-search server-search → gouv-datalist server-tri
   </p>
 
-  <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="q" api-type="opendatasoft"
+    dataset-id="rappelconso0"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="20"
+    order-by="date_de_publication:desc">
+  </gouv-query>
 
-  <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
-    trim>
-  </gouv-normalize>
-
-  <gouv-search id="searched" source="clean"
-    fields="Nom, Prenom, Commune"
-    placeholder="Nom, prenom ou commune..."
-    operator="words"
+  <gouv-search id="s" source="q"
+    server-search
+    placeholder="Rechercher un produit rappele..."
     min-length="2"
     count>
   </gouv-search>
 
-  <gouv-datalist source="searched"
-    colonnes="Nom, Prenom, Commune, Departement, Categorie"
-    tri="Nom:asc"
-    pagination="10">
+  <gouv-datalist source="q"
+    colonnes="noms_des_modeles_ou_references:Produit, categorie_de_produit:Categorie, nom_de_la_marque_du_produit:Marque, date_de_publication:Date"
+    server-tri
+    pagination="20">
   </gouv-datalist>
 </div>`,
 
   'search-display': `<!--
-  Cartes avec recherche — Industrie du futur
-  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-display (cartes)
-  Source : Industrie du futur
-  gouv-search filtre les donnees, gouv-display affiche les resultats en cartes
+  Cartes avec recherche serveur — Industrie du futur
+  Pipeline : gouv-query (server-side) → gouv-search (server-search) → gouv-display
+  Source : OpenDataSoft — Industrie du futur
+  Recherche full-text deleguee au serveur, pagination serveur
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Recherche — Industrie du futur</h2>
+  <h2>Recherche serveur — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-display
+    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-search server-search → gouv-display
   </p>
 
-  <gouv-source id="raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
-  </gouv-source>
+  <gouv-query id="q" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="9">
+  </gouv-query>
 
-  <gouv-normalize id="clean" source="raw"
-    numeric="montant_investissement, nombre_beneficiaires"
-    rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
-    trim>
-  </gouv-normalize>
-
-  <gouv-search id="searched" source="clean"
-    fields="Entreprise, Region, Departement"
+  <gouv-search id="s" source="q"
+    server-search
     placeholder="Entreprise, region ou departement..."
-    operator="words"
     count>
   </gouv-search>
 
-  <gouv-display source="searched" cols="3" pagination="9">
+  <gouv-display source="q" cols="3" pagination="9">
     <template>
       <div class="fr-card">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <h3 class="fr-card__title">{{Entreprise}}</h3>
+            <h3 class="fr-card__title">{{nom_entreprise}}</h3>
             <p class="fr-card__desc">
-              {{Departement}} — {{Region}}<br>
+              {{nom_departement}} — {{nom_region}}<br>
               Beneficiaires : {{nombre_beneficiaires}}
             </p>
           </div>
@@ -1655,6 +1645,61 @@ export const examples: Record<string, string> = {
       <strong>Mode server-side + tri</strong> : gouv-query server-side charge une page,
       <code>gouv-datalist server-tri</code> delegue le tri au serveur.
       Chaque clic sur un en-tete de colonne declenche un re-fetch avec le bon \`orderBy\`.
+    </p>
+  </div>
+</div>`,
+
+  'server-facets-display': `<!--
+  Server-facets ODS — Recherche + facettes + cartes
+  Mode: gouv-query (server-side ODS) + gouv-search (server-search) + gouv-facets (server-facets) -> gouv-display
+  Source: OpenDataSoft - Industrie du futur (data.economie.gouv.fr)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Facettes serveur ODS — Industrie du futur</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Facettes dynamiques + recherche full-text, pagination serveur
+  </p>
+
+  <gouv-query id="q" server-side page-size="12"
+    api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
+  </gouv-query>
+
+  <gouv-search source="q" server-search
+    placeholder="Rechercher une entreprise..."
+    count>
+  </gouv-search>
+
+  <gouv-facets id="filtered" source="q"
+    server-facets
+    fields="nom_region,type_aide"
+    labels="nom_region:Region | type_aide:Type d'aide"
+    max-values="8">
+  </gouv-facets>
+
+  <gouv-display source="filtered" cols="3" pagination="12">
+    <template>
+      <div class="fr-card fr-card--shadow">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{nom_entreprise}}</h3>
+            <p class="fr-card__desc">{{nom_departement}} — {{nom_region}}</p>
+            <div class="fr-card__start">
+              <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">{{type_aide}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      <strong>Facettes serveur ODS</strong> : <code>gouv-facets server-facets</code> fetche les valeurs
+      de facettes depuis l'API ODS <code>/facets</code>. Les compteurs se mettent a jour dynamiquement
+      selon la recherche et les selections cross-facet. Chaque selection declenche un re-fetch serveur.
     </p>
   </div>
 </div>`,

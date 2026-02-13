@@ -61,6 +61,9 @@
               <li class="fr-sidemenu__item">
                 <a class="fr-sidemenu__link" href="guide-exemples-search.html">gouv-search</a>
               </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-facets.html">gouv-facets</a>
+              </li>
               <li class="fr-sidemenu__item fr-sidemenu__item--active">
                 <a class="fr-sidemenu__link" href="guide-exemples-display.html" aria-current="true">gouv-display</a>
               </li>
@@ -77,20 +80,22 @@
           Syntaxe : <code>{{champ}}</code> (echappe), <code>{{{champ}}}</code> (brut), <code>{{champ|defaut}}</code> (fallback), <code>{{$index}}</code> (index).
         </p>
 
-        <!-- direct-display -->
-        <h4>Cartes — Industrie du futur</h4>
-        <p>Grille de cartes DSFR generees dynamiquement via template, avec pagination.
+        <!-- direct-display (server-side ODS) -->
+        <h4>Cartes — Industrie du futur (pagination serveur)</h4>
+        <p>Grille de cartes DSFR avec pagination serveur via <code>gouv-query server-side</code>. Chaque page declenche un nouvel appel API.
           <a href="../apps/playground/index.html?example=direct-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-cards">Code source</button></h3>
           <div class="fr-collapse" id="code-disp-cards">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=12"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="6"&gt;
+&lt;/gouv-query&gt;
 
-&lt;gouv-display source="data" cols="3" pagination="6"&gt;
+&lt;gouv-display source="q" cols="3" pagination="6"&gt;
   &lt;template&gt;
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
@@ -111,32 +116,30 @@
           </div>
         </section>
 
-        <!-- query-display (FIXED: maires dataset) -->
-        <h4>Cartes — Maires par departement</h4>
-        <p>Filtre les maires d'un departement avec <code>gouv-query</code> puis affiche en cartes via <code>gouv-display</code>.
+        <!-- query-display (server-side Tabular) -->
+        <h4>Cartes — Communes de l'Ain (pagination serveur)</h4>
+        <p>Filtre les communes d'un departement avec <code>gouv-query server-side</code> (Tabular, filter server-side) puis affiche en cartes via <code>gouv-display</code>.
           <a href="../apps/playground/index.html?example=query-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-query">Code source</button></h3>
           <div class="fr-collapse" id="code-disp-query">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
-
-&lt;gouv-query id="dept" source="data"
-  filter="Libell&#233; du d&#233;partement:contains:Ain"&gt;
+<pre class="example-code">&lt;gouv-query id="q" api-type="tabular"
+  resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+  filter="DEP:eq:01"
+  server-side page-size="8"&gt;
 &lt;/gouv-query&gt;
 
-&lt;gouv-display source="dept" cols="4" pagination="8"&gt;
+&lt;gouv-display source="q" cols="4" pagination="8"&gt;
   &lt;template&gt;
     &lt;div class="fr-card fr-card--shadow"&gt;
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
-          &lt;h3 class="fr-card__title"&gt;{{Nom de l'&#233;lu}} {{Pr&#233;nom de l'&#233;lu}}&lt;/h3&gt;
-          &lt;p class="fr-card__desc"&gt;{{Libell&#233; de la commune}}&lt;/p&gt;
+          &lt;h3 class="fr-card__title"&gt;{{LIBELLE}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;Code commune : {{COM}}&lt;/p&gt;
           &lt;div class="fr-card__start"&gt;
-            &lt;p class="fr-badge fr-badge--sm fr-badge--green-emeraude"&gt;{{Libell&#233; du d&#233;partement}}&lt;/p&gt;
+            &lt;p class="fr-badge fr-badge--sm fr-badge--green-emeraude"&gt;Dept. {{DEP}} — Region {{REG}}&lt;/p&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;

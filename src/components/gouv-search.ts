@@ -312,7 +312,7 @@ export class GouvSearch extends LitElement {
     }
 
     // Dispatch command to upstream source (gouv-query server-side)
-    dispatchSourceCommand(this.source, { where });
+    dispatchSourceCommand(this.source, { where, whereKey: this.id });
 
     // Sync URL if enabled
     if (this.urlSync && this.urlSearchParam) {

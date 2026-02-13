@@ -1,21 +1,21 @@
 var Xt = Object.defineProperty;
-var u = (n, e) => Xt(n, "name", { value: e, configurable: !0 });
+var h = (n, e) => Xt(n, "name", { value: e, configurable: !0 });
 /**
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ne = globalThis, lt = Ne.ShadowRoot && (Ne.ShadyCSS === void 0 || Ne.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ct = Symbol(), xt = /* @__PURE__ */ new WeakMap();
+const je = globalThis, ct = je.ShadowRoot && (je.ShadyCSS === void 0 || je.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ut = Symbol(), xt = /* @__PURE__ */ new WeakMap();
 var re;
 let Ht = (re = class {
   constructor(e, t, i) {
-    if (this._$cssResult$ = !0, i !== ct) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, i !== ut) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
   }
   get styleSheet() {
     let e = this.o;
     const t = this.t;
-    if (lt && e === void 0) {
+    if (ct && e === void 0) {
       const i = t !== void 0 && t.length === 1;
       i && (e = xt.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), i && xt.set(t, e));
     }
@@ -24,21 +24,21 @@ let Ht = (re = class {
   toString() {
     return this.cssText;
   }
-}, u(re, "n"), re);
-const Zt = /* @__PURE__ */ u((n) => new Ht(typeof n == "string" ? n : n + "", void 0, ct), "r$4"), Vt = /* @__PURE__ */ u((n, ...e) => {
+}, h(re, "n"), re);
+const Zt = /* @__PURE__ */ h((n) => new Ht(typeof n == "string" ? n : n + "", void 0, ut), "r$4"), Vt = /* @__PURE__ */ h((n, ...e) => {
   const t = n.length === 1 ? n[0] : e.reduce((i, r, s) => i + ((a) => {
     if (a._$cssResult$ === !0) return a.cssText;
     if (typeof a == "number") return a;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + a + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(r) + n[s + 1], n[0]);
-  return new Ht(t, n, ct);
-}, "i$3"), Yt = /* @__PURE__ */ u((n, e) => {
-  if (lt) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+  return new Ht(t, n, ut);
+}, "i$3"), Yt = /* @__PURE__ */ h((n, e) => {
+  if (ct) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
-    const i = document.createElement("style"), r = Ne.litNonce;
+    const i = document.createElement("style"), r = je.litNonce;
     r !== void 0 && i.setAttribute("nonce", r), i.textContent = t.cssText, n.appendChild(i);
   }
-}, "S$1"), Ct = lt ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
+}, "S$1"), Ct = ct ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const i of e.cssRules) t += i.cssText;
   return Zt(t);
@@ -48,7 +48,7 @@ const Zt = /* @__PURE__ */ u((n) => new Ht(typeof n == "string" ? n : n + "", vo
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: ei, defineProperty: ti, getOwnPropertyDescriptor: ii, getOwnPropertyNames: ri, getOwnPropertySymbols: si, getPrototypeOf: ai } = Object, H = globalThis, At = H.trustedTypes, ni = At ? At.emptyScript : "", Ge = H.reactiveElementPolyfillSupport, Ce = /* @__PURE__ */ u((n, e) => n, "d$1"), ze = { toAttribute(n, e) {
+const { is: ei, defineProperty: ti, getOwnPropertyDescriptor: ii, getOwnPropertyNames: ri, getOwnPropertySymbols: si, getPrototypeOf: ai } = Object, V = globalThis, At = V.trustedTypes, ni = At ? At.emptyScript : "", Qe = V.reactiveElementPolyfillSupport, Ae = /* @__PURE__ */ h((n, e) => n, "d$1"), Be = { toAttribute(n, e) {
   switch (e) {
     case Boolean:
       n = n ? ni : null;
@@ -76,8 +76,8 @@ const { is: ei, defineProperty: ti, getOwnPropertyDescriptor: ii, getOwnProperty
       }
   }
   return t;
-} }, ut = /* @__PURE__ */ u((n, e) => !ei(n, e), "f$1"), kt = { attribute: !0, type: String, converter: ze, reflect: !1, useDefault: !1, hasChanged: ut };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), H.litPropertyMetadata ?? (H.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
+} }, ht = /* @__PURE__ */ h((n, e) => !ei(n, e), "f$1"), kt = { attribute: !0, type: String, converter: Be, reflect: !1, useDefault: !1, hasChanged: ht };
+Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), V.litPropertyMetadata ?? (V.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 var se;
 let ie = (se = class extends HTMLElement {
   static addInitializer(e) {
@@ -107,13 +107,13 @@ let ie = (se = class extends HTMLElement {
     return this.elementProperties.get(e) ?? kt;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(Ce("elementProperties"))) return;
+    if (this.hasOwnProperty(Ae("elementProperties"))) return;
     const e = ai(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(Ce("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(Ce("properties"))) {
+    if (this.hasOwnProperty(Ae("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(Ae("properties"))) {
       const t = this.properties, i = [...ri(t), ...si(t)];
       for (const r of i) this.createProperty(r, t[r]);
     }
@@ -188,7 +188,7 @@ let ie = (se = class extends HTMLElement {
     var s;
     const i = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, i);
     if (r !== void 0 && i.reflect === !0) {
-      const a = (((s = i.converter) == null ? void 0 : s.toAttribute) !== void 0 ? i.converter : ze).toAttribute(t, i.type);
+      const a = (((s = i.converter) == null ? void 0 : s.toAttribute) !== void 0 ? i.converter : Be).toAttribute(t, i.type);
       this._$Em = e, a == null ? this.removeAttribute(r) : this.setAttribute(r, a), this._$Em = null;
     }
   }
@@ -196,17 +196,17 @@ let ie = (se = class extends HTMLElement {
     var s, a;
     const i = this.constructor, r = i._$Eh.get(e);
     if (r !== void 0 && this._$Em !== r) {
-      const o = i.getPropertyOptions(r), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((s = o.converter) == null ? void 0 : s.fromAttribute) !== void 0 ? o.converter : ze;
+      const o = i.getPropertyOptions(r), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((s = o.converter) == null ? void 0 : s.fromAttribute) !== void 0 ? o.converter : Be;
       this._$Em = r;
-      const h = l.fromAttribute(t, o.type);
-      this[r] = h ?? ((a = this._$Ej) == null ? void 0 : a.get(r)) ?? h, this._$Em = null;
+      const u = l.fromAttribute(t, o.type);
+      this[r] = u ?? ((a = this._$Ej) == null ? void 0 : a.get(r)) ?? u, this._$Em = null;
     }
   }
   requestUpdate(e, t, i, r = !1, s) {
     var a;
     if (e !== void 0) {
       const o = this.constructor;
-      if (r === !1 && (s = this[e]), i ?? (i = o.getPropertyOptions(e)), !((i.hasChanged ?? ut)(s, t) || i.useDefault && i.reflect && s === ((a = this._$Ej) == null ? void 0 : a.get(e)) && !this.hasAttribute(o._$Eu(e, i)))) return;
+      if (r === !1 && (s = this[e]), i ?? (i = o.getPropertyOptions(e)), !((i.hasChanged ?? ht)(s, t) || i.useDefault && i.reflect && s === ((a = this._$Ej) == null ? void 0 : a.get(e)) && !this.hasAttribute(o._$Eu(e, i)))) return;
       this.C(e, t, i);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -281,80 +281,80 @@ let ie = (se = class extends HTMLElement {
   }
   firstUpdated(e) {
   }
-}, u(se, "y"), se);
-ie.elementStyles = [], ie.shadowRootOptions = { mode: "open" }, ie[Ce("elementProperties")] = /* @__PURE__ */ new Map(), ie[Ce("finalized")] = /* @__PURE__ */ new Map(), Ge == null || Ge({ ReactiveElement: ie }), (H.reactiveElementVersions ?? (H.reactiveElementVersions = [])).push("2.1.2");
+}, h(se, "y"), se);
+ie.elementStyles = [], ie.shadowRootOptions = { mode: "open" }, ie[Ae("elementProperties")] = /* @__PURE__ */ new Map(), ie[Ae("finalized")] = /* @__PURE__ */ new Map(), Qe == null || Qe({ ReactiveElement: ie }), (V.reactiveElementVersions ?? (V.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ae = globalThis, Et = /* @__PURE__ */ u((n) => n, "i$1"), je = Ae.trustedTypes, Rt = je ? je.createPolicy("lit-html", { createHTML: /* @__PURE__ */ u((n) => n, "createHTML") }) : void 0, Gt = "$lit$", I = `lit$${Math.random().toFixed(9).slice(2)}$`, Wt = "?" + I, oi = `<${Wt}>`, Z = document, ke = /* @__PURE__ */ u(() => Z.createComment(""), "c"), Ee = /* @__PURE__ */ u((n) => n === null || typeof n != "object" && typeof n != "function", "a"), ht = Array.isArray, li = /* @__PURE__ */ u((n) => ht(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), We = `[ 	
-\f\r]`, xe = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Dt = /-->/g, Mt = />/g, Q = RegExp(`>|${We}(?:([^\\s"'>=/]+)(${We}*=${We}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Tt = /'/g, Ot = /"/g, Qt = /^(?:script|style|textarea|title)$/i, ci = /* @__PURE__ */ u((n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), "x"), p = ci(1), ve = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), Ut = /* @__PURE__ */ new WeakMap(), J = Z.createTreeWalker(Z, 129);
+const ke = globalThis, Et = /* @__PURE__ */ h((n) => n, "i$1"), qe = ke.trustedTypes, Rt = qe ? qe.createPolicy("lit-html", { createHTML: /* @__PURE__ */ h((n) => n, "createHTML") }) : void 0, Gt = "$lit$", H = `lit$${Math.random().toFixed(9).slice(2)}$`, Wt = "?" + H, oi = `<${Wt}>`, Y = document, Ee = /* @__PURE__ */ h(() => Y.createComment(""), "c"), Re = /* @__PURE__ */ h((n) => n === null || typeof n != "object" && typeof n != "function", "a"), dt = Array.isArray, li = /* @__PURE__ */ h((n) => dt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), Je = `[ 	
+\f\r]`, Ce = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Dt = /-->/g, Mt = />/g, K = RegExp(`>|${Je}(?:([^\\s"'>=/]+)(${Je}*=${Je}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Tt = /'/g, Ft = /"/g, Qt = /^(?:script|style|textarea|title)$/i, ci = /* @__PURE__ */ h((n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), "x"), p = ci(1), ve = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), Ot = /* @__PURE__ */ new WeakMap(), X = Y.createTreeWalker(Y, 129);
 function Jt(n, e) {
-  if (!ht(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  if (!dt(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Rt !== void 0 ? Rt.createHTML(e) : e;
 }
-u(Jt, "V");
-const ui = /* @__PURE__ */ u((n, e) => {
+h(Jt, "V");
+const ui = /* @__PURE__ */ h((n, e) => {
   const t = n.length - 1, i = [];
-  let r, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = xe;
+  let r, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = Ce;
   for (let o = 0; o < t; o++) {
     const l = n[o];
-    let h, f, d = -1, g = 0;
-    for (; g < l.length && (a.lastIndex = g, f = a.exec(l), f !== null); ) g = a.lastIndex, a === xe ? f[1] === "!--" ? a = Dt : f[1] !== void 0 ? a = Mt : f[2] !== void 0 ? (Qt.test(f[2]) && (r = RegExp("</" + f[2], "g")), a = Q) : f[3] !== void 0 && (a = Q) : a === Q ? f[0] === ">" ? (a = r ?? xe, d = -1) : f[1] === void 0 ? d = -2 : (d = a.lastIndex - f[2].length, h = f[1], a = f[3] === void 0 ? Q : f[3] === '"' ? Ot : Tt) : a === Ot || a === Tt ? a = Q : a === Dt || a === Mt ? a = xe : (a = Q, r = void 0);
-    const E = a === Q && n[o + 1].startsWith("/>") ? " " : "";
-    s += a === xe ? l + oi : d >= 0 ? (i.push(h), l.slice(0, d) + Gt + l.slice(d) + I + E) : l + I + (d === -2 ? o : E);
+    let u, f, d = -1, g = 0;
+    for (; g < l.length && (a.lastIndex = g, f = a.exec(l), f !== null); ) g = a.lastIndex, a === Ce ? f[1] === "!--" ? a = Dt : f[1] !== void 0 ? a = Mt : f[2] !== void 0 ? (Qt.test(f[2]) && (r = RegExp("</" + f[2], "g")), a = K) : f[3] !== void 0 && (a = K) : a === K ? f[0] === ">" ? (a = r ?? Ce, d = -1) : f[1] === void 0 ? d = -2 : (d = a.lastIndex - f[2].length, u = f[1], a = f[3] === void 0 ? K : f[3] === '"' ? Ft : Tt) : a === Ft || a === Tt ? a = K : a === Dt || a === Mt ? a = Ce : (a = K, r = void 0);
+    const E = a === K && n[o + 1].startsWith("/>") ? " " : "";
+    s += a === Ce ? l + oi : d >= 0 ? (i.push(u), l.slice(0, d) + Gt + l.slice(d) + H + E) : l + H + (d === -2 ? o : E);
   }
   return [Jt(n, s + (n[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
-}, "N"), Be = class Be {
+}, "N"), Ie = class Ie {
   constructor({ strings: e, _$litType$: t }, i) {
     let r;
     this.parts = [];
     let s = 0, a = 0;
-    const o = e.length - 1, l = this.parts, [h, f] = ui(e, t);
-    if (this.el = Be.createElement(h, i), J.currentNode = this.el.content, t === 2 || t === 3) {
+    const o = e.length - 1, l = this.parts, [u, f] = ui(e, t);
+    if (this.el = Ie.createElement(u, i), X.currentNode = this.el.content, t === 2 || t === 3) {
       const d = this.el.content.firstChild;
       d.replaceWith(...d.childNodes);
     }
-    for (; (r = J.nextNode()) !== null && l.length < o; ) {
+    for (; (r = X.nextNode()) !== null && l.length < o; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const d of r.getAttributeNames()) if (d.endsWith(Gt)) {
-          const g = f[a++], E = r.getAttribute(d).split(I), te = /([.?@])?(.*)/.exec(g);
-          l.push({ type: 1, index: s, name: te[2], strings: E, ctor: te[1] === "." ? tt : te[1] === "?" ? it : te[1] === "@" ? rt : $e }), r.removeAttribute(d);
-        } else d.startsWith(I) && (l.push({ type: 6, index: s }), r.removeAttribute(d));
+          const g = f[a++], E = r.getAttribute(d).split(H), N = /([.?@])?(.*)/.exec(g);
+          l.push({ type: 1, index: s, name: N[2], strings: E, ctor: N[1] === "." ? it : N[1] === "?" ? rt : N[1] === "@" ? st : $e }), r.removeAttribute(d);
+        } else d.startsWith(H) && (l.push({ type: 6, index: s }), r.removeAttribute(d));
         if (Qt.test(r.tagName)) {
-          const d = r.textContent.split(I), g = d.length - 1;
+          const d = r.textContent.split(H), g = d.length - 1;
           if (g > 0) {
-            r.textContent = je ? je.emptyScript : "";
-            for (let E = 0; E < g; E++) r.append(d[E], ke()), J.nextNode(), l.push({ type: 2, index: ++s });
-            r.append(d[g], ke());
+            r.textContent = qe ? qe.emptyScript : "";
+            for (let E = 0; E < g; E++) r.append(d[E], Ee()), X.nextNode(), l.push({ type: 2, index: ++s });
+            r.append(d[g], Ee());
           }
         }
       } else if (r.nodeType === 8) if (r.data === Wt) l.push({ type: 2, index: s });
       else {
         let d = -1;
-        for (; (d = r.data.indexOf(I, d + 1)) !== -1; ) l.push({ type: 7, index: s }), d += I.length - 1;
+        for (; (d = r.data.indexOf(H, d + 1)) !== -1; ) l.push({ type: 7, index: s }), d += H.length - 1;
       }
       s++;
     }
   }
   static createElement(e, t) {
-    const i = Z.createElement("template");
+    const i = Y.createElement("template");
     return i.innerHTML = e, i;
   }
 };
-u(Be, "S");
-let Re = Be;
+h(Ie, "S");
+let De = Ie;
 function ye(n, e, t = n, i) {
   var a, o;
   if (e === ve) return e;
   let r = i !== void 0 ? (a = t._$Co) == null ? void 0 : a[i] : t._$Cl;
-  const s = Ee(e) ? void 0 : e._$litDirective$;
+  const s = Re(e) ? void 0 : e._$litDirective$;
   return (r == null ? void 0 : r.constructor) !== s && ((o = r == null ? void 0 : r._$AO) == null || o.call(r, !1), s === void 0 ? r = void 0 : (r = new s(n), r._$AT(n, t, i)), i !== void 0 ? (t._$Co ?? (t._$Co = []))[i] = r : t._$Cl = r), r !== void 0 && (e = ye(n, r._$AS(n, e.values), r, i)), e;
 }
-u(ye, "M");
-const mt = class mt {
+h(ye, "M");
+const bt = class bt {
   constructor(e, t) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
   }
@@ -365,26 +365,26 @@ const mt = class mt {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: t }, parts: i } = this._$AD, r = ((e == null ? void 0 : e.creationScope) ?? Z).importNode(t, !0);
-    J.currentNode = r;
-    let s = J.nextNode(), a = 0, o = 0, l = i[0];
+    const { el: { content: t }, parts: i } = this._$AD, r = ((e == null ? void 0 : e.creationScope) ?? Y).importNode(t, !0);
+    X.currentNode = r;
+    let s = X.nextNode(), a = 0, o = 0, l = i[0];
     for (; l !== void 0; ) {
       if (a === l.index) {
-        let h;
-        l.type === 2 ? h = new De(s, s.nextSibling, this, e) : l.type === 1 ? h = new l.ctor(s, l.name, l.strings, this, e) : l.type === 6 && (h = new st(s, this, e)), this._$AV.push(h), l = i[++o];
+        let u;
+        l.type === 2 ? u = new Me(s, s.nextSibling, this, e) : l.type === 1 ? u = new l.ctor(s, l.name, l.strings, this, e) : l.type === 6 && (u = new at(s, this, e)), this._$AV.push(u), l = i[++o];
       }
-      a !== (l == null ? void 0 : l.index) && (s = J.nextNode(), a++);
+      a !== (l == null ? void 0 : l.index) && (s = X.nextNode(), a++);
     }
-    return J.currentNode = Z, r;
+    return X.currentNode = Y, r;
   }
   p(e) {
     let t = 0;
     for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(e, i, t), t += i.strings.length - 2) : i._$AI(e[t])), t++;
   }
 };
-u(mt, "R");
-let et = mt;
-const qe = class qe {
+h(bt, "R");
+let tt = bt;
+const He = class He {
   get _$AU() {
     var e;
     return ((e = this._$AM) == null ? void 0 : e._$AU) ?? this._$Cv;
@@ -404,7 +404,7 @@ const qe = class qe {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = ye(this, e, t), Ee(e) ? e === m || e == null || e === "" ? (this._$AH !== m && this._$AR(), this._$AH = m) : e !== this._$AH && e !== ve && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : li(e) ? this.k(e) : this._(e);
+    e = ye(this, e, t), Re(e) ? e === m || e == null || e === "" ? (this._$AH !== m && this._$AR(), this._$AH = m) : e !== this._$AH && e !== ve && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : li(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -413,26 +413,26 @@ const qe = class qe {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== m && Ee(this._$AH) ? this._$AA.nextSibling.data = e : this.T(Z.createTextNode(e)), this._$AH = e;
+    this._$AH !== m && Re(this._$AH) ? this._$AA.nextSibling.data = e : this.T(Y.createTextNode(e)), this._$AH = e;
   }
   $(e) {
     var s;
-    const { values: t, _$litType$: i } = e, r = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = Re.createElement(Jt(i.h, i.h[0]), this.options)), i);
+    const { values: t, _$litType$: i } = e, r = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = De.createElement(Jt(i.h, i.h[0]), this.options)), i);
     if (((s = this._$AH) == null ? void 0 : s._$AD) === r) this._$AH.p(t);
     else {
-      const a = new et(r, this), o = a.u(this.options);
+      const a = new tt(r, this), o = a.u(this.options);
       a.p(t), this.T(o), this._$AH = a;
     }
   }
   _$AC(e) {
-    let t = Ut.get(e.strings);
-    return t === void 0 && Ut.set(e.strings, t = new Re(e)), t;
+    let t = Ot.get(e.strings);
+    return t === void 0 && Ot.set(e.strings, t = new De(e)), t;
   }
   k(e) {
-    ht(this._$AH) || (this._$AH = [], this._$AR());
+    dt(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let i, r = 0;
-    for (const s of e) r === t.length ? t.push(i = new qe(this.O(ke()), this.O(ke()), this, this.options)) : i = t[r], i._$AI(s), r++;
+    for (const s of e) r === t.length ? t.push(i = new He(this.O(Ee()), this.O(Ee()), this, this.options)) : i = t[r], i._$AI(s), r++;
     r < t.length && (this._$AR(i && i._$AB.nextSibling, r), t.length = r);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -447,9 +447,9 @@ const qe = class qe {
     this._$AM === void 0 && (this._$Cv = e, (t = this._$AP) == null || t.call(this, e));
   }
 };
-u(qe, "k");
-let De = qe;
-const bt = class bt {
+h(He, "k");
+let Me = He;
+const vt = class vt {
   get tagName() {
     return this.element.tagName;
   }
@@ -462,11 +462,11 @@ const bt = class bt {
   _$AI(e, t = this, i, r) {
     const s = this.strings;
     let a = !1;
-    if (s === void 0) e = ye(this, e, t, 0), a = !Ee(e) || e !== this._$AH && e !== ve, a && (this._$AH = e);
+    if (s === void 0) e = ye(this, e, t, 0), a = !Re(e) || e !== this._$AH && e !== ve, a && (this._$AH = e);
     else {
       const o = e;
-      let l, h;
-      for (e = s[0], l = 0; l < s.length - 1; l++) h = ye(this, o[i + l], t, l), h === ve && (h = this._$AH[l]), a || (a = !Ee(h) || h !== this._$AH[l]), h === m ? e = m : e !== m && (e += (h ?? "") + s[l + 1]), this._$AH[l] = h;
+      let l, u;
+      for (e = s[0], l = 0; l < s.length - 1; l++) u = ye(this, o[i + l], t, l), u === ve && (u = this._$AH[l]), a || (a = !Re(u) || u !== this._$AH[l]), u === m ? e = m : e !== m && (e += (u ?? "") + s[l + 1]), this._$AH[l] = u;
     }
     a && !r && this.j(e);
   }
@@ -474,9 +474,9 @@ const bt = class bt {
     e === m ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 };
-u(bt, "H");
-let $e = bt;
-const vt = class vt extends $e {
+h(vt, "H");
+let $e = vt;
+const yt = class yt extends $e {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -484,9 +484,9 @@ const vt = class vt extends $e {
     this.element[this.name] = e === m ? void 0 : e;
   }
 };
-u(vt, "I");
-let tt = vt;
-const yt = class yt extends $e {
+h(yt, "I");
+let it = yt;
+const $t = class $t extends $e {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -494,9 +494,9 @@ const yt = class yt extends $e {
     this.element.toggleAttribute(this.name, !!e && e !== m);
   }
 };
-u(yt, "L");
-let it = yt;
-const $t = class $t extends $e {
+h($t, "L");
+let rt = $t;
+const wt = class wt extends $e {
   constructor(e, t, i, r, s) {
     super(e, t, i, r, s), this.type = 5;
   }
@@ -510,9 +510,9 @@ const $t = class $t extends $e {
     typeof this._$AH == "function" ? this._$AH.call(((t = this.options) == null ? void 0 : t.host) ?? this.element, e) : this._$AH.handleEvent(e);
   }
 };
-u($t, "z");
-let rt = $t;
-const wt = class wt {
+h(wt, "z");
+let st = wt;
+const St = class St {
   constructor(e, t, i) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = i;
   }
@@ -523,16 +523,16 @@ const wt = class wt {
     ye(this, e);
   }
 };
-u(wt, "Z");
-let st = wt;
-const Qe = Ae.litHtmlPolyfillSupport;
-Qe == null || Qe(Re, De), (Ae.litHtmlVersions ?? (Ae.litHtmlVersions = [])).push("3.3.2");
-const hi = /* @__PURE__ */ u((n, e, t) => {
+h(St, "Z");
+let at = St;
+const Ke = ke.litHtmlPolyfillSupport;
+Ke == null || Ke(De, Me), (ke.litHtmlVersions ?? (ke.litHtmlVersions = [])).push("3.3.2");
+const hi = /* @__PURE__ */ h((n, e, t) => {
   const i = (t == null ? void 0 : t.renderBefore) ?? e;
   let r = i._$litPart$;
   if (r === void 0) {
     const s = (t == null ? void 0 : t.renderBefore) ?? null;
-    i._$litPart$ = r = new De(e.insertBefore(ke(), s), s, void 0, t ?? {});
+    i._$litPart$ = r = new Me(e.insertBefore(Ee(), s), s, void 0, t ?? {});
   }
   return r._$AI(n), r;
 }, "D");
@@ -541,7 +541,7 @@ const hi = /* @__PURE__ */ u((n, e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const K = globalThis, St = class St extends ie {
+const Z = globalThis, Pt = class Pt extends ie {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -566,19 +566,19 @@ const K = globalThis, St = class St extends ie {
     return ve;
   }
 };
-u(St, "i");
-let S = St;
+h(Pt, "i");
+let P = Pt;
 var It;
-S._$litElement$ = !0, S.finalized = !0, (It = K.litElementHydrateSupport) == null || It.call(K, { LitElement: S });
-const Je = K.litElementPolyfillSupport;
-Je == null || Je({ LitElement: S });
-(K.litElementVersions ?? (K.litElementVersions = [])).push("4.2.2");
+P._$litElement$ = !0, P.finalized = !0, (It = Z.litElementHydrateSupport) == null || It.call(Z, { LitElement: P });
+const Xe = Z.litElementPolyfillSupport;
+Xe == null || Xe({ LitElement: P });
+(Z.litElementVersions ?? (Z.litElementVersions = [])).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const D = /* @__PURE__ */ u((n) => (e, t) => {
+const D = /* @__PURE__ */ h((n) => (e, t) => {
   t !== void 0 ? t.addInitializer(() => {
     customElements.define(n, e);
   }) : customElements.define(n, e);
@@ -588,7 +588,7 @@ const D = /* @__PURE__ */ u((n) => (e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const di = { attribute: !0, type: String, converter: ze, reflect: !1, hasChanged: ut }, pi = /* @__PURE__ */ u((n = di, e, t) => {
+const di = { attribute: !0, type: String, converter: Be, reflect: !1, hasChanged: ht }, pi = /* @__PURE__ */ h((n = di, e, t) => {
   const { kind: i, metadata: r } = t;
   let s = globalThis.litPropertyMetadata.get(r);
   if (s === void 0 && globalThis.litPropertyMetadata.set(r, s = /* @__PURE__ */ new Map()), i === "setter" && ((n = Object.create(n)).wrapped = !0), s.set(t.name, n), i === "accessor") {
@@ -615,7 +615,7 @@ function c(n) {
     return r.constructor.createProperty(s, i), a ? Object.getOwnPropertyDescriptor(r, s) : void 0;
   })(n, e, t);
 }
-u(c, "n");
+h(c, "n");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -624,7 +624,7 @@ u(c, "n");
 function _(n) {
   return c({ ...n, state: !0, attribute: !1 });
 }
-u(_, "r");
+h(_, "r");
 function v(n, e) {
   if (!e || e.trim() === "")
     return n;
@@ -637,12 +637,12 @@ function v(n, e) {
   }
   return r;
 }
-u(v, "getByPath");
+h(v, "getByPath");
 function Mi(n, e) {
   return v(n, e) !== void 0;
 }
-u(Mi, "hasPath");
-function Ft(n, e, t) {
+h(Mi, "hasPath");
+function Ut(n, e, t) {
   const r = e.replace(/\[(\d+)\]/g, ".$1").split(".");
   let s = n;
   for (let a = 0; a < r.length - 1; a++) {
@@ -651,14 +651,14 @@ function Ft(n, e, t) {
   }
   s[r[r.length - 1]] = t;
 }
-u(Ft, "setByPath");
+h(Ut, "setByPath");
 function Ti(n, e, t) {
   const i = v(n, e);
   return i !== void 0 ? i : t;
 }
-u(Ti, "getByPathOrDefault");
+h(Ti, "getByPathOrDefault");
 const fi = "https://chartsbuilder.matge.com/beacon", Lt = /* @__PURE__ */ new Set();
-function q(n, e) {
+function I(n, e) {
   const t = `${n}:${e || ""}`;
   if (Lt.has(t) || (Lt.add(t), typeof window > "u"))
     return;
@@ -674,11 +674,11 @@ function q(n, e) {
   } catch {
   }
 }
-u(q, "sendWidgetBeacon");
-function at(n) {
+h(I, "sendWidgetBeacon");
+function nt(n) {
   return n ? String(n).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "";
 }
-u(at, "escapeHtml");
+h(nt, "escapeHtml");
 function Nt(n, e = !1) {
   if (typeof n == "number")
     return isNaN(n) ? e ? null : 0 : n;
@@ -696,19 +696,19 @@ function Nt(n, e = !1) {
   const s = parseFloat(t);
   return isNaN(s) ? e ? null : 0 : s;
 }
-u(Nt, "toNumber");
+h(Nt, "toNumber");
 function gi(n) {
   if (typeof n != "string")
     return !1;
   const e = n.trim();
   return e === "" ? !1 : /^-?[\d\s]+([.,]\d+)?$/.test(e);
 }
-u(gi, "looksLikeNumber");
+h(gi, "looksLikeNumber");
 function _i(n) {
   return !n || typeof n != "string" || ["N/A", "null", "undefined", "00", ""].includes(n) ? !1 : !!(n === "2A" || n === "2B" || /^97[1-6]$/.test(n) || /^(0[1-9]|[1-8]\d|9[0-5])$/.test(n));
 }
-u(_i, "isValidDeptCode");
-const Ke = {
+h(_i, "isValidDeptCode");
+const Ze = {
   baseUrl: "https://chartsbuilder.matge.com",
   endpoints: {
     grist: "/grist-proxy",
@@ -720,125 +720,125 @@ const Ke = {
 function mi() {
   return typeof window < "u" && window.location.hostname === "localhost" && window.location.port === "5173";
 }
-u(mi, "isViteDevMode");
+h(mi, "isViteDevMode");
 function bi() {
   return typeof window < "u" && "__TAURI__" in window;
 }
-u(bi, "isTauriMode");
-function nt() {
+h(bi, "isTauriMode");
+function ot() {
   var i;
-  const n = { ...Ke.endpoints };
-  return mi() ? { baseUrl: "", endpoints: n } : bi() ? { baseUrl: Ke.baseUrl, endpoints: n } : {
-    baseUrl: ((i = import.meta.env) == null ? void 0 : i.VITE_PROXY_URL) || Ke.baseUrl,
+  const n = { ...Ze.endpoints };
+  return mi() ? { baseUrl: "", endpoints: n } : bi() ? { baseUrl: Ze.baseUrl, endpoints: n } : {
+    baseUrl: ((i = import.meta.env) == null ? void 0 : i.VITE_PROXY_URL) || Ze.baseUrl,
     endpoints: n
   };
 }
-u(nt, "getProxyConfig");
+h(ot, "getProxyConfig");
 function vi(n) {
-  const e = nt();
+  const e = ot();
   return n.includes("tabular-api.data.gouv.fr") ? n.replace("https://tabular-api.data.gouv.fr", `${e.baseUrl}${e.endpoints.tabular}`) : n.includes("docs.getgrist.com") ? n.replace("https://docs.getgrist.com", `${e.baseUrl}${e.endpoints.grist}`) : n.includes("grist.numerique.gouv.fr") ? n.replace("https://grist.numerique.gouv.fr", `${e.baseUrl}${e.endpoints.gristGouv}`) : n.includes("albert.api.etalab.gouv.fr") ? n.replace("https://albert.api.etalab.gouv.fr", `${e.baseUrl}${e.endpoints.albert}`) : n;
 }
-u(vi, "getProxiedUrl");
-const U = {
+h(vi, "getProxiedUrl");
+const O = {
   LOADED: "gouv-data-loaded",
   ERROR: "gouv-data-error",
   LOADING: "gouv-data-loading",
   SOURCE_COMMAND: "gouv-source-command"
-}, dt = /* @__PURE__ */ new Map(), pt = /* @__PURE__ */ new Map();
+}, pt = /* @__PURE__ */ new Map(), ft = /* @__PURE__ */ new Map();
 function yi(n, e) {
-  dt.set(n, e);
-}
-u(yi, "setDataCache");
-function we(n) {
-  return dt.get(n);
-}
-u(we, "getDataCache");
-function Te(n) {
-  dt.delete(n);
-}
-u(Te, "clearDataCache");
-function ft(n, e) {
   pt.set(n, e);
 }
-u(ft, "setDataMeta");
-function Ie(n) {
+h(yi, "setDataCache");
+function we(n) {
   return pt.get(n);
 }
-u(Ie, "getDataMeta");
-function gt(n) {
+h(we, "getDataCache");
+function Fe(n) {
   pt.delete(n);
 }
-u(gt, "clearDataMeta");
+h(Fe, "clearDataCache");
+function gt(n, e) {
+  ft.set(n, e);
+}
+h(gt, "setDataMeta");
+function Ve(n) {
+  return ft.get(n);
+}
+h(Ve, "getDataMeta");
+function _t(n) {
+  ft.delete(n);
+}
+h(_t, "clearDataMeta");
 function B(n, e) {
   yi(n, e);
-  const t = new CustomEvent(U.LOADED, {
+  const t = new CustomEvent(O.LOADED, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, data: e }
   });
   document.dispatchEvent(t);
 }
-u(B, "dispatchDataLoaded");
-function V(n, e) {
-  const t = new CustomEvent(U.ERROR, {
+h(B, "dispatchDataLoaded");
+function G(n, e) {
+  const t = new CustomEvent(O.ERROR, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, error: e }
   });
   document.dispatchEvent(t);
 }
-u(V, "dispatchDataError");
-function G(n) {
-  const e = new CustomEvent(U.LOADING, {
+h(G, "dispatchDataError");
+function W(n) {
+  const e = new CustomEvent(O.LOADING, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n }
   });
   document.dispatchEvent(e);
 }
-u(G, "dispatchDataLoading");
-function X(n, e) {
-  const t = new CustomEvent(U.SOURCE_COMMAND, {
+h(W, "dispatchDataLoading");
+function Q(n, e) {
+  const t = new CustomEvent(O.SOURCE_COMMAND, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, ...e }
   });
   document.dispatchEvent(t);
 }
-u(X, "dispatchSourceCommand");
-function _t(n, e) {
-  const t = /* @__PURE__ */ u((i) => {
+h(Q, "dispatchSourceCommand");
+function mt(n, e) {
+  const t = /* @__PURE__ */ h((i) => {
     const r = i;
     if (r.detail.sourceId === n) {
       const { sourceId: s, ...a } = r.detail;
       e(a);
     }
   }, "handler");
-  return document.addEventListener(U.SOURCE_COMMAND, t), () => document.removeEventListener(U.SOURCE_COMMAND, t);
+  return document.addEventListener(O.SOURCE_COMMAND, t), () => document.removeEventListener(O.SOURCE_COMMAND, t);
 }
-u(_t, "subscribeToSourceCommands");
+h(mt, "subscribeToSourceCommands");
 function Oe(n, e) {
-  const t = /* @__PURE__ */ u((s) => {
+  const t = /* @__PURE__ */ h((s) => {
     const a = s;
     a.detail.sourceId === n && e.onLoaded && e.onLoaded(a.detail.data);
-  }, "handleLoaded"), i = /* @__PURE__ */ u((s) => {
+  }, "handleLoaded"), i = /* @__PURE__ */ h((s) => {
     const a = s;
     a.detail.sourceId === n && e.onError && e.onError(a.detail.error);
-  }, "handleError"), r = /* @__PURE__ */ u((s) => {
+  }, "handleError"), r = /* @__PURE__ */ h((s) => {
     s.detail.sourceId === n && e.onLoading && e.onLoading();
   }, "handleLoading");
-  return document.addEventListener(U.LOADED, t), document.addEventListener(U.ERROR, i), document.addEventListener(U.LOADING, r), () => {
-    document.removeEventListener(U.LOADED, t), document.removeEventListener(U.ERROR, i), document.removeEventListener(U.LOADING, r);
+  return document.addEventListener(O.LOADED, t), document.addEventListener(O.ERROR, i), document.addEventListener(O.LOADING, r), () => {
+    document.removeEventListener(O.LOADED, t), document.removeEventListener(O.ERROR, i), document.removeEventListener(O.LOADING, r);
   };
 }
-u(Oe, "subscribeToSource");
-var F = function(n, e, t, i) {
+h(Oe, "subscribeToSource");
+var U = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, ae;
-let M = (ae = class extends S {
+let M = (ae = class extends P {
   constructor() {
     super(...arguments), this.url = "", this.method = "GET", this.headers = "", this.params = "", this.refresh = 0, this.transform = "", this.paginate = !1, this.pageSize = 20, this._loading = !1, this._error = null, this._data = null, this._currentPage = 1, this._refreshInterval = null, this._abortController = null, this._unsubscribePageRequests = null;
   }
@@ -850,10 +850,10 @@ let M = (ae = class extends S {
     return p``;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-source"), this._setupRefresh(), this._setupPageRequestListener();
+    super.connectedCallback(), I("gouv-source"), this._setupRefresh(), this._setupPageRequestListener();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (Te(this.id), gt(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (Fe(this.id), _t(this.id));
   }
   updated(e) {
     (e.has("url") || e.has("params") || e.has("transform")) && (this.paginate && (e.has("url") || e.has("params")) && (this._currentPage = 1), this._fetchData()), e.has("refresh") && this._setupRefresh(), (e.has("paginate") || e.has("pageSize")) && this._setupPageRequestListener();
@@ -872,7 +872,7 @@ let M = (ae = class extends S {
         console.warn('gouv-source: attribut "id" requis pour identifier la source');
         return;
       }
-      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, G(this.id);
+      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, W(this.id);
       try {
         const e = vi(this._buildUrl()), t = this._buildFetchOptions(), i = await fetch(e, {
           ...t,
@@ -881,7 +881,7 @@ let M = (ae = class extends S {
         if (!i.ok)
           throw new Error(`HTTP ${i.status}: ${i.statusText}`);
         const r = await i.json();
-        this.paginate && r.meta && ft(this.id, {
+        this.paginate && r.meta && gt(this.id, {
           page: r.meta.page ?? this._currentPage,
           pageSize: r.meta.page_size ?? this.pageSize,
           total: r.meta.total ?? 0
@@ -889,7 +889,7 @@ let M = (ae = class extends S {
       } catch (e) {
         if (e.name === "AbortError")
           return;
-        this._error = e, V(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
+        this._error = e, G(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
       } finally {
         this._loading = !1;
       }
@@ -924,7 +924,7 @@ let M = (ae = class extends S {
     }, e.body = this.params), e;
   }
   _setupPageRequestListener() {
-    this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.paginate && this.id && (this._unsubscribePageRequests = _t(this.id, (e) => {
+    this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.paginate && this.id && (this._unsubscribePageRequests = mt(this.id, (e) => {
       e.page !== void 0 && e.page !== this._currentPage && (this._currentPage = e.page, this._fetchData());
     }));
   }
@@ -952,54 +952,54 @@ let M = (ae = class extends S {
   getError() {
     return this._error;
   }
-}, u(ae, "GouvSource"), ae);
-F([
+}, h(ae, "GouvSource"), ae);
+U([
   c({ type: String })
 ], M.prototype, "url", void 0);
-F([
+U([
   c({ type: String })
 ], M.prototype, "method", void 0);
-F([
+U([
   c({ type: String })
 ], M.prototype, "headers", void 0);
-F([
+U([
   c({ type: String })
 ], M.prototype, "params", void 0);
-F([
+U([
   c({ type: Number })
 ], M.prototype, "refresh", void 0);
-F([
+U([
   c({ type: String })
 ], M.prototype, "transform", void 0);
-F([
+U([
   c({ type: Boolean })
 ], M.prototype, "paginate", void 0);
-F([
+U([
   c({ type: Number, attribute: "page-size" })
 ], M.prototype, "pageSize", void 0);
-F([
+U([
   _()
 ], M.prototype, "_loading", void 0);
-F([
+U([
   _()
 ], M.prototype, "_error", void 0);
-F([
+U([
   _()
 ], M.prototype, "_data", void 0);
-M = F([
+M = U([
   D("gouv-source")
 ], M);
-var w = function(n, e, t, i) {
+var S = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 };
-const Fe = 100, Xe = 10, Le = 100, Ze = 500;
+const Le = 100, Ye = 10, Ne = 100, et = 500;
 var ne;
-let y = (ne = class extends S {
+let y = (ne = class extends P {
   constructor() {
-    super(...arguments), this.apiType = "generic", this.source = "", this.baseUrl = "", this.datasetId = "", this.resource = "", this.select = "", this.where = "", this.filter = "", this.groupBy = "", this.aggregate = "", this.orderBy = "", this.limit = 0, this.transform = "", this.serverSide = !1, this.pageSize = 20, this.refresh = 0, this._loading = !1, this._error = null, this._data = [], this._rawData = [], this._refreshInterval = null, this._abortController = null, this._unsubscribe = null, this._unsubscribeCommands = null, this._serverPage = 1, this._serverWhere = "", this._serverOrderBy = "";
+    super(...arguments), this.apiType = "generic", this.source = "", this.baseUrl = "", this.datasetId = "", this.resource = "", this.select = "", this.where = "", this.filter = "", this.groupBy = "", this.aggregate = "", this.orderBy = "", this.limit = 0, this.transform = "", this.serverSide = !1, this.pageSize = 20, this.refresh = 0, this._loading = !1, this._error = null, this._data = [], this._rawData = [], this._refreshInterval = null, this._abortController = null, this._unsubscribe = null, this._unsubscribeCommands = null, this._serverPage = 1, this._serverWheres = /* @__PURE__ */ new Map(), this._serverOrderBy = "";
   }
   // Pas de rendu - composant invisible
   createRenderRoot() {
@@ -1009,10 +1009,10 @@ let y = (ne = class extends S {
     return p``;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-query", this.apiType), this._initialize();
+    super.connectedCallback(), I("gouv-query", this.apiType), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (Te(this.id), gt(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (Fe(this.id), _t(this.id));
   }
   updated(e) {
     [
@@ -1046,7 +1046,7 @@ let y = (ne = class extends S {
       "limit",
       "transform",
       "pageSize"
-    ].some((r) => e.has(r)) && (this._serverPage = 1, this._serverWhere = "", this._serverOrderBy = ""), this._initialize()), e.has("refresh") && this._setupRefresh();
+    ].some((r) => e.has(r)) && (this._serverPage = 1, this._serverWheres.clear(), this._serverOrderBy = ""), this._initialize()), e.has("refresh") && this._setupRefresh();
   }
   _cleanup() {
     this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = null), this._abortController && (this._abortController.abort(), this._abortController = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null);
@@ -1074,14 +1074,14 @@ let y = (ne = class extends S {
     this._unsubscribe && this._unsubscribe();
     const e = we(this.source);
     e !== void 0 && (this._rawData = Array.isArray(e) ? e : [e], this._processClientSide()), this._unsubscribe = Oe(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
+      onLoaded: /* @__PURE__ */ h((t) => {
         this._rawData = Array.isArray(t) ? t : [t], this._processClientSide();
       }, "onLoaded"),
-      onLoading: /* @__PURE__ */ u(() => {
-        this._loading = !0, G(this.id);
+      onLoading: /* @__PURE__ */ h(() => {
+        this._loading = !0, W(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        this._error = t, this._loading = !1, V(this.id, t);
+      onError: /* @__PURE__ */ h((t) => {
+        this._error = t, this._loading = !1, G(this.id, t);
       }, "onError")
     });
   }
@@ -1090,12 +1090,12 @@ let y = (ne = class extends S {
    */
   _processClientSide() {
     try {
-      G(this.id), this._loading = !0;
+      W(this.id), this._loading = !0;
       let e = [...this._rawData];
       const t = this.filter || this.where;
       t && (e = this._applyFilters(e, t)), this.groupBy && (e = this._applyGroupByAndAggregate(e)), this.orderBy && (e = this._applySort(e)), this.limit > 0 && (e = e.slice(0, this.limit)), this._data = e, B(this.id, this._data);
     } catch (e) {
-      this._error = e, V(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
+      this._error = e, G(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
     } finally {
       this._loading = !1;
     }
@@ -1115,11 +1115,11 @@ let y = (ne = class extends S {
         const a = s[0], o = s[1];
         let l;
         if (s.length > 2) {
-          const h = s.slice(2).join(":");
-          o === "in" || o === "notin" ? l = h.split("|").map((f) => {
+          const u = s.slice(2).join(":");
+          o === "in" || o === "notin" ? l = u.split("|").map((f) => {
             const d = this._parseValue(f);
             return typeof d == "boolean" ? String(d) : d;
-          }) : l = this._parseValue(h);
+          }) : l = this._parseValue(u);
         }
         t.push({ field: a, operator: o, value: l });
       }
@@ -1171,13 +1171,13 @@ let y = (ne = class extends S {
     }
     const s = [];
     for (const [a, o] of r) {
-      const l = {}, h = a.split("|||");
+      const l = {}, u = a.split("|||");
       t.forEach((f, d) => {
-        Ft(l, f, h[d]);
+        Ut(l, f, u[d]);
       });
       for (const f of i) {
         const d = f.alias || `${f.field}__${f.function}`;
-        Ft(l, d, this._computeAggregate(o, f));
+        Ut(l, d, this._computeAggregate(o, f));
       }
       s.push(l);
     }
@@ -1223,9 +1223,9 @@ let y = (ne = class extends S {
       return e;
     const i = t[0], r = (t[1] || "asc").toLowerCase();
     return [...e].sort((s, a) => {
-      const o = v(s, i), l = v(a, i), h = Number(o), f = Number(l);
-      if (!isNaN(h) && !isNaN(f))
-        return r === "desc" ? f - h : h - f;
+      const o = v(s, i), l = v(a, i), u = Number(o), f = Number(l);
+      if (!isNaN(u) && !isNaN(f))
+        return r === "desc" ? f - u : u - f;
       const d = String(o ?? ""), g = String(l ?? "");
       return r === "desc" ? g.localeCompare(d) : d.localeCompare(g);
     });
@@ -1242,13 +1242,13 @@ let y = (ne = class extends S {
       console.warn('gouv-query: attribut "resource" requis pour les requêtes Tabular');
       return;
     }
-    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, G(this.id);
+    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, W(this.id);
     try {
       this.serverSide && (this.apiType === "opendatasoft" || this.apiType === "tabular") ? await this._fetchServerSide() : this.apiType === "opendatasoft" ? await this._fetchFromOdsWithPagination() : this.apiType === "tabular" ? await this._fetchFromTabularWithPagination() : await this._fetchSinglePage();
     } catch (e) {
       if (e.name === "AbortError")
         return;
-      this._error = e, V(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de requête API`, e);
+      this._error = e, G(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de requête API`, e);
     } finally {
       this._loading = !1;
     }
@@ -1277,13 +1277,13 @@ let y = (ne = class extends S {
    * total_count from the API response to detect incomplete data.
    */
   async _fetchFromOdsWithPagination() {
-    const t = this.limit <= 0 ? Xe * Fe : this.limit, i = Fe;
+    const t = this.limit <= 0 ? Ye * Le : this.limit, i = Le;
     let r = [], s = 0, a = -1;
-    for (let o = 0; o < Xe; o++) {
+    for (let o = 0; o < Ye; o++) {
       const l = t - r.length;
       if (l <= 0)
         break;
-      const h = this._buildOpenDataSoftUrl(Math.min(i, l), s), f = await fetch(h, {
+      const u = this._buildOpenDataSoftUrl(Math.min(i, l), s), f = await fetch(u, {
         signal: this._abortController.signal
       });
       if (!f.ok)
@@ -1293,7 +1293,7 @@ let y = (ne = class extends S {
         break;
       s += g.length;
     }
-    a >= 0 && r.length < a && r.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${r.length}/${a} resultats recuperes (limite de securite: ${Xe} pages de ${Fe})`), this._data = this.transform ? v(r, this.transform) : r, B(this.id, this._data);
+    a >= 0 && r.length < a && r.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${r.length}/${a} resultats recuperes (limite de securite: ${Ye} pages de ${Le})`), this._data = this.transform ? v(r, this.transform) : r, B(this.id, this._data);
   }
   /**
    * Fetch from Tabular API with automatic pagination via links.next.
@@ -1304,10 +1304,10 @@ let y = (ne = class extends S {
    */
   async _fetchFromTabularWithPagination() {
     var a;
-    const e = this.limit <= 0, t = e ? Ze * Le : this.limit;
+    const e = this.limit <= 0, t = e ? et * Ne : this.limit;
     let i = [], r = -1, s = 1;
-    for (let o = 0; o < Ze && !(t - i.length <= 0); o++) {
-      const h = this._buildTabularUrl(Le, s), f = await fetch(h, {
+    for (let o = 0; o < et && !(t - i.length <= 0); o++) {
+      const u = this._buildTabularUrl(Ne, s), f = await fetch(u, {
         signal: this._abortController.signal
       });
       if (!f.ok)
@@ -1317,14 +1317,14 @@ let y = (ne = class extends S {
       let E = !1;
       if ((a = d.links) != null && a.next)
         try {
-          const te = new URL(d.links.next, "https://tabular-api.data.gouv.fr"), Pt = Number(te.searchParams.get("page"));
-          Pt > 0 && (s = Pt, E = !0);
+          const N = new URL(d.links.next, "https://tabular-api.data.gouv.fr"), xe = Number(N.searchParams.get("page"));
+          xe > 0 && (s = xe, E = !0);
         } catch {
         }
-      if (!E || r >= 0 && i.length >= r || g.length < Le)
+      if (!E || r >= 0 && i.length >= r || g.length < Ne)
         break;
     }
-    !e && i.length > t && (i = i.slice(0, t)), r >= 0 && i.length < r && i.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${i.length}/${r} resultats recuperes (limite de securite: ${Ze} pages de ${Le})`), this._rawData = i, this._processClientSide();
+    !e && i.length > t && (i = i.slice(0, t)), r >= 0 && i.length < r && i.length < t && console.warn(`gouv-query[${this.id}]: pagination incomplete - ${i.length}/${r} resultats recuperes (limite de securite: ${et} pages de ${Ne})`), this._rawData = i, this._processClientSide();
   }
   /**
    * Configure l'ecoute des commandes pour le mode server-side.
@@ -1332,10 +1332,33 @@ let y = (ne = class extends S {
    * gouv-source-command avec page/where/orderBy que query recoit ici.
    */
   _setupServerSideListener() {
-    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.serverSide || !this.id) && (this._unsubscribeCommands = _t(this.id, (e) => {
+    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.serverSide || !this.id) && (this._unsubscribeCommands = mt(this.id, (e) => {
       let t = !1;
-      e.page !== void 0 && e.page !== this._serverPage && (this._serverPage = e.page, t = !0), e.where !== void 0 && e.where !== this._serverWhere && (this._serverWhere = e.where, e.page === void 0 && (this._serverPage = 1), t = !0), e.orderBy !== void 0 && e.orderBy !== this._serverOrderBy && (this._serverOrderBy = e.orderBy, e.page === void 0 && (this._serverPage = 1), t = !0), t && this._fetchFromApi();
+      if (e.page !== void 0 && e.page !== this._serverPage && (this._serverPage = e.page, t = !0), e.where !== void 0) {
+        const i = e.whereKey || "_default", r = this._getMergedWhere();
+        e.where ? this._serverWheres.set(i, e.where) : this._serverWheres.delete(i), this._getMergedWhere() !== r && (e.page === void 0 && (this._serverPage = 1), t = !0);
+      }
+      e.orderBy !== void 0 && e.orderBy !== this._serverOrderBy && (this._serverOrderBy = e.orderBy, e.page === void 0 && (this._serverPage = 1), t = !0), t && this._fetchFromApi();
     }));
+  }
+  /**
+   * Retourne le where dynamique fusionne de toutes les sources (search, facets, etc.)
+   */
+  _getMergedWhere() {
+    return [...this._serverWheres.values()].filter(Boolean).join(" AND ");
+  }
+  /**
+   * Retourne le where effectif complet (statique + dynamique),
+   * en excluant optionnellement une cle specifique.
+   * Utilise par gouv-facets server-facets pour construire l'URL facets API
+   * sans inclure ses propres filtres dans les compteurs.
+   */
+  getEffectiveWhere(e) {
+    const t = [], i = this.where || this.filter;
+    i && t.push(i);
+    for (const [r, s] of this._serverWheres)
+      e && r === e || s && t.push(s);
+    return t.join(" AND ");
   }
   /**
    * Mode server-side: fetch UNE seule page avec les parametres overlays
@@ -1354,7 +1377,7 @@ let y = (ne = class extends S {
       const o = v(this.apiType === "opendatasoft" ? i : r, this.transform);
       r = Array.isArray(o) ? o : [o];
     }
-    ft(this.id, {
+    gt(this.id, {
       page: this._serverPage,
       pageSize: this.pageSize,
       total: s
@@ -1369,26 +1392,26 @@ let y = (ne = class extends S {
     if (this.select)
       t.searchParams.set("select", this.select);
     else if (this.aggregate && this.groupBy) {
-      const l = this._parseAggregates(this.aggregate), h = [];
-      for (const d of l) {
-        const g = d.function === "count" ? "count(*)" : `${d.function}(${d.field})`, E = d.alias || `${d.field}__${d.function}`;
-        h.push(`${g} as ${E}`);
+      const a = this._parseAggregates(this.aggregate), o = [];
+      for (const u of a) {
+        const f = u.function === "count" ? "count(*)" : `${u.function}(${u.field})`, d = u.alias || `${u.field}__${u.function}`;
+        o.push(`${f} as ${d}`);
       }
-      const f = this.groupBy.split(",").map((d) => d.trim()).filter(Boolean);
-      for (const d of f)
-        h.push(d);
-      t.searchParams.set("select", h.join(", "));
+      const l = this.groupBy.split(",").map((u) => u.trim()).filter(Boolean);
+      for (const u of l)
+        o.push(u);
+      t.searchParams.set("select", o.join(", "));
     }
-    const i = this.where || this.filter, r = this._serverWhere, s = [i, r].filter(Boolean);
-    s.length > 0 && t.searchParams.set("where", s.join(" AND ")), this.groupBy && t.searchParams.set("group_by", this.groupBy);
-    const a = this._serverOrderBy || this.orderBy;
-    if (a) {
-      const l = a.replace(/:(\w+)$/, (h, f) => ` ${f.toUpperCase()}`);
-      t.searchParams.set("order_by", l);
+    const i = this.getEffectiveWhere();
+    i && t.searchParams.set("where", i), this.groupBy && t.searchParams.set("group_by", this.groupBy);
+    const r = this._serverOrderBy || this.orderBy;
+    if (r) {
+      const a = r.replace(/:(\w+)$/, (o, l) => ` ${l.toUpperCase()}`);
+      t.searchParams.set("order_by", a);
     }
     t.searchParams.set("limit", String(this.pageSize));
-    const o = (this._serverPage - 1) * this.pageSize;
-    return o > 0 && t.searchParams.set("offset", String(o)), t.toString();
+    const s = (this._serverPage - 1) * this.pageSize;
+    return s > 0 && t.searchParams.set("offset", String(s)), t.toString();
   }
   /**
    * Construit l'URL Tabular en mode server-side (une seule page).
@@ -1398,7 +1421,7 @@ let y = (ne = class extends S {
     if (this.baseUrl)
       e = this.baseUrl;
     else {
-      const a = nt();
+      const a = ot();
       e = `${a.baseUrl}${a.endpoints.tabular}`;
     }
     if (!this.resource)
@@ -1409,8 +1432,8 @@ let y = (ne = class extends S {
       for (const o of a) {
         const l = o.split(":");
         if (l.length >= 3) {
-          const h = l[0], f = this._mapOperatorToTabular(l[1]), d = l.slice(2).join(":");
-          i.searchParams.set(`${h}__${f}`, d);
+          const u = l[0], f = this._mapOperatorToTabular(l[1]), d = l.slice(2).join(":");
+          i.searchParams.set(`${u}__${f}`, d);
         }
       }
     }
@@ -1443,13 +1466,13 @@ let y = (ne = class extends S {
       r.searchParams.set("select", this.select);
     else if (this.aggregate && this.groupBy) {
       const a = this._parseAggregates(this.aggregate), o = [];
-      for (const h of a) {
-        const f = h.function === "count" ? "count(*)" : `${h.function}(${h.field})`, d = h.alias || `${h.field}__${h.function}`;
+      for (const u of a) {
+        const f = u.function === "count" ? "count(*)" : `${u.function}(${u.field})`, d = u.alias || `${u.field}__${u.function}`;
         o.push(`${f} as ${d}`);
       }
-      const l = this.groupBy.split(",").map((h) => h.trim()).filter(Boolean);
-      for (const h of l)
-        o.push(h);
+      const l = this.groupBy.split(",").map((u) => u.trim()).filter(Boolean);
+      for (const u of l)
+        o.push(u);
       r.searchParams.set("select", o.join(", "));
     }
     const s = this.where || this.filter;
@@ -1457,7 +1480,7 @@ let y = (ne = class extends S {
       const a = this.orderBy.replace(/:(\w+)$/, (o, l) => ` ${l.toUpperCase()}`);
       r.searchParams.set("order_by", a);
     }
-    return e !== void 0 ? r.searchParams.set("limit", String(e)) : this.limit > 0 && r.searchParams.set("limit", String(Math.min(this.limit, Fe))), t && t > 0 && r.searchParams.set("offset", String(t)), r.toString();
+    return e !== void 0 ? r.searchParams.set("limit", String(e)) : this.limit > 0 && r.searchParams.set("limit", String(Math.min(this.limit, Le))), t && t > 0 && r.searchParams.set("offset", String(t)), r.toString();
   }
   /**
    * Construit une URL Tabular API (data.gouv.fr)
@@ -1467,7 +1490,7 @@ let y = (ne = class extends S {
     if (this.baseUrl)
       i = this.baseUrl;
     else {
-      const o = nt();
+      const o = ot();
       i = `${o.baseUrl}${o.endpoints.tabular}`;
     }
     if (!this.resource)
@@ -1476,9 +1499,9 @@ let y = (ne = class extends S {
     if (a) {
       const o = a.split(",").map((l) => l.trim());
       for (const l of o) {
-        const h = l.split(":");
-        if (h.length >= 3) {
-          const f = h[0], d = this._mapOperatorToTabular(h[1]), g = h.slice(2).join(":");
+        const u = l.split(":");
+        if (u.length >= 3) {
+          const f = u[0], d = this._mapOperatorToTabular(u[1]), g = u.slice(2).join(":");
           s.searchParams.set(`${f}__${d}`, g);
         }
       }
@@ -1491,16 +1514,16 @@ let y = (ne = class extends S {
     if (this.aggregate) {
       const o = this.aggregate.split(",").map((l) => l.trim());
       for (const l of o) {
-        const h = l.split(":");
-        if (h.length >= 2) {
-          const f = h[0], d = h[1];
+        const u = l.split(":");
+        if (u.length >= 2) {
+          const f = u[0], d = u[1];
           s.searchParams.append(`${f}__${d}`, "");
         }
       }
     }
     if (this.orderBy) {
-      const o = this.orderBy.split(":"), l = o[0], h = o[1] || "asc";
-      s.searchParams.set(`${l}__sort`, h);
+      const o = this.orderBy.split(":"), l = o[0], u = o[1] || "asc";
+      s.searchParams.set(`${l}__sort`, u);
     }
     return e ? s.searchParams.set("page_size", String(e)) : this.limit > 0 && s.searchParams.set("page_size", String(this.limit)), t && s.searchParams.set("page", String(t)), s.toString();
   }
@@ -1544,77 +1567,77 @@ let y = (ne = class extends S {
   getError() {
     return this._error;
   }
-}, u(ne, "GouvQuery"), ne);
-w([
+}, h(ne, "GouvQuery"), ne);
+S([
   c({ type: String, attribute: "api-type" })
 ], y.prototype, "apiType", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "source", void 0);
-w([
+S([
   c({ type: String, attribute: "base-url" })
 ], y.prototype, "baseUrl", void 0);
-w([
+S([
   c({ type: String, attribute: "dataset-id" })
 ], y.prototype, "datasetId", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "resource", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "select", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "where", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "filter", void 0);
-w([
+S([
   c({ type: String, attribute: "group-by" })
 ], y.prototype, "groupBy", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "aggregate", void 0);
-w([
+S([
   c({ type: String, attribute: "order-by" })
 ], y.prototype, "orderBy", void 0);
-w([
+S([
   c({ type: Number })
 ], y.prototype, "limit", void 0);
-w([
+S([
   c({ type: String })
 ], y.prototype, "transform", void 0);
-w([
+S([
   c({ type: Boolean, attribute: "server-side" })
 ], y.prototype, "serverSide", void 0);
-w([
+S([
   c({ type: Number, attribute: "page-size" })
 ], y.prototype, "pageSize", void 0);
-w([
+S([
   c({ type: Number })
 ], y.prototype, "refresh", void 0);
-w([
+S([
   _()
 ], y.prototype, "_loading", void 0);
-w([
+S([
   _()
 ], y.prototype, "_error", void 0);
-w([
+S([
   _()
 ], y.prototype, "_data", void 0);
-w([
+S([
   _()
 ], y.prototype, "_rawData", void 0);
-y = w([
+y = S([
   D("gouv-query")
 ], y);
-var j = function(n, e, t, i) {
+var q = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, oe;
-let N = (oe = class extends S {
+let z = (oe = class extends P {
   constructor() {
     super(...arguments), this.source = "", this.numeric = "", this.numericAuto = !1, this.rename = "", this.trim = !1, this.stripHtml = !1, this.replace = "", this.flatten = "", this.lowercaseKeys = !1, this._unsubscribe = null, this._unsubscribePageRequests = null;
   }
@@ -1625,10 +1648,10 @@ let N = (oe = class extends S {
     return p``;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-normalize"), this._initialize();
+    super.connectedCallback(), I("gouv-normalize"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (Te(this.id), gt(this.id));
+    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (Fe(this.id), _t(this.id));
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
@@ -1652,52 +1675,52 @@ let N = (oe = class extends S {
     this._unsubscribe && this._unsubscribe(), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null);
     const e = we(this.source);
     e !== void 0 && this._processData(e), this._unsubscribe = Oe(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
+      onLoaded: /* @__PURE__ */ h((t) => {
         this._processData(t);
       }, "onLoaded"),
-      onLoading: /* @__PURE__ */ u(() => {
-        G(this.id);
+      onLoading: /* @__PURE__ */ h(() => {
+        W(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        V(this.id, t);
+      onError: /* @__PURE__ */ h((t) => {
+        G(this.id, t);
       }, "onError")
-    }), this._unsubscribePageRequests = _t(this.id, (t) => {
-      X(this.source, t);
+    }), this._unsubscribePageRequests = mt(this.id, (t) => {
+      Q(this.source, t);
     });
   }
   _processData(e) {
     try {
-      G(this.id);
+      W(this.id);
       let t = Array.isArray(e) ? e : [e];
       this.flatten && (t = t.map((l) => l == null || typeof l != "object" || Array.isArray(l) ? l : this._flattenRow(l, this.flatten)));
       const i = this._parseNumericFields(), r = this._parsePipeMap(this.rename), s = this._parsePipeMap(this.replace), a = t.map((l) => l == null || typeof l != "object" ? l : this._normalizeRow(l, i, r, s));
       B(this.id, a);
-      const o = Ie(this.source);
-      o && ft(this.id, o);
+      const o = Ve(this.source);
+      o && gt(this.id, o);
     } catch (t) {
-      V(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
+      G(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
     }
   }
   _normalizeRow(e, t, i, r) {
     const s = {};
     for (const [a, o] of Object.entries(e)) {
       const l = this.trim ? a.trim() : a;
-      let h = o;
-      if (this.trim && typeof h == "string" && (h = h.trim()), this.stripHtml && typeof h == "string" && (h = h.replace(/<[^>]*>/g, "")), r.size > 0 && typeof h == "string") {
+      let u = o;
+      if (this.trim && typeof u == "string" && (u = u.trim()), this.stripHtml && typeof u == "string" && (u = u.replace(/<[^>]*>/g, "")), r.size > 0 && typeof u == "string") {
         for (const [g, E] of r)
-          if (h === g) {
-            h = E;
+          if (u === g) {
+            u = E;
             break;
           }
       }
       if (t.has(l))
-        h = Nt(h);
-      else if (this.numericAuto && typeof h == "string" && gi(h)) {
-        const g = Nt(h, !0);
-        g !== null && (h = g);
+        u = Nt(u);
+      else if (this.numericAuto && typeof u == "string" && gi(u)) {
+        const g = Nt(u, !0);
+        g !== null && (u = g);
       }
       const f = i.get(l) ?? l, d = this.lowercaseKeys ? f.toLowerCase() : f;
-      s[d] = h;
+      s[d] = u;
     }
     return s;
   }
@@ -1738,46 +1761,46 @@ let N = (oe = class extends S {
     }
     return t;
   }
-}, u(oe, "GouvNormalize"), oe);
-j([
+}, h(oe, "GouvNormalize"), oe);
+q([
   c({ type: String })
-], N.prototype, "source", void 0);
-j([
+], z.prototype, "source", void 0);
+q([
   c({ type: String })
-], N.prototype, "numeric", void 0);
-j([
+], z.prototype, "numeric", void 0);
+q([
   c({ type: Boolean, attribute: "numeric-auto" })
-], N.prototype, "numericAuto", void 0);
-j([
+], z.prototype, "numericAuto", void 0);
+q([
   c({ type: String })
-], N.prototype, "rename", void 0);
-j([
+], z.prototype, "rename", void 0);
+q([
   c({ type: Boolean })
-], N.prototype, "trim", void 0);
-j([
+], z.prototype, "trim", void 0);
+q([
   c({ type: Boolean, attribute: "strip-html" })
-], N.prototype, "stripHtml", void 0);
-j([
+], z.prototype, "stripHtml", void 0);
+q([
   c({ type: String })
-], N.prototype, "replace", void 0);
-j([
+], z.prototype, "replace", void 0);
+q([
   c({ type: String })
-], N.prototype, "flatten", void 0);
-j([
+], z.prototype, "flatten", void 0);
+q([
   c({ type: Boolean, attribute: "lowercase-keys" })
-], N.prototype, "lowercaseKeys", void 0);
-N = j([
+], z.prototype, "lowercaseKeys", void 0);
+z = q([
   D("gouv-normalize")
-], N);
-var A = function(n, e, t, i) {
+], z);
+var C = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, le;
-let P = (le = class extends S {
+let w = (le = class extends P {
   constructor() {
-    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (e) => {
+    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (e) => {
       if (!this._openMultiselectField)
         return;
       const t = e.target, i = this.querySelector(`[data-multiselect="${this._openMultiselectField}"]`);
@@ -1788,19 +1811,23 @@ let P = (le = class extends S {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-facets"), this._initialize(), document.addEventListener("click", this._onClickOutsideMultiselect), this.urlSync && (this._popstateHandler = () => {
+    super.connectedCallback(), I("gouv-facets"), this._initialize(), document.addEventListener("click", this._onClickOutsideMultiselect), this.urlSync && (this._popstateHandler = () => {
       this._applyUrlParams(), this._buildFacetGroups(), this._applyFilters();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Te(this.id);
+    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Fe(this.id);
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
       this._initialize();
       return;
     }
-    ["fields", "labels", "sort", "hideEmpty", "maxValues", "disjunctive", "searchable", "display"].some((r) => e.has(r)) && this._rawData.length > 0 && (this._buildFacetGroups(), this._applyFilters());
+    if (e.has("serverFacets")) {
+      this._initialize();
+      return;
+    }
+    ["fields", "labels", "sort", "hideEmpty", "maxValues", "disjunctive", "searchable", "display"].some((r) => e.has(r)) && this._rawData.length > 0 && (this.serverFacets ? this._fetchServerFacets() : (this._buildFacetGroups(), this._applyFilters()));
   }
   _initialize() {
     if (!this.id) {
@@ -1814,19 +1841,23 @@ let P = (le = class extends S {
     this._unsubscribe && this._unsubscribe(), this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {};
     const e = we(this.source);
     e !== void 0 && this._onData(e), this._unsubscribe = Oe(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
+      onLoaded: /* @__PURE__ */ h((t) => {
         this._onData(t);
       }, "onLoaded"),
-      onLoading: /* @__PURE__ */ u(() => {
-        G(this.id);
+      onLoading: /* @__PURE__ */ h(() => {
+        W(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        V(this.id, t);
+      onError: /* @__PURE__ */ h((t) => {
+        G(this.id, t);
       }, "onError")
     });
   }
   _onData(e) {
-    this._rawData = Array.isArray(e) ? e : [], this.urlParams && !this._urlParamsApplied && (this._applyUrlParams(), this._urlParamsApplied = !0), this._buildFacetGroups(), this._applyFilters();
+    if (this._rawData = Array.isArray(e) ? e : [], this.urlParams && !this._urlParamsApplied && (this._applyUrlParams(), this._urlParamsApplied = !0, this.serverFacets && this._hasActiveSelections())) {
+      this._dispatchFacetCommand();
+      return;
+    }
+    this.serverFacets ? (this._fetchServerFacets(), this.id && B(this.id, this._rawData)) : (this._buildFacetGroups(), this._applyFilters());
   }
   // --- Facet index building ---
   _buildFacetGroups() {
@@ -1842,7 +1873,7 @@ let P = (le = class extends S {
   }
   /** Get fields to use as facets — explicit or auto-detected */
   _getFields() {
-    return this.fields ? Ye(this.fields) : this._autoDetectFields();
+    return this.fields ? ze(this.fields) : this._autoDetectFields();
   }
   /** Auto-detect categorical fields: string type, 2-50 unique values, not all unique (ID-like) */
   _autoDetectFields() {
@@ -1910,6 +1941,76 @@ let P = (le = class extends S {
     }
     return t;
   }
+  // --- Server-facets ---
+  /** Check if there are any active selections */
+  _hasActiveSelections() {
+    return Object.keys(this._activeSelections).some((e) => this._activeSelections[e].size > 0);
+  }
+  /** Fetch facet values from ODS /facets API with cross-facet counts */
+  async _fetchServerFacets() {
+    var l;
+    const e = document.getElementById(this.source);
+    if (!e)
+      return;
+    const t = e.baseUrl || e.getAttribute("base-url") || "https://data.opendatasoft.com", i = e.datasetId || e.getAttribute("dataset-id");
+    if (!i)
+      return;
+    const r = ze(this.fields);
+    if (r.length === 0)
+      return;
+    const s = this._parseLabels(), a = /* @__PURE__ */ new Map();
+    for (const u of r) {
+      const f = ((l = e.getEffectiveWhere) == null ? void 0 : l.call(e, this.id)) || "", d = this._buildFacetWhereExcluding(u), g = [f, d].filter(Boolean).join(" AND ");
+      a.has(g) || a.set(g, []), a.get(g).push(u);
+    }
+    const o = [];
+    for (const [u, f] of a) {
+      const d = new URL(`${t}/api/explore/v2.1/catalog/datasets/${i}/facets`);
+      for (const g of f)
+        d.searchParams.append("facet", g);
+      u && d.searchParams.set("where", u);
+      try {
+        const g = await fetch(d.toString());
+        if (!g.ok)
+          continue;
+        const E = await g.json();
+        for (const N of E.facets || [])
+          o.push({
+            field: N.name,
+            label: s.get(N.name) ?? N.name,
+            values: this._sortValues((N.facets || []).map((xe) => ({
+              value: xe.value,
+              count: xe.count
+            })))
+          });
+      } catch {
+      }
+    }
+    this._facetGroups = r.map((u) => o.find((f) => f.field === u)).filter((u) => !!u).filter((u) => !(this.hideEmpty && u.values.length <= 1));
+  }
+  /** Build ODSQL where clause for all active facet selections EXCEPT the given field */
+  _buildFacetWhereExcluding(e) {
+    const t = [];
+    for (const [i, r] of Object.entries(this._activeSelections))
+      if (!(i === e || r.size === 0))
+        if (r.size === 1) {
+          const s = [...r][0].replace(/"/g, '\\"');
+          t.push(`${i} = "${s}"`);
+        } else {
+          const s = [...r].map((a) => `"${a.replace(/"/g, '\\"')}"`).join(", ");
+          t.push(`${i} IN (${s})`);
+        }
+    return t.join(" AND ");
+  }
+  /** Build ODSQL where clause for ALL active facet selections */
+  _buildFullFacetWhere() {
+    return this._buildFacetWhereExcluding("");
+  }
+  /** Dispatch facet where command to upstream gouv-query */
+  _dispatchFacetCommand() {
+    const e = this._buildFullFacetWhere();
+    Q(this.source, { where: e, whereKey: this.id });
+  }
   // --- Filtering ---
   _applyFilters() {
     const e = Object.keys(this._activeSelections).filter((i) => this._activeSelections[i].size > 0);
@@ -1955,16 +2056,16 @@ let P = (le = class extends S {
   }
   // --- User interaction ---
   _toggleValue(e, t) {
-    const i = { ...this._activeSelections }, r = new Set(i[e] ?? []), s = this._getDisplayMode(e), a = Ye(this.disjunctive), o = s === "multiselect" || s === "checkbox" && a.includes(e);
-    r.has(t) ? r.delete(t) : (o || r.clear(), r.add(t)), r.size === 0 ? delete i[e] : i[e] = r, this._activeSelections = i, this._buildFacetGroups(), this._applyFilters(), this.urlSync && this._syncUrl();
+    const i = { ...this._activeSelections }, r = new Set(i[e] ?? []), s = this._getDisplayMode(e), a = ze(this.disjunctive), o = s === "multiselect" || s === "checkbox" && a.includes(e);
+    r.has(t) ? r.delete(t) : (o || r.clear(), r.add(t)), r.size === 0 ? delete i[e] : i[e] = r, this._activeSelections = i, this._afterSelectionChange();
   }
   _handleSelectChange(e, t) {
     const r = t.target.value, s = { ...this._activeSelections };
-    r ? s[e] = /* @__PURE__ */ new Set([r]) : delete s[e], this._activeSelections = s, this._buildFacetGroups(), this._applyFilters(), this.urlSync && this._syncUrl();
+    r ? s[e] = /* @__PURE__ */ new Set([r]) : delete s[e], this._activeSelections = s, this._afterSelectionChange();
   }
   _clearFieldSelections(e) {
     const t = { ...this._activeSelections };
-    delete t[e], this._activeSelections = t, this._buildFacetGroups(), this._applyFilters(), this.urlSync && this._syncUrl();
+    delete t[e], this._activeSelections = t, this._afterSelectionChange();
   }
   _toggleMultiselectDropdown(e) {
     this._openMultiselectField = this._openMultiselectField === e ? null : e;
@@ -1978,7 +2079,11 @@ let P = (le = class extends S {
     this._searchQueries = { ...this._searchQueries, [e]: i.value };
   }
   _clearAll() {
-    this._activeSelections = {}, this._searchQueries = {}, this._buildFacetGroups(), this._applyFilters(), this.urlSync && this._syncUrl();
+    this._activeSelections = {}, this._searchQueries = {}, this._afterSelectionChange();
+  }
+  /** Common logic after any selection change — routes to client or server mode */
+  _afterSelectionChange() {
+    this.serverFacets ? this._dispatchFacetCommand() : (this._buildFacetGroups(), this._applyFilters()), this.urlSync && this._syncUrl();
   }
   // --- URL params ---
   /** Parse url-param-map attribute into a map of URL param name -> facet field name */
@@ -2077,10 +2182,10 @@ let P = (le = class extends S {
     }
   }
   _renderCheckboxGroup(e) {
-    const i = Ye(this.searchable).includes(e.field), r = (this._searchQueries[e.field] ?? "").toLowerCase(), s = this._expandedFacets.has(e.field), a = this._activeSelections[e.field] ?? /* @__PURE__ */ new Set();
+    const i = ze(this.searchable).includes(e.field), r = (this._searchQueries[e.field] ?? "").toLowerCase(), s = this._expandedFacets.has(e.field), a = this._activeSelections[e.field] ?? /* @__PURE__ */ new Set();
     let o = e.values;
     i && r && (o = o.filter((d) => d.value.toLowerCase().includes(r)));
-    const l = s ? o : o.slice(0, this.maxValues), h = o.length > this.maxValues, f = `facet-${this.id}-${e.field}`;
+    const l = s ? o : o.slice(0, this.maxValues), u = o.length > this.maxValues, f = `facet-${this.id}-${e.field}`;
     return p`
       <fieldset class="gouv-facets__group fr-fieldset" aria-labelledby="${f}-legend">
         <legend class="gouv-facets__legend" id="${f}-legend">${e.label}</legend>
@@ -2107,7 +2212,7 @@ let P = (le = class extends S {
             `;
     })}
         </ul>
-        ${h ? p`
+        ${u ? p`
           <button class="gouv-facets__more" type="button"
             @click="${() => this._toggleExpand(e.field)}">
             ${s ? "Voir moins" : `Voir plus (${o.length - this.maxValues})`}
@@ -2172,13 +2277,13 @@ let P = (le = class extends S {
             </div>
             <ul class="gouv-facets__values" role="group">
               ${a.map((l) => {
-      const h = `${t}-${l.value.replace(/[^a-zA-Z0-9]/g, "_")}`, f = i.has(l.value);
+      const u = `${t}-${l.value.replace(/[^a-zA-Z0-9]/g, "_")}`, f = i.has(l.value);
       return p`
                   <li class="gouv-facets__value">
-                    <input type="checkbox" id="${h}"
+                    <input type="checkbox" id="${u}"
                       .checked="${f}"
                       @change="${() => this._toggleValue(e.field, l.value)}">
-                    <label class="gouv-facets__value-label" for="${h}">${l.value}</label>
+                    <label class="gouv-facets__value-label" for="${u}">${l.value}</label>
                     <span class="gouv-facets__value-count">${l.count}</span>
                   </li>
                 `;
@@ -2189,75 +2294,78 @@ let P = (le = class extends S {
       </div>
     `;
   }
-}, u(le, "GouvFacets"), le);
-A([
+}, h(le, "GouvFacets"), le);
+C([
   c({ type: String })
-], P.prototype, "source", void 0);
-A([
+], w.prototype, "source", void 0);
+C([
   c({ type: String })
-], P.prototype, "fields", void 0);
-A([
+], w.prototype, "fields", void 0);
+C([
   c({ type: String })
-], P.prototype, "labels", void 0);
-A([
+], w.prototype, "labels", void 0);
+C([
   c({ type: Number, attribute: "max-values" })
-], P.prototype, "maxValues", void 0);
-A([
+], w.prototype, "maxValues", void 0);
+C([
   c({ type: String })
-], P.prototype, "disjunctive", void 0);
-A([
+], w.prototype, "disjunctive", void 0);
+C([
   c({ type: String })
-], P.prototype, "sort", void 0);
-A([
+], w.prototype, "sort", void 0);
+C([
   c({ type: String })
-], P.prototype, "searchable", void 0);
-A([
+], w.prototype, "searchable", void 0);
+C([
   c({ type: Boolean, attribute: "hide-empty" })
-], P.prototype, "hideEmpty", void 0);
-A([
+], w.prototype, "hideEmpty", void 0);
+C([
   c({ type: String })
-], P.prototype, "display", void 0);
-A([
+], w.prototype, "display", void 0);
+C([
   c({ type: Boolean, attribute: "url-params" })
-], P.prototype, "urlParams", void 0);
-A([
+], w.prototype, "urlParams", void 0);
+C([
   c({ type: String, attribute: "url-param-map" })
-], P.prototype, "urlParamMap", void 0);
-A([
+], w.prototype, "urlParamMap", void 0);
+C([
   c({ type: Boolean, attribute: "url-sync" })
-], P.prototype, "urlSync", void 0);
-A([
+], w.prototype, "urlSync", void 0);
+C([
+  c({ type: Boolean, attribute: "server-facets" })
+], w.prototype, "serverFacets", void 0);
+C([
   _()
-], P.prototype, "_rawData", void 0);
-A([
+], w.prototype, "_rawData", void 0);
+C([
   _()
-], P.prototype, "_facetGroups", void 0);
-A([
+], w.prototype, "_facetGroups", void 0);
+C([
   _()
-], P.prototype, "_activeSelections", void 0);
-A([
+], w.prototype, "_activeSelections", void 0);
+C([
   _()
-], P.prototype, "_expandedFacets", void 0);
-A([
+], w.prototype, "_expandedFacets", void 0);
+C([
   _()
-], P.prototype, "_searchQueries", void 0);
-A([
+], w.prototype, "_searchQueries", void 0);
+C([
   _()
-], P.prototype, "_openMultiselectField", void 0);
-P = A([
+], w.prototype, "_openMultiselectField", void 0);
+w = C([
   D("gouv-facets")
-], P);
-function Ye(n) {
+], w);
+function ze(n) {
   return n ? n.split(",").map((e) => e.trim()).filter(Boolean) : [];
 }
-u(Ye, "_parseCSV");
+h(ze, "_parseCSV");
 var k = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, ce;
-let x = (ce = class extends S {
+let x = (ce = class extends P {
   constructor() {
     super(...arguments), this.source = "", this.fields = "", this.placeholder = "Rechercher…", this.label = "Rechercher", this.debounce = 300, this.minLength = 0, this.highlight = !1, this.operator = "contains", this.srLabel = !1, this.count = !1, this.urlSearchParam = "", this.urlSync = !1, this.serverSearch = !1, this.searchTemplate = 'search("{q}")', this._allData = [], this._filteredData = [], this._term = "", this._resultCount = 0, this._debounceTimer = null, this._unsubscribe = null, this._urlParamApplied = !1;
   }
@@ -2265,10 +2373,10 @@ let x = (ce = class extends S {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-search"), this._initialize();
+    super.connectedCallback(), I("gouv-search"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._debounceTimer !== null && (clearTimeout(this._debounceTimer), this._debounceTimer = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Te(this.id);
+    super.disconnectedCallback(), this._debounceTimer !== null && (clearTimeout(this._debounceTimer), this._debounceTimer = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Fe(this.id);
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
@@ -2311,14 +2419,14 @@ let x = (ce = class extends S {
     this._unsubscribe && this._unsubscribe();
     const e = we(this.source);
     e !== void 0 && this._onData(e), this._unsubscribe = Oe(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
+      onLoaded: /* @__PURE__ */ h((t) => {
         this._onData(t);
       }, "onLoaded"),
-      onLoading: /* @__PURE__ */ u(() => {
-        G(this.id);
+      onLoading: /* @__PURE__ */ h(() => {
+        W(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        V(this.id, t);
+      onError: /* @__PURE__ */ h((t) => {
+        G(this.id, t);
       }, "onError")
     });
   }
@@ -2326,7 +2434,7 @@ let x = (ce = class extends S {
     const t = Array.isArray(e) ? e : [];
     if (this.serverSearch) {
       this._allData = t, this._filteredData = t;
-      const i = Ie(this.source);
+      const i = Ve(this.source);
       this._resultCount = i ? i.total : t.length, this.id && B(this.id, t), this.urlSearchParam && !this._urlParamApplied && (this._applyUrlSearchParam(), this._urlParamApplied = !0, this._term && this._applyServerSearch());
       return;
     }
@@ -2364,7 +2472,7 @@ let x = (ce = class extends S {
       const i = e.replace(/"/g, '\\"');
       t = this.searchTemplate.replace(/\{q\}/g, i);
     }
-    X(this.source, { where: t }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
+    Q(this.source, { where: t, whereKey: this.id }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
       bubbles: !0,
       composed: !0,
       detail: {
@@ -2393,9 +2501,9 @@ let x = (ce = class extends S {
     return this.fields ? this.fields.split(",").map((e) => e.trim()).filter(Boolean) : [];
   }
   _addHighlight(e, t) {
-    const i = { ...e }, r = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), s = new RegExp("(" + r + ")", "gi"), a = this._getFields(), o = a.length > 0 ? a : Object.keys(e).filter((h) => typeof e[h] == "string"), l = [];
-    return o.forEach((h) => {
-      typeof e[h] == "string" && l.push(e[h].replace(s, "<mark>$1</mark>"));
+    const i = { ...e }, r = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), s = new RegExp("(" + r + ")", "gi"), a = this._getFields(), o = a.length > 0 ? a : Object.keys(e).filter((u) => typeof e[u] == "string"), l = [];
+    return o.forEach((u) => {
+      typeof e[u] == "string" && l.push(e[u].replace(s, "<mark>$1</mark>"));
     }), i._highlight = l.join(" … "), i;
   }
   _onInput(e) {
@@ -2456,7 +2564,7 @@ let x = (ce = class extends S {
       ` : m}
     `;
   }
-}, u(ce, "GouvSearch"), ce);
+}, h(ce, "GouvSearch"), ce);
 k([
   c({ type: String })
 ], x.prototype, "source", void 0);
@@ -2514,7 +2622,7 @@ k([
 x = k([
   D("gouv-search")
 ], x);
-function He(n) {
+function Ge(n) {
   const t = class t extends n {
     constructor() {
       super(...arguments), this._sourceLoading = !1, this._sourceData = null, this._sourceError = null, this._unsubscribeSource = null;
@@ -2541,13 +2649,13 @@ function He(n) {
         return;
       const s = we(r);
       s !== void 0 && (this._sourceData = s, this.onSourceData(s)), this._unsubscribeSource = Oe(r, {
-        onLoaded: /* @__PURE__ */ u((a) => {
+        onLoaded: /* @__PURE__ */ h((a) => {
           this._sourceData = a, this._sourceLoading = !1, this._sourceError = null, this.onSourceData(a), this.requestUpdate();
         }, "onLoaded"),
-        onLoading: /* @__PURE__ */ u(() => {
+        onLoading: /* @__PURE__ */ h(() => {
           this._sourceLoading = !0, this.requestUpdate();
         }, "onLoading"),
-        onError: /* @__PURE__ */ u((a) => {
+        onError: /* @__PURE__ */ h((a) => {
           this._sourceError = a, this._sourceLoading = !1, this.requestUpdate();
         }, "onError")
       });
@@ -2556,11 +2664,11 @@ function He(n) {
       this._unsubscribeSource && (this._unsubscribeSource(), this._unsubscribeSource = null);
     }
   };
-  u(t, "SourceSubscriberElement");
+  h(t, "SourceSubscriberElement");
   let e = t;
   return e;
 }
-u(He, "SourceSubscriberMixin");
+h(Ge, "SourceSubscriberMixin");
 function zt(n, e = "nombre") {
   if (n == null || n === "")
     return "—";
@@ -2580,13 +2688,13 @@ function zt(n, e = "nombre") {
       return jt(t);
   }
 }
-u(zt, "formatValue");
+h(zt, "formatValue");
 function jt(n) {
   return new Intl.NumberFormat("fr-FR", {
     maximumFractionDigits: 0
   }).format(Math.round(n));
 }
-u(jt, "formatNumber");
+h(jt, "formatNumber");
 function $i(n) {
   return new Intl.NumberFormat("fr-FR", {
     style: "percent",
@@ -2594,7 +2702,7 @@ function $i(n) {
     maximumFractionDigits: 1
   }).format(n / 100);
 }
-u($i, "formatPercentage");
+h($i, "formatPercentage");
 function wi(n) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
@@ -2603,15 +2711,15 @@ function wi(n) {
     maximumFractionDigits: 0
   }).format(n);
 }
-u(wi, "formatCurrency");
+h(wi, "formatCurrency");
 function Si(n) {
   return new Intl.NumberFormat("fr-FR", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 2
   }).format(n);
 }
-u(Si, "formatDecimal");
-function Oi(n) {
+h(Si, "formatDecimal");
+function Fi(n) {
   const e = typeof n == "string" ? new Date(n) : n;
   return isNaN(e.getTime()) ? "—" : new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
@@ -2619,11 +2727,11 @@ function Oi(n) {
     year: "numeric"
   }).format(e);
 }
-u(Oi, "formatDate");
+h(Fi, "formatDate");
 function Pi(n, e, t) {
   return e !== void 0 && n >= e ? "vert" : t !== void 0 && n >= t ? "orange" : e !== void 0 || t !== void 0 ? "rouge" : "bleu";
 }
-u(Pi, "getColorBySeuil");
+h(Pi, "getColorBySeuil");
 function xi(n) {
   const e = n.split(":");
   if (e.length === 1)
@@ -2635,7 +2743,7 @@ function xi(n) {
   }
   return { type: t, field: i };
 }
-u(xi, "parseExpression");
+h(xi, "parseExpression");
 function Bt(n, e) {
   const t = xi(e);
   if (t.type === "direct" && !Array.isArray(n))
@@ -2669,8 +2777,8 @@ function Bt(n, e) {
       return null;
   }
 }
-u(Bt, "computeAggregation");
-var z = function(n, e, t, i) {
+h(Bt, "computeAggregation");
+var j = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -2683,7 +2791,7 @@ const qt = {
   bleu: "gouv-kpi--info"
 };
 var ue;
-let T = (ue = class extends He(S) {
+let T = (ue = class extends Ge(P) {
   constructor() {
     super(...arguments), this.source = "", this.valeur = "", this.label = "", this.description = "", this.icone = "", this.format = "nombre", this.tendance = "", this.couleur = "";
   }
@@ -2692,7 +2800,7 @@ let T = (ue = class extends He(S) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-kpi");
+    super.connectedCallback(), I("gouv-kpi");
   }
   _computeValue() {
     return !this._sourceData || !this.valeur ? null : Bt(this._sourceData, this.valeur);
@@ -2786,39 +2894,39 @@ let T = (ue = class extends He(S) {
       </style>
     `;
   }
-}, u(ue, "GouvKpi"), ue);
+}, h(ue, "GouvKpi"), ue);
 T.styles = Vt``;
-z([
+j([
   c({ type: String })
 ], T.prototype, "source", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "valeur", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "label", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "description", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "icone", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "format", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "tendance", void 0);
-z([
+j([
   c({ type: Number, attribute: "seuil-vert" })
 ], T.prototype, "seuilVert", void 0);
-z([
+j([
   c({ type: Number, attribute: "seuil-orange" })
 ], T.prototype, "seuilOrange", void 0);
-z([
+j([
   c({ type: String })
 ], T.prototype, "couleur", void 0);
-T = z([
+T = j([
   D("gouv-kpi")
 ], T);
 var R = function(n, e, t, i) {
@@ -2827,7 +2935,7 @@ var R = function(n, e, t, i) {
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, he;
-let C = (he = class extends He(S) {
+let A = (he = class extends Ge(P) {
   constructor() {
     super(...arguments), this.source = "", this.colonnes = "", this.recherche = !1, this.filtres = "", this.tri = "", this.pagination = 0, this.export = "", this.urlSync = !1, this.urlPageParam = "page", this.serverTri = !1, this._data = [], this._searchQuery = "", this._activeFilters = {}, this._sort = null, this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._popstateHandler = null;
   }
@@ -2836,7 +2944,7 @@ let C = (he = class extends He(S) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-datalist"), this._initSort(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
+    super.connectedCallback(), I("gouv-datalist"), this._initSort(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
       this._applyUrlPage(), this.requestUpdate();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
@@ -2848,7 +2956,7 @@ let C = (he = class extends He(S) {
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [];
-    const t = this.source ? Ie(this.source) : void 0;
+    const t = this.source ? Ve(this.source) : void 0;
     t && t.total > 0 ? (this._serverPagination = !0, this._serverTotal = t.total, this._serverPageSize = t.pageSize, this._currentPage = t.page) : (this._serverPagination = !1, this._currentPage = 1);
   }
   // --- Parsing ---
@@ -2915,7 +3023,7 @@ let C = (he = class extends He(S) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const i = parseInt(t, 10);
-      !isNaN(i) && i >= 1 && (this._currentPage = i, this._serverPagination && this.source && X(this.source, { page: i }));
+      !isNaN(i) && i >= 1 && (this._currentPage = i, this._serverPagination && this.source && Q(this.source, { page: i }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -2933,26 +3041,26 @@ let C = (he = class extends He(S) {
   }
   _handleSort(e) {
     var t;
-    ((t = this._sort) == null ? void 0 : t.key) === e ? this._sort = { key: e, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: e, direction: "asc" }, this.serverTri && this.source && X(this.source, {
+    ((t = this._sort) == null ? void 0 : t.key) === e ? this._sort = { key: e, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: e, direction: "asc" }, this.serverTri && this.source && Q(this.source, {
       orderBy: `${this._sort.key}:${this._sort.direction}`
     });
   }
   _handlePageChange(e) {
-    this._currentPage = e, this._serverPagination && this.source && X(this.source, { page: e }), this.urlSync && this._syncPageUrl();
+    this._currentPage = e, this._serverPagination && this.source && Q(this.source, { page: e }), this.urlSync && this._syncPageUrl();
   }
   // --- Export ---
   _exportCsv() {
-    const e = this.parseColumns(), t = this.getFilteredData(), i = e.map((h) => h.label).join(";"), r = t.map((h) => e.map((f) => {
-      const d = String(h[f.key] ?? "");
+    const e = this.parseColumns(), t = this.getFilteredData(), i = e.map((u) => u.label).join(";"), r = t.map((u) => e.map((f) => {
+      const d = String(u[f.key] ?? "");
       return d.includes(";") || d.includes('"') ? `"${d.replace(/"/g, '""')}"` : d;
     }).join(";")), s = [i, ...r].join(`
 `), a = new Blob([s], { type: "text/csv;charset=utf-8;" }), o = URL.createObjectURL(a), l = document.createElement("a");
     l.href = o, l.download = "export.csv", l.click(), URL.revokeObjectURL(o);
   }
   _exportHtml() {
-    const e = this.parseColumns(), t = this.getFilteredData(), i = e.map((h) => `<th>${at(h.label)}</th>`).join(""), r = t.map((h) => `<tr>${e.map((d) => {
-      const g = h[d.key];
-      return `<td>${g == null ? "" : at(String(g))}</td>`;
+    const e = this.parseColumns(), t = this.getFilteredData(), i = e.map((u) => `<th>${nt(u.label)}</th>`).join(""), r = t.map((u) => `<tr>${e.map((d) => {
+      const g = u[d.key];
+      return `<td>${g == null ? "" : nt(String(g))}</td>`;
     }).join("")}</tr>`).join(`
 `), s = `<!DOCTYPE html>
 <html lang="fr">
@@ -3212,66 +3320,66 @@ ${r}
       </style>
     `;
   }
-}, u(he, "GouvDatalist"), he);
-C.styles = Vt``;
+}, h(he, "GouvDatalist"), he);
+A.styles = Vt``;
 R([
   c({ type: String })
-], C.prototype, "source", void 0);
+], A.prototype, "source", void 0);
 R([
   c({ type: String })
-], C.prototype, "colonnes", void 0);
+], A.prototype, "colonnes", void 0);
 R([
   c({ type: Boolean })
-], C.prototype, "recherche", void 0);
+], A.prototype, "recherche", void 0);
 R([
   c({ type: String })
-], C.prototype, "filtres", void 0);
+], A.prototype, "filtres", void 0);
 R([
   c({ type: String })
-], C.prototype, "tri", void 0);
+], A.prototype, "tri", void 0);
 R([
   c({ type: Number })
-], C.prototype, "pagination", void 0);
+], A.prototype, "pagination", void 0);
 R([
   c({ type: String })
-], C.prototype, "export", void 0);
+], A.prototype, "export", void 0);
 R([
   c({ type: Boolean, attribute: "url-sync" })
-], C.prototype, "urlSync", void 0);
+], A.prototype, "urlSync", void 0);
 R([
   c({ type: String, attribute: "url-page-param" })
-], C.prototype, "urlPageParam", void 0);
+], A.prototype, "urlPageParam", void 0);
 R([
   c({ type: Boolean, attribute: "server-tri" })
-], C.prototype, "serverTri", void 0);
+], A.prototype, "serverTri", void 0);
 R([
   _()
-], C.prototype, "_data", void 0);
+], A.prototype, "_data", void 0);
 R([
   _()
-], C.prototype, "_searchQuery", void 0);
+], A.prototype, "_searchQuery", void 0);
 R([
   _()
-], C.prototype, "_activeFilters", void 0);
+], A.prototype, "_activeFilters", void 0);
 R([
   _()
-], C.prototype, "_sort", void 0);
+], A.prototype, "_sort", void 0);
 R([
   _()
-], C.prototype, "_currentPage", void 0);
+], A.prototype, "_currentPage", void 0);
 R([
   _()
-], C.prototype, "_serverPagination", void 0);
-C = R([
+], A.prototype, "_serverPagination", void 0);
+A = R([
   D("gouv-datalist")
-], C);
+], A);
 var L = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, de;
-let O = (de = class extends He(S) {
+let F = (de = class extends Ge(P) {
   constructor() {
     super(...arguments), this.source = "", this.cols = 1, this.pagination = 0, this.empty = "Aucun resultat", this.gap = "fr-grid-row--gutters", this.uidField = "", this.urlSync = !1, this.urlPageParam = "page", this._data = [], this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._templateContent = "", this._hashScrollDone = !1, this._popstateHandler = null;
   }
@@ -3280,7 +3388,7 @@ let O = (de = class extends He(S) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-display"), this._captureTemplate(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
+    super.connectedCallback(), I("gouv-display"), this._captureTemplate(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
       this._applyUrlPage(), this.requestUpdate();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
@@ -3289,7 +3397,7 @@ let O = (de = class extends He(S) {
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [], this._hashScrollDone = !1;
-    const t = this.source ? Ie(this.source) : void 0;
+    const t = this.source ? Ve(this.source) : void 0;
     t && t.total > 0 ? (this._serverPagination = !0, this._serverTotal = t.total, this._serverPageSize = t.pageSize, this._currentPage = t.page) : (this._serverPagination = !1, this._currentPage = 1);
   }
   updated(e) {
@@ -3313,7 +3421,7 @@ let O = (de = class extends He(S) {
     let i = this._templateContent;
     return i = i.replace(/\{\{\{([^}]+)\}\}\}/g, (r, s) => this._resolveExpression(e, s.trim(), t)), i = i.replace(/\{\{([^}]+)\}\}/g, (r, s) => {
       const a = this._resolveExpression(e, s.trim(), t);
-      return at(a);
+      return nt(a);
     }), i;
   }
   /** Resout une expression : champ, champ.nested, champ|defaut, $index, $uid */
@@ -3345,7 +3453,7 @@ let O = (de = class extends He(S) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const i = parseInt(t, 10);
-      !isNaN(i) && i >= 1 && (this._currentPage = i, this._serverPagination && this.source && X(this.source, { page: i }));
+      !isNaN(i) && i >= 1 && (this._currentPage = i, this._serverPagination && this.source && Q(this.source, { page: i }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -3356,7 +3464,7 @@ let O = (de = class extends He(S) {
     window.history.replaceState(null, "", i);
   }
   _handlePageChange(e) {
-    this._currentPage = e, this._serverPagination && this.source && X(this.source, { page: e }), this.urlSync && this._syncPageUrl();
+    this._currentPage = e, this._serverPagination && this.source && Q(this.source, { page: e }), this.urlSync && this._syncPageUrl();
   }
   // --- Grid ---
   _getColClass() {
@@ -3375,8 +3483,8 @@ let O = (de = class extends He(S) {
   }
   _renderGrid(e) {
     const t = this._getColClass(), i = this.pagination > 0 ? (this._currentPage - 1) * this.pagination : 0, r = e.map((a, o) => {
-      const l = i + o, h = this._renderItem(a, l), f = this._getItemUid(a, l);
-      return `<div class="${t}" id="${f}">${h}</div>`;
+      const l = i + o, u = this._renderItem(a, l), f = this._getItemUid(a, l);
+      return `<div class="${t}" id="${f}">${u}</div>`;
     }).join(""), s = `<div class="fr-grid-row ${this.gap}">${r}</div>`;
     return p`<div .innerHTML="${s}"></div>`;
   }
@@ -3470,43 +3578,43 @@ let O = (de = class extends He(S) {
       </style>
     `;
   }
-}, u(de, "GouvDisplay"), de);
+}, h(de, "GouvDisplay"), de);
 L([
   c({ type: String })
-], O.prototype, "source", void 0);
+], F.prototype, "source", void 0);
 L([
   c({ type: Number })
-], O.prototype, "cols", void 0);
+], F.prototype, "cols", void 0);
 L([
   c({ type: Number })
-], O.prototype, "pagination", void 0);
+], F.prototype, "pagination", void 0);
 L([
   c({ type: String })
-], O.prototype, "empty", void 0);
+], F.prototype, "empty", void 0);
 L([
   c({ type: String })
-], O.prototype, "gap", void 0);
+], F.prototype, "gap", void 0);
 L([
   c({ type: String, attribute: "uid-field" })
-], O.prototype, "uidField", void 0);
+], F.prototype, "uidField", void 0);
 L([
   c({ type: Boolean, attribute: "url-sync" })
-], O.prototype, "urlSync", void 0);
+], F.prototype, "urlSync", void 0);
 L([
   c({ type: String, attribute: "url-page-param" })
-], O.prototype, "urlPageParam", void 0);
+], F.prototype, "urlPageParam", void 0);
 L([
   _()
-], O.prototype, "_data", void 0);
+], F.prototype, "_data", void 0);
 L([
   _()
-], O.prototype, "_currentPage", void 0);
+], F.prototype, "_currentPage", void 0);
 L([
   _()
-], O.prototype, "_serverPagination", void 0);
-O = L([
+], F.prototype, "_serverPagination", void 0);
+F = L([
   D("gouv-display")
-], O);
+], F);
 var $ = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
@@ -3525,7 +3633,7 @@ const Ci = {
   "map-reg": "map-chart-reg"
 };
 var pe;
-let b = (pe = class extends He(S) {
+let b = (pe = class extends Ge(P) {
   constructor() {
     super(...arguments), this.source = "", this.type = "bar", this.labelField = "", this.codeField = "", this.valueField = "", this.valueField2 = "", this.name = "", this.selectedPalette = "categorical", this.unitTooltip = "", this.unitTooltipBar = "", this.horizontal = !1, this.stacked = !1, this.fill = !1, this.highlightIndex = "", this.xMin = "", this.xMax = "", this.yMin = "", this.yMax = "", this.gaugeValue = null, this.mapHighlight = "", this._data = [];
   }
@@ -3534,7 +3642,7 @@ let b = (pe = class extends He(S) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), q("gouv-dsfr-chart", this.type);
+    super.connectedCallback(), I("gouv-dsfr-chart", this.type);
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [];
@@ -3595,13 +3703,13 @@ let b = (pe = class extends He(S) {
       case "map-reg": {
         if (s.data = this._processMapData(), this._data.length > 0) {
           let o = 0, l = 0;
-          for (const h of this._data) {
-            const f = Number(v(h, this.valueField));
+          for (const u of this._data) {
+            const f = Number(v(u, this.valueField));
             isNaN(f) || (o += f, l++);
           }
           if (l > 0) {
-            const h = Math.round(o / l * 100) / 100;
-            a.value = String(h);
+            const u = Math.round(o / l * 100) / 100;
+            a.value = String(u);
           }
         }
         a.date = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
@@ -3689,7 +3797,7 @@ let b = (pe = class extends He(S) {
         </style>
       ` : this._renderChart();
   }
-}, u(pe, "GouvDsfrChart"), pe);
+}, h(pe, "GouvDsfrChart"), pe);
 $([
   c({ type: String })
 ], b.prototype, "source", void 0);
@@ -3756,13 +3864,13 @@ $([
 b = $([
   D("gouv-dsfr-chart")
 ], b);
-var Ve = function(n, e, t, i) {
+var We = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, fe;
-let Me = (fe = class extends S {
+let Te = (fe = class extends P {
   constructor() {
     super(...arguments), this.currentPage = "", this.basePath = "", this._favCount = 0;
   }
@@ -3877,26 +3985,26 @@ let Me = (fe = class extends S {
       </header>
     `;
   }
-}, u(fe, "AppHeader"), fe);
-Ve([
+}, h(fe, "AppHeader"), fe);
+We([
   c({ type: String, attribute: "current-page" })
-], Me.prototype, "currentPage", void 0);
-Ve([
+], Te.prototype, "currentPage", void 0);
+We([
   c({ type: String, attribute: "base-path" })
-], Me.prototype, "basePath", void 0);
-Ve([
+], Te.prototype, "basePath", void 0);
+We([
   _()
-], Me.prototype, "_favCount", void 0);
-Me = Ve([
+], Te.prototype, "_favCount", void 0);
+Te = We([
   D("app-header")
-], Me);
+], Te);
 var Kt = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, ge;
-let ot = (ge = class extends S {
+let lt = (ge = class extends P {
   constructor() {
     super(...arguments), this.basePath = "";
   }
@@ -3958,20 +4066,20 @@ let ot = (ge = class extends S {
       </footer>
     `;
   }
-}, u(ge, "AppFooter"), ge);
+}, h(ge, "AppFooter"), ge);
 Kt([
   c({ type: String, attribute: "base-path" })
-], ot.prototype, "basePath", void 0);
-ot = Kt([
+], lt.prototype, "basePath", void 0);
+lt = Kt([
   D("app-footer")
-], ot);
+], lt);
 var Pe = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, _e;
-let Y = (_e = class extends S {
+let ee = (_e = class extends P {
   constructor() {
     super(...arguments), this.leftRatio = 40, this.minLeftWidth = 280, this.minRightWidth = 300, this._isResizing = !1, this._currentLeftRatio = 40, this._leftContent = [], this._rightContent = [], this._contentMoved = !1, this._boundMouseMove = null, this._boundMouseUp = null;
   }
@@ -4116,32 +4224,32 @@ let Y = (_e = class extends S {
       </style>
     `;
   }
-}, u(_e, "AppLayoutBuilder"), _e);
+}, h(_e, "AppLayoutBuilder"), _e);
 Pe([
   c({ type: Number, attribute: "left-ratio" })
-], Y.prototype, "leftRatio", void 0);
+], ee.prototype, "leftRatio", void 0);
 Pe([
   c({ type: Number, attribute: "min-left-width" })
-], Y.prototype, "minLeftWidth", void 0);
+], ee.prototype, "minLeftWidth", void 0);
 Pe([
   c({ type: Number, attribute: "min-right-width" })
-], Y.prototype, "minRightWidth", void 0);
+], ee.prototype, "minRightWidth", void 0);
 Pe([
   _()
-], Y.prototype, "_isResizing", void 0);
+], ee.prototype, "_isResizing", void 0);
 Pe([
   _()
-], Y.prototype, "_currentLeftRatio", void 0);
-Y = Pe([
+], ee.prototype, "_currentLeftRatio", void 0);
+ee = Pe([
   D("app-layout-builder")
-], Y);
+], ee);
 var Ue = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, me;
-let Se = (me = class extends S {
+let Se = (me = class extends P {
   constructor() {
     super(...arguments), this.title = "", this.icon = "", this.activePath = "", this.basePath = "", this._contentElements = [], this._contentMoved = !1;
   }
@@ -4375,7 +4483,7 @@ let Se = (me = class extends S {
       </style>
     `;
   }
-}, u(me, "AppLayoutDemo"), me);
+}, h(me, "AppLayoutDemo"), me);
 Ue([
   c({ type: String })
 ], Se.prototype, "title", void 0);
@@ -4391,13 +4499,13 @@ Ue([
 Se = Ue([
   D("app-layout-demo")
 ], Se);
-var ee = function(n, e, t, i) {
+var te = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, be;
-let W = (be = class extends S {
+let J = (be = class extends P {
   constructor() {
     super(...arguments), this.showDataTab = !1, this.showSaveButton = !1, this.showPlaygroundButton = !1, this.tabLabels = "Aperçu,Code,Données", this.activeTab = "preview", this._activeTab = "preview", this._previewContent = [], this._codeContent = [], this._dataContent = [], this._contentMoved = !1;
   }
@@ -4754,35 +4862,35 @@ let W = (be = class extends S {
       </style>
     `;
   }
-}, u(be, "AppPreviewPanel"), be);
-ee([
+}, h(be, "AppPreviewPanel"), be);
+te([
   c({ type: Boolean, attribute: "show-data-tab" })
-], W.prototype, "showDataTab", void 0);
-ee([
+], J.prototype, "showDataTab", void 0);
+te([
   c({ type: Boolean, attribute: "show-save-button" })
-], W.prototype, "showSaveButton", void 0);
-ee([
+], J.prototype, "showSaveButton", void 0);
+te([
   c({ type: Boolean, attribute: "show-playground-button" })
-], W.prototype, "showPlaygroundButton", void 0);
-ee([
+], J.prototype, "showPlaygroundButton", void 0);
+te([
   c({ type: String, attribute: "tab-labels" })
-], W.prototype, "tabLabels", void 0);
-ee([
+], J.prototype, "tabLabels", void 0);
+te([
   c({ type: String, attribute: "active-tab" })
-], W.prototype, "activeTab", void 0);
-ee([
+], J.prototype, "activeTab", void 0);
+te([
   _()
-], W.prototype, "_activeTab", void 0);
-W = ee([
+], J.prototype, "_activeTab", void 0);
+J = te([
   D("app-preview-panel")
-], W);
+], J);
 function Ai(n, e, t) {
   return n.map((i) => ({
     label: String(v(i, e) ?? "N/A"),
     value: Number(v(i, t)) || 0
   }));
 }
-u(Ai, "extractLabelValues");
+h(Ai, "extractLabelValues");
 function ki(n, e) {
   if (e === "none")
     return n;
@@ -4796,7 +4904,7 @@ function ki(n, e) {
     i.push({ label: r, value: Ei(s, e) });
   return i;
 }
-u(ki, "aggregateByLabel");
+h(ki, "aggregateByLabel");
 function Ei(n, e) {
   switch (e) {
     case "sum":
@@ -4813,12 +4921,12 @@ function Ei(n, e) {
       return n[0] || 0;
   }
 }
-u(Ei, "computeGroupValue");
+h(Ei, "computeGroupValue");
 function Ri(n, e) {
   return e === "none" ? n : [...n].sort((t, i) => e === "desc" ? i.value - t.value : t.value - i.value);
 }
-u(Ri, "sortByValue");
-function Ui(n, e, t, i = "none", r = "none", s = 0) {
+h(Ri, "sortByValue");
+function Oi(n, e, t, i = "none", r = "none", s = 0) {
   if (!n || n.length === 0)
     return { labels: [], values: [] };
   let a = Ai(n, e, t);
@@ -4827,31 +4935,31 @@ function Ui(n, e, t, i = "none", r = "none", s = 0) {
     values: a.map((o) => Math.round(o.value * 100) / 100)
   };
 }
-u(Ui, "processChartData");
+h(Oi, "processChartData");
 export {
-  ot as AppFooter,
-  Me as AppHeader,
-  Y as AppLayoutBuilder,
+  lt as AppFooter,
+  Te as AppHeader,
+  ee as AppLayoutBuilder,
   Se as AppLayoutDemo,
-  U as DATA_EVENTS,
-  C as GouvDatalist,
-  O as GouvDisplay,
+  O as DATA_EVENTS,
+  A as GouvDatalist,
+  F as GouvDisplay,
   b as GouvDsfrChart,
-  P as GouvFacets,
+  w as GouvFacets,
   T as GouvKpi,
-  N as GouvNormalize,
+  z as GouvNormalize,
   y as GouvQuery,
   x as GouvSearch,
   M as GouvSource,
-  He as SourceSubscriberMixin,
+  Ge as SourceSubscriberMixin,
   ki as aggregateByLabel,
   Bt as computeAggregation,
-  V as dispatchDataError,
+  G as dispatchDataError,
   B as dispatchDataLoaded,
-  G as dispatchDataLoading,
+  W as dispatchDataLoading,
   Ai as extractLabelValues,
   wi as formatCurrency,
-  Oi as formatDate,
+  Fi as formatDate,
   jt as formatNumber,
   $i as formatPercentage,
   zt as formatValue,
@@ -4860,7 +4968,7 @@ export {
   we as getDataCache,
   Mi as hasPath,
   xi as parseExpression,
-  Ui as processChartData,
+  Oi as processChartData,
   Ri as sortByValue,
   Oe as subscribeToSource
 };

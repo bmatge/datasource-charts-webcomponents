@@ -186,5 +186,25 @@ describe('data-bridge', () => {
       dispatchSourceCommand('my-source', { page: 1 });
       expect(callback).not.toHaveBeenCalled();
     });
+
+    it('dispatches command with whereKey', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { where: 'search("x")', whereKey: 'search-1' });
+
+      expect(callback).toHaveBeenCalledWith({ where: 'search("x")', whereKey: 'search-1' });
+      unsubscribe();
+    });
+
+    it('dispatches combined command with whereKey', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { page: 2, where: 'region = "IDF"', whereKey: 'facets-1', orderBy: 'nom:asc' });
+
+      expect(callback).toHaveBeenCalledWith({ page: 2, where: 'region = "IDF"', whereKey: 'facets-1', orderBy: 'nom:asc' });
+      unsubscribe();
+    });
   });
 });

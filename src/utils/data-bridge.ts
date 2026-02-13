@@ -27,6 +27,7 @@ export interface SourceCommandEvent {
   sourceId: string;
   page?: number;       // pagination
   where?: string;      // recherche serveur (ODSQL pour ODS)
+  whereKey?: string;   // identifie la source du where (permet merge multi-sources)
   orderBy?: string;    // tri serveur ("field:direction")
 }
 

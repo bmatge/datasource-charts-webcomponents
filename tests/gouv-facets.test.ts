@@ -725,4 +725,89 @@ describe('GouvFacets', () => {
       });
     });
   });
+
+  // --- Server-facets ---
+
+  describe('server-facets', () => {
+    it('should have serverFacets property', () => {
+      expect(facets.serverFacets).toBe(false);
+      facets.serverFacets = true;
+      expect(facets.serverFacets).toBe(true);
+    });
+
+    describe('_buildFacetWhereExcluding', () => {
+      it('builds ODSQL for single-value selection', () => {
+        facets._activeSelections = { region: new Set(['IDF']) };
+        expect(facets._buildFacetWhereExcluding('other')).toBe('region = "IDF"');
+      });
+
+      it('builds ODSQL for multi-value selection with IN', () => {
+        facets._activeSelections = { region: new Set(['IDF', 'PACA']) };
+        expect(facets._buildFacetWhereExcluding('other')).toBe('region IN ("IDF", "PACA")');
+      });
+
+      it('excludes the specified field', () => {
+        facets._activeSelections = {
+          region: new Set(['IDF']),
+          type: new Set(['Commune'])
+        };
+        expect(facets._buildFacetWhereExcluding('region')).toBe('type = "Commune"');
+      });
+
+      it('combines multiple field selections with AND', () => {
+        facets._activeSelections = {
+          region: new Set(['IDF']),
+          type: new Set(['Commune'])
+        };
+        expect(facets._buildFacetWhereExcluding('other')).toBe('region = "IDF" AND type = "Commune"');
+      });
+
+      it('returns empty string when no selections', () => {
+        facets._activeSelections = {};
+        expect(facets._buildFacetWhereExcluding('any')).toBe('');
+      });
+
+      it('skips fields with empty sets', () => {
+        facets._activeSelections = { region: new Set(), type: new Set(['Commune']) };
+        expect(facets._buildFacetWhereExcluding('other')).toBe('type = "Commune"');
+      });
+
+      it('escapes double quotes in values', () => {
+        facets._activeSelections = { nom: new Set(['L\'entreprise "Test"']) };
+        expect(facets._buildFacetWhereExcluding('other')).toBe('nom = "L\'entreprise \\"Test\\""');
+      });
+    });
+
+    describe('_buildFullFacetWhere', () => {
+      it('includes all selected facets', () => {
+        facets._activeSelections = {
+          region: new Set(['IDF']),
+          type: new Set(['Commune', 'Prefecture'])
+        };
+        expect(facets._buildFullFacetWhere()).toBe('region = "IDF" AND type IN ("Commune", "Prefecture")');
+      });
+
+      it('returns empty string when nothing selected', () => {
+        facets._activeSelections = {};
+        expect(facets._buildFullFacetWhere()).toBe('');
+      });
+    });
+
+    it('re-emits data as-is in server mode (no local filtering)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region, type';
+      facets.serverFacets = true;
+      facets.connectedCallback();
+
+      // Mock _fetchServerFacets to avoid actual API call
+      (facets as any)._fetchServerFacets = () => {};
+
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      // Should re-emit all data without filtering
+      const result = getDataCache('test-facets') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+  });
 });

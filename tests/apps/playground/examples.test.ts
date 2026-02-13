@@ -29,15 +29,25 @@ describe('playground examples', () => {
     'facets-datalist', 'facets-bar', 'facets-map'
   ];
 
-  const searchKeys = [
-    'search-datalist', 'search-display', 'search-facets-display', 'search-kpi-chart'
+  const searchClientKeys = [
+    'search-facets-display', 'search-kpi-chart'
   ];
+
+  const searchServerKeys = [
+    'search-datalist', 'search-display'
+  ];
+
+  const searchKeys = [...searchClientKeys, ...searchServerKeys];
 
   const serverSideKeys = [
     'server-side-ods', 'server-side-tabular-tri'
   ];
 
-  const allKeys = [...directKeys, ...serverPaginateKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys, ...serverSideKeys];
+  const serverFacetsKeys = [
+    'server-facets-display'
+  ];
+
+  const allKeys = [...directKeys, ...serverPaginateKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys, ...serverSideKeys, ...serverFacetsKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -45,8 +55,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 40 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(40);
+  it('should have 41 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(41);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -72,8 +82,10 @@ describe('playground examples', () => {
 
   it('display examples should use gouv-display', () => {
     for (const key of displayKeys) {
-      // Tabular mode examples use gouv-query directly without gouv-source
-      if (!examples[key].includes('api-type="tabular"')) {
+      // Server-side display examples use gouv-query, others use gouv-source
+      if (examples[key].includes('server-side')) {
+        expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      } else if (!examples[key].includes('api-type="tabular"')) {
         expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       }
       expect(examples[key], `${key} should use gouv-display`).toContain('gouv-display');
@@ -116,10 +128,19 @@ describe('playground examples', () => {
     }
   });
 
-  it('search examples should use gouv-search', () => {
-    for (const key of searchKeys) {
+  it('client-side search examples should use gouv-source and gouv-search', () => {
+    for (const key of searchClientKeys) {
       expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
+    }
+  });
+
+  it('server-side search examples should use gouv-query server-side and gouv-search server-search', () => {
+    for (const key of searchServerKeys) {
+      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use server-side`).toContain('server-side');
+      expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
+      expect(examples[key], `${key} should use server-search`).toContain('server-search');
     }
   });
 
@@ -127,6 +148,15 @@ describe('playground examples', () => {
     for (const key of serverSideKeys) {
       expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
+    }
+  });
+
+  it('server-facets examples should use gouv-query server-side and gouv-facets server-facets', () => {
+    for (const key of serverFacetsKeys) {
+      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use server-side`).toContain('server-side');
+      expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
+      expect(examples[key], `${key} should use server-facets`).toContain('server-facets');
     }
   });
 });

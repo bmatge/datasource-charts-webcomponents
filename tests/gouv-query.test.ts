@@ -755,7 +755,7 @@ describe('GouvQuery', () => {
 
     it('merges static where with dynamic server where via AND', () => {
       query.where = 'status="active"';
-      (query as any)._serverWhere = 'search("test")';
+      (query as any)._serverWheres.set('_default', 'search("test")');
       const url = (query as any)._buildServerSideOdsUrl();
       const params = new URL(url).searchParams;
       expect(params.get('where')).toBe('status="active" AND search("test")');
@@ -763,7 +763,6 @@ describe('GouvQuery', () => {
 
     it('uses only static where when server where is empty', () => {
       query.where = 'status="active"';
-      (query as any)._serverWhere = '';
       const url = (query as any)._buildServerSideOdsUrl();
       const params = new URL(url).searchParams;
       expect(params.get('where')).toBe('status="active"');
@@ -771,7 +770,7 @@ describe('GouvQuery', () => {
 
     it('uses only dynamic where when static where is empty', () => {
       query.where = '';
-      (query as any)._serverWhere = 'search("hello")';
+      (query as any)._serverWheres.set('_default', 'search("hello")');
       const url = (query as any)._buildServerSideOdsUrl();
       const params = new URL(url).searchParams;
       expect(params.get('where')).toBe('search("hello")');
@@ -941,7 +940,7 @@ describe('GouvQuery', () => {
       fetchSpy.mockRestore();
     });
 
-    it('updates _serverWhere on where command and resets page', () => {
+    it('updates _serverWheres on where command and resets page', () => {
       (query as any)._setupServerSideListener();
       (query as any)._serverPage = 5;
 
@@ -949,7 +948,7 @@ describe('GouvQuery', () => {
 
       dispatchSourceCommand('test-query', { where: 'search("test")' });
 
-      expect((query as any)._serverWhere).toBe('search("test")');
+      expect((query as any)._serverWheres.get('_default')).toBe('search("test")');
       expect((query as any)._serverPage).toBe(1); // Reset on search change
       expect(fetchSpy).toHaveBeenCalledTimes(1);
       fetchSpy.mockRestore();
@@ -972,7 +971,7 @@ describe('GouvQuery', () => {
     it('does not re-fetch when command has same values', () => {
       (query as any)._setupServerSideListener();
       (query as any)._serverPage = 3;
-      (query as any)._serverWhere = 'search("test")';
+      (query as any)._serverWheres.set('_default', 'search("test")');
 
       const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
 
@@ -1005,7 +1004,7 @@ describe('GouvQuery', () => {
       dispatchSourceCommand('test-query', { page: 2, where: 'search("hello")' });
 
       expect((query as any)._serverPage).toBe(2);
-      expect((query as any)._serverWhere).toBe('search("hello")');
+      expect((query as any)._serverWheres.get('_default')).toBe('search("hello")');
       expect(fetchSpy).toHaveBeenCalledTimes(1);
       fetchSpy.mockRestore();
     });
@@ -1016,6 +1015,103 @@ describe('GouvQuery', () => {
 
       (query as any)._cleanup();
       expect((query as any)._unsubscribeCommands).toBeNull();
+    });
+  });
+
+  describe('Server-side mode: whereKey support', () => {
+    beforeEach(() => {
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'rappelconso';
+      query.baseUrl = 'https://data.example.com';
+      query.serverSide = true;
+      query.pageSize = 20;
+    });
+
+    it('stores where clauses by whereKey', () => {
+      (query as any)._setupServerSideListener();
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
+
+      expect((query as any)._serverWheres.get('search-1')).toBe('search("jouet")');
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('merges multiple where clauses from different whereKeys', () => {
+      (query as any)._setupServerSideListener();
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
+      dispatchSourceCommand('test-query', { where: 'region = "IDF"', whereKey: 'facets-1' });
+
+      expect((query as any)._getMergedWhere()).toBe('search("jouet") AND region = "IDF"');
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      fetchSpy.mockRestore();
+    });
+
+    it('resets page when merged where changes', () => {
+      (query as any)._setupServerSideListener();
+      (query as any)._serverPage = 5;
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'region = "IDF"', whereKey: 'facets-1' });
+
+      expect((query as any)._serverPage).toBe(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('does not re-fetch when same whereKey sends same value', () => {
+      (query as any)._setupServerSideListener();
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
+      expect(fetchSpy).toHaveBeenCalledTimes(1); // No new fetch
+
+      fetchSpy.mockRestore();
+    });
+
+    it('removes whereKey when where is empty string', () => {
+      (query as any)._setupServerSideListener();
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
+      dispatchSourceCommand('test-query', { where: '', whereKey: 'search-1' });
+
+      expect((query as any)._serverWheres.has('search-1')).toBe(false);
+      expect((query as any)._getMergedWhere()).toBe('');
+      fetchSpy.mockRestore();
+    });
+
+    it('getEffectiveWhere returns static + dynamic wheres', () => {
+      query.where = 'status = "active"';
+      (query as any)._serverWheres.set('search-1', 'search("jouet")');
+      (query as any)._serverWheres.set('facets-1', 'region = "IDF"');
+
+      expect(query.getEffectiveWhere()).toBe('status = "active" AND search("jouet") AND region = "IDF"');
+    });
+
+    it('getEffectiveWhere excludes given key', () => {
+      query.where = 'status = "active"';
+      (query as any)._serverWheres.set('search-1', 'search("jouet")');
+      (query as any)._serverWheres.set('facets-1', 'region = "IDF"');
+
+      expect(query.getEffectiveWhere('facets-1')).toBe('status = "active" AND search("jouet")');
+    });
+
+    it('getEffectiveWhere returns empty string when nothing set', () => {
+      expect(query.getEffectiveWhere()).toBe('');
+    });
+
+    it('getEffectiveWhere uses filter attribute as fallback for static where', () => {
+      query.filter = 'DEP:eq:75';
+      (query as any)._serverWheres.set('s', 'search("x")');
+
+      expect(query.getEffectiveWhere()).toBe('DEP:eq:75 AND search("x")');
     });
   });
 });

@@ -7,7 +7,8 @@ import {
   dispatchDataLoading,
   clearDataCache,
   subscribeToSource,
-  getDataCache
+  getDataCache,
+  dispatchSourceCommand
 } from '../utils/data-bridge.js';
 
 type FacetDisplayMode = 'checkbox' | 'select' | 'multiselect';
@@ -88,6 +89,15 @@ export class GouvFacets extends LitElement {
   @property({ type: Boolean, attribute: 'url-sync' })
   urlSync = false;
 
+  /**
+   * Active le mode facettes serveur ODS.
+   * Fetch les valeurs de facettes depuis l'API ODS /facets au lieu de les calculer localement.
+   * Requiert source pointant vers un gouv-query avec api-type="opendatasoft" et server-side.
+   * En mode server-facets, l'attribut fields est obligatoire (pas d'auto-detection).
+   */
+  @property({ type: Boolean, attribute: 'server-facets' })
+  serverFacets = false;
+
   @state()
   private _rawData: Record<string, unknown>[] = [];
 
@@ -153,11 +163,20 @@ export class GouvFacets extends LitElement {
       return;
     }
 
+    if (changedProperties.has('serverFacets')) {
+      this._initialize();
+      return;
+    }
+
     const facetAttrs = ['fields', 'labels', 'sort', 'hideEmpty', 'maxValues', 'disjunctive', 'searchable', 'display'];
     const hasFacetChange = facetAttrs.some(attr => changedProperties.has(attr));
     if (hasFacetChange && this._rawData.length > 0) {
-      this._buildFacetGroups();
-      this._applyFilters();
+      if (this.serverFacets) {
+        this._fetchServerFacets();
+      } else {
+        this._buildFacetGroups();
+        this._applyFilters();
+      }
     }
   }
 
@@ -203,9 +222,20 @@ export class GouvFacets extends LitElement {
     if (this.urlParams && !this._urlParamsApplied) {
       this._applyUrlParams();
       this._urlParamsApplied = true;
+      // In server mode, send initial URL-selected facets as command
+      if (this.serverFacets && this._hasActiveSelections()) {
+        this._dispatchFacetCommand();
+        return; // command will trigger a new data load
+      }
     }
-    this._buildFacetGroups();
-    this._applyFilters();
+    if (this.serverFacets) {
+      this._fetchServerFacets();
+      // Re-emit data as-is (no local filtering)
+      if (this.id) dispatchDataLoaded(this.id, this._rawData);
+    } else {
+      this._buildFacetGroups();
+      this._applyFilters();
+    }
   }
 
   // --- Facet index building ---
@@ -330,6 +360,105 @@ export class GouvFacets extends LitElement {
     return sorted;
   }
 
+  // --- Server-facets ---
+
+  /** Check if there are any active selections */
+  private _hasActiveSelections(): boolean {
+    return Object.keys(this._activeSelections).some(
+      f => this._activeSelections[f].size > 0
+    );
+  }
+
+  /** Fetch facet values from ODS /facets API with cross-facet counts */
+  private async _fetchServerFacets() {
+    const sourceEl = document.getElementById(this.source);
+    if (!sourceEl) return;
+
+    const baseUrl = (sourceEl as any).baseUrl
+      || sourceEl.getAttribute('base-url')
+      || 'https://data.opendatasoft.com';
+    const datasetId = (sourceEl as any).datasetId
+      || sourceEl.getAttribute('dataset-id');
+    if (!datasetId) return;
+
+    const fields = _parseCSV(this.fields);
+    if (fields.length === 0) return; // fields requis en mode server
+
+    const labelMap = this._parseLabels();
+
+    // Cross-facet: group fields by their effective where clause
+    // Fields sharing the same where can be fetched in a single API call
+    const whereToFields = new Map<string, string[]>();
+    for (const field of fields) {
+      const baseWhere = (sourceEl as any).getEffectiveWhere?.(this.id) || '';
+      const otherFacetWhere = this._buildFacetWhereExcluding(field);
+      const effectiveWhere = [baseWhere, otherFacetWhere].filter(Boolean).join(' AND ');
+      if (!whereToFields.has(effectiveWhere)) whereToFields.set(effectiveWhere, []);
+      whereToFields.get(effectiveWhere)!.push(field);
+    }
+
+    // Fetch each group
+    const allGroups: FacetGroup[] = [];
+    for (const [where, groupFields] of whereToFields) {
+      const url = new URL(`${baseUrl}/api/explore/v2.1/catalog/datasets/${datasetId}/facets`);
+      for (const f of groupFields) url.searchParams.append('facet', f);
+      if (where) url.searchParams.set('where', where);
+
+      try {
+        const response = await fetch(url.toString());
+        if (!response.ok) continue;
+        const json = await response.json();
+        for (const facetData of (json.facets || [])) {
+          allGroups.push({
+            field: facetData.name,
+            label: labelMap.get(facetData.name) ?? facetData.name,
+            values: this._sortValues(
+              (facetData.facets || []).map((v: { value: string; count: number }) => ({
+                value: v.value,
+                count: v.count
+              }))
+            )
+          });
+        }
+      } catch {
+        // Ignore fetch errors — facets will simply not appear
+      }
+    }
+
+    // Order groups to match the fields attribute order
+    this._facetGroups = fields
+      .map(f => allGroups.find(g => g.field === f))
+      .filter((g): g is FacetGroup => !!g)
+      .filter(g => !(this.hideEmpty && g.values.length <= 1));
+  }
+
+  /** Build ODSQL where clause for all active facet selections EXCEPT the given field */
+  _buildFacetWhereExcluding(excludeField: string): string {
+    const parts: string[] = [];
+    for (const [field, values] of Object.entries(this._activeSelections)) {
+      if (field === excludeField || values.size === 0) continue;
+      if (values.size === 1) {
+        const val = [...values][0].replace(/"/g, '\\"');
+        parts.push(`${field} = "${val}"`);
+      } else {
+        const vals = [...values].map(v => `"${v.replace(/"/g, '\\"')}"`).join(', ');
+        parts.push(`${field} IN (${vals})`);
+      }
+    }
+    return parts.join(' AND ');
+  }
+
+  /** Build ODSQL where clause for ALL active facet selections */
+  _buildFullFacetWhere(): string {
+    return this._buildFacetWhereExcluding(''); // exclude nothing
+  }
+
+  /** Dispatch facet where command to upstream gouv-query */
+  private _dispatchFacetCommand() {
+    const facetWhere = this._buildFullFacetWhere();
+    dispatchSourceCommand(this.source, { where: facetWhere, whereKey: this.id });
+  }
+
   // --- Filtering ---
 
   _applyFilters() {
@@ -424,9 +553,7 @@ export class GouvFacets extends LitElement {
     }
 
     this._activeSelections = selections;
-    this._buildFacetGroups();
-    this._applyFilters();
-    if (this.urlSync) this._syncUrl();
+    this._afterSelectionChange();
   }
 
   private _handleSelectChange(field: string, e: Event) {
@@ -441,18 +568,14 @@ export class GouvFacets extends LitElement {
     }
 
     this._activeSelections = selections;
-    this._buildFacetGroups();
-    this._applyFilters();
-    if (this.urlSync) this._syncUrl();
+    this._afterSelectionChange();
   }
 
   private _clearFieldSelections(field: string) {
     const selections = { ...this._activeSelections };
     delete selections[field];
     this._activeSelections = selections;
-    this._buildFacetGroups();
-    this._applyFilters();
-    if (this.urlSync) this._syncUrl();
+    this._afterSelectionChange();
   }
 
   private _toggleMultiselectDropdown(field: string) {
@@ -486,8 +609,17 @@ export class GouvFacets extends LitElement {
   private _clearAll() {
     this._activeSelections = {};
     this._searchQueries = {};
-    this._buildFacetGroups();
-    this._applyFilters();
+    this._afterSelectionChange();
+  }
+
+  /** Common logic after any selection change — routes to client or server mode */
+  private _afterSelectionChange() {
+    if (this.serverFacets) {
+      this._dispatchFacetCommand();
+    } else {
+      this._buildFacetGroups();
+      this._applyFilters();
+    }
     if (this.urlSync) this._syncUrl();
   }
 

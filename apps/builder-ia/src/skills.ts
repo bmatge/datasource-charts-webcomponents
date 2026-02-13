@@ -546,6 +546,7 @@ Sortie : meme tableau, filtre selon les selections de l'utilisateur.
 | url-params | Boolean | \`false\` | non | Active la lecture des parametres d'URL comme pre-selections de facettes |
 | url-param-map | String | \`""\` | non | Mapping URL param -> champ : \`"r:region | t:type"\`. Si vide, correspondance directe |
 | url-sync | Boolean | \`false\` | non | Synchronise l'URL quand l'utilisateur change les facettes (replaceState) |
+| server-facets | Boolean | \`false\` | non | Active le mode facettes serveur ODS. Fetch les valeurs depuis l'API ODS /facets. Requiert source vers gouv-query server-side api-type="opendatasoft". En mode server-facets, fields est obligatoire |
 
 ### Modes d'affichage
 - **checkbox** (defaut) : checkboxes inline avec compteurs, "Voir plus/moins", recherche optionnelle
@@ -598,6 +599,19 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
   fields="region, type" url-params url-sync
   url-param-map="r:region | t:type">
 </gouv-facets>
+
+<!-- Facettes serveur ODS (server-facets) -->
+<gouv-query id="q" server-side page-size="20"
+  api-type="opendatasoft" dataset-id="mon-dataset" base-url="https://data.example.com">
+</gouv-query>
+<gouv-search source="q" server-search placeholder="Rechercher..." count></gouv-search>
+<gouv-facets id="filtered" source="q" server-facets
+  fields="region, categorie"
+  labels="region:Region | categorie:Categorie">
+</gouv-facets>
+<gouv-display source="filtered" cols="3" pagination="20">
+  <template>...</template>
+</gouv-display>
 \`\`\``,
   },
 
