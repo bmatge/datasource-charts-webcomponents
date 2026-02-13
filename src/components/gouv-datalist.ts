@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
 import { escapeHtml } from '@gouv-widgets/shared';
-import { getDataMeta, dispatchPageRequest } from '../utils/data-bridge.js';
+import { getDataMeta, dispatchSourceCommand } from '../utils/data-bridge.js';
 
 interface ColumnDef {
   key: string;
@@ -66,6 +66,14 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   /** Nom du parametre URL pour la page (defaut: "page") */
   @property({ type: String, attribute: 'url-page-param' })
   urlPageParam = 'page';
+
+  /**
+   * Active le tri serveur.
+   * Au lieu de trier localement, envoie une commande { orderBy } au source upstream
+   * (gouv-query server-side) qui re-fetche les donnees triees.
+   */
+  @property({ type: Boolean, attribute: 'server-tri' })
+  serverTri = false;
 
   @state()
   private _data: Record<string, unknown>[] = [];
@@ -195,7 +203,8 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
       }
     });
 
-    if (this._sort) {
+    // Skip client-side sort in server-tri mode (data comes pre-sorted)
+    if (this._sort && !this.serverTri) {
       const { key, direction } = this._sort;
       result.sort((a, b) => {
         const aVal = a[key];
@@ -245,7 +254,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
       if (!isNaN(page) && page >= 1) {
         this._currentPage = page;
         if (this._serverPagination && this.source) {
-          dispatchPageRequest(this.source, page);
+          dispatchSourceCommand(this.source, { page });
         }
       }
     }
@@ -284,13 +293,20 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     } else {
       this._sort = { key, direction: 'asc' };
     }
+
+    // In server-tri mode, delegate sorting to the upstream source
+    if (this.serverTri && this.source) {
+      dispatchSourceCommand(this.source, {
+        orderBy: `${this._sort.key}:${this._sort.direction}`
+      });
+    }
   }
 
   private _handlePageChange(page: number) {
     this._currentPage = page;
     // En mode serveur, demander la page a la source
     if (this._serverPagination && this.source) {
-      dispatchPageRequest(this.source, page);
+      dispatchSourceCommand(this.source, { page });
     }
     if (this.urlSync) this._syncPageUrl();
   }

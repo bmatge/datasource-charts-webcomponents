@@ -7,7 +7,9 @@ import {
   dispatchDataLoaded,
   dispatchDataError,
   dispatchDataLoading,
-  subscribeToSource
+  subscribeToSource,
+  dispatchSourceCommand,
+  subscribeToSourceCommands
 } from '../src/utils/data-bridge.js';
 
 describe('data-bridge', () => {
@@ -121,6 +123,68 @@ describe('data-bridge', () => {
 
       dispatchDataLoaded('my-source', {});
       expect(onLoaded).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('source commands', () => {
+    it('dispatches and receives page command', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { page: 3 });
+
+      expect(callback).toHaveBeenCalledWith({ page: 3 });
+      unsubscribe();
+    });
+
+    it('dispatches and receives where command', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { where: 'search("test")' });
+
+      expect(callback).toHaveBeenCalledWith({ where: 'search("test")' });
+      unsubscribe();
+    });
+
+    it('dispatches and receives orderBy command', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { orderBy: 'nom:asc' });
+
+      expect(callback).toHaveBeenCalledWith({ orderBy: 'nom:asc' });
+      unsubscribe();
+    });
+
+    it('dispatches combined command', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('my-source', { page: 2, where: 'search("x")', orderBy: 'date:desc' });
+
+      expect(callback).toHaveBeenCalledWith({ page: 2, where: 'search("x")', orderBy: 'date:desc' });
+      unsubscribe();
+    });
+
+    it('filters by sourceId', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      dispatchSourceCommand('other-source', { page: 5 });
+
+      expect(callback).not.toHaveBeenCalled();
+      unsubscribe();
+    });
+
+    it('allows unsubscribe', () => {
+      const callback = vi.fn();
+      const unsubscribe = subscribeToSourceCommands('my-source', callback);
+
+      unsubscribe();
+
+      dispatchSourceCommand('my-source', { page: 1 });
+      expect(callback).not.toHaveBeenCalled();
     });
   });
 });

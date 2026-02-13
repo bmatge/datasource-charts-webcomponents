@@ -4,7 +4,7 @@ import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
 import { escapeHtml } from '@gouv-widgets/shared';
 import { sendWidgetBeacon } from '../utils/beacon.js';
-import { getDataMeta, dispatchPageRequest } from '../utils/data-bridge.js';
+import { getDataMeta, dispatchSourceCommand } from '../utils/data-bridge.js';
 
 /**
  * <gouv-display> - Affichage dynamique de donnees via template HTML
@@ -224,7 +224,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
       if (!isNaN(page) && page >= 1) {
         this._currentPage = page;
         if (this._serverPagination && this.source) {
-          dispatchPageRequest(this.source, page);
+          dispatchSourceCommand(this.source, { page });
         }
       }
     }
@@ -249,7 +249,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     this._currentPage = page;
     // En mode serveur, demander la page a la source
     if (this._serverPagination && this.source) {
-      dispatchPageRequest(this.source, page);
+      dispatchSourceCommand(this.source, { page });
     }
     if (this.urlSync) this._syncPageUrl();
   }

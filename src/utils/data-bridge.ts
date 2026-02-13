@@ -23,9 +23,11 @@ export interface PaginationMeta {
   total: number;
 }
 
-export interface PageRequestEvent {
+export interface SourceCommandEvent {
   sourceId: string;
-  page: number;
+  page?: number;       // pagination
+  where?: string;      // recherche serveur (ODSQL pour ODS)
+  orderBy?: string;    // tri serveur ("field:direction")
 }
 
 // Noms des événements custom
@@ -33,7 +35,7 @@ export const DATA_EVENTS = {
   LOADED: 'gouv-data-loaded',
   ERROR: 'gouv-data-error',
   LOADING: 'gouv-data-loading',
-  PAGE_REQUEST: 'gouv-page-request'
+  SOURCE_COMMAND: 'gouv-source-command'
 } as const;
 
 // Cache global des données par sourceId
@@ -126,33 +128,34 @@ export function dispatchDataLoading(sourceId: string): void {
 }
 
 /**
- * Dispatch un événement de demande de page
+ * Dispatch une commande vers une source (pagination, recherche, tri)
  */
-export function dispatchPageRequest(sourceId: string, page: number): void {
-  const event = new CustomEvent<PageRequestEvent>(DATA_EVENTS.PAGE_REQUEST, {
+export function dispatchSourceCommand(sourceId: string, command: Omit<SourceCommandEvent, 'sourceId'>): void {
+  const event = new CustomEvent<SourceCommandEvent>(DATA_EVENTS.SOURCE_COMMAND, {
     bubbles: true,
     composed: true,
-    detail: { sourceId, page }
+    detail: { sourceId, ...command }
   });
 
   document.dispatchEvent(event);
 }
 
 /**
- * S'abonne aux demandes de changement de page pour une source
+ * S'abonne aux commandes pour une source
  */
-export function subscribeToPageRequests(
+export function subscribeToSourceCommands(
   sourceId: string,
-  callback: (page: number) => void
+  callback: (command: Omit<SourceCommandEvent, 'sourceId'>) => void
 ): () => void {
   const handler = (e: Event) => {
-    const event = e as CustomEvent<PageRequestEvent>;
+    const event = e as CustomEvent<SourceCommandEvent>;
     if (event.detail.sourceId === sourceId) {
-      callback(event.detail.page);
+      const { sourceId: _, ...rest } = event.detail;
+      callback(rest);
     }
   };
-  document.addEventListener(DATA_EVENTS.PAGE_REQUEST, handler);
-  return () => document.removeEventListener(DATA_EVENTS.PAGE_REQUEST, handler);
+  document.addEventListener(DATA_EVENTS.SOURCE_COMMAND, handler);
+  return () => document.removeEventListener(DATA_EVENTS.SOURCE_COMMAND, handler);
 }
 
 /**

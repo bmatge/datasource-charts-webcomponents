@@ -10,7 +10,7 @@ import {
   clearDataCache,
   setDataMeta,
   clearDataMeta,
-  subscribeToPageRequests
+  subscribeToSourceCommands
 } from '../utils/data-bridge.js';
 
 /**
@@ -292,9 +292,9 @@ export class GouvSource extends LitElement {
     }
 
     if (this.paginate && this.id) {
-      this._unsubscribePageRequests = subscribeToPageRequests(this.id, (page: number) => {
-        if (page !== this._currentPage) {
-          this._currentPage = page;
+      this._unsubscribePageRequests = subscribeToSourceCommands(this.id, (cmd) => {
+        if (cmd.page !== undefined && cmd.page !== this._currentPage) {
+          this._currentPage = cmd.page;
           this._fetchData();
         }
       });

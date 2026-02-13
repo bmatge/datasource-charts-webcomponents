@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvDatalist } from '../src/components/gouv-datalist.js';
-import { clearDataCache, dispatchDataLoaded, setDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
+import {
+  clearDataCache,
+  dispatchDataLoaded,
+  setDataMeta,
+  clearDataMeta,
+  subscribeToSourceCommands
+} from '../src/utils/data-bridge.js';
 
 /**
  * Tests for GouvDatalist component logic.
@@ -663,6 +669,82 @@ describe('GouvDatalist component', () => {
       window.history.replaceState(null, '', '?page=-2');
       urlDatalist.connectedCallback();
       expect((urlDatalist as any)._currentPage).toBe(1);
+    });
+  });
+
+  describe('server-tri', () => {
+    beforeEach(() => {
+      datalist.source = 'test-dl-src';
+      datalist.serverTri = true;
+      datalist.onSourceData([
+        { name: 'Site Alpha', score: 80 },
+        { name: 'Site Beta', score: 60 },
+        { name: 'Site Gamma', score: 95 },
+      ]);
+    });
+
+    it('dispatches source command with orderBy on sort', () => {
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-dl-src', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      (datalist as any)._handleSort('score');
+
+      expect(receivedCmd).not.toBeNull();
+      expect(receivedCmd.orderBy).toBe('score:asc');
+
+      unsub();
+    });
+
+    it('toggles sort direction on repeated click', () => {
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-dl-src', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      (datalist as any)._handleSort('score');
+      expect(receivedCmd.orderBy).toBe('score:asc');
+
+      (datalist as any)._handleSort('score');
+      expect(receivedCmd.orderBy).toBe('score:desc');
+
+      unsub();
+    });
+
+    it('skips client-side sort when server-tri is active', () => {
+      // Data is in original order (Alpha=80, Beta=60, Gamma=95)
+      (datalist as any)._sort = { key: 'score', direction: 'desc' };
+
+      const result = datalist.getFilteredData();
+      // With serverTri, sort should be skipped — data stays in original order
+      expect(result[0].name).toBe('Site Alpha');
+      expect(result[1].name).toBe('Site Beta');
+      expect(result[2].name).toBe('Site Gamma');
+    });
+
+    it('does not dispatch command when serverTri is false', () => {
+      datalist.serverTri = false;
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-dl-src', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      (datalist as any)._handleSort('score');
+
+      expect(receivedCmd).toBeNull();
+
+      unsub();
+    });
+
+    it('still sorts client-side when serverTri is false', () => {
+      datalist.serverTri = false;
+      (datalist as any)._sort = { key: 'score', direction: 'desc' };
+
+      const result = datalist.getFilteredData();
+      expect(result[0].score).toBe(95);
+      expect(result[1].score).toBe(80);
+      expect(result[2].score).toBe(60);
     });
   });
 });

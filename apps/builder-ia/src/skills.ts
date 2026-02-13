@@ -302,6 +302,18 @@ sur des datasets de plusieurs dizaines de milliers d'enregistrements, pas seulem
 | limit | Number | \`0\` | non | Limite de resultats (0 = illimite) |
 | transform | String | \`""\` | non | Chemin JSONPath dans la reponse API |
 | refresh | Number | \`0\` | non | Rafraichissement en secondes (0 = desactive) |
+| server-side | Boolean | \`false\` | non | Active le mode server-side pilotable (ODS/Tabular uniquement) |
+| page-size | Number | \`20\` | non | Taille de page en mode server-side |
+
+### Mode server-side pilotable
+Avec \`server-side\`, gouv-query ne fetche qu'UNE page a la fois et ecoute les commandes
+des composants en aval (pagination, recherche, tri). Utile pour les gros datasets
+ou la recherche full-text serveur. Necessite \`api-type="opendatasoft"\` ou \`api-type="tabular"\`.
+
+Les composants en aval pointent directement sur le gouv-query :
+- \`gouv-display\` ou \`gouv-datalist\` envoient \`{ page }\` pour la pagination
+- \`gouv-search server-search\` envoie \`{ where }\` pour la recherche
+- \`gouv-datalist server-tri\` envoie \`{ orderBy }\` pour le tri
 
 ### Operateurs de filtre (mode generic/tabular)
 Format : \`"champ:operateur:valeur"\`
@@ -374,6 +386,17 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 <!-- Chainabilite : un query comme source d'un autre -->
 <gouv-query id="actifs" source="raw" where="status:eq:active"></gouv-query>
 <gouv-query id="top5" source="actifs" group-by="region" aggregate="montant:sum" order-by="montant__sum:desc" limit="5"></gouv-query>
+
+<!-- Mode server-side : recherche + pagination serveur ODS -->
+<gouv-query id="q" api-type="opendatasoft"
+  dataset-id="rappelconso"
+  base-url="https://data.economie.gouv.fr/api"
+  server-side page-size="20">
+</gouv-query>
+<gouv-search id="s" source="q" server-search count></gouv-search>
+<gouv-display source="q" pagination="20">
+  <template><p>{{nom}}</p></template>
+</gouv-display>
 \`\`\``,
   },
 
@@ -611,6 +634,13 @@ Les compteurs de facettes se recalculent dynamiquement.
 | count | Boolean | false | non | Affiche compteur de resultats |
 | url-search-param | String | "" | non | Nom du parametre d'URL a lire comme terme de recherche initial |
 | url-sync | Boolean | false | non | Synchronise l'URL quand l'utilisateur tape (replaceState) |
+| server-search | Boolean | false | non | Delegue la recherche au serveur via gouv-query server-side |
+| search-template | String | \`'search("{q}")'\` | non | Template ODSQL pour la recherche serveur ({q} = terme) |
+
+### Recherche serveur
+Avec \`server-search\`, au lieu de filtrer localement, gouv-search envoie une commande
+\`{ where }\` au source upstream (gouv-query server-side). Le template par defaut utilise
+la fonction ODSQL \`search()\` pour une recherche full-text. Personnalisable via \`search-template\`.
 
 ### Modes de recherche
 - **contains** (defaut) : sous-chaine insensible a la casse et aux accents
@@ -654,6 +684,11 @@ Les compteurs de facettes se recalculent dynamiquement.
 
 <!-- Recherche avec sync URL bidirectionnelle -->
 <gouv-search id="searched" source="clean"
+  url-search-param="q" url-sync count>
+</gouv-search>
+
+<!-- Recherche serveur (avec gouv-query server-side) -->
+<gouv-search id="s" source="q" server-search
   url-search-param="q" url-sync count>
 </gouv-search>
 \`\`\``,
@@ -879,6 +914,12 @@ les cles du premier objet sont utilisees comme colonnes.
 | export | String | \`""\` | non | Formats d'export : \`"csv"\`, \`"html"\` ou \`"csv,html"\` |
 | url-sync | Boolean | \`false\` | non | Synchronise le numero de page dans l'URL (?page=N) via replaceState |
 | url-page-param | String | \`"page"\` | non | Nom du parametre URL pour la page |
+| server-tri | Boolean | \`false\` | non | Delegue le tri au serveur via gouv-query server-side |
+
+### Tri serveur
+Avec \`server-tri\`, le clic sur un en-tete de colonne envoie une commande \`{ orderBy }\`
+au source upstream (gouv-query server-side) au lieu de trier localement. Les donnees
+reviennent deja triees du serveur.
 
 ### Pagination serveur
 Quand la source est un \`gouv-source\` avec \`paginate\`, gouv-datalist detecte automatiquement

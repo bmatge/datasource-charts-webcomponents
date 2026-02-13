@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvSearch } from '../src/components/gouv-search.js';
-import { clearDataCache, dispatchDataLoaded, getDataCache } from '../src/utils/data-bridge.js';
+import {
+  clearDataCache,
+  clearDataMeta,
+  dispatchDataLoaded,
+  getDataCache,
+  setDataMeta,
+  subscribeToSourceCommands
+} from '../src/utils/data-bridge.js';
 
 const SAMPLE_DATA = [
   { Nom: 'NetCommerce', Region: 'PACA', SIRET: '12345678901234' },
@@ -618,6 +625,129 @@ describe('GouvSearch', () => {
       search.urlSearchParam = '';
       search._applyUrlSearchParam();
       expect(search._term).toBe('');
+    });
+  });
+
+  // --- Server-search mode ---
+
+  describe('server-search', () => {
+    beforeEach(() => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.serverSearch = true;
+      clearDataMeta('test-source');
+    });
+
+    afterEach(() => {
+      clearDataMeta('test-source');
+    });
+
+    it('dispatches source command with where on search', () => {
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = 'hello';
+      search._applyFilter();
+
+      expect(receivedCmd).not.toBeNull();
+      expect(receivedCmd.where).toBe('search("hello")');
+
+      unsub();
+    });
+
+    it('dispatches empty where when search term is empty', () => {
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = '';
+      search._applyFilter();
+
+      expect(receivedCmd).not.toBeNull();
+      expect(receivedCmd.where).toBe('');
+
+      unsub();
+    });
+
+    it('uses custom search template', () => {
+      search.searchTemplate = '{q} IN nom';
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = 'hello';
+      search._applyFilter();
+
+      expect(receivedCmd.where).toBe('hello IN nom');
+
+      unsub();
+    });
+
+    it('escapes double quotes in search term', () => {
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = 'test "quoted"';
+      search._applyFilter();
+
+      expect(receivedCmd.where).toBe('search("test \\"quoted\\"")');
+
+      unsub();
+    });
+
+    it('does not filter locally in server-search mode', () => {
+      search.fields = 'Nom';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      // In server-search, data is passed through as-is
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+
+    it('uses meta.total for result count when available', () => {
+      search.count = true;
+      search.connectedCallback();
+
+      // Set meta before data arrives
+      setDataMeta('test-source', { page: 1, pageSize: 20, total: 500 });
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      expect(search._resultCount).toBe(500);
+    });
+
+    it('falls back to data length when no meta', () => {
+      search.count = true;
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      expect(search._resultCount).toBe(SAMPLE_DATA.length);
+    });
+
+    it('re-emits data under its own ID in server-search mode', () => {
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toEqual(SAMPLE_DATA);
     });
   });
 });

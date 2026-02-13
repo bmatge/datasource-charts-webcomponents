@@ -12,8 +12,8 @@ import {
   getDataCache,
   getDataMeta,
   setDataMeta,
-  subscribeToPageRequests,
-  dispatchPageRequest
+  subscribeToSourceCommands,
+  dispatchSourceCommand
 } from '../utils/data-bridge.js';
 
 /**
@@ -169,9 +169,9 @@ export class GouvNormalize extends LitElement {
       }
     });
 
-    // Relayer les demandes de page vers la source upstream
-    this._unsubscribePageRequests = subscribeToPageRequests(this.id, (page: number) => {
-      dispatchPageRequest(this.source, page);
+    // Relayer les commandes vers la source upstream
+    this._unsubscribePageRequests = subscribeToSourceCommands(this.id, (cmd) => {
+      dispatchSourceCommand(this.source, cmd);
     });
   }
 

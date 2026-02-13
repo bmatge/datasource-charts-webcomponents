@@ -33,7 +33,11 @@ describe('playground examples', () => {
     'search-datalist', 'search-display', 'search-facets-display', 'search-kpi-chart'
   ];
 
-  const allKeys = [...directKeys, ...serverPaginateKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys];
+  const serverSideKeys = [
+    'server-side-ods', 'server-side-tabular-tri'
+  ];
+
+  const allKeys = [...directKeys, ...serverPaginateKeys, ...queryKeys, ...normalizeKeys, ...displayKeys, ...facetsKeys, ...searchKeys, ...serverSideKeys];
 
   it('should have all expected example keys', () => {
     for (const key of allKeys) {
@@ -41,8 +45,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 38 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(38);
+  it('should have 40 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(40);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -116,6 +120,13 @@ describe('playground examples', () => {
     for (const key of searchKeys) {
       expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
+    }
+  });
+
+  it('server-side examples should use gouv-query with server-side', () => {
+    for (const key of serverSideKeys) {
+      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use server-side`).toContain('server-side');
     }
   });
 });

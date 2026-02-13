@@ -7,7 +7,9 @@ import {
   dispatchDataLoading,
   clearDataCache,
   subscribeToSource,
-  getDataCache
+  getDataCache,
+  dispatchSourceCommand,
+  getDataMeta
 } from '../utils/data-bridge.js';
 
 type SearchOperator = 'contains' | 'starts' | 'words';
@@ -80,6 +82,22 @@ export class GouvSearch extends LitElement {
   /** Synchronise l'URL quand l'utilisateur tape (replaceState) */
   @property({ type: Boolean, attribute: 'url-sync' })
   urlSync = false;
+
+  /**
+   * Active le mode recherche serveur.
+   * Au lieu de filtrer localement, envoie une commande { where } au source upstream
+   * (gouv-query server-side) qui re-fetche les donnees avec le filtre search.
+   */
+  @property({ type: Boolean, attribute: 'server-search' })
+  serverSearch = false;
+
+  /**
+   * Template ODSQL pour la recherche serveur.
+   * {q} est remplace par le terme de recherche.
+   * Defaut: 'search("{q}")' (recherche full-text ODS)
+   */
+  @property({ type: String, attribute: 'search-template' })
+  searchTemplate = 'search("{q}")';
 
   @state()
   private _allData: Record<string, unknown>[] = [];
@@ -202,7 +220,35 @@ export class GouvSearch extends LitElement {
   }
 
   private _onData(data: unknown) {
-    this._allData = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data : [];
+
+    if (this.serverSearch) {
+      // Server-search mode: data arrives pre-filtered from the server.
+      // Pass it through without local filtering.
+      this._allData = rows;
+      this._filteredData = rows;
+
+      // Use meta.total if available for count, otherwise use row count
+      const meta = getDataMeta(this.source);
+      this._resultCount = meta ? meta.total : rows.length;
+
+      // Re-emit under our own ID
+      if (this.id) {
+        dispatchDataLoaded(this.id, rows);
+      }
+
+      // On first load with URL param, trigger server search
+      if (this.urlSearchParam && !this._urlParamApplied) {
+        this._applyUrlSearchParam();
+        this._urlParamApplied = true;
+        if (this._term) {
+          this._applyServerSearch();
+        }
+      }
+      return;
+    }
+
+    this._allData = rows;
     if (this.urlSearchParam && !this._urlParamApplied) {
       this._applyUrlSearchParam();
       this._urlParamApplied = true;
@@ -221,6 +267,12 @@ export class GouvSearch extends LitElement {
   }
 
   _applyFilter() {
+    // Server-search mode: delegate to upstream source via command
+    if (this.serverSearch && this.source) {
+      this._applyServerSearch();
+      return;
+    }
+
     const term = this._term;
 
     if (!term || term.length < this.minLength) {
@@ -243,6 +295,40 @@ export class GouvSearch extends LitElement {
 
     this._resultCount = this._filteredData.length;
     this._dispatch();
+  }
+
+  /**
+   * Server-search: envoie une commande { where } au source upstream
+   * au lieu de filtrer localement.
+   */
+  private _applyServerSearch() {
+    const term = this._term;
+    let where = '';
+
+    if (term && term.length >= this.minLength) {
+      // Escape double quotes in search term
+      const escaped = term.replace(/"/g, '\\"');
+      where = this.searchTemplate.replace(/\{q\}/g, escaped);
+    }
+
+    // Dispatch command to upstream source (gouv-query server-side)
+    dispatchSourceCommand(this.source, { where });
+
+    // Sync URL if enabled
+    if (this.urlSync && this.urlSearchParam) {
+      this._syncUrl();
+    }
+
+    // Emit gouv-search-change event
+    document.dispatchEvent(new CustomEvent('gouv-search-change', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        sourceId: this.id,
+        term: this._term,
+        count: this._resultCount
+      }
+    }));
   }
 
   _matchRecord(

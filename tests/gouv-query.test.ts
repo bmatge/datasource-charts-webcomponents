@@ -12,7 +12,14 @@ globalThis.fetch = mockFetch;
 
 // We need to import after setting up fetch mock
 import { GouvQuery } from '../src/components/gouv-query.js';
-import { clearDataCache, dispatchDataLoaded } from '../src/utils/data-bridge.js';
+import {
+  clearDataCache,
+  clearDataMeta,
+  dispatchDataLoaded,
+  dispatchSourceCommand,
+  getDataMeta,
+  subscribeToSourceCommands
+} from '../src/utils/data-bridge.js';
 
 describe('GouvQuery', () => {
   let query: GouvQuery;
@@ -720,6 +727,295 @@ describe('GouvQuery', () => {
       const error = new Error('Test error');
       (query as any)._error = error;
       expect(query.getError()).toBe(error);
+    });
+  });
+
+  describe('Server-side mode: ODS URL building', () => {
+    beforeEach(() => {
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'rappelconso';
+      query.baseUrl = 'https://data.example.com';
+      query.serverSide = true;
+      query.pageSize = 20;
+    });
+
+    it('builds URL with limit=pageSize and offset for current page', () => {
+      (query as any)._serverPage = 3;
+      const url = (query as any)._buildServerSideOdsUrl();
+      expect(url).toContain('limit=20');
+      expect(url).toContain('offset=40');
+    });
+
+    it('does not include offset for page 1', () => {
+      (query as any)._serverPage = 1;
+      const url = (query as any)._buildServerSideOdsUrl();
+      expect(url).toContain('limit=20');
+      expect(url).not.toContain('offset');
+    });
+
+    it('merges static where with dynamic server where via AND', () => {
+      query.where = 'status="active"';
+      (query as any)._serverWhere = 'search("test")';
+      const url = (query as any)._buildServerSideOdsUrl();
+      const params = new URL(url).searchParams;
+      expect(params.get('where')).toBe('status="active" AND search("test")');
+    });
+
+    it('uses only static where when server where is empty', () => {
+      query.where = 'status="active"';
+      (query as any)._serverWhere = '';
+      const url = (query as any)._buildServerSideOdsUrl();
+      const params = new URL(url).searchParams;
+      expect(params.get('where')).toBe('status="active"');
+    });
+
+    it('uses only dynamic where when static where is empty', () => {
+      query.where = '';
+      (query as any)._serverWhere = 'search("hello")';
+      const url = (query as any)._buildServerSideOdsUrl();
+      const params = new URL(url).searchParams;
+      expect(params.get('where')).toBe('search("hello")');
+    });
+
+    it('uses server orderBy overlay over static orderBy', () => {
+      query.orderBy = 'date:desc';
+      (query as any)._serverOrderBy = 'nom:asc';
+      const url = (query as any)._buildServerSideOdsUrl();
+      expect(url).toContain('order_by=nom');
+      expect(url).toContain('ASC');
+      expect(url).not.toContain('date');
+    });
+
+    it('falls back to static orderBy when server orderBy is empty', () => {
+      query.orderBy = 'date:desc';
+      (query as any)._serverOrderBy = '';
+      const url = (query as any)._buildServerSideOdsUrl();
+      expect(url).toContain('order_by=date');
+      expect(url).toContain('DESC');
+    });
+
+    it('includes select when specified', () => {
+      query.select = 'nom, date, categorie';
+      const url = (query as any)._buildServerSideOdsUrl();
+      const params = new URL(url).searchParams;
+      expect(params.get('select')).toBe('nom, date, categorie');
+    });
+
+    it('includes group_by when specified', () => {
+      query.groupBy = 'categorie';
+      const url = (query as any)._buildServerSideOdsUrl();
+      expect(url).toContain('group_by=categorie');
+    });
+  });
+
+  describe('Server-side mode: Tabular URL building', () => {
+    beforeEach(() => {
+      query.apiType = 'tabular';
+      query.resource = 'resource-789';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.serverSide = true;
+      query.pageSize = 20;
+    });
+
+    it('builds URL with page and page_size', () => {
+      (query as any)._serverPage = 2;
+      const url = (query as any)._buildServerSideTabularUrl();
+      expect(url).toContain('page_size=20');
+      expect(url).toContain('page=2');
+    });
+
+    it('uses server orderBy overlay over static orderBy', () => {
+      query.orderBy = 'date:desc';
+      (query as any)._serverOrderBy = 'nom:asc';
+      const url = (query as any)._buildServerSideTabularUrl();
+      expect(url).toContain('nom__sort=asc');
+      expect(url).not.toContain('date');
+    });
+
+    it('includes static filters', () => {
+      query.filter = 'statut:eq:actif';
+      const url = (query as any)._buildServerSideTabularUrl();
+      expect(url).toContain('statut__exact=actif');
+    });
+  });
+
+  describe('Server-side mode: fetch', () => {
+    beforeEach(() => {
+      query.id = 'test-query';
+      query.serverSide = true;
+      query.pageSize = 20;
+      clearDataMeta('test-query');
+    });
+
+    afterEach(() => {
+      clearDataMeta('test-query');
+    });
+
+    it('fetches one ODS page and stores pagination meta', async () => {
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'rappelconso';
+      query.baseUrl = 'https://data.example.com';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 20 }, (_, i) => ({ id: i, nom: `item-${i}` })),
+          total_count: 500
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchServerSide();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(20);
+
+      const meta = getDataMeta('test-query');
+      expect(meta).toBeDefined();
+      expect(meta!.page).toBe(1);
+      expect(meta!.pageSize).toBe(20);
+      expect(meta!.total).toBe(500);
+    });
+
+    it('fetches one Tabular page and stores pagination meta', async () => {
+      query.apiType = 'tabular';
+      query.resource = 'resource-456';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 20 }, (_, i) => ({ id: i })),
+          meta: { page: 1, page_size: 20, total: 300 }
+        })
+      });
+
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchServerSide();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(20);
+
+      const meta = getDataMeta('test-query');
+      expect(meta).toBeDefined();
+      expect(meta!.total).toBe(300);
+    });
+  });
+
+  describe('Server-side mode: command handling', () => {
+    beforeEach(() => {
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'rappelconso';
+      query.baseUrl = 'https://data.example.com';
+      query.serverSide = true;
+      query.pageSize = 20;
+      clearDataMeta('test-query');
+    });
+
+    afterEach(() => {
+      clearDataMeta('test-query');
+    });
+
+    it('listens for source commands when server-side is enabled', () => {
+      (query as any)._setupServerSideListener();
+      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
+    });
+
+    it('does not listen when server-side is disabled', () => {
+      query.serverSide = false;
+      (query as any)._setupServerSideListener();
+      expect((query as any)._unsubscribeCommands).toBeNull();
+    });
+
+    it('updates _serverPage on page command', () => {
+      (query as any)._setupServerSideListener();
+
+      // Mock _fetchFromApi to avoid actual fetch
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { page: 3 });
+
+      expect((query as any)._serverPage).toBe(3);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('updates _serverWhere on where command and resets page', () => {
+      (query as any)._setupServerSideListener();
+      (query as any)._serverPage = 5;
+
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { where: 'search("test")' });
+
+      expect((query as any)._serverWhere).toBe('search("test")');
+      expect((query as any)._serverPage).toBe(1); // Reset on search change
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('updates _serverOrderBy on orderBy command and resets page', () => {
+      (query as any)._setupServerSideListener();
+      (query as any)._serverPage = 3;
+
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { orderBy: 'nom:asc' });
+
+      expect((query as any)._serverOrderBy).toBe('nom:asc');
+      expect((query as any)._serverPage).toBe(1); // Reset on sort change
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('does not re-fetch when command has same values', () => {
+      (query as any)._setupServerSideListener();
+      (query as any)._serverPage = 3;
+      (query as any)._serverWhere = 'search("test")';
+
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { page: 3 });
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      dispatchSourceCommand('test-query', { where: 'search("test")' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      fetchSpy.mockRestore();
+    });
+
+    it('ignores commands for other sources', () => {
+      (query as any)._setupServerSideListener();
+
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('other-query', { page: 5 });
+
+      expect((query as any)._serverPage).toBe(1);
+      expect(fetchSpy).not.toHaveBeenCalled();
+      fetchSpy.mockRestore();
+    });
+
+    it('handles combined page + where command', () => {
+      (query as any)._setupServerSideListener();
+
+      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
+
+      dispatchSourceCommand('test-query', { page: 2, where: 'search("hello")' });
+
+      expect((query as any)._serverPage).toBe(2);
+      expect((query as any)._serverWhere).toBe('search("hello")');
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    });
+
+    it('cleans up listener on cleanup', () => {
+      (query as any)._setupServerSideListener();
+      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
+
+      (query as any)._cleanup();
+      expect((query as any)._unsubscribeCommands).toBeNull();
     });
   });
 });

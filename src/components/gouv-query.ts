@@ -8,8 +8,11 @@ import {
   dispatchDataError,
   dispatchDataLoading,
   clearDataCache,
+  clearDataMeta,
+  setDataMeta,
   subscribeToSource,
-  getDataCache
+  getDataCache,
+  subscribeToSourceCommands
 } from '../utils/data-bridge.js';
 
 /** ODS API maximum records per request */
@@ -198,6 +201,21 @@ export class GouvQuery extends LitElement {
   transform = '';
 
   /**
+   * Active le mode server-side pilotable.
+   * En mode server-side, gouv-query ne fetche qu'UNE page a la fois
+   * et ecoute les commandes (page, where, orderBy) des composants en aval.
+   * Necessite api-type="opendatasoft" ou api-type="tabular".
+   */
+  @property({ type: Boolean, attribute: 'server-side' })
+  serverSide = false;
+
+  /**
+   * Taille de page pour le mode server-side (nombre de records par page)
+   */
+  @property({ type: Number, attribute: 'page-size' })
+  pageSize = 20;
+
+  /**
    * Intervalle de rafraîchissement en secondes
    */
   @property({ type: Number })
@@ -218,6 +236,12 @@ export class GouvQuery extends LitElement {
   private _refreshInterval: number | null = null;
   private _abortController: AbortController | null = null;
   private _unsubscribe: (() => void) | null = null;
+  private _unsubscribeCommands: (() => void) | null = null;
+
+  // Server-side overlay state (set by downstream components via gouv-source-command)
+  private _serverPage = 1;
+  private _serverWhere = '';
+  private _serverOrderBy = '';
 
   // Pas de rendu - composant invisible
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -239,15 +263,27 @@ export class GouvQuery extends LitElement {
     this._cleanup();
     if (this.id) {
       clearDataCache(this.id);
+      clearDataMeta(this.id);
     }
   }
 
   updated(changedProperties: Map<string, unknown>) {
     const queryProps = ['source', 'apiType', 'baseUrl', 'dataset', 'resource',
                         'select', 'where', 'filter', 'groupBy', 'aggregate',
-                        'orderBy', 'limit', 'transform'];
+                        'orderBy', 'limit', 'transform', 'serverSide', 'pageSize'];
 
     if (queryProps.some(prop => changedProperties.has(prop))) {
+      // Reset server-side overlay when static config changes
+      if (this.serverSide) {
+        const staticProps = ['source', 'apiType', 'baseUrl', 'dataset', 'resource',
+                             'select', 'where', 'filter', 'groupBy', 'aggregate',
+                             'orderBy', 'limit', 'transform', 'pageSize'];
+        if (staticProps.some(prop => changedProperties.has(prop))) {
+          this._serverPage = 1;
+          this._serverWhere = '';
+          this._serverOrderBy = '';
+        }
+      }
       this._initialize();
     }
 
@@ -268,6 +304,10 @@ export class GouvQuery extends LitElement {
     if (this._unsubscribe) {
       this._unsubscribe();
       this._unsubscribe = null;
+    }
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
     }
   }
 
@@ -290,11 +330,14 @@ export class GouvQuery extends LitElement {
       return;
     }
 
+    // Setup/teardown command listener for server-side mode
+    this._setupServerSideListener();
+
     if (this.apiType === 'generic') {
       // Mode client-side: s'abonner à une source existante
       this._subscribeToSource();
     } else {
-      // Mode server-side: faire une requête API
+      // Mode API: faire une requête API
       this._fetchFromApi();
     }
   }
@@ -605,7 +648,9 @@ export class GouvQuery extends LitElement {
     dispatchDataLoading(this.id);
 
     try {
-      if (this.apiType === 'opendatasoft') {
+      if (this.serverSide && (this.apiType === 'opendatasoft' || this.apiType === 'tabular')) {
+        await this._fetchServerSide();
+      } else if (this.apiType === 'opendatasoft') {
         await this._fetchFromOdsWithPagination();
       } else if (this.apiType === 'tabular') {
         await this._fetchFromTabularWithPagination();
@@ -798,6 +843,207 @@ export class GouvQuery extends LitElement {
     // Store raw data for client-side processing (group-by, aggregate, sort, limit)
     this._rawData = allResults as Record<string, unknown>[];
     this._processClientSide();
+  }
+
+  /**
+   * Configure l'ecoute des commandes pour le mode server-side.
+   * Les composants en aval (search, display, datalist) emettent des
+   * gouv-source-command avec page/where/orderBy que query recoit ici.
+   */
+  private _setupServerSideListener() {
+    // Clean up previous listener
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
+    }
+
+    if (!this.serverSide || !this.id) return;
+
+    this._unsubscribeCommands = subscribeToSourceCommands(this.id, (cmd) => {
+      let needsFetch = false;
+
+      if (cmd.page !== undefined && cmd.page !== this._serverPage) {
+        this._serverPage = cmd.page;
+        needsFetch = true;
+      }
+
+      if (cmd.where !== undefined && cmd.where !== this._serverWhere) {
+        this._serverWhere = cmd.where;
+        // Reset page when search changes
+        if (cmd.page === undefined) {
+          this._serverPage = 1;
+        }
+        needsFetch = true;
+      }
+
+      if (cmd.orderBy !== undefined && cmd.orderBy !== this._serverOrderBy) {
+        this._serverOrderBy = cmd.orderBy;
+        // Reset page when sort changes
+        if (cmd.page === undefined) {
+          this._serverPage = 1;
+        }
+        needsFetch = true;
+      }
+
+      if (needsFetch) {
+        this._fetchFromApi();
+      }
+    });
+  }
+
+  /**
+   * Mode server-side: fetch UNE seule page avec les parametres overlays
+   * (page, where, orderBy) provenant des composants en aval.
+   */
+  private async _fetchServerSide(): Promise<void> {
+    const url = this.apiType === 'opendatasoft'
+      ? this._buildServerSideOdsUrl()
+      : this._buildServerSideTabularUrl();
+
+    const response = await fetch(url, {
+      signal: this._abortController!.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const json = await response.json();
+
+    // Extract data and total count per API type
+    let data: unknown[];
+    let totalCount = 0;
+
+    if (this.apiType === 'opendatasoft') {
+      data = json.results || [];
+      totalCount = typeof json.total_count === 'number' ? json.total_count : 0;
+    } else {
+      // Tabular
+      data = json.data || [];
+      totalCount = json.meta?.total ?? 0;
+    }
+
+    // Apply transform if specified
+    if (this.transform) {
+      const transformed = getByPath(this.apiType === 'opendatasoft' ? json : data, this.transform);
+      data = Array.isArray(transformed) ? transformed : [transformed];
+    }
+
+    // Store pagination meta for downstream display/datalist auto-detection
+    setDataMeta(this.id, {
+      page: this._serverPage,
+      pageSize: this.pageSize,
+      total: totalCount
+    });
+
+    this._data = data;
+    dispatchDataLoaded(this.id, this._data);
+  }
+
+  /**
+   * Construit l'URL ODS en mode server-side (une seule page).
+   * Merge le where statique (attribut) avec le where dynamique (overlay search).
+   */
+  private _buildServerSideOdsUrl(): string {
+    const base = this.baseUrl || 'https://data.opendatasoft.com';
+    const url = new URL(`${base}/api/explore/v2.1/catalog/datasets/${this.datasetId}/records`);
+
+    // SELECT
+    if (this.select) {
+      url.searchParams.set('select', this.select);
+    } else if (this.aggregate && this.groupBy) {
+      const aggregates = this._parseAggregates(this.aggregate);
+      const selectParts: string[] = [];
+      for (const agg of aggregates) {
+        const odsFunc = agg.function === 'count' ? 'count(*)' : `${agg.function}(${agg.field})`;
+        const alias = agg.alias || `${agg.field}__${agg.function}`;
+        selectParts.push(`${odsFunc} as ${alias}`);
+      }
+      const groupFields = this.groupBy.split(',').map(f => f.trim()).filter(Boolean);
+      for (const gf of groupFields) {
+        selectParts.push(gf);
+      }
+      url.searchParams.set('select', selectParts.join(', '));
+    }
+
+    // WHERE: merge static (attribute) + dynamic (overlay from search)
+    const staticWhere = this.where || this.filter;
+    const dynamicWhere = this._serverWhere;
+    const whereParts = [staticWhere, dynamicWhere].filter(Boolean);
+    if (whereParts.length > 0) {
+      url.searchParams.set('where', whereParts.join(' AND '));
+    }
+
+    // GROUP BY
+    if (this.groupBy) {
+      url.searchParams.set('group_by', this.groupBy);
+    }
+
+    // ORDER BY: overlay from datalist sort, fallback to static attribute
+    const effectiveOrderBy = this._serverOrderBy || this.orderBy;
+    if (effectiveOrderBy) {
+      const sortExpr = effectiveOrderBy.replace(/:(\w+)$/, (_, dir) => ` ${dir.toUpperCase()}`);
+      url.searchParams.set('order_by', sortExpr);
+    }
+
+    // PAGINATION: single page
+    url.searchParams.set('limit', String(this.pageSize));
+    const offset = (this._serverPage - 1) * this.pageSize;
+    if (offset > 0) {
+      url.searchParams.set('offset', String(offset));
+    }
+
+    return url.toString();
+  }
+
+  /**
+   * Construit l'URL Tabular en mode server-side (une seule page).
+   */
+  private _buildServerSideTabularUrl(): string {
+    let base: string;
+    if (this.baseUrl) {
+      base = this.baseUrl;
+    } else {
+      const config = getProxyConfig();
+      base = `${config.baseUrl}${config.endpoints.tabular}`;
+    }
+
+    if (!this.resource) {
+      throw new Error('gouv-query: attribut "resource" requis pour l\'API Tabular');
+    }
+
+    const origin = window.location.origin !== 'null' ? window.location.origin : undefined;
+    const url = new URL(`${base}/api/resources/${this.resource}/data/`, origin);
+
+    // Static filters
+    const filterExpr = this.filter || this.where;
+    if (filterExpr) {
+      const filters = filterExpr.split(',').map(f => f.trim());
+      for (const filter of filters) {
+        const parts = filter.split(':');
+        if (parts.length >= 3) {
+          const field = parts[0];
+          const op = this._mapOperatorToTabular(parts[1]);
+          const value = parts.slice(2).join(':');
+          url.searchParams.set(`${field}__${op}`, value);
+        }
+      }
+    }
+
+    // ORDER BY: overlay from datalist sort, fallback to static attribute
+    const effectiveOrderBy = this._serverOrderBy || this.orderBy;
+    if (effectiveOrderBy) {
+      const parts = effectiveOrderBy.split(':');
+      const field = parts[0];
+      const direction = parts[1] || 'asc';
+      url.searchParams.set(`${field}__sort`, direction);
+    }
+
+    // PAGINATION: single page
+    url.searchParams.set('page_size', String(this.pageSize));
+    url.searchParams.set('page', String(this._serverPage));
+
+    return url.toString();
   }
 
   /**

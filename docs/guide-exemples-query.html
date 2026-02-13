@@ -412,6 +412,84 @@
           </div>
         </section>
 
+        <h2 class="fr-mt-6w">Mode server-side</h2>
+        <p>
+          Avec <code>server-side</code>, <code>gouv-query</code> ne charge qu'<strong>une page</strong> a la fois
+          et ecoute les commandes des composants en aval (pagination, recherche, tri).
+          C'est utile pour les gros datasets ou la recherche full-text doit etre deleguee au serveur.
+        </p>
+        <div class="fr-callout fr-callout--blue-ecume fr-mb-3w">
+          <p class="fr-callout__text">
+            <strong>Quand utiliser server-side ?</strong>
+            En mode normal, <code>gouv-query</code> charge tous les records (max 1000 ODS, 50K Tabular).
+            Si le dataset est plus gros, ou si vous avez besoin de recherche full-text serveur,
+            utilisez <code>server-side</code>.
+          </p>
+        </div>
+
+        <h4>Recherche serveur — Rappels de produits (ODS)</h4>
+        <p>Utilise <code>gouv-query server-side</code> + <code>gouv-search server-search</code> pour rechercher dans le dataset RappelConso.
+          <a href="../apps/playground/index.html?example=server-side-ods" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-ods">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-ss-ods">
+<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+  dataset-id="rappelconso0"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="10"
+  order-by="date_de_publication:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-search id="s" source="q"
+  server-search
+  placeholder="Rechercher un produit..."
+  url-search-param="q" url-sync
+  count&gt;
+&lt;/gouv-search&gt;
+
+&lt;gouv-display source="q" cols="1" pagination="10"
+  url-sync url-page-param="page"&gt;
+  &lt;template&gt;
+    &lt;div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w"&gt;
+      &lt;div class="fr-card__body"&gt;
+        &lt;div class="fr-card__content"&gt;
+          &lt;h3 class="fr-card__title"&gt;{{noms_des_modeles_ou_references}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;
+            &lt;strong&gt;{{categorie_de_produit}}&lt;/strong&gt; &#8212; {{nom_de_la_marque_du_produit}}&lt;br&gt;
+            Publie le {{date_de_publication}}
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/gouv-display&gt;</pre>
+          </div>
+        </section>
+
+        <h4>Tri serveur — Communes (Tabular)</h4>
+        <p>Utilise <code>gouv-query server-side</code> + <code>gouv-datalist server-tri</code> pour trier cote serveur.
+          <a href="../apps/playground/index.html?example=server-side-tabular-tri" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-tab">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-ss-tab">
+<pre class="example-code">&lt;gouv-query id="q" api-type="tabular"
+  resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+  server-side page-size="20"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-datalist source="q"
+  colonnes="COM:Code commune, LIBELLE:Commune, DEP:Departement, REG:Region"
+  server-tri
+  pagination="20"
+  url-sync&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>

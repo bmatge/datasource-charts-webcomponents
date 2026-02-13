@@ -1570,4 +1570,93 @@ export const examples: Record<string, string> = {
   </gouv-dsfr-chart>
 </div>`,
 
+  // ────────────────────────────────────────────────────────────────────
+  // Server-side mode
+  // ────────────────────────────────────────────────────────────────────
+
+  'server-side-ods': `<!--
+  Server-side ODS — Recherche + pagination serveur
+  Mode: gouv-query (server-side) -> gouv-search (server-search) -> gouv-display
+  Source: OpenDataSoft - RappelConso (rappels de produits)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Recherche serveur — Rappels de produits</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : data.economie.gouv.fr — Mode server-side avec recherche full-text ODS
+  </p>
+
+  <gouv-query id="q" api-type="opendatasoft"
+    dataset-id="rappelconso0"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="10"
+    order-by="date_de_publication:desc">
+  </gouv-query>
+
+  <gouv-search id="s" source="q"
+    server-search
+    placeholder="Rechercher un produit..."
+    url-search-param="q" url-sync
+    count>
+  </gouv-search>
+
+  <gouv-display source="q" cols="1" pagination="10"
+    url-sync url-page-param="page">
+    <template>
+      <div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h3 class="fr-card__title">{{noms_des_modeles_ou_references}}</h3>
+            <p class="fr-card__desc">
+              <strong>{{categorie_de_produit}}</strong> — {{nom_de_la_marque_du_produit}}<br>
+              Publie le {{date_de_publication}}
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </gouv-display>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      <strong>Mode server-side</strong> : gouv-query server-side ne charge qu'une page a la fois.
+      La recherche est deleguee au serveur via <code>gouv-search server-search</code>.
+      La pagination est geree par <code>gouv-display</code> via les metadonnees server.
+    </p>
+  </div>
+</div>`,
+
+  'server-side-tabular-tri': `<!--
+  Server-side Tabular — Tri serveur
+  Mode: gouv-query (server-side tabular) -> gouv-datalist (server-tri)
+  Source: Tabular API data.gouv.fr - Base Sirene (etablissements)
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Tri serveur — Communes</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Mode server-side avec tri par colonne
+  </p>
+
+  <gouv-query id="q" api-type="tabular"
+    resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+    server-side page-size="20">
+  </gouv-query>
+
+  <gouv-datalist source="q"
+    colonnes="COM:Code commune, LIBELLE:Commune, DEP:Departement, REG:Region"
+    server-tri
+    pagination="20"
+    url-sync>
+  </gouv-datalist>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      <strong>Mode server-side + tri</strong> : gouv-query server-side charge une page,
+      <code>gouv-datalist server-tri</code> delegue le tri au serveur.
+      Chaque clic sur un en-tete de colonne declenche un re-fetch avec le bon \`orderBy\`.
+    </p>
+  </div>
+</div>`,
+
 };
