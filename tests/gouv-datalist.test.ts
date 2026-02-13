@@ -561,4 +561,108 @@ describe('GouvDatalist component', () => {
       expect((datalist as any)._currentPage).toBe(3);
     });
   });
+
+  describe('URL sync for pagination', () => {
+    let urlDatalist: GouvDatalist;
+
+    beforeEach(() => {
+      clearDataCache('test-url-src');
+      clearDataMeta('test-url-src');
+      window.history.replaceState(null, '', window.location.pathname);
+      urlDatalist = new GouvDatalist();
+      urlDatalist.urlSync = true;
+      urlDatalist.urlPageParam = 'page';
+      urlDatalist.source = 'test-url-src';
+      urlDatalist.pagination = 10;
+    });
+
+    afterEach(() => {
+      if ((urlDatalist as any)._popstateHandler) {
+        urlDatalist.disconnectedCallback();
+      }
+      window.history.replaceState(null, '', window.location.pathname);
+    });
+
+    it('reads page from URL on connectedCallback', () => {
+      window.history.replaceState(null, '', '?page=3');
+      urlDatalist.connectedCallback();
+      expect((urlDatalist as any)._currentPage).toBe(3);
+    });
+
+    it('syncs page to URL on _handlePageChange', () => {
+      urlDatalist.connectedCallback();
+      urlDatalist.onSourceData(Array.from({ length: 50 }, (_, i) => ({ id: i })));
+      (urlDatalist as any)._handlePageChange(4);
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('page')).toBe('4');
+    });
+
+    it('removes page param when page is 1', () => {
+      window.history.replaceState(null, '', '?page=3');
+      urlDatalist.connectedCallback();
+      (urlDatalist as any)._handlePageChange(1);
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('page')).toBe(false);
+    });
+
+    it('preserves other URL params', () => {
+      window.history.replaceState(null, '', '?region=IDF&page=2');
+      urlDatalist.connectedCallback();
+      (urlDatalist as any)._handlePageChange(5);
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('region')).toBe('IDF');
+      expect(params.get('page')).toBe('5');
+    });
+
+    it('uses custom url-page-param', () => {
+      urlDatalist.urlPageParam = 'p';
+      window.history.replaceState(null, '', '?p=7');
+      urlDatalist.connectedCallback();
+      expect((urlDatalist as any)._currentPage).toBe(7);
+    });
+
+    it('does not sync URL when urlSync is false', () => {
+      urlDatalist.urlSync = false;
+      urlDatalist.connectedCallback();
+      urlDatalist.onSourceData(Array.from({ length: 50 }, (_, i) => ({ id: i })));
+      (urlDatalist as any)._handlePageChange(3);
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('page')).toBe(false);
+    });
+
+    it('resets page param on search', () => {
+      window.history.replaceState(null, '', '?page=5');
+      urlDatalist.connectedCallback();
+      (urlDatalist as any)._handleSearch({ target: { value: 'test' } } as any);
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('page')).toBe(false);
+    });
+
+    it('handles popstate event', () => {
+      urlDatalist.connectedCallback();
+      urlDatalist.onSourceData(Array.from({ length: 50 }, (_, i) => ({ id: i })));
+      window.history.replaceState(null, '', '?page=4');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      expect((urlDatalist as any)._currentPage).toBe(4);
+    });
+
+    it('cleans up popstate listener on disconnect', () => {
+      urlDatalist.connectedCallback();
+      expect((urlDatalist as any)._popstateHandler).not.toBeNull();
+      urlDatalist.disconnectedCallback();
+      expect((urlDatalist as any)._popstateHandler).toBeNull();
+    });
+
+    it('ignores invalid page values in URL', () => {
+      window.history.replaceState(null, '', '?page=abc');
+      urlDatalist.connectedCallback();
+      expect((urlDatalist as any)._currentPage).toBe(1);
+    });
+
+    it('ignores page 0 or negative in URL', () => {
+      window.history.replaceState(null, '', '?page=-2');
+      urlDatalist.connectedCallback();
+      expect((urlDatalist as any)._currentPage).toBe(1);
+    });
+  });
 });

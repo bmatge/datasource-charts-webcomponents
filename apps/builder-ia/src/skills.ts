@@ -877,12 +877,20 @@ les cles du premier objet sont utilisees comme colonnes.
 | tri | String | \`""\` | non | Tri par defaut : \`"col:asc"\` ou \`"col:desc"\` |
 | pagination | Number | \`0\` | non | Lignes par page (0 = tout afficher sans pagination) |
 | export | String | \`""\` | non | Formats d'export : \`"csv"\`, \`"html"\` ou \`"csv,html"\` |
+| url-sync | Boolean | \`false\` | non | Synchronise le numero de page dans l'URL (?page=N) via replaceState |
+| url-page-param | String | \`"page"\` | non | Nom du parametre URL pour la page |
 
 ### Pagination serveur
 Quand la source est un \`gouv-source\` avec \`paginate\`, gouv-datalist detecte automatiquement
 la pagination serveur via les metadonnees (\`meta.total\`, \`meta.page_size\`).
 Chaque changement de page declenche un nouvel appel API (pas de pagination client).
 Le total affiche vient de \`meta.total\`. La recherche et le tri ne s'appliquent qu'a la page courante.
+
+### Synchronisation URL
+Avec \`url-sync\`, le numero de page est synchronise dans l'URL via \`replaceState\`.
+L'attribut \`url-page-param\` permet de personnaliser le nom du parametre (defaut: "page").
+Quand la page est 1, le parametre est supprime de l'URL pour des URLs plus propres.
+Fonctionne avec la pagination client et serveur. Compatible avec les autres params URL (facettes, recherche).
 
 ### Exemples
 \`\`\`html
@@ -936,12 +944,19 @@ Les placeholders sont remplaces pour chaque element de donnees :
 | empty | String | \`"Aucun resultat"\` | non | Message quand le tableau est vide |
 | gap | String | \`"fr-grid-row--gutters"\` | non | Classe CSS de gap pour la grille |
 | uid-field | String | \`""\` | non | Champ de donnees pour l'ID unique par item. Chaque item recoit un id="item-{valeur}" pour ancrage URL |
+| url-sync | Boolean | \`false\` | non | Synchronise le numero de page dans l'URL (?page=N) via replaceState |
+| url-page-param | String | \`"page"\` | non | Nom du parametre URL pour la page |
 
 ### Pagination serveur
 Quand la source est un \`gouv-source\` avec \`paginate\`, gouv-display detecte automatiquement
 la pagination serveur via les metadonnees (\`meta.total\`, \`meta.page_size\`).
 Chaque changement de page declenche un nouvel appel API. Les donnees recues sont affichees
 telles quelles (pas de slicing client). Le nombre total de pages vient de \`meta.total / meta.page_size\`.
+
+### Synchronisation URL
+Avec \`url-sync\`, le numero de page est synchronise dans l'URL via \`replaceState\`.
+L'attribut \`url-page-param\` permet de personnaliser le nom du parametre (defaut: "page").
+Quand la page est 1, le parametre est supprime de l'URL. Compatible avec les autres params URL.
 
 ### Exemples
 \`\`\`html

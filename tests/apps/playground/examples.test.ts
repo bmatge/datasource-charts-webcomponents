@@ -8,7 +8,7 @@ describe('playground examples', () => {
   ];
 
   const serverPaginateKeys = [
-    'server-paginate-datalist', 'server-paginate-display'
+    'server-paginate-datalist', 'server-paginate-display', 'paginate-kpi-global'
   ];
 
   const queryKeys = [
@@ -41,8 +41,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 37 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(37);
+  it('should have 38 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(38);
   });
 
   it('should have non-empty code for all examples', () => {

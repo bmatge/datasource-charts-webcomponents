@@ -362,6 +362,56 @@
           </div>
         </section>
 
+        <!-- Pagination serveur + KPI globaux -->
+        <h2 class="fr-mt-6w">Pagination serveur + KPI globaux</h2>
+        <p>
+          Quand <code>gouv-source paginate</code> est actif, les composants en aval ne voient que la page courante.
+          Les KPI et facettes calcules sur une seule page sont trompeurs. La solution : utiliser <strong>deux sources</strong> —
+          <code>gouv-source paginate</code> pour la navigation + <code>gouv-query api-type="tabular"</code> pour les KPI globaux.
+        </p>
+
+        <h4>Double source — Navigation pagin&#233;e + KPI sur le dataset complet</h4>
+        <p>La datalist navigue dans les 34 874 maires page par page. Les KPI calculent les statistiques globales via <code>api-type="tabular"</code>.
+          <a href="../apps/playground/index.html?example=paginate-kpi-global" class="fr-link fr-link--sm">Tester dans le Playground</a>
+        </p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-paginate-kpi">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-paginate-kpi">
+<pre class="example-code">&lt;!-- Source 1 : pagination serveur pour la navigation --&gt;
+&lt;gouv-source id="browse"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+  paginate page-size="20"&gt;&lt;/gouv-source&gt;
+
+&lt;!-- Source 2 : chargement complet pour les KPI globaux --&gt;
+&lt;gouv-query id="global-stats"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  aggregate="Nom de l'&#233;lu:count:total"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-query id="global-femmes"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  filter="Code sexe:eq:F"
+  aggregate="Nom de l'&#233;lu:count:total_femmes"&gt;
+&lt;/gouv-query&gt;
+
+&lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"&gt;
+  &lt;gouv-kpi source="global-stats" valeur="sum:total"
+    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="global-femmes" valeur="sum:total_femmes"
+    label="Dont femmes" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+&lt;/div&gt;
+
+&lt;gouv-datalist source="browse"
+  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
+  tri="Nom de l'&#233;lu:asc"
+  pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>

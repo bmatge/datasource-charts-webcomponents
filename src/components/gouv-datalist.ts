@@ -59,6 +59,14 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   @property({ type: String })
   export = '';
 
+  /** Synchronise le numero de page dans l'URL (replaceState) */
+  @property({ type: Boolean, attribute: 'url-sync' })
+  urlSync = false;
+
+  /** Nom du parametre URL pour la page (defaut: "page") */
+  @property({ type: String, attribute: 'url-page-param' })
+  urlPageParam = 'page';
+
   @state()
   private _data: Record<string, unknown>[] = [];
 
@@ -80,6 +88,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   private _serverTotal = 0;
   private _serverPageSize = 0;
+  private _popstateHandler: (() => void) | null = null;
 
   // Light DOM pour les styles DSFR
   createRenderRoot() {
@@ -92,6 +101,22 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     super.connectedCallback();
     sendWidgetBeacon('gouv-datalist');
     this._initSort();
+    if (this.urlSync) {
+      this._applyUrlPage();
+      this._popstateHandler = () => {
+        this._applyUrlPage();
+        this.requestUpdate();
+      };
+      window.addEventListener('popstate', this._popstateHandler);
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._popstateHandler) {
+      window.removeEventListener('popstate', this._popstateHandler);
+      this._popstateHandler = null;
+    }
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -211,14 +236,46 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   // --- Event handlers ---
 
+  /** Read page number from URL and apply */
+  private _applyUrlPage() {
+    const params = new URLSearchParams(window.location.search);
+    const pageStr = params.get(this.urlPageParam);
+    if (pageStr) {
+      const page = parseInt(pageStr, 10);
+      if (!isNaN(page) && page >= 1) {
+        this._currentPage = page;
+        if (this._serverPagination && this.source) {
+          dispatchPageRequest(this.source, page);
+        }
+      }
+    }
+  }
+
+  /** Sync current page to URL via replaceState */
+  private _syncPageUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if (this._currentPage > 1) {
+      params.set(this.urlPageParam, String(this._currentPage));
+    } else {
+      params.delete(this.urlPageParam);
+    }
+    const search = params.toString();
+    const newUrl = search
+      ? `${window.location.pathname}?${search}${window.location.hash}`
+      : `${window.location.pathname}${window.location.hash}`;
+    window.history.replaceState(null, '', newUrl);
+  }
+
   private _handleSearch(e: Event) {
     this._searchQuery = (e.target as HTMLInputElement).value;
     this._currentPage = 1;
+    if (this.urlSync) this._syncPageUrl();
   }
 
   private _handleFilter(key: string, e: Event) {
     this._activeFilters = { ...this._activeFilters, [key]: (e.target as HTMLSelectElement).value };
     this._currentPage = 1;
+    if (this.urlSync) this._syncPageUrl();
   }
 
   private _handleSort(key: string) {
@@ -235,6 +292,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     if (this._serverPagination && this.source) {
       dispatchPageRequest(this.source, page);
     }
+    if (this.urlSync) this._syncPageUrl();
   }
 
   // --- Export ---

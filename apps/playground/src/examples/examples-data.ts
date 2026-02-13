@@ -394,6 +394,71 @@ export const examples: Record<string, string> = {
   </gouv-display>
 </div>`,
 
+  'paginate-kpi-global': `<!--
+  Pagination serveur + KPI globaux — Maires de France
+  Double source : gouv-source (paginate) pour navigation + gouv-query (tabular) pour KPI
+  Source : Registre des maires (tabular-api) — 34 874 records
+  La datalist navigue page par page, les KPI portent sur le dataset complet
+-->
+
+<div class="fr-container fr-my-4w">
+  <h2>Maires de France — Pagination + KPI globaux</h2>
+  <p class="fr-text--sm fr-text--light">
+    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>Double source : pagination serveur pour la navigation, agregation globale pour les KPI
+  </p>
+
+  <!-- Source 1 : pagination serveur pour la navigation -->
+  <gouv-source id="browse"
+    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+    paginate page-size="20">
+  </gouv-source>
+
+  <!-- Source 2 : chargement complet pour les KPI globaux -->
+  <gouv-query id="global-stats"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    aggregate="Nom de l'\u00e9lu:count:total">
+  </gouv-query>
+
+  <gouv-query id="global-femmes"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    filter="Code sexe:eq:F"
+    aggregate="Nom de l'\u00e9lu:count:total_femmes">
+  </gouv-query>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <gouv-kpi source="global-stats"
+      valeur="sum:total"
+      label="Total des maires"
+      format="nombre">
+    </gouv-kpi>
+
+    <gouv-kpi source="global-femmes"
+      valeur="sum:total_femmes"
+      label="Dont femmes"
+      format="nombre"
+      couleur="bleu">
+    </gouv-kpi>
+  </div>
+
+  <gouv-datalist source="browse"
+    colonnes="Nom de l'\u00e9lu:Nom, Pr\u00e9nom de l'\u00e9lu:Prenom, Libell\u00e9 du d\u00e9partement:Departement, Libell\u00e9 de la commune:Commune"
+    tri="Nom de l'\u00e9lu:asc"
+    pagination="20">
+  </gouv-datalist>
+
+  <div class="fr-callout fr-mt-4w">
+    <p class="fr-callout__text">
+      <strong>Pattern double source :</strong> <code>gouv-source paginate</code> charge une page a la fois
+      pour la navigation (20 records). En parallele, <code>gouv-query api-type="tabular"</code>
+      charge et agrege le dataset complet (34 874 records) pour les KPI globaux.
+      Les deux sources fonctionnent independamment.
+    </p>
+  </div>
+</div>`,
+
   // =====================================================================
   // MODE AVEC REQUETE — gouv-source → gouv-query → composant
   // Les donnees passent par gouv-query qui les filtre, regroupe
