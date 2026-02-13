@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
   <script type="module" src="/dist/gouv-widgets.esm.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -25,7 +27,7 @@
     .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
     .guide-content li { margin-bottom: 0.25rem; }
     .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
-    .example-iframe { width: 100%; border: 1px solid var(--border-default-grey); border-radius: 4px; min-height: 300px; overflow: hidden; background: white; }
+    .example-container { border: 1px solid var(--border-default-grey); border-radius: 4px; padding: 1rem; background: white; min-height: 100px; }
     .example-loading { padding: 2rem; text-align: center; color: var(--text-mention-grey); border: 1px solid var(--border-default-grey); border-radius: 4px; }
   </style>
 </head>
@@ -923,27 +925,8 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // --- Iframe generation from code blocks ---
-      const iframeTemplate = (code) => `<!DOCTYPE html>
-<html lang="fr" data-fr-theme>
-<head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"><\/script>
-  <style>body { margin: 0; padding: 1rem; font-family: Marianne, arial, sans-serif; }</style>
-</head>
-<body>
-  ${code}
-  <script>
-    new ResizeObserver(() => {
-      window.parent.postMessage({ type: 'iframe-resize', h: document.body.scrollHeight }, '*');
-    }).observe(document.body);
-  <\/script>
-</body>
-</html>`;
+      // --- Render examples directly (no iframes) ---
+      let exampleIndex = 0;
 
       // Find the code block associated with each example placeholder
       function getCodeForExample(placeholder) {
@@ -953,7 +936,23 @@
         return pre ? pre.textContent : null;
       }
 
-      // Lazy-load iframes via IntersectionObserver
+      // Prefix all id and source attributes to avoid conflicts between examples
+      function makeIdsUnique(html, prefix) {
+        const idRegex = /\bid="([^"]+)"/g;
+        const ids = new Set();
+        let match;
+        while ((match = idRegex.exec(html)) !== null) {
+          ids.add(match[1]);
+        }
+        let result = html;
+        for (const id of ids) {
+          result = result.replaceAll('id="' + id + '"', 'id="' + prefix + '-' + id + '"');
+          result = result.replaceAll('source="' + id + '"', 'source="' + prefix + '-' + id + '"');
+        }
+        return result;
+      }
+
+      // Lazy-load examples via IntersectionObserver
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (!entry.isIntersecting) return;
@@ -961,23 +960,16 @@
           observer.unobserve(placeholder);
           const code = getCodeForExample(placeholder);
           if (!code) return;
-          const iframe = document.createElement('iframe');
-          iframe.className = 'example-iframe';
-          iframe.srcdoc = iframeTemplate(code);
-          iframe.loading = 'lazy';
-          placeholder.replaceWith(iframe);
+          const prefix = 'ex' + (exampleIndex++);
+          const uniqueCode = makeIdsUnique(code, prefix);
+          const container = document.createElement('div');
+          container.className = 'example-container';
+          container.innerHTML = uniqueCode;
+          placeholder.replaceWith(container);
         });
       }, { rootMargin: '200px 0px' });
 
       document.querySelectorAll('[data-example]').forEach(el => observer.observe(el));
-
-      // Auto-resize iframes
-      window.addEventListener('message', (e) => {
-        if (e.data?.type === 'iframe-resize') {
-          const iframe = [...document.querySelectorAll('iframe')].find(f => f.contentWindow === e.source);
-          if (iframe) iframe.style.height = (e.data.h + 16) + 'px';
-        }
-      });
 
       // --- Sidemenu active tracking ---
       const links = document.querySelectorAll('[data-guide-link]');

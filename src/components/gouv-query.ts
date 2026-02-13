@@ -804,7 +804,9 @@ export class GouvQuery extends LitElement {
       throw new Error('gouv-query: attribut "resource" requis pour l\'API Tabular');
     }
 
-    const url = new URL(`${base}/api/resources/${this.resource}/data/`, window.location.origin);
+    // In srcdoc iframes, window.location.origin is the string "null"
+    const origin = window.location.origin !== 'null' ? window.location.origin : undefined;
+    const url = new URL(`${base}/api/resources/${this.resource}/data/`, origin);
 
     // Filtres (format: "field:operator:value")
     const filterExpr = this.filter || this.where;
