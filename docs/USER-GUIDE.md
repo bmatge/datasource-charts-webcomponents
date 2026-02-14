@@ -483,6 +483,8 @@ Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion num
 
 Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant de les transmettre au composant de visualisation.
 
+> **Datasets prives** : en mode `opendatasoft` ou `tabular`, l'attribut `headers` permet de passer des headers HTTP (API key, token) pour acceder a des datasets prives. Syntaxe : `headers='{"apikey":"ma-cle"}'`
+
 #### Barres — Beneficiaires agreges par region
 
 ```html

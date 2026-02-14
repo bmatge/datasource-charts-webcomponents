@@ -81,6 +81,9 @@
             <tr><td><code>order-by</code></td><td>String</td><td>Tri des resultats. Format: <code>"champ:direction"</code>. Ex: <code>"population__sum:desc"</code></td></tr>
             <tr><td><code>limit</code></td><td>Number</td><td>Nombre maximum de resultats (0 = pas de limite)</td></tr>
             <tr><td><code>transform</code></td><td>String</td><td>Chemin JSONPath pour extraire les donnees de la reponse API</td></tr>
+            <tr><td><code>headers</code></td><td>String</td><td>Headers HTTP en JSON pour APIs privees (modes <code>opendatasoft</code> / <code>tabular</code>). Ex: <code>'{"apikey":"abc123"}'</code></td></tr>
+            <tr><td><code>server-side</code></td><td>Boolean</td><td>Active le mode server-side pilotable (une page a la fois, ecoute les commandes des composants en aval)</td></tr>
+            <tr><td><code>page-size</code></td><td>Number</td><td>Taille de page en mode server-side (defaut : 20)</td></tr>
             <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
           </tbody>
         </table>
@@ -226,6 +229,38 @@
   order-by="population:desc"
   limit="20"
 &gt;&lt;/gouv-query&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Dataset prive avec headers</h3>
+          <p>
+            L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
+            pour acceder a des datasets prives. Accepte un objet JSON en chaine de caracteres.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-query
+  id="private-data"
+  api-type="opendatasoft"
+  dataset-id="mon-dataset-prive"
+  base-url="https://mon-instance.opendatasoft.com"
+  headers='{"apikey":"ma-cle-api"}'
+  group-by="region"
+  aggregate="population:sum:total"
+  order-by="total:desc"
+&gt;&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart
+  source="private-data"
+  type="bar"
+  label-field="region"
+  value-field="total"
+&gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
+          <div class="fr-callout fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Securite :</strong> les headers sont visibles dans le code source HTML.
+              Ne les utilisez que pour des cles a acces restreint (lecture seule)
+              ou dans des contextes proteges (intranet, applications internes).
+            </p>
+          </div>
         </section>
 
         <section class="demo-section">
