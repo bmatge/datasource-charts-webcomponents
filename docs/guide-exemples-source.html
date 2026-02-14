@@ -330,13 +330,13 @@
         return pre ? pre.textContent : null;
       }
       function makeIdsUnique(html, prefix) {
-        const idRegex = /\bid="([^"]+)"/g;
+        const idRegex = / id="([^"]+)"/g;
         const ids = new Set();
         let match;
         while ((match = idRegex.exec(html)) !== null) ids.add(match[1]);
         let result = html;
         for (const id of ids) {
-          result = result.replaceAll('id="' + id + '"', 'id="' + prefix + '-' + id + '"');
+          result = result.replaceAll(' id="' + id + '"', ' id="' + prefix + '-' + id + '"');
           result = result.replaceAll('source="' + id + '"', 'source="' + prefix + '-' + id + '"');
         }
         return result;
