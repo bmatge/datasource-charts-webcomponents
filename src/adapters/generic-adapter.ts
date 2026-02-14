@@ -1,0 +1,39 @@
+/**
+ * Adapter pour le mode generic (client-side).
+ * Pas de fetch API — les donnees viennent d'une source via data-bridge.
+ */
+
+import type { ApiAdapter, AdapterCapabilities, AdapterParams, FetchResult } from './api-adapter.js';
+
+export class GenericAdapter implements ApiAdapter {
+  readonly type = 'generic';
+
+  readonly capabilities: AdapterCapabilities = {
+    serverFetch: false,
+    serverFacets: false,
+    serverSearch: false,
+    serverGroupBy: false,
+    serverOrderBy: false,
+    whereFormat: 'colon',
+  };
+
+  validate(_params: AdapterParams): string | null {
+    return null;
+  }
+
+  fetchAll(): Promise<FetchResult> {
+    throw new Error('GenericAdapter ne supporte pas le fetch serveur');
+  }
+
+  fetchPage(): Promise<FetchResult> {
+    throw new Error('GenericAdapter ne supporte pas le mode server-side');
+  }
+
+  buildUrl(): string {
+    throw new Error('GenericAdapter ne construit pas d\'URL API');
+  }
+
+  buildServerSideUrl(): string {
+    throw new Error('GenericAdapter ne supporte pas le mode server-side');
+  }
+}

@@ -33,3 +33,10 @@ export { formatValue, formatNumber, formatPercentage, formatCurrency, formatDate
 export { computeAggregation, parseExpression } from './utils/aggregations.js';
 export { processChartData, extractLabelValues, aggregateByLabel, sortByValue } from './utils/chart-data.js';
 export { SourceSubscriberMixin } from './utils/source-subscriber.js';
+
+// Adapters (pour usage avance et extensibilite)
+export type {
+  ApiAdapter, AdapterCapabilities, AdapterParams,
+  FetchResult, FacetResult, ServerSideOverlay
+} from './adapters/api-adapter.js';
+export { getAdapter, registerAdapter } from './adapters/api-adapter.js';

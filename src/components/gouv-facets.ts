@@ -10,6 +10,7 @@ import {
   getDataCache,
   dispatchSourceCommand
 } from '../utils/data-bridge.js';
+import type { ApiAdapter } from '../adapters/api-adapter.js';
 
 type FacetDisplayMode = 'checkbox' | 'select' | 'multiselect' | 'radio';
 
@@ -373,16 +374,24 @@ export class GouvFacets extends LitElement {
     );
   }
 
-  /** Fetch facet values from ODS /facets API with cross-facet counts */
+  /** Fetch facet values from server API with cross-facet counts */
   private async _fetchServerFacets() {
     const sourceEl = document.getElementById(this.source);
     if (!sourceEl) return;
 
+    // Get adapter from the source element (gouv-query)
+    const adapter: ApiAdapter | undefined = (sourceEl as any).getAdapter?.();
+    if (!adapter?.capabilities.serverFacets || !adapter.fetchFacets) {
+      // Adapter does not support server facets — fallback to client-side
+      this._buildFacetGroups();
+      this._applyFilters();
+      return;
+    }
+
     const baseUrl = (sourceEl as any).baseUrl
-      || sourceEl.getAttribute('base-url')
-      || 'https://data.opendatasoft.com';
+      || sourceEl.getAttribute('base-url') || '';
     const datasetId = (sourceEl as any).datasetId
-      || sourceEl.getAttribute('dataset-id');
+      || sourceEl.getAttribute('dataset-id') || '';
     if (!datasetId) return;
 
     const fields = _parseCSV(this.fields);
@@ -401,27 +410,20 @@ export class GouvFacets extends LitElement {
       whereToFields.get(effectiveWhere)!.push(field);
     }
 
-    // Fetch each group
+    // Fetch each group via adapter
     const allGroups: FacetGroup[] = [];
     for (const [where, groupFields] of whereToFields) {
-      const url = new URL(`${baseUrl}/api/explore/v2.1/catalog/datasets/${datasetId}/facets`);
-      for (const f of groupFields) url.searchParams.append('facet', f);
-      if (where) url.searchParams.set('where', where);
-
       try {
-        const response = await fetch(url.toString());
-        if (!response.ok) continue;
-        const json = await response.json();
-        for (const facetData of (json.facets || [])) {
+        const results = await adapter.fetchFacets(
+          { baseUrl, datasetId },
+          groupFields,
+          where
+        );
+        for (const result of results) {
           allGroups.push({
-            field: facetData.name,
-            label: labelMap.get(facetData.name) ?? facetData.name,
-            values: this._sortValues(
-              (facetData.facets || []).map((v: { value: string; count: number }) => ({
-                value: v.value,
-                count: v.count
-              }))
-            )
+            field: result.field,
+            label: labelMap.get(result.field) ?? result.field,
+            values: this._sortValues(result.values),
           });
         }
       } catch {
@@ -592,7 +594,34 @@ export class GouvFacets extends LitElement {
   }
 
   private _toggleMultiselectDropdown(field: string) {
-    this._openMultiselectField = this._openMultiselectField === field ? null : field;
+    if (this._openMultiselectField === field) {
+      this._openMultiselectField = null;
+    } else {
+      this._openMultiselectField = field;
+      this.updateComplete.then(() => {
+        const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
+        const firstFocusable = panel?.querySelector('button, input, select, [tabindex]') as HTMLElement;
+        firstFocusable?.focus();
+      });
+    }
+  }
+
+  private _handleMultiselectKeydown(field: string, e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      this._openMultiselectField = null;
+      const trigger = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-trigger`) as HTMLElement;
+      trigger?.focus();
+    }
+  }
+
+  private _handleMultiselectFocusout(field: string) {
+    if (this._openMultiselectField !== field) return;
+    setTimeout(() => {
+      const wrapper = this.querySelector(`[data-multiselect="${field}"]`);
+      if (wrapper && !wrapper.contains(document.activeElement)) {
+        this._openMultiselectField = null;
+      }
+    }, 0);
   }
 
   private _onClickOutsideMultiselect = (e: MouseEvent) => {
@@ -863,17 +892,22 @@ export class GouvFacets extends LitElement {
     return html`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${group.field}"
-           data-field="${group.field}">
+           data-field="${group.field}"
+           @keydown="${(e: KeyboardEvent) => this._handleMultiselectKeydown(group.field, e)}"
+           @focusout="${() => this._handleMultiselectFocusout(group.field)}">
         <label class="fr-label" id="${uid}-legend">${group.label}</label>
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
           aria-expanded="${isOpen}"
           aria-controls="${uid}-panel"
+          aria-labelledby="${uid}-legend"
+          aria-haspopup="dialog"
           @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
           ${triggerLabel}
         </button>
         ${isOpen ? html`
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
+               role="dialog" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
             <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left ${selected.size > 0 ? 'fr-icon-close-circle-line' : 'fr-icon-check-line'} gouv-facets__multiselect-toggle"
               type="button"
@@ -931,17 +965,22 @@ export class GouvFacets extends LitElement {
     return html`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${group.field}"
-           data-field="${group.field}">
+           data-field="${group.field}"
+           @keydown="${(e: KeyboardEvent) => this._handleMultiselectKeydown(group.field, e)}"
+           @focusout="${() => this._handleMultiselectFocusout(group.field)}">
         <label class="fr-label" id="${uid}-legend">${group.label}</label>
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
           aria-expanded="${isOpen}"
           aria-controls="${uid}-panel"
+          aria-labelledby="${uid}-legend"
+          aria-haspopup="dialog"
           @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
           ${triggerLabel}
         </button>
         ${isOpen ? html`
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
+               role="dialog" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
             <div class="fr-search-bar" role="search">
               <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>

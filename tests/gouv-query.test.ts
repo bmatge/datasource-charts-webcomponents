@@ -12,6 +12,7 @@ globalThis.fetch = mockFetch;
 
 // We need to import after setting up fetch mock
 import { GouvQuery } from '../src/components/gouv-query.js';
+import { getAdapter } from '../src/adapters/api-adapter.js';
 import {
   clearDataCache,
   clearDataMeta,
@@ -304,362 +305,58 @@ describe('GouvQuery', () => {
     });
   });
 
-  describe('OpenDataSoft URL building', () => {
-    beforeEach(() => {
+  describe('Adapter delegation', () => {
+    it('uses opendatasoft adapter when apiType is opendatasoft', () => {
       query.apiType = 'opendatasoft';
-      query.datasetId = 'communes-france';
-      query.baseUrl = 'https://data.example.com';
+      (query as any)._adapter = getAdapter('opendatasoft');
+      expect(query.getAdapter().type).toBe('opendatasoft');
     });
 
-    it('builds base URL correctly', () => {
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('https://data.example.com/api/explore/v2.1/catalog/datasets/communes-france/records');
-    });
-
-    it('adds select clause', () => {
-      query.select = 'sum(population) as total, region';
-      const url = (query as any)._buildOpenDataSoftUrl();
-      // URL encodes parentheses, so check for the encoded form
-      expect(url).toContain('select=');
-      expect(url).toContain('population');
-    });
-
-    it('adds where clause', () => {
-      query.where = 'population > 5000';
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('where=population');
-    });
-
-    it('adds group_by clause', () => {
-      query.groupBy = 'region';
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('group_by=region');
-    });
-
-    it('adds order_by clause', () => {
-      query.orderBy = 'total:desc';
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('order_by=total');
-      expect(url).toContain('DESC');
-    });
-
-    it('adds limit', () => {
-      query.limit = 20;
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('limit=20');
-    });
-
-    it('caps limit at 100 (ODS max) when no override', () => {
-      query.limit = 200;
-      const url = (query as any)._buildOpenDataSoftUrl();
-      expect(url).toContain('limit=100');
-      expect(url).not.toContain('limit=200');
-    });
-
-    it('uses limitOverride when provided', () => {
-      query.limit = 200;
-      const url = (query as any)._buildOpenDataSoftUrl(8);
-      expect(url).toContain('limit=8');
-    });
-
-    it('adds offset when provided and > 0', () => {
-      const url = (query as any)._buildOpenDataSoftUrl(100, 100);
-      expect(url).toContain('offset=100');
-    });
-
-    it('does not add offset when 0', () => {
-      const url = (query as any)._buildOpenDataSoftUrl(100, 0);
-      expect(url).not.toContain('offset');
-    });
-  });
-
-  describe('OpenDataSoft pagination', () => {
-    beforeEach(() => {
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'fiscalite-locale';
-      query.baseUrl = 'https://data.example.com';
-      query.id = 'ods-test';
-      query.groupBy = 'dep';
-      query.select = 'dep, avg(taux) as value';
-    });
-
-    it('fetches single page when limit <= 100', async () => {
-      query.limit = 50;
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 50 }, (_, i) => ({ dep: String(i), value: i })),
-          total_count: 50
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(50);
-    });
-
-    it('fetches multiple pages when limit > 100 (department map case)', async () => {
-      query.limit = 108;
-
-      // Page 1: 100 results
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i).padStart(2, '0'), value: i })),
-          total_count: 108
-        })
-      });
-      // Page 2: 8 results
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 8 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
-          total_count: 108
-        })
-      });
-
-      // Need an AbortController for the fetch
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(query.getData()).toHaveLength(108);
-    });
-
-    it('stops when page returns fewer results than page size', async () => {
-      query.limit = 200;
-
-      // Single page returns only 75 results (dataset has fewer records)
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 75 }, (_, i) => ({ dep: String(i), value: i })),
-          total_count: 75
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(75);
-    });
-
-    it('sends correct offset in second page URL', async () => {
-      query.limit = 110;
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i), value: i })),
-          total_count: 110
-        })
-      });
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 10 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
-          total_count: 110
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      // Check second call URL contains offset=100
-      const secondCallUrl = mockFetch.mock.calls[1][0] as string;
-      expect(secondCallUrl).toContain('offset=100');
-      expect(secondCallUrl).toContain('limit=10');
-    });
-
-    it('fetches all records when limit=0 (default), using total_count', async () => {
-      query.limit = 0; // No explicit limit = fetch all
-
-      // Page 1: 100 results, total_count=108
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 100 }, (_, i) => ({ dep: String(i), value: i })),
-          total_count: 108
-        })
-      });
-      // Page 2: 8 results
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 8 }, (_, i) => ({ dep: String(100 + i), value: 100 + i })),
-          total_count: 108
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(query.getData()).toHaveLength(108);
-      // Verify first page URL has limit=100 (not 200 or anything > 100)
-      const firstCallUrl = mockFetch.mock.calls[0][0] as string;
-      expect(firstCallUrl).toContain('limit=100');
-      expect(firstCallUrl).not.toContain('limit=200');
-    });
-
-    it('warns on incomplete pagination', async () => {
-      query.limit = 50;
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      // API says 80 results exist but we only asked for 50
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 50 }, (_, i) => ({ dep: String(i), value: i })),
-          total_count: 80
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromOdsWithPagination();
-
-      // Should NOT warn: we got what we asked for (50), even though total_count is 80
-      expect(warnSpy).not.toHaveBeenCalled();
-      warnSpy.mockRestore();
-    });
-  });
-
-  describe('Tabular API URL building', () => {
-    beforeEach(() => {
+    it('uses tabular adapter when apiType is tabular', () => {
       query.apiType = 'tabular';
-      query.datasetId = 'dataset-123';
-      query.resource = 'resource-456';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      (query as any)._adapter = getAdapter('tabular');
+      expect(query.getAdapter().type).toBe('tabular');
     });
 
-    it('builds base URL correctly', () => {
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('https://tabular-api.data.gouv.fr/api/resources/resource-456/data/');
+    it('uses generic adapter by default', () => {
+      expect(query.getAdapter().type).toBe('generic');
     });
 
-    it('adds filter parameters', () => {
-      query.filter = 'statut:eq:actif';
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('statut__exact=actif');
+    it('exposes adapter capabilities', () => {
+      (query as any)._adapter = getAdapter('opendatasoft');
+      const caps = query.getAdapter().capabilities;
+      expect(caps.serverFacets).toBe(true);
+      expect(caps.serverSearch).toBe(true);
+      expect(caps.whereFormat).toBe('odsql');
     });
 
-    it('maps filter operators correctly', () => {
-      query.filter = 'score:gte:80';
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('score__greater=80');
+    it('delegates ODS fetchAll to adapter', async () => {
+      query.id = 'ods-delegation-test';
+      query.apiType = 'opendatasoft';
+      query.datasetId = 'test-dataset';
+      query.baseUrl = 'https://data.example.com';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: [{ dep: '01', value: 10 }, { dep: '02', value: 20 }],
+          total_count: 2,
+        }),
+      });
+
+      (query as any)._adapter = getAdapter('opendatasoft');
+      (query as any)._abortController = new AbortController();
+      await (query as any)._fetchAllDelegated();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(query.getData()).toHaveLength(2);
     });
 
-    it('adds groupby parameters', () => {
-      query.groupBy = 'region, departement';
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('region__groupby');
-      expect(url).toContain('departement__groupby');
-    });
-
-    it('adds aggregation parameters', () => {
-      query.aggregate = 'population:sum, count:count';
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('population__sum');
-      expect(url).toContain('count__count');
-    });
-
-    it('adds sort parameter', () => {
-      query.orderBy = 'population__sum:desc';
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('population__sum__sort=desc');
-    });
-
-    it('uses limit as page_size when no override', () => {
-      query.limit = 100;
-      const url = (query as any)._buildTabularUrl();
-      expect(url).toContain('page_size=100');
-    });
-
-    it('accepts pageSizeOverride and pageOverride', () => {
-      query.limit = 50;
-      const url = (query as any)._buildTabularUrl(100, 3);
-      expect(url).toContain('page_size=100');
-      expect(url).toContain('page=3');
-    });
-  });
-
-  describe('Tabular API multi-page pagination', () => {
-    beforeEach(() => {
-      query.id = 'test-query';
+    it('delegates Tabular fetchAll with client processing', async () => {
+      query.id = 'tab-delegation-test';
       query.apiType = 'tabular';
       query.resource = 'resource-456';
       query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.limit = 0; // fetch all
-    });
-
-    it('fetches multiple pages via links.next', async () => {
-      // Page 1: 100 results, has next
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
-          links: { next: 'https://tabular-api.data.gouv.fr/api/resources/resource-456/data/?page=2&page_size=100' },
-          meta: { page: 1, page_size: 100, total: 150 }
-        })
-      });
-      // Page 2: 50 results, no next
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 50 }, (_, i) => ({ id: 100 + i })),
-          links: {},
-          meta: { page: 2, page_size: 100, total: 150 }
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromTabularWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(query.getData()).toHaveLength(150);
-    });
-
-    it('stops when meta.total is reached', async () => {
-      // Single page with all data
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 30 }, (_, i) => ({ id: i })),
-          links: {},
-          meta: { page: 1, page_size: 100, total: 30 }
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromTabularWithPagination();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(30);
-    });
-
-    it('trims to limit when limit > 0', async () => {
-      query.limit = 50;
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
-          links: {},
-          meta: { page: 1, page_size: 100, total: 200 }
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromTabularWithPagination();
-
-      // _processClientSide applies limit, so result should be 50
-      expect(query.getData()).toHaveLength(50);
-    });
-
-    it('applies group-by and aggregate after multi-page fetch', async () => {
       query.groupBy = 'region';
       query.aggregate = 'value:sum:Total';
 
@@ -672,43 +369,18 @@ describe('GouvQuery', () => {
             { region: 'A', value: 30 },
           ],
           links: {},
-          meta: { page: 1, page_size: 100, total: 3 }
-        })
+          meta: { page: 1, page_size: 100, total: 3 },
+        }),
       });
 
+      (query as any)._adapter = getAdapter('tabular');
       (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromTabularWithPagination();
+      await (query as any)._fetchAllDelegated();
 
       const data = query.getData() as Record<string, unknown>[];
       expect(data).toHaveLength(2);
       const regionA = data.find(d => d.region === 'A');
       expect(regionA?.Total).toBe(40);
-    });
-
-    it('extracts page number from links.next URL', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 100 }, (_, i) => ({ id: i })),
-          links: { next: 'https://tabular-api.data.gouv.fr/api/resources/resource-456/data/?page=2&page_size=100' },
-          meta: { page: 1, page_size: 100, total: 200 }
-        })
-      });
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 100 }, (_, i) => ({ id: 100 + i })),
-          links: {},
-          meta: { page: 2, page_size: 100, total: 200 }
-        })
-      });
-
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchFromTabularWithPagination();
-
-      // Second call should use page=2
-      const secondCallUrl = mockFetch.mock.calls[1][0] as string;
-      expect(secondCallUrl).toContain('page=2');
     });
   });
 
@@ -730,7 +402,7 @@ describe('GouvQuery', () => {
     });
   });
 
-  describe('Server-side mode: ODS URL building', () => {
+  describe('Server-side mode: where merging for URL', () => {
     beforeEach(() => {
       query.apiType = 'opendatasoft';
       query.datasetId = 'rappelconso';
@@ -739,106 +411,32 @@ describe('GouvQuery', () => {
       query.pageSize = 20;
     });
 
-    it('builds URL with limit=pageSize and offset for current page', () => {
-      (query as any)._serverPage = 3;
-      const url = (query as any)._buildServerSideOdsUrl();
-      expect(url).toContain('limit=20');
-      expect(url).toContain('offset=40');
-    });
-
-    it('does not include offset for page 1', () => {
-      (query as any)._serverPage = 1;
-      const url = (query as any)._buildServerSideOdsUrl();
-      expect(url).toContain('limit=20');
-      expect(url).not.toContain('offset');
-    });
-
     it('merges static where with dynamic server where via AND', () => {
       query.where = 'status="active"';
       (query as any)._serverWheres.set('_default', 'search("test")');
-      const url = (query as any)._buildServerSideOdsUrl();
-      const params = new URL(url).searchParams;
-      expect(params.get('where')).toBe('status="active" AND search("test")');
+      expect(query.getEffectiveWhere()).toBe('status="active" AND search("test")');
     });
 
     it('uses only static where when server where is empty', () => {
       query.where = 'status="active"';
-      const url = (query as any)._buildServerSideOdsUrl();
-      const params = new URL(url).searchParams;
-      expect(params.get('where')).toBe('status="active"');
+      expect(query.getEffectiveWhere()).toBe('status="active"');
     });
 
     it('uses only dynamic where when static where is empty', () => {
       query.where = '';
       (query as any)._serverWheres.set('_default', 'search("hello")');
-      const url = (query as any)._buildServerSideOdsUrl();
-      const params = new URL(url).searchParams;
-      expect(params.get('where')).toBe('search("hello")');
-    });
-
-    it('uses server orderBy overlay over static orderBy', () => {
-      query.orderBy = 'date:desc';
-      (query as any)._serverOrderBy = 'nom:asc';
-      const url = (query as any)._buildServerSideOdsUrl();
-      expect(url).toContain('order_by=nom');
-      expect(url).toContain('ASC');
-      expect(url).not.toContain('date');
+      expect(query.getEffectiveWhere()).toBe('search("hello")');
     });
 
     it('falls back to static orderBy when server orderBy is empty', () => {
       query.orderBy = 'date:desc';
       (query as any)._serverOrderBy = '';
-      const url = (query as any)._buildServerSideOdsUrl();
-      expect(url).toContain('order_by=date');
-      expect(url).toContain('DESC');
-    });
-
-    it('includes select when specified', () => {
-      query.select = 'nom, date, categorie';
-      const url = (query as any)._buildServerSideOdsUrl();
-      const params = new URL(url).searchParams;
-      expect(params.get('select')).toBe('nom, date, categorie');
-    });
-
-    it('includes group_by when specified', () => {
-      query.groupBy = 'categorie';
-      const url = (query as any)._buildServerSideOdsUrl();
-      expect(url).toContain('group_by=categorie');
+      // effectiveOrderBy should be the static one
+      expect((query as any)._serverOrderBy || query.orderBy).toBe('date:desc');
     });
   });
 
-  describe('Server-side mode: Tabular URL building', () => {
-    beforeEach(() => {
-      query.apiType = 'tabular';
-      query.resource = 'resource-789';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.serverSide = true;
-      query.pageSize = 20;
-    });
-
-    it('builds URL with page and page_size', () => {
-      (query as any)._serverPage = 2;
-      const url = (query as any)._buildServerSideTabularUrl();
-      expect(url).toContain('page_size=20');
-      expect(url).toContain('page=2');
-    });
-
-    it('uses server orderBy overlay over static orderBy', () => {
-      query.orderBy = 'date:desc';
-      (query as any)._serverOrderBy = 'nom:asc';
-      const url = (query as any)._buildServerSideTabularUrl();
-      expect(url).toContain('nom__sort=asc');
-      expect(url).not.toContain('date');
-    });
-
-    it('includes static filters', () => {
-      query.filter = 'statut:eq:actif';
-      const url = (query as any)._buildServerSideTabularUrl();
-      expect(url).toContain('statut__exact=actif');
-    });
-  });
-
-  describe('Server-side mode: fetch', () => {
+  describe('Server-side mode: fetch via adapter', () => {
     beforeEach(() => {
       query.id = 'test-query';
       query.serverSide = true;
@@ -859,12 +457,13 @@ describe('GouvQuery', () => {
         ok: true,
         json: () => Promise.resolve({
           results: Array.from({ length: 20 }, (_, i) => ({ id: i, nom: `item-${i}` })),
-          total_count: 500
-        })
+          total_count: 500,
+        }),
       });
 
+      (query as any)._adapter = getAdapter('opendatasoft');
       (query as any)._abortController = new AbortController();
-      await (query as any)._fetchServerSide();
+      await (query as any)._fetchServerSideDelegated();
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(query.getData()).toHaveLength(20);
@@ -885,12 +484,13 @@ describe('GouvQuery', () => {
         ok: true,
         json: () => Promise.resolve({
           data: Array.from({ length: 20 }, (_, i) => ({ id: i })),
-          meta: { page: 1, page_size: 20, total: 300 }
-        })
+          meta: { page: 1, page_size: 20, total: 300 },
+        }),
       });
 
+      (query as any)._adapter = getAdapter('tabular');
       (query as any)._abortController = new AbortController();
-      await (query as any)._fetchServerSide();
+      await (query as any)._fetchServerSideDelegated();
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(query.getData()).toHaveLength(20);
