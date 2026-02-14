@@ -456,7 +456,7 @@ export class GouvSearch extends LitElement {
     const labelClass = this.srLabel ? 'fr-label sr-only' : 'fr-label';
 
     return html`
-      <div class="fr-search-bar" role="search" aria-label="${this.label}">
+      <div class="fr-search-bar" role="search" aria-label="${this.getAttribute('aria-label') || this.label}">
         <label class="${labelClass}" for="gouv-search-${id}">${this.label}</label>
         <input class="fr-input"
           type="search"
@@ -476,7 +476,11 @@ export class GouvSearch extends LitElement {
         <p class="fr-text--sm fr-mt-1v gouv-search-count" aria-live="polite">
           ${this._resultCount} resultat${this._resultCount !== 1 ? 's' : ''}
         </p>
-      ` : nothing}
+      ` : html`
+        <p class="fr-sr-only" aria-live="polite">
+          ${this._resultCount} resultat${this._resultCount !== 1 ? 's' : ''}
+        </p>
+      `}
     `;
   }
 }

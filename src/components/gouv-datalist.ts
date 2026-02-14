@@ -482,21 +482,28 @@ ${bodyRows}
           <caption class="fr-sr-only">Liste des données</caption>
           <thead>
             <tr>
-              ${columns.map(col => html`
-                <th scope="col">
+              ${columns.map(col => {
+                const isSorted = this._sort?.key === col.key;
+                const sortDir = isSorted ? this._sort!.direction : null;
+                const ariaSortValue = sortDir === 'asc' ? 'ascending' : sortDir === 'desc' ? 'descending' : 'none';
+                const sortLabel = isSorted
+                  ? `Trier par ${col.label}, actuellement tri ${sortDir === 'asc' ? 'croissant' : 'decroissant'}`
+                  : `Trier par ${col.label}`;
+                return html`
+                <th scope="col" aria-sort="${ariaSortValue}">
                   <button
                     class="gouv-datalist__sort-btn"
                     @click="${() => this._handleSort(col.key)}"
-                    aria-label="Trier par ${col.label}"
+                    aria-label="${sortLabel}"
                     type="button"
                   >
                     ${col.label}
-                    ${this._sort?.key === col.key ? html`
-                      <span aria-hidden="true">${this._sort.direction === 'asc' ? '↑' : '↓'}</span>
+                    ${isSorted ? html`
+                      <span aria-hidden="true">${sortDir === 'asc' ? '↑' : '↓'}</span>
                     ` : ''}
                   </button>
                 </th>
-              `)}
+              `;})}
             </tr>
           </thead>
           <tbody>
@@ -528,19 +535,19 @@ ${bodyRows}
     }
 
     return html`
-      <nav class="fr-pagination" aria-label="Pagination">
+      <nav class="fr-pagination" aria-label="${this.getAttribute('aria-label') ? 'Pagination - ' + this.getAttribute('aria-label') : 'Pagination'}">
         <ul class="fr-pagination__list">
           <li>
             <button class="fr-pagination__link fr-pagination__link--first"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(1)}"
-              aria-label="Première page" type="button">Première page</button>
+              aria-label="Premiere page" type="button">Premiere page</button>
           </li>
           <li>
             <button class="fr-pagination__link fr-pagination__link--prev"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(this._currentPage - 1)}"
-              aria-label="Page précédente" type="button">Page précédente</button>
+              aria-label="Page precedente" type="button">Page precedente</button>
           </li>
           ${pages.map(page => html`
             <li>
@@ -548,6 +555,7 @@ ${bodyRows}
                 class="fr-pagination__link ${page === this._currentPage ? 'fr-pagination__link--active' : ''}"
                 @click="${() => this._handlePageChange(page)}"
                 aria-current="${page === this._currentPage ? 'page' : 'false'}"
+                aria-label="Page ${page}"
                 type="button"
               >${page}</button>
             </li>
@@ -562,7 +570,7 @@ ${bodyRows}
             <button class="fr-pagination__link fr-pagination__link--last"
               ?disabled="${this._currentPage === totalPages}"
               @click="${() => this._handlePageChange(totalPages)}"
-              aria-label="Dernière page" type="button">Dernière page</button>
+              aria-label="Derniere page" type="button">Derniere page</button>
           </li>
         </ul>
       </nav>
@@ -579,7 +587,7 @@ ${bodyRows}
     const totalFiltered = this._serverPagination ? this._serverTotal : this.getFilteredData().length;
 
     return html`
-      <div class="gouv-datalist" role="region" aria-label="Liste de données">
+      <div class="gouv-datalist" role="region" aria-label="${this.getAttribute('aria-label') || 'Liste de donnees'}">
         ${this._renderFilters(columns, filterableColumns)}
         ${this._renderToolbar()}
 

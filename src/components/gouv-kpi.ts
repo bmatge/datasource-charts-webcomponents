@@ -114,7 +114,16 @@ export class GouvKpi extends SourceSubscriberMixin(LitElement) {
 
     const value = this._computeValue();
     const formattedValue = formatValue(value as number, this.format);
-    return `${this.label}: ${formattedValue}`;
+    let label = `${this.label}: ${formattedValue}`;
+
+    if (typeof value === 'number' && (this.seuilVert !== undefined || this.seuilOrange !== undefined)) {
+      const color = this._getColor();
+      const stateMap: Record<string, string> = { vert: 'bon', orange: 'attention', rouge: 'critique', bleu: '' };
+      const state = stateMap[color];
+      if (state) label += `, etat ${state}`;
+    }
+
+    return label;
   }
 
   render() {
@@ -147,7 +156,7 @@ export class GouvKpi extends SourceSubscriberMixin(LitElement) {
             <div class="gouv-kpi__value-wrapper">
               <span class="gouv-kpi__value">${formattedValue}</span>
               ${tendance ? html`
-                <span class="gouv-kpi__tendance gouv-kpi__tendance--${tendance.direction}" aria-label="${tendance.value > 0 ? 'en hausse' : tendance.value < 0 ? 'en baisse' : 'stable'}">
+                <span class="gouv-kpi__tendance gouv-kpi__tendance--${tendance.direction}" role="img" aria-label="${tendance.value > 0 ? `en hausse de ${Math.abs(tendance.value).toFixed(1)}%` : tendance.value < 0 ? `en baisse de ${Math.abs(tendance.value).toFixed(1)}%` : 'stable'}">
                   ${tendance.direction === 'up' ? '↑' : tendance.direction === 'down' ? '↓' : '→'}
                   ${Math.abs(tendance.value).toFixed(1)}%
                 </span>

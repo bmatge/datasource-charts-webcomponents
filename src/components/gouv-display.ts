@@ -301,7 +301,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     }
 
     return html`
-      <nav class="fr-pagination fr-mt-2w" aria-label="Pagination">
+      <nav class="fr-pagination fr-mt-2w" aria-label="${this.getAttribute('aria-label') ? 'Pagination - ' + this.getAttribute('aria-label') : 'Pagination'}">
         <ul class="fr-pagination__list">
           <li>
             <button class="fr-pagination__link fr-pagination__link--first"
@@ -321,6 +321,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
                 class="fr-pagination__link ${page === this._currentPage ? 'fr-pagination__link--active' : ''}"
                 @click="${() => this._handlePageChange(page)}"
                 aria-current="${page === this._currentPage ? 'page' : 'false'}"
+                aria-label="Page ${page}"
                 type="button"
               >${page}</button>
             </li>
@@ -352,7 +353,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     const totalItems = this._serverPagination ? this._serverTotal : this._data.length;
 
     return html`
-      <div class="gouv-display" role="region" aria-label="Liste de resultats">
+      <div class="gouv-display" role="region" aria-label="${this.getAttribute('aria-label') || 'Liste de resultats'}">
         ${this._sourceLoading ? html`
           <div class="gouv-display__loading" aria-live="polite">
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
