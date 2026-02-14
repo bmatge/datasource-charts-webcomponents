@@ -558,6 +558,7 @@ Sortie : meme tableau, filtre selon les selections de l'utilisateur.
 | url-param-map | String | \`""\` | non | Mapping URL param -> champ : \`"r:region | t:type"\`. Si vide, correspondance directe |
 | url-sync | Boolean | \`false\` | non | Synchronise l'URL quand l'utilisateur change les facettes (replaceState) |
 | server-facets | Boolean | \`false\` | non | Active le mode facettes serveur ODS. Fetch les valeurs depuis l'API ODS /facets. Requiert source vers gouv-query server-side api-type="opendatasoft". En mode server-facets, fields est obligatoire |
+| cols | String | \`""\` | non | Colonnage DSFR : \`"6"\` (global, 2/ligne), \`"4"\` (3/ligne), ou par facette \`"region:4 | type:6"\` (defaut fr-col-6 pour non-specifies) |
 
 ### Modes d'affichage
 - **checkbox** (defaut) : fieldset DSFR avec checkboxes, compteurs, "Voir plus/moins", recherche optionnelle
@@ -611,6 +612,17 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
 <gouv-facets id="filtered" source="clean"
   fields="region, type" url-params url-sync
   url-param-map="r:region | t:type">
+</gouv-facets>
+
+<!-- Colonnage DSFR des facettes -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, departement, statut"
+  cols="region:6 | departement:4 | statut:12">
+</gouv-facets>
+
+<!-- Colonnage global (toutes en col-6 = 2 par ligne) -->
+<gouv-facets id="filtered" source="clean"
+  fields="region, type, statut" cols="6">
 </gouv-facets>
 
 <!-- Facettes serveur ODS (server-facets) -->

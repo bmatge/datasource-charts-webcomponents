@@ -111,6 +111,7 @@
             <tr><td><code>hide-empty</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les facettes avec une seule valeur.</td></tr>
             <tr><td><code>display</code></td><td>String</td><td><code>""</code></td><td>Mode d'affichage par facette : <code>"field:select | field2:multiselect"</code>. Modes : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>, <code>radio</code>.</td></tr>
             <tr><td><code>hide-counts</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les compteurs a cote de chaque valeur de facette.</td></tr>
+            <tr><td><code>cols</code></td><td>String</td><td><code>""</code></td><td>Colonnage DSFR des facettes. Global : <code>"6"</code> (2 par ligne), <code>"4"</code> (3 par ligne). Par facette : <code>"region:4 | type:6"</code> (defaut fr-col-6 pour les non-specifies).</td></tr>
           </tbody>
         </table>
 
@@ -388,6 +389,43 @@
   searchable="Departement"
   hide-counts
   max-values="8"&gt;
+&lt;/gouv-facets&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 6 : Colonnage DSFR (cols)
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 6 : colonnage DSFR des facettes</h2>
+        <p>L'attribut <code>cols</code> permet de controler la largeur de chaque facette
+        dans la grille DSFR. Ici, Departement occupe la moitie (<code>col-6</code>),
+        Categorie un tiers (<code>col-4</code>) et Sexe toute la largeur (<code>col-12</code>).</p>
+
+        <gouv-facets id="elus-cols-demo" source="elus-clean"
+          fields="Departement, Categorie, Sexe"
+          labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
+          display="Departement:multiselect | Categorie:select"
+          cols="Departement:6 | Categorie:4 | Sexe:12"
+          max-values="8">
+        </gouv-facets>
+
+        <gouv-datalist source="elus-cols-demo"
+          colonnes="Nom, Prenom, Commune, Departement"
+          recherche="true"
+          pagination="5">
+        </gouv-datalist>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;!-- Colonnage par facette --&gt;
+&lt;gouv-facets id="filtered" source="clean"
+  fields="Departement, Categorie, Sexe"
+  display="Departement:multiselect | Categorie:select"
+  cols="Departement:6 | Categorie:4 | Sexe:12"
+  max-values="8"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;!-- Colonnage global (toutes les facettes en col-6) --&gt;
+&lt;gouv-facets id="filtered" source="clean"
+  fields="region, type, statut"
+  cols="6"&gt;
 &lt;/gouv-facets&gt;</code></pre>
 
     </div>

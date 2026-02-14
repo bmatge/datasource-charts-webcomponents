@@ -810,4 +810,64 @@ describe('GouvFacets', () => {
       expect(result).toHaveLength(SAMPLE_DATA.length);
     });
   });
+
+  // --- Column layout (cols) ---
+
+  describe('cols attribute', () => {
+    describe('_parseCols', () => {
+      it('returns null when cols is empty', () => {
+        facets.cols = '';
+        expect(facets._parseCols()).toBeNull();
+      });
+
+      it('parses global number', () => {
+        facets.cols = '6';
+        const result = facets._parseCols();
+        expect(result).toEqual({ global: 6 });
+      });
+
+      it('parses global number with whitespace', () => {
+        facets.cols = ' 4 ';
+        const result = facets._parseCols();
+        expect(result).toEqual({ global: 4 });
+      });
+
+      it('parses per-field mapping', () => {
+        facets.cols = 'region:4 | type:6';
+        const result = facets._parseCols() as { map: Map<string, number>; fallback: number };
+        expect(result.map.get('region')).toBe(4);
+        expect(result.map.get('type')).toBe(6);
+        expect(result.fallback).toBe(6);
+      });
+
+      it('returns null for invalid input without colons', () => {
+        facets.cols = 'abc';
+        expect(facets._parseCols()).toBeNull();
+      });
+    });
+
+    describe('_getColClass', () => {
+      it('returns empty string when cols is empty', () => {
+        facets.cols = '';
+        expect(facets._getColClass('region')).toBe('');
+      });
+
+      it('returns global col class for all fields', () => {
+        facets.cols = '4';
+        expect(facets._getColClass('region')).toBe('fr-col-4');
+        expect(facets._getColClass('type')).toBe('fr-col-4');
+      });
+
+      it('returns per-field col class', () => {
+        facets.cols = 'region:4 | type:12';
+        expect(facets._getColClass('region')).toBe('fr-col-4');
+        expect(facets._getColClass('type')).toBe('fr-col-12');
+      });
+
+      it('returns fallback fr-col-6 for unmapped fields', () => {
+        facets.cols = 'region:4';
+        expect(facets._getColClass('type')).toBe('fr-col-6');
+      });
+    });
+  });
 });

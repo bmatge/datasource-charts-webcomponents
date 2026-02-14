@@ -103,6 +103,10 @@ export class GouvFacets extends LitElement {
   @property({ type: Boolean, attribute: 'hide-counts' })
   hideCounts = false;
 
+  /** Colonnage DSFR des facettes : "6" (global) ou "field:4 | field2:6" (par facette) */
+  @property({ type: String })
+  cols = '';
+
   @state()
   private _rawData: Record<string, unknown>[] = [];
 
@@ -173,7 +177,7 @@ export class GouvFacets extends LitElement {
       return;
     }
 
-    const facetAttrs = ['fields', 'labels', 'sort', 'hideEmpty', 'maxValues', 'disjunctive', 'searchable', 'display'];
+    const facetAttrs = ['fields', 'labels', 'sort', 'hideEmpty', 'maxValues', 'disjunctive', 'searchable', 'display', 'cols'];
     const hasFacetChange = facetAttrs.some(attr => changedProperties.has(attr));
     if (hasFacetChange && this._rawData.length > 0) {
       if (this.serverFacets) {
@@ -538,6 +542,37 @@ export class GouvFacets extends LitElement {
     return this._parseDisplayModes().get(field) ?? 'checkbox';
   }
 
+  /** Parse cols attribute: returns global col size or per-field map */
+  _parseCols(): { global: number } | { map: Map<string, number>; fallback: number } | null {
+    if (!this.cols) return null;
+    const trimmed = this.cols.trim();
+    // Single number = global
+    if (/^\d+$/.test(trimmed)) {
+      return { global: parseInt(trimmed, 10) };
+    }
+    // Per-field: "field:4 | field2:6"
+    const map = new Map<string, number>();
+    const pairs = trimmed.split('|');
+    for (const pair of pairs) {
+      const colonIndex = pair.indexOf(':');
+      if (colonIndex === -1) continue;
+      const key = pair.substring(0, colonIndex).trim();
+      const val = parseInt(pair.substring(colonIndex + 1).trim(), 10);
+      if (key && !isNaN(val)) {
+        map.set(key, val);
+      }
+    }
+    return map.size > 0 ? { map, fallback: 6 } : null;
+  }
+
+  /** Get DSFR col class for a specific field */
+  _getColClass(field: string): string {
+    const cols = this._parseCols();
+    if (!cols) return '';
+    if ('global' in cols) return `fr-col-${cols.global}`;
+    return `fr-col-${cols.map.get(field) ?? cols.fallback}`;
+  }
+
   // --- User interaction ---
 
   private _toggleValue(field: string, value: string) {
@@ -756,6 +791,8 @@ export class GouvFacets extends LitElement {
       f => this._activeSelections[f].size > 0
     );
 
+    const useDsfrGrid = !!this.cols;
+
     return html`
       <style>
         .gouv-facets { margin-bottom: 1.5rem; }
@@ -781,9 +818,19 @@ export class GouvFacets extends LitElement {
             </button>
           </div>
         ` : nothing}
-        <div class="gouv-facets__groups">
-          ${this._facetGroups.map(group => this._renderFacetGroup(group))}
-        </div>
+        ${useDsfrGrid ? html`
+          <div class="fr-grid-row fr-grid-row--gutters">
+            ${this._facetGroups.map(group => html`
+              <div class="${this._getColClass(group.field)}">
+                ${this._renderFacetGroup(group)}
+              </div>
+            `)}
+          </div>
+        ` : html`
+          <div class="gouv-facets__groups">
+            ${this._facetGroups.map(group => this._renderFacetGroup(group))}
+          </div>
+        `}
       </div>
     `;
   }

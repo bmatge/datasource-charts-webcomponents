@@ -625,7 +625,7 @@ function m(n) {
   return u({ ...n, state: !0, attribute: !1 });
 }
 h(m, "r");
-function $(n, e) {
+function w(n, e) {
   if (!e || e.trim() === "")
     return n;
   const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
@@ -637,9 +637,9 @@ function $(n, e) {
   }
   return r;
 }
-h($, "getByPath");
+h(w, "getByPath");
 function Hi(n, e) {
-  return $(n, e) !== void 0;
+  return w(n, e) !== void 0;
 }
 h(Hi, "hasPath");
 function Vt(n, e, t) {
@@ -653,7 +653,7 @@ function Vt(n, e, t) {
 }
 h(Vt, "setByPath");
 function Vi(n, e, t) {
-  const i = $(n, e);
+  const i = w(n, e);
   return i !== void 0 ? i : t;
 }
 h(Vi, "getByPathOrDefault");
@@ -885,7 +885,7 @@ let F = (oe = class extends C {
           page: r.meta.page ?? this._currentPage,
           pageSize: r.meta.page_size ?? this.pageSize,
           total: r.meta.total ?? 0
-        }), this.transform ? this._data = $(r, this.transform) : this.paginate && r.data && !this.transform ? this._data = r.data : this._data = r, q(this.id, this._data);
+        }), this.transform ? this._data = w(r, this.transform) : this.paginate && r.data && !this.transform ? this._data = r.data : this._data = r, q(this.id, this._data);
       } catch (e) {
         if (e.name === "AbortError")
           return;
@@ -1475,7 +1475,7 @@ let v = (le = class extends C {
     return e === "true" ? !0 : e === "false" ? !1 : !isNaN(Number(e)) && e !== "" ? Number(e) : e;
   }
   _matchesFilter(e, t) {
-    const i = $(e, t.field);
+    const i = w(e, t.field);
     switch (t.operator) {
       case "eq":
         return i == t.value;
@@ -1511,7 +1511,7 @@ let v = (le = class extends C {
   _applyGroupByAndAggregate(e) {
     const t = this.groupBy.split(",").map((a) => a.trim()).filter(Boolean), i = this._parseAggregates(this.aggregate), r = /* @__PURE__ */ new Map();
     for (const a of e) {
-      const o = t.map((l) => String($(a, l) ?? "")).join("|||");
+      const o = t.map((l) => String(w(a, l) ?? "")).join("|||");
       r.has(o) || r.set(o, []), r.get(o).push(a);
     }
     const s = [];
@@ -1543,7 +1543,7 @@ let v = (le = class extends C {
     return t;
   }
   _computeAggregate(e, t) {
-    const i = e.map((r) => Number($(r, t.field))).filter((r) => !isNaN(r));
+    const i = e.map((r) => Number(w(r, t.field))).filter((r) => !isNaN(r));
     switch (t.function) {
       case "count":
         return e.length;
@@ -1568,7 +1568,7 @@ let v = (le = class extends C {
       return e;
     const i = t[0], r = (t[1] || "asc").toLowerCase();
     return [...e].sort((s, a) => {
-      const o = $(s, i), l = $(a, i), c = Number(o), p = Number(l);
+      const o = w(s, i), l = w(a, i), c = Number(o), p = Number(l);
       if (!isNaN(c) && !isNaN(p))
         return r === "desc" ? p - c : c - p;
       const f = String(o ?? ""), g = String(l ?? "");
@@ -1601,7 +1601,7 @@ let v = (le = class extends C {
    */
   async _fetchAllDelegated() {
     const e = await this._adapter.fetchAll(this._getAdapterParams(), this._abortController.signal);
-    e.needsClientProcessing ? (this._rawData = e.data, this._processClientSide()) : (this._data = this.transform ? $(e.data, this.transform) : e.data, q(this.id, this._data));
+    e.needsClientProcessing ? (this._rawData = e.data, this._processClientSide()) : (this._data = this.transform ? w(e.data, this.transform) : e.data, q(this.id, this._data));
   }
   /**
    * Fetch une seule page en mode server-side via l'adapter.
@@ -1614,7 +1614,7 @@ let v = (le = class extends C {
     }, t = await this._adapter.fetchPage(this._getAdapterParams(), e, this._abortController.signal);
     let i = t.data;
     if (this.transform) {
-      const r = t.rawJson || i, s = $(r, this.transform);
+      const r = t.rawJson || i, s = w(r, this.transform);
       i = Array.isArray(s) ? s : [s];
     }
     yt(this.id, {
@@ -1633,7 +1633,7 @@ let v = (le = class extends C {
     if (!r.ok)
       throw new Error(`HTTP ${r.status}: ${r.statusText}`);
     const s = await r.json();
-    let a = this.transform ? $(s, this.transform) : s;
+    let a = this.transform ? w(s, this.transform) : s;
     Array.isArray(a) || (this._adapter.type === "tabular" && s.data ? a = s.data : a = [a]), this._data = a, q(this.id, this._data);
   }
   /**
@@ -1962,15 +1962,15 @@ I([
 z = I([
   D("gouv-normalize")
 ], z);
-var x = function(n, e, t, i) {
+var P = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
   return r > 3 && s && Object.defineProperty(e, t, s), s;
 }, ue;
-let w = (ue = class extends C {
+let y = (ue = class extends C {
   constructor() {
-    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this.hideCounts = !1, this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (e) => {
+    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this.hideCounts = !1, this.cols = "", this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (e) => {
       if (!this._openMultiselectField)
         return;
       const t = e.target, i = this.querySelector(`[data-multiselect="${this._openMultiselectField}"]`);
@@ -1997,7 +1997,7 @@ let w = (ue = class extends C {
       this._initialize();
       return;
     }
-    ["fields", "labels", "sort", "hideEmpty", "maxValues", "disjunctive", "searchable", "display"].some((r) => e.has(r)) && this._rawData.length > 0 && (this.serverFacets ? this._fetchServerFacets() : (this._buildFacetGroups(), this._applyFilters()));
+    ["fields", "labels", "sort", "hideEmpty", "maxValues", "disjunctive", "searchable", "display", "cols"].some((r) => e.has(r)) && this._rawData.length > 0 && (this.serverFacets ? this._fetchServerFacets() : (this._buildFacetGroups(), this._applyFilters()));
   }
   _initialize() {
     if (!this.id) {
@@ -2225,6 +2225,28 @@ let w = (ue = class extends C {
   _getDisplayMode(e) {
     return this._parseDisplayModes().get(e) ?? "checkbox";
   }
+  /** Parse cols attribute: returns global col size or per-field map */
+  _parseCols() {
+    if (!this.cols)
+      return null;
+    const e = this.cols.trim();
+    if (/^\d+$/.test(e))
+      return { global: parseInt(e, 10) };
+    const t = /* @__PURE__ */ new Map(), i = e.split("|");
+    for (const r of i) {
+      const s = r.indexOf(":");
+      if (s === -1)
+        continue;
+      const a = r.substring(0, s).trim(), o = parseInt(r.substring(s + 1).trim(), 10);
+      a && !isNaN(o) && t.set(a, o);
+    }
+    return t.size > 0 ? { map: t, fallback: 6 } : null;
+  }
+  /** Get DSFR col class for a specific field */
+  _getColClass(e) {
+    const t = this._parseCols();
+    return t ? "global" in t ? `fr-col-${t.global}` : `fr-col-${t.map.get(e) ?? t.fallback}` : "";
+  }
   // --- User interaction ---
   _toggleValue(e, t) {
     const i = { ...this._activeSelections }, r = new Set(i[e] ?? []), s = this._getDisplayMode(e), a = je(this.disjunctive), o = s === "multiselect" || s === "checkbox" && a.includes(e);
@@ -2327,7 +2349,7 @@ let w = (ue = class extends C {
   render() {
     if (this._rawData.length === 0 || this._facetGroups.length === 0)
       return b;
-    const e = Object.keys(this._activeSelections).some((t) => this._activeSelections[t].size > 0);
+    const e = Object.keys(this._activeSelections).some((i) => this._activeSelections[i].size > 0), t = !!this.cols;
     return d`
       <style>
         .gouv-facets { margin-bottom: 1.5rem; }
@@ -2353,9 +2375,19 @@ let w = (ue = class extends C {
             </button>
           </div>
         ` : b}
-        <div class="gouv-facets__groups">
-          ${this._facetGroups.map((t) => this._renderFacetGroup(t))}
-        </div>
+        ${t ? d`
+          <div class="fr-grid-row fr-grid-row--gutters">
+            ${this._facetGroups.map((i) => d`
+              <div class="${this._getColClass(i.field)}">
+                ${this._renderFacetGroup(i)}
+              </div>
+            `)}
+          </div>
+        ` : d`
+          <div class="gouv-facets__groups">
+            ${this._facetGroups.map((i) => this._renderFacetGroup(i))}
+          </div>
+        `}
       </div>
     `;
   }
@@ -2557,69 +2589,72 @@ let w = (ue = class extends C {
     `;
   }
 }, h(ue, "GouvFacets"), ue);
-x([
+P([
   u({ type: String })
-], w.prototype, "source", void 0);
-x([
+], y.prototype, "source", void 0);
+P([
   u({ type: String })
-], w.prototype, "fields", void 0);
-x([
+], y.prototype, "fields", void 0);
+P([
   u({ type: String })
-], w.prototype, "labels", void 0);
-x([
+], y.prototype, "labels", void 0);
+P([
   u({ type: Number, attribute: "max-values" })
-], w.prototype, "maxValues", void 0);
-x([
+], y.prototype, "maxValues", void 0);
+P([
   u({ type: String })
-], w.prototype, "disjunctive", void 0);
-x([
+], y.prototype, "disjunctive", void 0);
+P([
   u({ type: String })
-], w.prototype, "sort", void 0);
-x([
+], y.prototype, "sort", void 0);
+P([
   u({ type: String })
-], w.prototype, "searchable", void 0);
-x([
+], y.prototype, "searchable", void 0);
+P([
   u({ type: Boolean, attribute: "hide-empty" })
-], w.prototype, "hideEmpty", void 0);
-x([
+], y.prototype, "hideEmpty", void 0);
+P([
   u({ type: String })
-], w.prototype, "display", void 0);
-x([
+], y.prototype, "display", void 0);
+P([
   u({ type: Boolean, attribute: "url-params" })
-], w.prototype, "urlParams", void 0);
-x([
+], y.prototype, "urlParams", void 0);
+P([
   u({ type: String, attribute: "url-param-map" })
-], w.prototype, "urlParamMap", void 0);
-x([
+], y.prototype, "urlParamMap", void 0);
+P([
   u({ type: Boolean, attribute: "url-sync" })
-], w.prototype, "urlSync", void 0);
-x([
+], y.prototype, "urlSync", void 0);
+P([
   u({ type: Boolean, attribute: "server-facets" })
-], w.prototype, "serverFacets", void 0);
-x([
+], y.prototype, "serverFacets", void 0);
+P([
   u({ type: Boolean, attribute: "hide-counts" })
-], w.prototype, "hideCounts", void 0);
-x([
+], y.prototype, "hideCounts", void 0);
+P([
+  u({ type: String })
+], y.prototype, "cols", void 0);
+P([
   m()
-], w.prototype, "_rawData", void 0);
-x([
+], y.prototype, "_rawData", void 0);
+P([
   m()
-], w.prototype, "_facetGroups", void 0);
-x([
+], y.prototype, "_facetGroups", void 0);
+P([
   m()
-], w.prototype, "_activeSelections", void 0);
-x([
+], y.prototype, "_activeSelections", void 0);
+P([
   m()
-], w.prototype, "_expandedFacets", void 0);
-x([
+], y.prototype, "_expandedFacets", void 0);
+P([
   m()
-], w.prototype, "_searchQueries", void 0);
-x([
+], y.prototype, "_searchQueries", void 0);
+P([
   m()
-], w.prototype, "_openMultiselectField", void 0);
-w = x([
+], y.prototype, "_openMultiselectField", void 0);
+y = P([
   D("gouv-facets")
-], w);
+], y);
 function je(n) {
   return n ? n.split(",").map((e) => e.trim()).filter(Boolean) : [];
 }
@@ -3709,7 +3744,7 @@ let T = (fe = class extends We(C) {
     let r = t, s = "";
     const a = t.indexOf("|");
     a !== -1 && (r = t.substring(0, a).trim(), s = t.substring(a + 1).trim());
-    const o = $(e, r);
+    const o = w(e, r);
     return o == null ? s : String(o);
   }
   // --- Pagination ---
@@ -3751,7 +3786,7 @@ let T = (fe = class extends We(C) {
   /** Generate the unique ID string for an item */
   _getItemUid(e, t) {
     if (this.uidField) {
-      const i = $(e, this.uidField);
+      const i = w(e, this.uidField);
       if (i != null && i !== "")
         return `item-${String(i).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
     }
@@ -3892,7 +3927,7 @@ N([
 T = N([
   D("gouv-display")
 ], T);
-var P = function(n, e, t, i) {
+var x = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -3910,7 +3945,7 @@ const Ni = {
   "map-reg": "map-chart-reg"
 };
 var ge;
-let y = (ge = class extends We(C) {
+let $ = (ge = class extends We(C) {
   constructor() {
     super(...arguments), this.source = "", this.type = "bar", this.labelField = "", this.codeField = "", this.valueField = "", this.valueField2 = "", this.name = "", this.selectedPalette = "categorical", this.unitTooltip = "", this.unitTooltipBar = "", this.horizontal = !1, this.stacked = !1, this.fill = !1, this.highlightIndex = "", this.xMin = "", this.xMax = "", this.yMin = "", this.yMax = "", this.gaugeValue = null, this.mapHighlight = "", this._data = [];
   }
@@ -3930,7 +3965,7 @@ let y = (ge = class extends We(C) {
       return { x: "[[]]", y: "[[]]", labels: [] };
     const e = [], t = [], i = [];
     for (const r of this._data)
-      e.push(String($(r, this.labelField) ?? "N/A")), t.push(Number($(r, this.valueField)) || 0), this.valueField2 && i.push(Number($(r, this.valueField2)) || 0);
+      e.push(String(w(r, this.labelField) ?? "N/A")), t.push(Number(w(r, this.valueField)) || 0), this.valueField2 && i.push(Number(w(r, this.valueField2)) || 0);
     return {
       x: JSON.stringify([e]),
       y: JSON.stringify([t]),
@@ -3943,9 +3978,9 @@ let y = (ge = class extends We(C) {
       return "{}";
     const e = this.codeField || this.labelField, t = {};
     for (const i of this._data) {
-      let r = String($(i, e) ?? "").trim();
+      let r = String(w(i, e) ?? "").trim();
       /^\d+$/.test(r) && r.length < 3 && (r = r.padStart(2, "0"));
-      const s = Number($(i, this.valueField)) || 0;
+      const s = Number(w(i, this.valueField)) || 0;
       (this.type === "map" ? ki(r) : r !== "") && (t[r] = Math.round(s * 100) / 100);
     }
     return JSON.stringify(t);
@@ -3966,7 +4001,7 @@ let y = (ge = class extends We(C) {
     const { x: e, y: t, y2: i, labels: r } = this._processData(), s = {}, a = {};
     switch (this.type) {
       case "gauge": {
-        const o = this.gaugeValue ?? (this._data.length > 0 && Number($(this._data[0], this.valueField)) || 0);
+        const o = this.gaugeValue ?? (this._data.length > 0 && Number(w(this._data[0], this.valueField)) || 0);
         s.percent = String(Math.round(o)), s.init = "0", s.target = "100";
         break;
       }
@@ -3981,7 +4016,7 @@ let y = (ge = class extends We(C) {
         if (s.data = this._processMapData(), this._data.length > 0) {
           let o = 0, l = 0;
           for (const c of this._data) {
-            const p = Number($(c, this.valueField));
+            const p = Number(w(c, this.valueField));
             isNaN(p) || (o += p, l++);
           }
           if (l > 0) {
@@ -4075,72 +4110,72 @@ let y = (ge = class extends We(C) {
       ` : this._renderChart();
   }
 }, h(ge, "GouvDsfrChart"), ge);
-P([
+x([
   u({ type: String })
-], y.prototype, "source", void 0);
-P([
+], $.prototype, "source", void 0);
+x([
   u({ type: String })
-], y.prototype, "type", void 0);
-P([
+], $.prototype, "type", void 0);
+x([
   u({ type: String, attribute: "label-field" })
-], y.prototype, "labelField", void 0);
-P([
+], $.prototype, "labelField", void 0);
+x([
   u({ type: String, attribute: "code-field" })
-], y.prototype, "codeField", void 0);
-P([
+], $.prototype, "codeField", void 0);
+x([
   u({ type: String, attribute: "value-field" })
-], y.prototype, "valueField", void 0);
-P([
+], $.prototype, "valueField", void 0);
+x([
   u({ type: String, attribute: "value-field-2" })
-], y.prototype, "valueField2", void 0);
-P([
+], $.prototype, "valueField2", void 0);
+x([
   u({ type: String })
-], y.prototype, "name", void 0);
-P([
+], $.prototype, "name", void 0);
+x([
   u({ type: String, attribute: "selected-palette" })
-], y.prototype, "selectedPalette", void 0);
-P([
+], $.prototype, "selectedPalette", void 0);
+x([
   u({ type: String, attribute: "unit-tooltip" })
-], y.prototype, "unitTooltip", void 0);
-P([
+], $.prototype, "unitTooltip", void 0);
+x([
   u({ type: String, attribute: "unit-tooltip-bar" })
-], y.prototype, "unitTooltipBar", void 0);
-P([
+], $.prototype, "unitTooltipBar", void 0);
+x([
   u({ type: Boolean })
-], y.prototype, "horizontal", void 0);
-P([
+], $.prototype, "horizontal", void 0);
+x([
   u({ type: Boolean })
-], y.prototype, "stacked", void 0);
-P([
+], $.prototype, "stacked", void 0);
+x([
   u({ type: Boolean })
-], y.prototype, "fill", void 0);
-P([
+], $.prototype, "fill", void 0);
+x([
   u({ type: String, attribute: "highlight-index" })
-], y.prototype, "highlightIndex", void 0);
-P([
+], $.prototype, "highlightIndex", void 0);
+x([
   u({ type: String, attribute: "x-min" })
-], y.prototype, "xMin", void 0);
-P([
+], $.prototype, "xMin", void 0);
+x([
   u({ type: String, attribute: "x-max" })
-], y.prototype, "xMax", void 0);
-P([
+], $.prototype, "xMax", void 0);
+x([
   u({ type: String, attribute: "y-min" })
-], y.prototype, "yMin", void 0);
-P([
+], $.prototype, "yMin", void 0);
+x([
   u({ type: String, attribute: "y-max" })
-], y.prototype, "yMax", void 0);
-P([
+], $.prototype, "yMax", void 0);
+x([
   u({ type: Number, attribute: "gauge-value" })
-], y.prototype, "gaugeValue", void 0);
-P([
+], $.prototype, "gaugeValue", void 0);
+x([
   u({ type: String, attribute: "map-highlight" })
-], y.prototype, "mapHighlight", void 0);
-P([
+], $.prototype, "mapHighlight", void 0);
+x([
   m()
-], y.prototype, "_data", void 0);
-y = P([
+], $.prototype, "_data", void 0);
+$ = x([
   D("gouv-dsfr-chart")
-], y);
+], $);
 var Qe = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
@@ -5163,8 +5198,8 @@ K = ie([
 ], K);
 function zi(n, e, t) {
   return n.map((i) => ({
-    label: String($(i, e) ?? "N/A"),
-    value: Number($(i, t)) || 0
+    label: String(w(i, e) ?? "N/A"),
+    value: Number(w(i, t)) || 0
   }));
 }
 h(zi, "extractLabelValues");
@@ -5221,8 +5256,8 @@ export {
   U as DATA_EVENTS,
   k as GouvDatalist,
   T as GouvDisplay,
-  y as GouvDsfrChart,
-  w as GouvFacets,
+  $ as GouvDsfrChart,
+  y as GouvFacets,
   O as GouvKpi,
   z as GouvNormalize,
   v as GouvQuery,
@@ -5241,7 +5276,7 @@ export {
   Fi as formatPercentage,
   Jt as formatValue,
   rt as getAdapter,
-  $ as getByPath,
+  w as getByPath,
   Vi as getByPathOrDefault,
   Pe as getDataCache,
   Hi as hasPath,
