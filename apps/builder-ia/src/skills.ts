@@ -542,18 +542,21 @@ Sortie : meme tableau, filtre selon les selections de l'utilisateur.
 | sort | String | \`"count"\` | non | Tri des valeurs : count, -count, alpha, -alpha |
 | searchable | String | \`""\` | non | Champs avec barre de recherche (virgule-separes) |
 | hide-empty | Boolean | \`false\` | non | Masquer les facettes avec une seule valeur |
-| display | String | \`""\` | non | Mode d'affichage par facette : \`"field:select | field2:multiselect"\`. Modes : checkbox (defaut), select, multiselect |
+| display | String | \`""\` | non | Mode d'affichage par facette : \`"field:select | field2:multiselect"\`. Modes : checkbox (defaut), select, multiselect, radio |
+| hide-counts | Boolean | \`false\` | non | Masquer les compteurs (N) a cote de chaque valeur de facette |
 | url-params | Boolean | \`false\` | non | Active la lecture des parametres d'URL comme pre-selections de facettes |
 | url-param-map | String | \`""\` | non | Mapping URL param -> champ : \`"r:region | t:type"\`. Si vide, correspondance directe |
 | url-sync | Boolean | \`false\` | non | Synchronise l'URL quand l'utilisateur change les facettes (replaceState) |
 | server-facets | Boolean | \`false\` | non | Active le mode facettes serveur ODS. Fetch les valeurs depuis l'API ODS /facets. Requiert source vers gouv-query server-side api-type="opendatasoft". En mode server-facets, fields est obligatoire |
 
 ### Modes d'affichage
-- **checkbox** (defaut) : checkboxes inline avec compteurs, "Voir plus/moins", recherche optionnelle
+- **checkbox** (defaut) : fieldset DSFR avec checkboxes, compteurs, "Voir plus/moins", recherche optionnelle
 - **select** : liste deroulante DSFR standard, selection exclusive (une seule valeur)
-- **multiselect** : dropdown custom avec checkboxes, recherche integree, bouton "Tout deselectionner"
+- **multiselect** : dropdown collapsible avec checkboxes DSFR, recherche integree, bouton "Tout selectionner/deselectionner"
+- **radio** : dropdown collapsible avec radio buttons DSFR, recherche integree, selection exclusive
 
 Le mode \`select\` rend la facette automatiquement exclusive.
+Le mode \`radio\` rend la facette automatiquement exclusive.
 Le mode \`multiselect\` rend la facette automatiquement disjonctive (multi-selection OU).
 
 ### Logique de filtrage

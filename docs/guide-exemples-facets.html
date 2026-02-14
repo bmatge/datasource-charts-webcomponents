@@ -82,7 +82,7 @@
 
         <h1><i class="ri-filter-3-line fr-mr-1w"></i>gouv-facets</h1>
         <p class="fr-text--lead">
-          <code>gouv-facets</code> affiche des filtres a facettes interactifs (checkboxes, selects, multiselects) et filtre les donnees en amont avant de les redistribuer aux composants en aval. Deux modes : <strong>client-side</strong> (calcul local) et <strong>server-facets</strong> (API ODS).
+          <code>gouv-facets</code> affiche des filtres a facettes interactifs conformes DSFR (checkboxes, selects, multiselects, radios) et filtre les donnees en amont avant de les redistribuer aux composants en aval. Deux modes : <strong>client-side</strong> (calcul local) et <strong>server-facets</strong> (API ODS).
         </p>
 
         <h2>Mode client-side</h2>
@@ -211,6 +211,46 @@
           </div>
         </section>
 
+        <h2>Modes d'affichage</h2>
+        <p>L'attribut <code>display</code> permet de choisir le mode d'affichage par facette. Quatre modes sont disponibles :</p>
+        <ul>
+          <li><code>checkbox</code> (defaut) : checkboxes DSFR dans un fieldset ouvert</li>
+          <li><code>select</code> : liste deroulante native DSFR, selection exclusive</li>
+          <li><code>multiselect</code> : dropdown DSFR avec checkboxes, recherche et bouton "Tout selectionner/deselectionner"</li>
+          <li><code>radio</code> : dropdown DSFR avec radio buttons, recherche, selection exclusive</li>
+        </ul>
+
+        <!-- facets-display-modes -->
+        <h4>Les 4 modes — radio, multiselect, select, checkbox</h4>
+        <p>Chaque facette utilise un mode different. L'attribut <code>hide-counts</code> masque les compteurs.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-modes">Code source</button></h3>
+          <div class="fr-collapse" id="code-f-modes">
+<pre class="example-code">&lt;gouv-source id="raw"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="raw"
+  rename="Nom de l'&amp;eacute;lu:Nom | Pr&amp;eacute;nom de l'&amp;eacute;lu:Prenom | Libell&amp;eacute; du d&amp;eacute;partement:Departement | Libell&amp;eacute; de la commune:Commune | Libell&amp;eacute; de la cat&amp;eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
+  trim&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-facets id="filtered" source="clean"
+  fields="Sexe, Departement, Categorie, Commune"
+  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
+  display="Sexe:radio | Departement:multiselect | Categorie:select"
+  max-values="6"&gt;
+&lt;/gouv-facets&gt;
+
+&lt;gouv-datalist source="filtered"
+  colonnes="Nom, Prenom, Commune, Departement"
+  recherche="true"
+  pagination="10"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
         <h2>Mode server-facets (ODS)</h2>
         <p>En mode <code>server-facets</code>, <code>gouv-facets</code> fetche les valeurs de facettes depuis l'API ODS <code>/facets</code> au lieu de les calculer localement. Cela permet des facettes dynamiques sur des datasets de millions de records. Les compteurs se mettent a jour automatiquement selon la recherche et les selections cross-facet.</p>
         <p>Requis : <code>source</code> pointant vers un <code>gouv-query</code> avec <code>api-type="opendatasoft"</code> et <code>server-side</code>. L'attribut <code>fields</code> est obligatoire (pas d'auto-detection en mode serveur).</p>
@@ -279,7 +319,8 @@
               <tr><td><code>sort</code></td><td>String</td><td>Tri des valeurs : <code>count</code> (defaut), <code>alpha</code>, <code>alpha-desc</code></td></tr>
               <tr><td><code>searchable</code></td><td>String</td><td>Champs avec barre de recherche dans les facettes : CSV</td></tr>
               <tr><td><code>hide-empty</code></td><td>Boolean</td><td>Masquer les groupes avec 0 ou 1 valeur</td></tr>
-              <tr><td><code>display</code></td><td>String</td><td>Mode d'affichage : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code></td></tr>
+              <tr><td><code>display</code></td><td>String</td><td>Mode d'affichage : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>, <code>radio</code></td></tr>
+              <tr><td><code>hide-counts</code></td><td>Boolean</td><td>Masquer les compteurs a cote de chaque valeur de facette</td></tr>
               <tr><td><code>url-params</code></td><td>Boolean</td><td>Initialise les selections depuis les parametres URL</td></tr>
               <tr><td><code>url-param-map</code></td><td>String</td><td>Mapping URL param → champ : <code>param:field | param2:field2</code></td></tr>
               <tr><td><code>url-sync</code></td><td>Boolean</td><td>Synchronise l'URL quand l'utilisateur change les facettes</td></tr>

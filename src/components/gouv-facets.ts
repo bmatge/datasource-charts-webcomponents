@@ -11,7 +11,7 @@ import {
   dispatchSourceCommand
 } from '../utils/data-bridge.js';
 
-type FacetDisplayMode = 'checkbox' | 'select' | 'multiselect';
+type FacetDisplayMode = 'checkbox' | 'select' | 'multiselect' | 'radio';
 
 interface FacetValue {
   value: string;
@@ -97,6 +97,10 @@ export class GouvFacets extends LitElement {
    */
   @property({ type: Boolean, attribute: 'server-facets' })
   serverFacets = false;
+
+  /** Masquer les compteurs a cote de chaque valeur de facette */
+  @property({ type: Boolean, attribute: 'hide-counts' })
+  hideCounts = false;
 
   @state()
   private _rawData: Record<string, unknown>[] = [];
@@ -513,7 +517,7 @@ export class GouvFacets extends LitElement {
       if (colonIndex === -1) continue;
       const key = pair.substring(0, colonIndex).trim();
       const value = pair.substring(colonIndex + 1).trim();
-      if (key && (value === 'checkbox' || value === 'select' || value === 'multiselect')) {
+      if (key && (value === 'checkbox' || value === 'select' || value === 'multiselect' || value === 'radio')) {
         map.set(key, value);
       }
     }
@@ -533,7 +537,7 @@ export class GouvFacets extends LitElement {
 
     const displayMode = this._getDisplayMode(field);
     const disjunctiveFields = _parseCSV(this.disjunctive);
-    // select = always exclusive, multiselect = always disjunctive, checkbox = check attribute
+    // select/radio = always exclusive, multiselect = always disjunctive, checkbox = check attribute
     const isDisjunctive = displayMode === 'multiselect'
       || (displayMode === 'checkbox' && disjunctiveFields.includes(field));
 
@@ -574,6 +578,15 @@ export class GouvFacets extends LitElement {
   private _clearFieldSelections(field: string) {
     const selections = { ...this._activeSelections };
     delete selections[field];
+    this._activeSelections = selections;
+    this._afterSelectionChange();
+  }
+
+  private _selectAllValues(field: string) {
+    const group = this._facetGroups.find(g => g.field === field);
+    if (!group) return;
+    const selections = { ...this._activeSelections };
+    selections[field] = new Set(group.values.map(v => v.value));
     this._activeSelections = selections;
     this._afterSelectionChange();
   }
@@ -713,27 +726,21 @@ export class GouvFacets extends LitElement {
         .gouv-facets__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
         .gouv-facets__groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
         .gouv-facets__group { min-width: 0; }
-        .gouv-facets__legend { font-weight: 700; font-size: 0.875rem; margin-bottom: 0.5rem; display: block; }
-        .gouv-facets__search { margin-bottom: 0.5rem; }
-        .gouv-facets__search input { width: 100%; padding: 0.375rem 0.5rem; font-size: 0.8125rem; }
-        .gouv-facets__values { list-style: none; padding: 0; margin: 0; }
-        .gouv-facets__value { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; font-size: 0.875rem; }
-        .gouv-facets__value:hover { background: var(--background-alt-grey, #f6f6f6); }
-        .gouv-facets__value input[type="checkbox"] { flex-shrink: 0; }
-        .gouv-facets__value-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .gouv-facets__value-count { flex-shrink: 0; font-size: 0.75rem; color: var(--text-mention-grey, #666); }
-        .gouv-facets__more { background: none; border: none; color: var(--text-action-high-blue-france, #000091); cursor: pointer; font-size: 0.8125rem; padding: 0.25rem 0; margin-top: 0.25rem; }
-        .gouv-facets__more:hover { text-decoration: underline; }
+        .gouv-facets__count { font-weight: 400; font-size: 0.75rem; color: var(--text-mention-grey, #666); margin-left: 0.25rem; }
         .gouv-facets__multiselect { position: relative; }
-        .gouv-facets__multiselect-trigger { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; font-weight: 400; }
-        .gouv-facets__multiselect-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: var(--background-default-grey, #fff); border: 1px solid var(--border-default-grey, #ddd); border-radius: 0 0 0.25rem 0.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); max-height: 320px; overflow-y: auto; padding: 0.5rem; }
-        .gouv-facets__multiselect-clear { width: 100%; text-align: left; margin-bottom: 0.5rem; }
+        .gouv-facets__multiselect-trigger { width: 100%; text-align: left; cursor: pointer; appearance: none; }
+        .gouv-facets__multiselect-trigger[aria-expanded="true"]::after { transform: rotate(180deg); }
+        .gouv-facets__multiselect-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: var(--background-default-grey, #fff); border: 1px solid var(--border-default-grey, #ddd); border-radius: 0 0 0.25rem 0.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); max-height: 320px; overflow-y: auto; padding: 0.75rem; }
+        .gouv-facets__multiselect-panel .fr-search-bar { margin-bottom: 0.75rem; }
+        .gouv-facets__dropdown-fieldset { margin: 0; padding: 0; border: none; }
+        .gouv-facets__dropdown-fieldset .fr-fieldset__element { padding: 0; }
+        .gouv-facets__multiselect-toggle { width: 100%; margin-bottom: 0.75rem; }
         @media (max-width: 576px) { .gouv-facets__groups { grid-template-columns: 1fr; } }
       </style>
       <div class="gouv-facets">
         ${hasActiveFilters ? html`
           <div class="gouv-facets__header">
-            <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" type="button" @click="${this._clearAll}">
+            <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-btn--icon-left fr-icon-close-circle-line" type="button" @click="${this._clearAll}">
               Reinitialiser les filtres
             </button>
           </div>
@@ -752,6 +759,8 @@ export class GouvFacets extends LitElement {
         return this._renderSelectGroup(group);
       case 'multiselect':
         return this._renderMultiselectGroup(group);
+      case 'radio':
+        return this._renderRadioGroup(group);
       default:
         return this._renderCheckboxGroup(group);
     }
@@ -774,37 +783,42 @@ export class GouvFacets extends LitElement {
     const uid = `facet-${this.id}-${group.field}`;
 
     return html`
-      <fieldset class="gouv-facets__group fr-fieldset" aria-labelledby="${uid}-legend">
-        <legend class="gouv-facets__legend" id="${uid}-legend">${group.label}</legend>
+      <fieldset class="fr-fieldset gouv-facets__group" aria-labelledby="${uid}-legend">
+        <legend class="fr-fieldset__legend fr-text--bold" id="${uid}-legend">${group.label}</legend>
         ${isSearchable ? html`
-          <div class="gouv-facets__search">
-            <input class="fr-input fr-input--sm" type="search"
-              placeholder="Rechercher..."
-              .value="${this._searchQueries[group.field] ?? ''}"
-              @input="${(e: Event) => this._handleSearch(group.field, e)}"
-              aria-label="Rechercher dans ${group.label}">
+          <div class="fr-fieldset__element">
+            <div class="fr-input-group">
+              <input class="fr-input fr-input--sm" type="search"
+                placeholder="Rechercher..."
+                .value="${this._searchQueries[group.field] ?? ''}"
+                @input="${(e: Event) => this._handleSearch(group.field, e)}"
+                aria-label="Rechercher dans ${group.label}">
+            </div>
           </div>
         ` : nothing}
-        <ul class="gouv-facets__values" role="group">
-          ${visibleValues.map(fv => {
-            const checkId = `${uid}-${fv.value.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            const isChecked = selected.has(fv.value);
-            return html`
-              <li class="gouv-facets__value">
+        ${visibleValues.map(fv => {
+          const checkId = `${uid}-${fv.value.replace(/[^a-zA-Z0-9]/g, '_')}`;
+          const isChecked = selected.has(fv.value);
+          return html`
+            <div class="fr-fieldset__element">
+              <div class="fr-checkbox-group fr-checkbox-group--sm">
                 <input type="checkbox" id="${checkId}"
                   .checked="${isChecked}"
                   @change="${() => this._toggleValue(group.field, fv.value)}">
-                <label class="gouv-facets__value-label" for="${checkId}">${fv.value}</label>
-                <span class="gouv-facets__value-count">${fv.count}</span>
-              </li>
-            `;
-          })}
-        </ul>
+                <label class="fr-label" for="${checkId}">
+                  ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                </label>
+              </div>
+            </div>
+          `;
+        })}
         ${hasMore ? html`
-          <button class="gouv-facets__more" type="button"
-            @click="${() => this._toggleExpand(group.field)}">
-            ${isExpanded ? 'Voir moins' : `Voir plus (${displayValues.length - this.maxValues})`}
-          </button>
+          <div class="fr-fieldset__element">
+            <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" type="button"
+              @click="${() => this._toggleExpand(group.field)}">
+              ${isExpanded ? 'Voir moins' : `Voir plus (${displayValues.length - this.maxValues})`}
+            </button>
+          </div>
         ` : nothing}
       </fieldset>
     `;
@@ -823,7 +837,7 @@ export class GouvFacets extends LitElement {
           <option value="" ?selected="${!selectedValue}">Tous</option>
           ${group.values.map(fv => html`
             <option value="${fv.value}" ?selected="${fv.value === selectedValue}">
-              ${fv.value} (${fv.count})
+              ${this.hideCounts ? fv.value : `${fv.value} (${fv.count})`}
             </option>
           `)}
         </select>
@@ -847,50 +861,116 @@ export class GouvFacets extends LitElement {
       : 'Selectionnez des options';
 
     return html`
-      <div class="gouv-facets__group gouv-facets__multiselect"
+      <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${group.field}"
            data-field="${group.field}">
-        <label class="gouv-facets__legend" id="${uid}-legend">${group.label}</label>
-        <button class="fr-btn fr-btn--secondary fr-btn--sm gouv-facets__multiselect-trigger"
+        <label class="fr-label" id="${uid}-legend">${group.label}</label>
+        <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
           aria-expanded="${isOpen}"
           aria-controls="${uid}-panel"
           @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
           ${triggerLabel}
-          <span class="fr-icon-arrow-${isOpen ? 'up' : 'down'}-s-line" aria-hidden="true"></span>
         </button>
         ${isOpen ? html`
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
                @click="${(e: Event) => e.stopPropagation()}">
-            ${selected.size > 0 ? html`
-              <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm gouv-facets__multiselect-clear"
-                type="button"
-                @click="${() => this._clearFieldSelections(group.field)}">
-                Tout deselectionner
-              </button>
-            ` : nothing}
-            <div class="gouv-facets__search">
-              <input class="fr-input fr-input--sm" type="search"
+            <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left ${selected.size > 0 ? 'fr-icon-close-circle-line' : 'fr-icon-check-line'} gouv-facets__multiselect-toggle"
+              type="button"
+              @click="${() => selected.size > 0 ? this._clearFieldSelections(group.field) : this._selectAllValues(group.field)}">
+              ${selected.size > 0 ? 'Tout deselectionner' : 'Tout selectionner'}
+            </button>
+            <div class="fr-search-bar" role="search">
+              <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>
+              <input class="fr-input" type="search" id="${uid}-search"
                 placeholder="Rechercher..."
                 .value="${this._searchQueries[group.field] ?? ''}"
-                @input="${(e: Event) => this._handleSearch(group.field, e)}"
-                aria-label="Rechercher dans ${group.label}">
+                @input="${(e: Event) => this._handleSearch(group.field, e)}">
+              <button class="fr-btn" type="button" title="Rechercher" aria-label="Rechercher">
+                Rechercher
+              </button>
             </div>
-            <ul class="gouv-facets__values" role="group">
+            <fieldset class="fr-fieldset gouv-facets__dropdown-fieldset" aria-label="${group.label}">
               ${displayValues.map(fv => {
                 const checkId = `${uid}-${fv.value.replace(/[^a-zA-Z0-9]/g, '_')}`;
                 const isChecked = selected.has(fv.value);
                 return html`
-                  <li class="gouv-facets__value">
-                    <input type="checkbox" id="${checkId}"
-                      .checked="${isChecked}"
-                      @change="${() => this._toggleValue(group.field, fv.value)}">
-                    <label class="gouv-facets__value-label" for="${checkId}">${fv.value}</label>
-                    <span class="gouv-facets__value-count">${fv.count}</span>
-                  </li>
+                  <div class="fr-fieldset__element">
+                    <div class="fr-checkbox-group fr-checkbox-group--sm">
+                      <input type="checkbox" id="${checkId}"
+                        .checked="${isChecked}"
+                        @change="${() => this._toggleValue(group.field, fv.value)}">
+                      <label class="fr-label" for="${checkId}">
+                        ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                      </label>
+                    </div>
+                  </div>
                 `;
               })}
-            </ul>
+            </fieldset>
+          </div>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  private _renderRadioGroup(group: FacetGroup) {
+    const uid = `facet-${this.id}-${group.field}`;
+    const selected = this._activeSelections[group.field] ?? new Set();
+    const isOpen = this._openMultiselectField === group.field;
+    const searchQuery = (this._searchQueries[group.field] ?? '').toLowerCase();
+
+    let displayValues = group.values;
+    if (searchQuery) {
+      displayValues = displayValues.filter(v => v.value.toLowerCase().includes(searchQuery));
+    }
+
+    const selectedValue = selected.size > 0 ? [...selected][0] : null;
+    const triggerLabel = selectedValue ?? 'Selectionnez une option';
+
+    return html`
+      <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
+           data-multiselect="${group.field}"
+           data-field="${group.field}">
+        <label class="fr-label" id="${uid}-legend">${group.label}</label>
+        <button class="fr-select gouv-facets__multiselect-trigger"
+          type="button"
+          aria-expanded="${isOpen}"
+          aria-controls="${uid}-panel"
+          @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
+          ${triggerLabel}
+        </button>
+        ${isOpen ? html`
+          <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
+               @click="${(e: Event) => e.stopPropagation()}">
+            <div class="fr-search-bar" role="search">
+              <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>
+              <input class="fr-input" type="search" id="${uid}-search"
+                placeholder="Rechercher..."
+                .value="${this._searchQueries[group.field] ?? ''}"
+                @input="${(e: Event) => this._handleSearch(group.field, e)}">
+              <button class="fr-btn" type="button" title="Rechercher" aria-label="Rechercher">
+                Rechercher
+              </button>
+            </div>
+            <fieldset class="fr-fieldset gouv-facets__dropdown-fieldset" aria-label="${group.label}">
+              ${displayValues.map(fv => {
+                const radioId = `${uid}-${fv.value.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const isChecked = selected.has(fv.value);
+                return html`
+                  <div class="fr-fieldset__element">
+                    <div class="fr-radio-group fr-radio-group--sm">
+                      <input type="radio" id="${radioId}" name="${uid}-radio"
+                        .checked="${isChecked}"
+                        @change="${() => this._toggleValue(group.field, fv.value)}">
+                      <label class="fr-label" for="${radioId}">
+                        ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                      </label>
+                    </div>
+                  </div>
+                `;
+              })}
+            </fieldset>
           </div>
         ` : nothing}
       </div>

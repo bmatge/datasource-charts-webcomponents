@@ -126,8 +126,8 @@
         <gouv-facets id="filtered" source="q" server-facets
           fields="categorie_produit, sous_categorie_produit"
           labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
-          max-values="8"
-          searchable="categorie_produit, sous_categorie_produit">
+          display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
+          max-values="8">
         </gouv-facets>
 
         <gouv-query id="alim" source="filtered"
@@ -274,12 +274,12 @@
   count&gt;
 &lt;/gouv-search&gt;
 
-&lt;!-- Facettes server-side --&gt;
+&lt;!-- Facettes server-side (mode dropdown DSFR) --&gt;
 &lt;gouv-facets id="filtered" source="q" server-facets
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
-  max-values="8"
-  searchable="categorie_produit, sous_categorie_produit"&gt;
+  display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
+  max-values="8"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;!-- Split client-side : alimentation (3 plus recents) --&gt;

@@ -109,7 +109,8 @@
             <tr><td><code>sort</code></td><td>String</td><td><code>"count"</code></td><td>Tri des valeurs : <code>count</code>, <code>-count</code>, <code>alpha</code>, <code>-alpha</code>.</td></tr>
             <tr><td><code>searchable</code></td><td>String</td><td><code>""</code></td><td>Champs avec barre de recherche (virgule-separes).</td></tr>
             <tr><td><code>hide-empty</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les facettes avec une seule valeur.</td></tr>
-            <tr><td><code>display</code></td><td>String</td><td><code>""</code></td><td>Mode d'affichage par facette : <code>"field:select | field2:multiselect"</code>. Modes : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>.</td></tr>
+            <tr><td><code>display</code></td><td>String</td><td><code>""</code></td><td>Mode d'affichage par facette : <code>"field:select | field2:multiselect"</code>. Modes : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>, <code>radio</code>.</td></tr>
+            <tr><td><code>hide-counts</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les compteurs a cote de chaque valeur de facette.</td></tr>
           </tbody>
         </table>
 
@@ -124,10 +125,11 @@
         <div class="fr-callout fr-callout--brown-caramel fr-mt-3w">
           <p class="fr-callout__text">
             <strong>Modes d'affichage :</strong><br>
-            <code>checkbox</code> (defaut) : checkboxes inline avec compteurs.<br>
-            <code>select</code> : liste deroulante DSFR, selection exclusive.<br>
-            <code>multiselect</code> : dropdown avec checkboxes, recherche et "Tout deselectionner".<br>
-            Le mode <code>select</code> est automatiquement exclusif, <code>multiselect</code> automatiquement disjonctif.
+            <code>checkbox</code> (defaut) : checkboxes DSFR dans un fieldset ouvert.<br>
+            <code>select</code> : liste deroulante DSFR native, selection exclusive.<br>
+            <code>multiselect</code> : dropdown DSFR avec checkboxes, recherche, "Tout selectionner/deselectionner".<br>
+            <code>radio</code> : dropdown DSFR avec radio buttons, recherche, selection exclusive.<br>
+            Le mode <code>select</code>/<code>radio</code> est automatiquement exclusif, <code>multiselect</code> automatiquement disjonctif.
           </p>
         </div>
 
@@ -320,17 +322,19 @@
 &lt;/gouv-dsfr-chart&gt;</code></pre>
 
         <!-- ========================================================
-             Exemple 4 : Modes d'affichage mixtes
+             Exemple 4 : Modes d'affichage mixtes (4 modes)
              ======================================================== -->
-        <h2 class="fr-mt-6w">Exemple 4 : modes d'affichage mixtes</h2>
-        <p>Trois facettes avec des modes differents : <code>select</code> pour le Sexe (liste deroulante exclusive),
-        <code>multiselect</code> pour le Departement (dropdown multi-selection avec recherche),
-        et <code>checkbox</code> (defaut) pour la Categorie.</p>
+        <h2 class="fr-mt-6w">Exemple 4 : les 4 modes d'affichage</h2>
+        <p>Quatre facettes avec des modes differents :
+        <code>radio</code> pour le Sexe (dropdown avec radio buttons, selection exclusive),
+        <code>multiselect</code> pour le Departement (dropdown avec checkboxes, recherche et "Tout selectionner"),
+        <code>select</code> pour la Categorie (liste deroulante native DSFR),
+        et <code>checkbox</code> (defaut) pour la Commune.</p>
 
         <gouv-facets id="elus-display-demo" source="elus-clean"
-          fields="Sexe, Departement, Categorie"
-          labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie"
-          display="Sexe:select | Departement:multiselect"
+          fields="Sexe, Departement, Categorie, Commune"
+          labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
+          display="Sexe:radio | Departement:multiselect | Categorie:select"
           max-values="6">
         </gouv-facets>
 
@@ -342,9 +346,9 @@
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-facets id="filtered" source="clean"
-  fields="Sexe, Departement, Categorie"
-  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie"
-  display="Sexe:select | Departement:multiselect"
+  fields="Sexe, Departement, Categorie, Commune"
+  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
+  display="Sexe:radio | Departement:multiselect | Categorie:select"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
@@ -353,6 +357,38 @@
   recherche="true"
   pagination="5"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
+
+        <!-- ========================================================
+             Exemple 5 : hide-counts
+             ======================================================== -->
+        <h2 class="fr-mt-6w">Exemple 5 : masquer les compteurs</h2>
+        <p>L'attribut <code>hide-counts</code> masque les compteurs a cote de chaque valeur de facette,
+        pour un affichage plus epure.</p>
+
+        <gouv-facets id="elus-hide-counts-demo" source="elus-clean"
+          fields="Departement, Categorie"
+          labels="Departement:Departement | Categorie:Categorie"
+          disjunctive="Departement"
+          searchable="Departement"
+          hide-counts
+          max-values="8">
+        </gouv-facets>
+
+        <gouv-datalist source="elus-hide-counts-demo"
+          colonnes="Nom, Prenom, Commune, Departement"
+          recherche="true"
+          pagination="5">
+        </gouv-datalist>
+
+        <h3 class="fr-mt-3w">Code</h3>
+        <pre><code>&lt;gouv-facets id="filtered" source="clean"
+  fields="Departement, Categorie"
+  labels="Departement:Departement | Categorie:Categorie"
+  disjunctive="Departement"
+  searchable="Departement"
+  hide-counts
+  max-values="8"&gt;
+&lt;/gouv-facets&gt;</code></pre>
 
     </div>
   </app-layout-demo>
