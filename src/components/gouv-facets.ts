@@ -394,6 +394,13 @@ export class GouvFacets extends LitElement {
       || sourceEl.getAttribute('dataset-id') || '';
     if (!datasetId) return;
 
+    // Parse headers from source element (gouv-query)
+    let headers: Record<string, string> | undefined;
+    const headersAttr = (sourceEl as any).headers || sourceEl.getAttribute('headers') || '';
+    if (headersAttr) {
+      try { headers = JSON.parse(headersAttr); } catch { /* ignore */ }
+    }
+
     const fields = _parseCSV(this.fields);
     if (fields.length === 0) return; // fields requis en mode server
 
@@ -415,7 +422,7 @@ export class GouvFacets extends LitElement {
     for (const [where, groupFields] of whereToFields) {
       try {
         const results = await adapter.fetchFacets(
-          { baseUrl, datasetId },
+          { baseUrl, datasetId, headers },
           groupFields,
           where
         );

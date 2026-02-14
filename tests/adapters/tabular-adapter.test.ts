@@ -259,6 +259,62 @@ describe('TabularAdapter', () => {
     });
   });
 
+  describe('Headers propagation', () => {
+    it('passes headers to fetch in fetchAll', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ id: 1 }],
+          links: {},
+          meta: { page: 1, page_size: 100, total: 1 },
+        }),
+      });
+
+      await adapter.fetchAll(
+        makeParams({ headers: { apikey: 'secret123' } }),
+        new AbortController().signal
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toEqual({ apikey: 'secret123' });
+    });
+
+    it('passes headers to fetch in fetchPage', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ id: 1 }],
+          meta: { page: 1, page_size: 20, total: 1 },
+        }),
+      });
+
+      await adapter.fetchPage(
+        makeParams({ headers: { Authorization: 'Bearer xyz' } }),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toEqual({ Authorization: 'Bearer xyz' });
+    });
+
+    it('does not set headers when empty', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [],
+          links: {},
+          meta: { page: 1, page_size: 100, total: 0 },
+        }),
+      });
+
+      await adapter.fetchAll(makeParams(), new AbortController().signal);
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toBeUndefined();
+    });
+  });
+
   describe('Server-side fetch (fetchPage)', () => {
     it('fetches one page and returns data with totalCount', async () => {
       mockFetch.mockResolvedValueOnce({

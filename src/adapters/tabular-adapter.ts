@@ -11,6 +11,16 @@ import type {
 } from './api-adapter.js';
 import { getProxyConfig } from '@gouv-widgets/shared';
 
+/** Construit les options fetch avec headers optionnels */
+function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
+  const opts: RequestInit = {};
+  if (signal) opts.signal = signal;
+  if (params.headers && Object.keys(params.headers).length > 0) {
+    opts.headers = params.headers;
+  }
+  return opts;
+}
+
 /** Nombre max de records par requete Tabular */
 const TABULAR_PAGE_SIZE = 100;
 
@@ -54,7 +64,7 @@ export class TabularAdapter implements ApiAdapter {
 
       const url = this.buildUrl(params, TABULAR_PAGE_SIZE, currentPage);
 
-      const response = await fetch(url, { signal });
+      const response = await fetch(url, buildFetchOptions(params, signal));
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -117,7 +127,7 @@ export class TabularAdapter implements ApiAdapter {
   async fetchPage(params: AdapterParams, overlay: ServerSideOverlay, signal: AbortSignal): Promise<FetchResult> {
     const url = this.buildServerSideUrl(params, overlay);
 
-    const response = await fetch(url, { signal });
+    const response = await fetch(url, buildFetchOptions(params, signal));
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }

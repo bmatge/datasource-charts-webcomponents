@@ -302,6 +302,7 @@ sur des datasets de plusieurs dizaines de milliers d'enregistrements, pas seulem
 | limit | Number | \`0\` | non | Limite de resultats (0 = illimite) |
 | transform | String | \`""\` | non | Chemin JSONPath dans la reponse API |
 | refresh | Number | \`0\` | non | Rafraichissement en secondes (0 = desactive) |
+| headers | String | \`""\` | non | Headers HTTP en JSON (ex: \`'{"apikey":"xxx"}'\`) — modes ODS/Tabular uniquement |
 | server-side | Boolean | \`false\` | non | Active le mode server-side pilotable (ODS/Tabular uniquement) |
 | page-size | Number | \`20\` | non | Taille de page en mode server-side |
 
@@ -386,6 +387,15 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 <!-- Chainabilite : un query comme source d'un autre -->
 <gouv-query id="actifs" source="raw" where="status:eq:active"></gouv-query>
 <gouv-query id="top5" source="actifs" group-by="region" aggregate="montant:sum" order-by="montant__sum:desc" limit="5"></gouv-query>
+
+<!-- Dataset prive ODS avec API key -->
+<gouv-query id="private" api-type="opendatasoft"
+  dataset-id="mon-dataset-prive"
+  base-url="https://mon-instance.opendatasoft.com"
+  headers='{"apikey":"abc123"}'
+  group-by="region"
+  aggregate="population:sum">
+</gouv-query>
 
 <!-- Mode server-side : recherche + pagination serveur ODS -->
 <gouv-query id="q" api-type="opendatasoft"

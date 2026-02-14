@@ -45,6 +45,8 @@ export interface AdapterParams {
   limit: number;
   transform: string;
   pageSize: number;
+  /** Headers HTTP custom (ex: authentification, API key) */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -129,7 +131,7 @@ export interface ApiAdapter {
    * Retourne null si la capacite serverFacets est false.
    */
   fetchFacets?(
-    params: Pick<AdapterParams, 'baseUrl' | 'datasetId'>,
+    params: Pick<AdapterParams, 'baseUrl' | 'datasetId' | 'headers'>,
     fields: string[],
     where: string,
     signal?: AbortSignal

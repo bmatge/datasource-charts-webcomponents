@@ -86,6 +86,19 @@
           Supporte <code>group-by</code>, <code>aggregate</code>, <code>filter</code>, <code>order-by</code> et <code>limit</code>.
         </p>
 
+        <div class="fr-callout fr-callout--green-emeraude fr-mb-3w">
+          <h4 class="fr-callout__title">gouv-source vs gouv-query</h4>
+          <p class="fr-callout__text">
+            <strong><code>gouv-source</code></strong> est un connecteur HTTP generique : il recupere du JSON
+            depuis n'importe quelle API REST (avec <code>headers</code>, <code>method</code>, <code>params</code>)
+            et le redistribue <strong>tel quel</strong> aux composants en aval.<br><br>
+            <strong><code>gouv-query</code></strong> est une couche de transformation : il filtre, groupe, agrege
+            et trie les donnees. En mode <code>opendatasoft</code> ou <code>tabular</code>, il fetche
+            directement les APIs connues (avec support <code>headers</code> pour les jeux prives).
+            En mode <code>generic</code>, il ecoute un <code>gouv-source</code> existant et traite les donnees cote client.
+          </p>
+        </div>
+
         <!-- query-bar -->
         <h4>Barres — Beneficiaires agreges par region</h4>
         <p>Regroupe par region et somme les beneficiaires avec <code>group-by</code> + <code>aggregate</code>.
@@ -496,6 +509,40 @@
   pagination="20"
   url-sync&gt;
 &lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
+        <h2 class="fr-mt-6w">Datasets prives (headers)</h2>
+        <p>
+          L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
+          pour acceder a des datasets prives ou proteges. Il accepte un objet JSON en chaine de caracteres.
+          Cet attribut est disponible en mode <code>opendatasoft</code> et <code>tabular</code>.
+        </p>
+        <div class="fr-callout fr-callout--blue-ecume fr-mb-3w">
+          <p class="fr-callout__text">
+            <strong>Securite :</strong> les headers sont visibles dans le code source HTML.
+            Ne les utilisez que pour des cles a acces restreint (lecture seule)
+            ou dans des contextes proteges (intranet, applications internes).
+          </p>
+        </div>
+
+        <h4>Dataset prive ODS avec API key</h4>
+        <p>Passe une <code>apikey</code> pour acceder a un dataset prive sur une instance OpenDataSoft.</p>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-headers">Code source</button></h3>
+          <div class="fr-collapse" id="code-q-headers">
+<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+  dataset-id="mon-dataset-prive"
+  base-url="https://mon-instance.opendatasoft.com"
+  headers='{"apikey":"votre-cle-api"}'
+  group-by="region"
+  aggregate="population:sum:total"
+  order-by="total:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="bar"
+  label-field="region" value-field="total"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
           </div>
         </section>
 

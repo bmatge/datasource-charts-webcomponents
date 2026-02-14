@@ -419,6 +419,67 @@ describe('OpenDataSoftAdapter', () => {
     });
   });
 
+  describe('Headers propagation', () => {
+    it('passes headers to fetch in fetchAll', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ results: [{ id: 1 }], total_count: 1 }),
+      });
+
+      await adapter.fetchAll(
+        makeParams({ headers: { apikey: 'secret123' } }),
+        new AbortController().signal
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toEqual({ apikey: 'secret123' });
+    });
+
+    it('passes headers to fetch in fetchPage', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ results: [{ id: 1 }], total_count: 1 }),
+      });
+
+      await adapter.fetchPage(
+        makeParams({ headers: { Authorization: 'Bearer xyz' } }),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toEqual({ Authorization: 'Bearer xyz' });
+    });
+
+    it('passes headers to fetch in fetchFacets', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ facets: [] }),
+      });
+
+      await adapter.fetchFacets!(
+        { baseUrl: 'https://data.example.com', datasetId: 'test', headers: { apikey: 'key' } },
+        ['field1'],
+        ''
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toEqual({ apikey: 'key' });
+    });
+
+    it('does not set headers when empty', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ results: [], total_count: 0 }),
+      });
+
+      await adapter.fetchAll(makeParams(), new AbortController().signal);
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.headers).toBeUndefined();
+    });
+  });
+
   describe('getDefaultSearchTemplate', () => {
     it('returns ODS search function', () => {
       expect(adapter.getDefaultSearchTemplate!()).toBe('search("{q}")');

@@ -714,4 +714,39 @@ describe('GouvQuery', () => {
       expect(query.getEffectiveWhere()).toBe('DEP:eq:75 AND search("x")');
     });
   });
+
+  describe('Headers parsing', () => {
+    it('parses valid JSON headers', () => {
+      query.headers = '{"Authorization": "Bearer token123"}';
+      const parsed = (query as any)._parseHeaders();
+      expect(parsed).toEqual({ Authorization: 'Bearer token123' });
+    });
+
+    it('returns undefined for empty headers', () => {
+      query.headers = '';
+      expect((query as any)._parseHeaders()).toBeUndefined();
+    });
+
+    it('returns undefined for invalid JSON and warns', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.headers = 'not-json';
+      expect((query as any)._parseHeaders()).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(
+        'gouv-query: headers invalides (JSON attendu)',
+        expect.any(Error)
+      );
+      warnSpy.mockRestore();
+    });
+
+    it('includes parsed headers in _getAdapterParams', () => {
+      query.headers = '{"apikey": "abc123"}';
+      const params = (query as any)._getAdapterParams();
+      expect(params.headers).toEqual({ apikey: 'abc123' });
+    });
+
+    it('_getAdapterParams headers is undefined when no headers set', () => {
+      const params = (query as any)._getAdapterParams();
+      expect(params.headers).toBeUndefined();
+    });
+  });
 });

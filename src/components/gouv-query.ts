@@ -205,6 +205,14 @@ export class GouvQuery extends LitElement {
   pageSize = 20;
 
   /**
+   * Headers HTTP en JSON (pour APIs privees/authentifiees)
+   * Ex: '{"apikey":"abc123"}' ou '{"Authorization":"Bearer token"}'
+   * Utilise uniquement en mode opendatasoft/tabular (ignore en mode generic)
+   */
+  @property({ type: String })
+  headers = '';
+
+  /**
    * Intervalle de rafraichissement en secondes
    */
   @property({ type: Number })
@@ -727,11 +735,15 @@ export class GouvQuery extends LitElement {
    * Fetch single page fallback (mode non-pagine)
    */
   private async _fetchSinglePage(): Promise<void> {
-    const url = this._adapter.buildUrl(this._getAdapterParams());
+    const params = this._getAdapterParams();
+    const url = this._adapter.buildUrl(params);
 
-    const response = await fetch(url, {
-      signal: this._abortController!.signal
-    });
+    const fetchOpts: RequestInit = { signal: this._abortController!.signal };
+    if (params.headers && Object.keys(params.headers).length > 0) {
+      fetchOpts.headers = params.headers;
+    }
+
+    const response = await fetch(url, fetchOpts);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -754,6 +766,19 @@ export class GouvQuery extends LitElement {
   }
 
   /**
+   * Parse le JSON de headers en objet.
+   */
+  private _parseHeaders(): Record<string, string> | undefined {
+    if (!this.headers) return undefined;
+    try {
+      return JSON.parse(this.headers);
+    } catch (e) {
+      console.warn('gouv-query: headers invalides (JSON attendu)', e);
+      return undefined;
+    }
+  }
+
+  /**
    * Collecte les parametres pour l'adapter.
    */
   private _getAdapterParams(): AdapterParams {
@@ -770,6 +795,7 @@ export class GouvQuery extends LitElement {
       limit: this.limit,
       transform: this.transform,
       pageSize: this.pageSize,
+      headers: this._parseHeaders(),
     };
   }
 

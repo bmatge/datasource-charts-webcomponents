@@ -11,6 +11,16 @@ import type {
 } from './api-adapter.js';
 import type { QueryAggregate } from '../components/gouv-query.js';
 
+/** Construit les options fetch avec headers optionnels */
+function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
+  const opts: RequestInit = {};
+  if (signal) opts.signal = signal;
+  if (params.headers && Object.keys(params.headers).length > 0) {
+    opts.headers = params.headers;
+  }
+  return opts;
+}
+
 /** Nombre max de records par requete ODS */
 const ODS_PAGE_SIZE = 100;
 
@@ -57,7 +67,7 @@ export class OpenDataSoftAdapter implements ApiAdapter {
 
       const url = this.buildUrl(params, Math.min(pageSize, remaining), offset);
 
-      const response = await fetch(url, { signal });
+      const response = await fetch(url, buildFetchOptions(params, signal));
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -101,7 +111,7 @@ export class OpenDataSoftAdapter implements ApiAdapter {
   async fetchPage(params: AdapterParams, overlay: ServerSideOverlay, signal: AbortSignal): Promise<FetchResult> {
     const url = this.buildServerSideUrl(params, overlay);
 
-    const response = await fetch(url, { signal });
+    const response = await fetch(url, buildFetchOptions(params, signal));
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -204,7 +214,7 @@ export class OpenDataSoftAdapter implements ApiAdapter {
    * Fetch les valeurs de facettes depuis l'endpoint ODS /facets.
    */
   async fetchFacets(
-    params: Pick<AdapterParams, 'baseUrl' | 'datasetId'>,
+    params: Pick<AdapterParams, 'baseUrl' | 'datasetId' | 'headers'>,
     fields: string[],
     where: string,
     signal?: AbortSignal
@@ -219,7 +229,7 @@ export class OpenDataSoftAdapter implements ApiAdapter {
       url.searchParams.set('where', where);
     }
 
-    const response = await fetch(url.toString(), signal ? { signal } : undefined);
+    const response = await fetch(url.toString(), buildFetchOptions(params, signal));
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
