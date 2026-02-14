@@ -1304,10 +1304,10 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-query id="q" api-type="opendatasoft"
-    dataset-id="rappelconso0"
+    dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="20"
-    order-by="date_de_publication:desc">
+    order-by="date_publication:desc">
   </gouv-query>
 
   <gouv-search id="s" source="q"
@@ -1318,7 +1318,7 @@ export const examples: Record<string, string> = {
   </gouv-search>
 
   <gouv-datalist source="q"
-    colonnes="noms_des_modeles_ou_references:Produit, categorie_de_produit:Categorie, nom_de_la_marque_du_produit:Marque, date_de_publication:Date"
+    colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
     server-tri
     pagination="20">
   </gouv-datalist>
@@ -1577,10 +1577,10 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-query id="q" api-type="opendatasoft"
-    dataset-id="rappelconso0"
+    dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="10"
-    order-by="date_de_publication:desc">
+    order-by="date_publication:desc">
   </gouv-query>
 
   <gouv-search id="s" source="q"
@@ -1596,10 +1596,10 @@ export const examples: Record<string, string> = {
       <div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <h3 class="fr-card__title">{{noms_des_modeles_ou_references}}</h3>
+            <h3 class="fr-card__title">{{modeles_ou_references}}</h3>
             <p class="fr-card__desc">
-              <strong>{{categorie_de_produit}}</strong> — {{nom_de_la_marque_du_produit}}<br>
-              Publie le {{date_de_publication}}
+              <strong>{{categorie_produit}}</strong> — {{marque_produit}}<br>
+              Publie le {{date_publication}}
             </p>
           </div>
         </div>

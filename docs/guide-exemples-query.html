@@ -439,10 +439,10 @@
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-ods">Code source</button></h3>
           <div class="fr-collapse" id="code-q-ss-ods">
 <pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
-  dataset-id="rappelconso0"
+  dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="10"
-  order-by="date_de_publication:desc"&gt;
+  order-by="date_publication:desc"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-search id="s" source="q"
@@ -458,10 +458,10 @@
     &lt;div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w"&gt;
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
-          &lt;h3 class="fr-card__title"&gt;{{noms_des_modeles_ou_references}}&lt;/h3&gt;
+          &lt;h3 class="fr-card__title"&gt;{{modeles_ou_references}}&lt;/h3&gt;
           &lt;p class="fr-card__desc"&gt;
-            &lt;strong&gt;{{categorie_de_produit}}&lt;/strong&gt; &#8212; {{nom_de_la_marque_du_produit}}&lt;br&gt;
-            Publie le {{date_de_publication}}
+            &lt;strong&gt;{{categorie_produit}}&lt;/strong&gt; &#8212; {{marque_produit}}&lt;br&gt;
+            Publie le {{date_publication}}
           &lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
