@@ -27,7 +27,7 @@ RUN apk add --no-cache nodejs
 # Copier la config nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Ajouter le log_format beacon et le cache proxy (inclus dans le bloc http par nginx)
-RUN echo "log_format beacon '\$time_iso8601|\$http_referer|\$arg_c|\$arg_t|\$remote_addr';" > /etc/nginx/conf.d/beacon-log.conf \
+RUN echo "log_format beacon '\$time_iso8601|\$http_referer|\$arg_c|\$arg_t|\$remote_addr|\$arg_r';" > /etc/nginx/conf.d/beacon-log.conf \
  && echo "proxy_cache_path /var/cache/nginx/api levels=1:2 keys_zone=api_cache:10m max_size=100m inactive=5m;" > /etc/nginx/conf.d/cache.conf \
  && mkdir -p /var/cache/nginx/api
 

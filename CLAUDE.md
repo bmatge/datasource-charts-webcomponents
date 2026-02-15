@@ -122,11 +122,13 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 
 ## Beacon de tracking
 
-Chaque composant `gouv-*` envoie un beacon fire-and-forget a l'initialisation (`connectedCallback`) via `sendWidgetBeacon()` dans `src/utils/beacon.ts`. Le beacon transmet le nom du composant et le type de graphique au proxy nginx qui les enregistre dans `beacon.log`. Un script periodique (`scripts/parse-beacon-logs.sh`) transforme ces logs en `monitoring-data.json` consomme par l'app monitoring.
+Chaque composant `gouv-*` envoie un beacon fire-and-forget a l'initialisation (`connectedCallback`) via `sendWidgetBeacon()` dans `src/utils/beacon.ts`. Le beacon transmet le nom du composant, le type de graphique et l'origine de la page (`window.location.origin` via le parametre `r=`) au proxy nginx qui les enregistre dans `beacon.log`. Un script periodique (`scripts/parse-beacon-logs.sh`) transforme ces logs en `monitoring-data.json` consomme par l'app monitoring.
 
+- Le parametre `r=` envoie `window.location.origin` pour identifier le site deployeur (plus fiable que le header HTTP Referer qui depend du Referrer-Policy du site)
+- Les parsers (sh et js) preferent `$arg_r` et tombent en fallback sur `$http_referer` pour compatibilite avec les anciens logs
 - Deduplication par `Set` en memoire (1 beacon par composant+type par page)
 - Skip en dev (localhost/127.0.0.1)
-- Utilise `fetch()` avec `mode: 'no-cors'` (pas `navigator.sendBeacon()` qui cause des erreurs CORS)
+- Utilise un pixel de tracking (`new Image().src`) au lieu de `fetch()` : les requetes image sont regies par `img-src` (CSP) qui est quasi-toujours permissif, contrairement a `connect-src` qui bloque souvent les appels `fetch` cross-origin
 
 ## Build : esbuild keepNames
 

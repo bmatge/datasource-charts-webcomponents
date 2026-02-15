@@ -31,15 +31,18 @@ export function sendWidgetBeacon(component: string, subtype?: string): void {
   const params = new URLSearchParams();
   params.set('c', component);
   if (subtype) params.set('t', subtype);
+  params.set('r', window.location.origin);
 
   const url = `${BEACON_URL}?${params.toString()}`;
 
   try {
-    // Use fetch with no-cors instead of navigator.sendBeacon().
-    // sendBeacon uses credentials:"include" which requires a specific
-    // Access-Control-Allow-Origin (not "*"), causing NS_BINDING_ABORTED.
-    // fetch with mode:"no-cors" skips CORS checks entirely.
-    fetch(url, { method: 'GET', keepalive: true, mode: 'no-cors' }).catch(() => {});
+    // Use a tracking pixel (Image) instead of fetch/sendBeacon.
+    // - fetch is blocked by CSP connect-src restrictions
+    // - sendBeacon requires specific CORS headers (NS_BINDING_ABORTED)
+    // - Image requests are governed by CSP img-src which is almost always
+    //   permissive (* or absent), just like classic analytics solutions.
+    // Nginx logs the request regardless of the response status.
+    new Image().src = url;
   } catch {
     // Silently ignore beacon failures - never impact widget functionality
   }

@@ -5,19 +5,30 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  *
  * Since the module uses a module-level `sent` Set for deduplication,
  * we re-import the module for each test to get a fresh Set.
+ *
+ * The beacon uses `new Image().src = url` (tracking pixel) to send data.
+ * We spy on Image construction to capture the URLs.
  */
 describe('sendWidgetBeacon', () => {
-  let originalFetch: typeof globalThis.fetch;
-  let fetchSpy: ReturnType<typeof vi.fn>;
+  let imageSrcs: string[];
+  let OriginalImage: typeof Image;
 
   beforeEach(() => {
-    originalFetch = globalThis.fetch;
-    fetchSpy = vi.fn().mockResolvedValue(new Response());
-    globalThis.fetch = fetchSpy;
+    imageSrcs = [];
+    OriginalImage = globalThis.Image;
+    // Mock Image to capture .src assignments
+    globalThis.Image = class MockImage {
+      private _src = '';
+      get src() { return this._src; }
+      set src(url: string) {
+        this._src = url;
+        imageSrcs.push(url);
+      }
+    } as unknown as typeof Image;
   });
 
   afterEach(() => {
-    globalThis.fetch = originalFetch;
+    globalThis.Image = OriginalImage;
     vi.restoreAllMocks();
     vi.resetModules();
   });
@@ -31,7 +42,7 @@ describe('sendWidgetBeacon', () => {
     // jsdom defaults to localhost
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(imageSrcs).toHaveLength(0);
   });
 
   it('skips on 127.0.0.1', async () => {
@@ -43,7 +54,7 @@ describe('sendWidgetBeacon', () => {
 
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(imageSrcs).toHaveLength(0);
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: originalLocation },
@@ -59,7 +70,7 @@ describe('sendWidgetBeacon', () => {
 
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(imageSrcs).toHaveLength(0);
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -67,19 +78,20 @@ describe('sendWidgetBeacon', () => {
     });
   });
 
-  it('sends beacon on external host', async () => {
+  it('sends beacon on external host with origin parameter', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
 
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    const url = fetchSpy.mock.calls[0][0] as string;
-    expect(url).toContain('/beacon');
-    expect(url).toContain('c=gouv-kpi');
+    expect(imageSrcs).toHaveLength(1);
+    const url = new URL(imageSrcs[0]);
+    expect(url.pathname).toBe('/beacon');
+    expect(url.searchParams.get('c')).toBe('gouv-kpi');
+    expect(url.searchParams.get('r')).toBe('https://example.gouv.fr');
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -89,16 +101,17 @@ describe('sendWidgetBeacon', () => {
 
   it('includes subtype in beacon URL', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-dsfr-chart', 'bar');
 
-    const url = fetchSpy.mock.calls[0][0] as string;
-    expect(url).toContain('c=gouv-dsfr-chart');
-    expect(url).toContain('t=bar');
+    expect(imageSrcs).toHaveLength(1);
+    const url = new URL(imageSrcs[0]);
+    expect(url.searchParams.get('c')).toBe('gouv-dsfr-chart');
+    expect(url.searchParams.get('t')).toBe('bar');
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -108,7 +121,7 @@ describe('sendWidgetBeacon', () => {
 
   it('deduplicates by component+type', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
@@ -117,7 +130,7 @@ describe('sendWidgetBeacon', () => {
     sendWidgetBeacon('gouv-kpi');
     sendWidgetBeacon('gouv-kpi');
 
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(imageSrcs).toHaveLength(1);
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -127,7 +140,7 @@ describe('sendWidgetBeacon', () => {
 
   it('sends separate beacons for different components', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
@@ -135,7 +148,7 @@ describe('sendWidgetBeacon', () => {
     sendWidgetBeacon('gouv-kpi');
     sendWidgetBeacon('gouv-datalist');
 
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(imageSrcs).toHaveLength(2);
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -145,7 +158,7 @@ describe('sendWidgetBeacon', () => {
 
   it('sends separate beacons for same component with different subtypes', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
@@ -153,7 +166,7 @@ describe('sendWidgetBeacon', () => {
     sendWidgetBeacon('gouv-dsfr-chart', 'bar');
     sendWidgetBeacon('gouv-dsfr-chart', 'line');
 
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(imageSrcs).toHaveLength(2);
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },
@@ -161,19 +174,18 @@ describe('sendWidgetBeacon', () => {
     });
   });
 
-  it('uses no-cors mode', async () => {
+  it('uses tracking pixel (Image) instead of fetch', async () => {
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, hostname: 'example.gouv.fr' },
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
     });
 
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
 
-    const options = fetchSpy.mock.calls[0][1];
-    expect(options.mode).toBe('no-cors');
-    expect(options.method).toBe('GET');
-    expect(options.keepalive).toBe(true);
+    // Pixel was sent
+    expect(imageSrcs).toHaveLength(1);
+    expect(imageSrcs[0]).toContain('chartsbuilder.matge.com/beacon');
 
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'localhost' },

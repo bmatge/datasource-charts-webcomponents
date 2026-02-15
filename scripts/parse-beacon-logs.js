@@ -2,10 +2,13 @@
  * Parse beacon.log (nginx) and produce monitoring-data.json
  *
  * Log format (pipe-delimited, one line per beacon hit):
- *   $time_iso8601|$http_referer|$arg_c|$arg_t|$remote_addr
+ *   $time_iso8601|$http_referer|$arg_c|$arg_t|$remote_addr|$arg_r
+ *
+ * Field 6 ($arg_r) = explicit origin sent by JS (preferred over $http_referer).
+ * Old logs (5 fields) are still supported via fallback to $http_referer.
  *
  * Example:
- *   2026-02-07T10:23:45+00:00|https://ministere.gouv.fr/stats|gouv-dsfr-chart|bar|1.2.3.4
+ *   2026-02-07T10:23:45+00:00|https://ministere.gouv.fr/stats|gouv-dsfr-chart|bar|1.2.3.4|https://ministere.gouv.fr
  *
  * Usage:
  *   node scripts/parse-beacon-logs.js [beacon.log] [output.json]
@@ -41,7 +44,10 @@ for (const line of lines) {
   const parts = line.split('|');
   if (parts.length < 4) continue;
 
-  const [timestamp, referer, component, chartType] = parts;
+  const [timestamp, httpReferer, component, chartType, _remoteAddr, argR] = parts;
+
+  // Prefer explicit JS origin ($arg_r) over HTTP Referer
+  const referer = (argR && argR !== '-') ? argR : httpReferer;
 
   if (!referer || referer === '-' || !component) continue;
 

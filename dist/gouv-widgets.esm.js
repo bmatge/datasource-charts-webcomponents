@@ -666,11 +666,10 @@ function H(n, e) {
   if (i === "localhost" || i === "127.0.0.1" || i === "chartsbuilder.matge.com")
     return;
   const r = new URLSearchParams();
-  r.set("c", n), e && r.set("t", e);
+  r.set("c", n), e && r.set("t", e), r.set("r", window.location.origin);
   const s = `${Ci}?${r.toString()}`;
   try {
-    fetch(s, { method: "GET", keepalive: !0, mode: "no-cors" }).catch(() => {
-    });
+    new Image().src = s;
   } catch {
   }
 }

@@ -2,8 +2,10 @@
 # Parse beacon.log (nginx) and produce monitoring-data.json
 # Runs in alpine (no Node.js needed) - uses only awk/sh
 #
-# Log format: $time_iso8601|$http_referer|$arg_c|$arg_t|$remote_addr
-# Example:    2026-02-07T10:23:45+00:00|https://site.gouv.fr/page|gouv-dsfr-chart|bar|1.2.3.4
+# Log format: $time_iso8601|$http_referer|$arg_c|$arg_t|$remote_addr|$arg_r
+# Field 6 ($arg_r) = explicit origin sent by JS (preferred over $http_referer)
+# Old logs (5 fields) are still supported via fallback to $http_referer
+# Example:    2026-02-07T10:23:45+00:00|https://site.gouv.fr/page|gouv-dsfr-chart|bar|1.2.3.4|https://site.gouv.fr
 
 LOG_FILE="${1:-/var/log/nginx/beacon.log}"
 OUT_FILE="${2:-/usr/share/nginx/html/public/monitoring-data.json}"
@@ -20,12 +22,21 @@ fi
 NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 awk -F'|' -v now="$NOW" '
-NF >= 4 && $2 != "-" && $2 != "" && $3 != "" {
-  key = $2 "|" $3 "|" $4
+NF >= 4 {
+  # Prefer $6 (explicit JS origin) over $2 (HTTP Referer)
+  eff_ref = ""
+  if (NF >= 6 && $6 != "-" && $6 != "") {
+    eff_ref = $6
+  } else if ($2 != "-" && $2 != "") {
+    eff_ref = $2
+  }
+  if (eff_ref == "" || $3 == "") next
+
+  key = eff_ref "|" $3 "|" $4
   count[key]++
   if (!(key in first) || $1 < first[key]) first[key] = $1
   if (!(key in last)  || $1 > last[key])  last[key] = $1
-  referer[key] = $2
+  referer[key] = eff_ref
   component[key] = $3
   charttype[key] = $4
 }
@@ -95,5 +106,5 @@ END {
 }
 ' "$LOG_FILE" > "$OUT_FILE"
 
-entries=$(awk -F'|' 'NF>=4 && $2!="-" && $2!="" && $3!=""{n++}END{print n+0}' "$LOG_FILE")
+entries=$(awk -F'|' 'NF>=4{r="";if(NF>=6&&$6!="-"&&$6!="")r=$6;else if($2!="-"&&$2!="")r=$2;if(r!=""&&$3!="")n++}END{print n+0}' "$LOG_FILE")
 echo "[parse-beacon] Parsed $entries log lines -> $OUT_FILE"
