@@ -1,12 +1,12 @@
 # gouv-widgets
 
-Bibliotheque de Web Components pour integrer des graphiques dynamiques, accessibles et conformes DSFR dans les sites gouvernementaux francais.
+Bibliotheque de Web Components pour integrer des graphiques dynamiques, accessibles et conformes DSFR dans les sites gouvernementaux francais. Voir la [fiche produit](DATASHEET.md) pour le positionnement detaille.
 
 ## Le probleme
 
 Les sites gouvernementaux illustrent leurs donnees avec des captures d'ecran Excel, des infographies statiques ou des donnees saisies manuellement dans le CMS. Le resultat est non accessible, non interactif et difficile a maintenir.
 
-Les plateformes BI (Metabase, Superset, Chartsgoug) repondent a un autre besoin : exploration de donnees, reporting interne, publication de dashboards autonomes. Elles ne proposent pas de solution simple pour **embarquer un graphique directement dans une page web existante** — leur modele repose sur l'iframe, isole du DOM de la page (pas d'heritage CSS, pas d'accessibilite unifiee, pas de responsive naturel).
+Les plateformes BI (Metabase, Superset, Chartsgouv) repondent a un autre besoin : exploration de donnees, reporting interne, publication de dashboards autonomes. Elles ne proposent pas de solution simple pour **embarquer un graphique directement dans une page web existante** — leur modele repose sur l'iframe, isole du DOM de la page (pas d'heritage CSS, pas d'accessibilite unifiee, pas de responsive naturel).
 
 ## La solution
 
