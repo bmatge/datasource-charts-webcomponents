@@ -819,6 +819,16 @@ function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | n
 }
 
 /**
+ * Parse a Tabular API URL to extract base URL and resource ID.
+ * Matches: https://tabular-api.data.gouv.fr/api/resources/{id}/data/
+ * Returns null if the URL is not a recognized Tabular pattern.
+ */
+function parseTabularApiUrl(url: string): { baseUrl: string; resourceId: string } | null {
+  const match = url.match(/^(https?:\/\/[^/]+)\/api\/resources\/([^/]+)\/data\/?/);
+  return match ? { baseUrl: match[1], resourceId: match[2] } : null;
+}
+
+/**
  * Generate a <gouv-query api-type="opendatasoft"> element for ODS sources.
  * Uses server-side aggregation (ODSQL) with automatic pagination,
  * bypassing gouv-source entirely.
@@ -898,6 +908,78 @@ function generateOdsQueryCode(
 
   const queryElement = `
   <!-- Requete ODS avec agregation serveur et pagination automatique -->
+  <gouv-query
+    id="query-data"
+    ${attrs.join('\n    ')}>
+  </gouv-query>`;
+
+  return {
+    queryElement,
+    chartSource: 'query-data',
+    labelField: groupByField,
+    valueField: resultValueField,
+    valueField2: resultValueField2,
+  };
+}
+
+/**
+ * Generate a <gouv-query api-type="tabular"> element for Tabular API sources.
+ * Uses automatic pagination (up to 50K records) with client-side aggregation,
+ * bypassing gouv-source entirely.
+ */
+function generateTabularQueryCode(
+  tabularInfo: { baseUrl: string; resourceId: string },
+  labelFieldPath: string,
+  valueFieldPath: string
+): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
+  const attrs: string[] = [];
+  attrs.push('api-type="tabular"');
+  attrs.push(`base-url="${tabularInfo.baseUrl}"`);
+  attrs.push(`resource="${tabularInfo.resourceId}"`);
+
+  // Group by
+  const groupByField = state.advancedMode && state.queryGroupBy ? state.queryGroupBy : labelFieldPath;
+  if (groupByField) {
+    attrs.push(`group-by="${groupByField}"`);
+  }
+
+  // Aggregation (colon syntax for client-side processing)
+  let resultValueField: string;
+  let resultValueField2 = '';
+  let aggregateExpr: string;
+
+  const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
+
+  if (state.advancedMode && state.queryAggregate) {
+    aggregateExpr = state.queryAggregate;
+    const firstAgg = aggregateExpr.split(',')[0].trim();
+    const parts = firstAgg.split(':');
+    resultValueField = parts.length >= 2 ? `${parts[0]}__${parts[1]}` : groupByField;
+  } else {
+    aggregateExpr = `${valueFieldPath}:${state.aggregation}`;
+    resultValueField = `${valueFieldPath}__${state.aggregation}`;
+
+    if (hasSecondSeries) {
+      const vf2Info = state.fields.find(f => f.name === state.valueField2);
+      const valueField2Path = vf2Info?.fullPath || state.valueField2;
+      aggregateExpr += `, ${valueField2Path}:${state.aggregation}`;
+      resultValueField2 = `${valueField2Path}__${state.aggregation}`;
+    }
+  }
+  attrs.push(`aggregate="${escapeHtml(aggregateExpr)}"`);
+
+  // Filter (colon syntax)
+  if (state.advancedMode && state.queryFilter) {
+    attrs.push(`filter="${escapeHtml(state.queryFilter)}"`);
+  }
+
+  // Order by
+  if (state.sortOrder && state.sortOrder !== 'none') {
+    attrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
+  }
+
+  const queryElement = `
+  <!-- Requete Tabular avec pagination automatique et agregation client-side -->
   <gouv-query
     id="query-data"
     ${attrs.join('\n    ')}>
@@ -1158,6 +1240,80 @@ export function generateDynamicCodeForApi(): void {
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
+
+    // Check for ODS or Tabular API to use gouv-query with pagination
+    const odsInfoDl = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
+    const tabularInfoDl = source.apiUrl ? parseTabularApiUrl(source.apiUrl) : null;
+
+    if (odsInfoDl) {
+      const whereAttr = state.advancedMode && state.queryFilter
+        ? `\n    where="${escapeHtml(filterToOdsql(state.queryFilter))}"` : '';
+      const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique avec pagination automatique) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="table-data"
+    api-type="opendatasoft"
+    base-url="${odsInfoDl.baseUrl}"
+    dataset-id="${odsInfoDl.datasetId}"${whereAttr}>
+  </gouv-query>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="10">
+  </gouv-datalist>
+</div>`;
+      codeEl.textContent = code;
+      return;
+    }
+
+    if (tabularInfoDl) {
+      const filterAttr = state.advancedMode && state.queryFilter
+        ? `\n    filter="${escapeHtml(state.queryFilter)}"` : '';
+      const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (chargement dynamique avec pagination automatique) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
+  ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="table-data"
+    api-type="tabular"
+    base-url="${tabularInfoDl.baseUrl}"
+    resource="${tabularInfoDl.resourceId}"${filterAttr}>
+  </gouv-query>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
+    pagination="10">
+  </gouv-datalist>
+</div>`;
+      codeEl.textContent = code;
+      return;
+    }
+
+    // Generic API: use gouv-source (no automatic pagination)
     const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data');
     const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
@@ -1188,8 +1344,9 @@ ${middlewareHtml}
     return;
   }
 
-  // Detect ODS API source for server-side aggregation with pagination
+  // Detect ODS or Tabular API source for automatic pagination
   const odsInfo = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
+  const tabularInfo = source.apiUrl ? parseTabularApiUrl(source.apiUrl) : null;
 
   let queryElement: string;
   let chartSource: string;
@@ -1210,8 +1367,19 @@ ${middlewareHtml}
     queryValueField = result.valueField;
     queryValueField2 = result.valueField2 || '';
     sourceElement = '';
+  } else if (tabularInfo) {
+    // Tabular source: use gouv-query with api-type="tabular" for
+    // automatic pagination (up to 50K records) and client-side aggregation
+    // No middleware for Tabular (data is aggregated client-side by gouv-query)
+    const result = generateTabularQueryCode(tabularInfo, labelFieldPath, valueFieldPath);
+    queryElement = result.queryElement;
+    chartSource = result.chartSource;
+    queryLabelField = result.labelField;
+    queryValueField = result.valueField;
+    queryValueField2 = result.valueField2 || '';
+    sourceElement = '';
   } else {
-    // Non-ODS source: use gouv-source + gouv-query (generic, client-side)
+    // Non-ODS/Tabular source: use gouv-source + gouv-query (generic, client-side)
     const mw = generateMiddlewareElements('chart-data');
     middlewareHtml = mw.elements;
     const result = generateGouvQueryCode(mw.finalSourceId, labelFieldPath, valueFieldPath);

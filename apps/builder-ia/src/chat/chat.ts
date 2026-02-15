@@ -176,12 +176,15 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
   let dataContext = '';
   if (state.localData && state.fields.length > 0) {
     const isOds = state.source?.apiUrl && /\/api\/explore\/v2\.1\/catalog\/datasets\//.test(state.source.apiUrl);
+    const isTabular = state.source?.apiUrl && /\/api\/resources\/[^/]+\/data/.test(state.source.apiUrl);
     const totalNote = state.source?.recordCount && state.source.recordCount > state.localData.length
       ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
       : '';
     const paginationNote = isOds
       ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000).`
-      : '';
+      : isTabular
+        ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000).`
+        : '';
     dataContext = `\n\nDonnees actuelles (${state.localData.length} enregistrements${totalNote}) :
 Champs : ${state.fields.map(f => `${f.name} (${f.type})`).join(', ')}
 Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}${paginationNote}`;

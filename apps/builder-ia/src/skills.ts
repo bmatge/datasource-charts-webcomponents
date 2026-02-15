@@ -252,7 +252,12 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 
 > **Note** : les APIs Grist et ODS v1 renvoient des donnees imbriquees sous \`fields\`.
 > Utilisez \`<gouv-normalize flatten="fields">\` pour les aplatir avant de les passer
-> aux facettes, datalist ou graphiques. Voir la doc de gouv-normalize.`,
+> aux facettes, datalist ou graphiques. Voir la doc de gouv-normalize.
+
+> **Limitation** : gouv-source ne recupere qu'une seule page de resultats.
+> Pour les datasets avec plus de 100 enregistrements sur une API ODS ou Tabular,
+> utilisez \`<gouv-query api-type="opendatasoft">\` ou \`<gouv-query api-type="tabular">\`
+> qui gerent la pagination automatiquement (respectivement max 1000 et 50000 records).`,
   },
 
   gouvQuery: {

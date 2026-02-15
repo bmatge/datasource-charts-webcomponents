@@ -11,6 +11,9 @@ const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 /** Regex to parse an ODS v2.1 records URL into [baseUrl, datasetId] */
 const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
 
+/** Regex to parse a Tabular API URL into [baseUrl, resourceId] */
+const TABULAR_URL_RE = /^(https?:\/\/[^/]+)\/api\/resources\/([^/]+)\/data\/?/;
+
 /**
  * Build ODSQL select expression from aggregation config + group-by field.
  * Example: aggregation="sum", valueField="montant", groupBy="dept"
@@ -54,6 +57,16 @@ function needsPagination(): boolean {
   return !!(state.source?.recordCount
     && state.localData
     && state.source.recordCount > state.localData.length);
+}
+
+/**
+ * Parse the current source URL as a Tabular API URL.
+ * Returns baseUrl and resourceId, or null if not Tabular.
+ */
+function parseTabularUrl(): { baseUrl: string; resourceId: string } | null {
+  if (!state.source?.apiUrl) return null;
+  const match = state.source.apiUrl.match(TABULAR_URL_RE);
+  return match ? { baseUrl: match[1], resourceId: match[2] } : null;
 }
 
 /**
@@ -399,7 +412,54 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 </div>`;
     }
 
-    // Non-ODS API: fall back to gouv-source + gouv-dsfr-chart
+    // Tabular source with pagination needed: use gouv-query with api-type="tabular"
+    const tabularMatch = parseTabularUrl();
+    if (tabularMatch && needsPagination()) {
+      const aggregateExpr = config.aggregation === 'count'
+        ? `${codeField}:count`
+        : `${config.valueField}:${config.aggregation || 'sum'}`;
+      const resultField = config.aggregation === 'count'
+        ? `${codeField}__count`
+        : `${config.valueField}__${config.aggregation || 'sum'}`;
+      const filterAttr = config.where
+        ? `\n    filter="${config.where}"` : '';
+
+      return `<!-- Carte generee avec gouv-widgets Builder IA -->
+<!-- Source API Tabular avec pagination automatique -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="map-data"
+    api-type="tabular"
+    base-url="${tabularMatch.baseUrl}"
+    resource="${tabularMatch.resourceId}"
+    group-by="${codeField}"
+    aggregate="${aggregateExpr}"${filterAttr}>
+  </gouv-query>
+
+  <gouv-dsfr-chart
+    source="map-data"
+    type="${config.type}"
+    code-field="${codeField}"
+    value-field="${resultField}"
+    name="${escapeHtml(config.title || 'Carte')}"
+    selected-palette="${config.palette || 'sequentialAscending'}">
+  </gouv-dsfr-chart>
+</div>`;
+    }
+
+    // Non-ODS/Tabular API: fall back to gouv-source + gouv-dsfr-chart
     let sourceUrl = state.source.apiUrl;
     if (config.where) {
       const url = new URL(sourceUrl);
@@ -518,6 +578,42 @@ function generateDatalistCode(config: ChartConfig): string {
 </div>`;
     }
 
+    // Tabular with pagination: use gouv-query for auto-pagination
+    const tabularMatch = parseTabularUrl();
+    if (tabularMatch && needsPagination()) {
+      const filterAttr = config.where ? `\n    filter="${config.where}"` : '';
+
+      return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+<!-- Source API Tabular avec pagination automatique -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="table-data"
+    api-type="tabular"
+    base-url="${tabularMatch.baseUrl}"
+    resource="${tabularMatch.resourceId}"${filterAttr}>
+  </gouv-query>
+
+  <gouv-datalist
+    source="table-data"
+    colonnes="${colonnes}"
+    recherche${triAttr}
+    pagination="${pagination}"
+    export="csv">
+  </gouv-datalist>
+</div>`;
+    }
+
     // Standard API: use gouv-source
     let sourceUrl = state.source.apiUrl;
     if (whereOds) {
@@ -598,11 +694,15 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
   const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, data.length || 10));
 
-  // ODS with pagination needed: use gouv-query + gouv-dsfr-chart
+  // ODS/Tabular with pagination needed: use gouv-query + gouv-dsfr-chart
   if (state.source?.type === 'api' && state.source?.apiUrl && needsPagination()) {
     const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
     if (odsMatch) {
       return generateStandardChartCodeODS(config, odsMatch[1], odsMatch[2]);
+    }
+    const tabularMatch = parseTabularUrl();
+    if (tabularMatch) {
+      return generateStandardChartCodeTabular(config, tabularMatch.baseUrl, tabularMatch.resourceId);
     }
   }
 
@@ -646,6 +746,55 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
     dataset-id="${datasetId}"
     select="${selectExpr}"
     group-by="${config.labelField}"${whereAttr}${orderAttr}>
+  </gouv-query>
+
+  <gouv-dsfr-chart
+    source="chart-data"
+    type="${chartType}"
+    label-field="${config.labelField}"
+    value-field="${resultField}"
+    name="${escapeHtml(config.title || 'Mon graphique')}"${horizontalAttr}
+    selected-palette="${config.palette || 'categorical'}">
+  </gouv-dsfr-chart>
+</div>`;
+}
+
+function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, resourceId: string): string {
+  const aggregateExpr = config.aggregation === 'count'
+    ? `${config.labelField}:count`
+    : `${config.valueField}:${config.aggregation || 'sum'}`;
+  const resultField = config.aggregation === 'count'
+    ? `${config.labelField}__count`
+    : `${config.valueField}__${config.aggregation || 'sum'}`;
+  const filterAttr = config.where
+    ? `\n    filter="${config.where}"` : '';
+  const orderAttr = config.sortOrder && config.labelField
+    ? `\n    order-by="${resultField}:${config.sortOrder}"` : '';
+  const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
+  const horizontalAttr = config.type === 'horizontalBar' ? '\n    horizontal' : '';
+
+  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+<!-- Source API Tabular avec pagination automatique -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
+  ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
+
+  <gouv-query
+    id="chart-data"
+    api-type="tabular"
+    base-url="${baseUrl}"
+    resource="${resourceId}"
+    group-by="${config.labelField}"
+    aggregate="${aggregateExpr}"${filterAttr}${orderAttr}>
   </gouv-query>
 
   <gouv-dsfr-chart
