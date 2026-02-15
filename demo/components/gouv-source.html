@@ -35,6 +35,19 @@
           </p>
         </div>
 
+        <div class="fr-callout fr-callout--green-emeraude fr-mb-3w">
+          <h4 class="fr-callout__title">gouv-source vs gouv-query</h4>
+          <p class="fr-callout__text">
+            <strong><code>gouv-source</code></strong> est un connecteur HTTP generique : il recupere du JSON
+            depuis n'importe quelle API REST (avec <code>headers</code>, <code>method</code>, <code>params</code>)
+            et le redistribue <strong>tel quel</strong> aux composants en aval.<br><br>
+            <strong><code>gouv-query</code></strong> est une couche de transformation : il filtre, groupe, agrege
+            et trie les donnees. En mode <code>opendatasoft</code> ou <code>tabular</code>, il fetche
+            directement les APIs connues (sans <code>gouv-source</code>).
+            En mode <code>generic</code>, il ecoute un <code>gouv-source</code> existant et traite les donnees cote client.
+          </p>
+        </div>
+
         <h2>Attributs</h2>
         <table class="attr-table">
           <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>

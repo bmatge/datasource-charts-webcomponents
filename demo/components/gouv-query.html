@@ -31,9 +31,11 @@
     base-path="../">
     <div slot="content">
         <p class="fr-text--lead">
-          Composant intermediaire de requete et transformation de donnees.
-          Se place entre <code>&lt;gouv-source&gt;</code> et les composants de visualisation
-          pour filtrer, grouper, agreger et trier les donnees.
+          Composant de requete et transformation de donnees.
+          Filtre, groupe, agrege et trie les donnees avant de les transmettre
+          aux composants de visualisation. En mode <code>opendatasoft</code> ou <code>tabular</code>,
+          il fetche directement les APIs. En mode <code>generic</code>, il traite les donnees
+          d'une <code>&lt;gouv-source&gt;</code> existante.
         </p>
 
         <div class="fr-callout fr-callout--blue-france">
