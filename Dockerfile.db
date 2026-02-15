@@ -19,6 +19,12 @@ RUN node scripts/build-app.js
 # Build server
 RUN npm run build:server
 
+# Install server production deps standalone (workspace hoists to root node_modules,
+# but the production image needs them under /app/server/node_modules)
+RUN mkdir /server-prod \
+ && cp server/package.json server/package-lock.json /server-prod/ \
+ && cd /server-prod && npm ci --omit=dev
+
 # Build MCP server (separate package, outside workspace)
 RUN cd mcp-server && npm ci && npm run build
 
@@ -37,9 +43,9 @@ RUN echo "log_format beacon '\$time_iso8601|\$http_referer|\$arg_c|\$arg_t|\$rem
 # Static files
 COPY --from=builder /app/app-dist /usr/share/nginx/html
 
-# Backend server (compiled JS + deps)
+# Backend server (compiled JS + deps from standalone install)
 COPY --from=builder /app/server/dist /app/server/dist
-COPY --from=builder /app/server/node_modules /app/server/node_modules
+COPY --from=builder /server-prod/node_modules /app/server/node_modules
 COPY --from=builder /app/server/src/db/schema.sql /app/server/dist/db/schema.sql
 RUN mkdir -p /app/server/data
 
