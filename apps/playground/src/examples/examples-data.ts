@@ -1041,23 +1041,24 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'facets-datalist': `<!--
-  Tableau filtrable — Maires avec facettes
-  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-datalist
-  Source : Registre des maires (tabular-api)
-  gouv-facets affiche des filtres interactifs par departement et categorie
+  Tableau filtrable — Maires avec facettes (dataset complet)
+  Pipeline : gouv-query (api-type="tabular") → gouv-normalize → gouv-facets → gouv-datalist
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge automatiquement toutes les pages, les facettes couvrent l'ensemble du dataset
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires de France — exploration par facettes</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
+    <br>Pipeline : <strong>gouv-query</strong> (auto-pagination) → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
+    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="raw"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <gouv-normalize id="clean" source="raw"
     rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
@@ -1371,23 +1372,24 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'search-facets-display': `<!--
-  Recherche + facettes + cartes — Maires
-  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-facets → gouv-display
-  Source : Registre des maires (tabular-api)
-  gouv-search reduit le jeu de donnees, gouv-facets affine, gouv-display affiche
+  Recherche + facettes + cartes — Maires (dataset complet)
+  Pipeline : gouv-query (api-type="tabular") → gouv-normalize → gouv-search → gouv-facets → gouv-display
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge toutes les pages, gouv-search et gouv-facets operent sur le dataset complet
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Recherche + facettes — Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
+    <br>Pipeline : <strong>gouv-query</strong> (auto-pagination) → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
+    <br>34 874 enregistrements charges automatiquement
   </p>
 
-  <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="raw"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <gouv-normalize id="clean" source="raw"
     rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
