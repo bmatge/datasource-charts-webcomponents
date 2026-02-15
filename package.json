@@ -11,7 +11,8 @@
   ],
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "server"
   ],
   "scripts": {
     "dev": "vite",

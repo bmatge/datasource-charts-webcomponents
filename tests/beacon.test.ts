@@ -29,6 +29,7 @@ describe('sendWidgetBeacon', () => {
 
   afterEach(() => {
     globalThis.Image = OriginalImage;
+    delete (window as any).__gwDbMode;
     vi.restoreAllMocks();
     vi.resetModules();
   });
@@ -174,7 +175,7 @@ describe('sendWidgetBeacon', () => {
     });
   });
 
-  it('uses tracking pixel (Image) instead of fetch', async () => {
+  it('uses tracking pixel (Image) instead of fetch when not in DB mode', async () => {
     Object.defineProperty(window, 'location', {
       value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
       writable: true,
@@ -183,7 +184,47 @@ describe('sendWidgetBeacon', () => {
     const sendWidgetBeacon = await loadBeacon();
     sendWidgetBeacon('gouv-kpi');
 
-    // Pixel was sent
+    // Pixel was sent synchronously
+    expect(imageSrcs).toHaveLength(1);
+    expect(imageSrcs[0]).toContain('chartsbuilder.matge.com/beacon');
+
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, hostname: 'localhost' },
+      writable: true,
+    });
+  });
+
+  it('in DB mode, uses fetch API instead of synchronous pixel', async () => {
+    (window as any).__gwDbMode = true;
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
+      writable: true,
+    });
+
+    const sendWidgetBeacon = await loadBeacon();
+    sendWidgetBeacon('gouv-kpi');
+
+    // In DB mode, the beacon is sent via fetch (async), not via Image pixel (sync)
+    // So no synchronous Image.src assignment should have happened
+    expect(imageSrcs).toHaveLength(0);
+
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, hostname: 'localhost' },
+      writable: true,
+    });
+  });
+
+  it('without DB mode, creates pixel synchronously', async () => {
+    delete (window as any).__gwDbMode;
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, hostname: 'example.gouv.fr', origin: 'https://example.gouv.fr' },
+      writable: true,
+    });
+
+    const sendWidgetBeacon = await loadBeacon();
+    sendWidgetBeacon('gouv-dsfr-chart', 'line');
+
+    // Without DB mode, pixel is created synchronously
     expect(imageSrcs).toHaveLength(1);
     expect(imageSrcs[0]).toContain('chartsbuilder.matge.com/beacon');
 

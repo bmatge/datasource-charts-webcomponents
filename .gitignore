@@ -38,6 +38,9 @@ test-results/
 playwright-report/
 e2e/screenshots
 
+# Server data (SQLite databases)
+server/data/
+
 # Temporary files
 *.tmp
 *.temp

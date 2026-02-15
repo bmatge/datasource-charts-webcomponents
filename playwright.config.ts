@@ -18,6 +18,12 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
+      testIgnore: /.*\.db\.spec\.ts$/,
+    },
+    {
+      name: 'chromium-db',
+      use: { browserName: 'chromium' },
+      testMatch: /.*\.db\.spec\.ts$/,
     },
   ],
 });

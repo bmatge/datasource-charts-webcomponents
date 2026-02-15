@@ -33,15 +33,34 @@ export function sendWidgetBeacon(component: string, subtype?: string): void {
   if (subtype) params.set('t', subtype);
   params.set('r', window.location.origin);
 
+  // In DB mode, send as JSON POST to the API (more reliable, stored in SQLite)
+  // Fallback to pixel tracking if the POST fails
+  const useApi = typeof window !== 'undefined' && (window as any).__gwDbMode === true;
+
+  if (useApi) {
+    try {
+      fetch('/api/monitoring/beacon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          component,
+          chartType: subtype || null,
+          origin: window.location.origin,
+        }),
+      }).catch(() => {
+        // Fallback to pixel
+        new Image().src = `${BEACON_URL}?${params.toString()}`;
+      });
+      return;
+    } catch {
+      // Fall through to pixel
+    }
+  }
+
   const url = `${BEACON_URL}?${params.toString()}`;
 
   try {
-    // Use a tracking pixel (Image) instead of fetch/sendBeacon.
-    // - fetch is blocked by CSP connect-src restrictions
-    // - sendBeacon requires specific CORS headers (NS_BINDING_ABORTED)
-    // - Image requests are governed by CSP img-src which is almost always
-    //   permissive (* or absent), just like classic analytics solutions.
-    // Nginx logs the request regardless of the response status.
     new Image().src = url;
   } catch {
     // Silently ignore beacon failures - never impact widget functionality
