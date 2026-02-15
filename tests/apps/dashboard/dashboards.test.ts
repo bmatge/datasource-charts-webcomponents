@@ -9,10 +9,11 @@ vi.mock('@gouv-widgets/shared', () => ({
   toastWarning: vi.fn(),
   toastSuccess: vi.fn(),
   navigateTo: vi.fn(),
+  confirmDialog: vi.fn(),
 }));
 
 import { confirmSave, openSaveModal, closeSaveModal, newDashboard, loadDashboard, deleteDashboard } from '../../../apps/dashboard/src/dashboards';
-import { saveToStorage, toastWarning, toastSuccess } from '@gouv-widgets/shared';
+import { saveToStorage, toastWarning, toastSuccess, confirmDialog } from '@gouv-widgets/shared';
 
 describe('dashboard/dashboards', () => {
   beforeEach(() => {
@@ -91,41 +92,40 @@ describe('dashboard/dashboards', () => {
   });
 
   describe('deleteDashboard', () => {
-    it('should remove dashboard from savedDashboards', () => {
+    it('should remove dashboard from savedDashboards', async () => {
       const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'To Delete' };
       state.savedDashboards = [dash];
 
-      // Mock confirm to return true
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      vi.mocked(confirmDialog).mockResolvedValue(true);
 
       // Add dashboards-modal and dashboards-list for re-render
       document.body.innerHTML += '<div id="dashboards-modal"><div id="dashboards-list"></div></div>';
 
-      deleteDashboard('dash-1');
+      await deleteDashboard('dash-1');
       expect(state.savedDashboards).toHaveLength(0);
       expect(saveToStorage).toHaveBeenCalled();
       expect(toastSuccess).toHaveBeenCalled();
     });
 
-    it('should reset current dashboard id if deleting the active one', () => {
+    it('should reset current dashboard id if deleting the active one', async () => {
       const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'Active' };
       state.savedDashboards = [dash];
       state.dashboard.id = 'dash-1';
 
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      vi.mocked(confirmDialog).mockResolvedValue(true);
       document.body.innerHTML += '<div id="dashboards-modal"><div id="dashboards-list"></div></div>';
 
-      deleteDashboard('dash-1');
+      await deleteDashboard('dash-1');
       expect(state.dashboard.id).toBeNull();
     });
 
-    it('should not delete when confirm is cancelled', () => {
+    it('should not delete when confirm is cancelled', async () => {
       const dash = { ...createEmptyDashboard(), id: 'dash-1', name: 'Keep' };
       state.savedDashboards = [dash];
 
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
+      vi.mocked(confirmDialog).mockResolvedValue(false);
 
-      deleteDashboard('dash-1');
+      await deleteDashboard('dash-1');
       expect(state.savedDashboards).toHaveLength(1);
       expect(saveToStorage).not.toHaveBeenCalled();
     });

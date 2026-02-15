@@ -2,6 +2,7 @@
  * Dashboard app - Grid management (per-row column control)
  */
 
+import { confirmDialog } from '@gouv-widgets/shared';
 import { state, getRowColumns, setRowColumns, removeRowFromLayout } from './state.js';
 import { initDropZones } from './drag-drop.js';
 import { renderWidget } from './widgets.js';
@@ -182,7 +183,7 @@ export function addColumnToRow(rowIndex: number): void {
   updateGeneratedCode();
 }
 
-export function removeColumnFromRow(rowIndex: number): void {
+export async function removeColumnFromRow(rowIndex: number): Promise<void> {
   const current = getRowColumns(state.dashboard, rowIndex);
   if (current <= 1) return;
 
@@ -191,7 +192,7 @@ export function removeColumnFromRow(rowIndex: number): void {
   );
 
   if (widgetsInLastCol.length > 0) {
-    if (!confirm('Cette cellule contient un widget. Le supprimer ?')) return;
+    if (!await confirmDialog('Cette cellule contient un widget. Le supprimer ?')) return;
     state.dashboard.widgets = state.dashboard.widgets.filter(
       w => !(w.position.row === rowIndex && w.position.col === current - 1)
     );
@@ -202,7 +203,7 @@ export function removeColumnFromRow(rowIndex: number): void {
   updateGeneratedCode();
 }
 
-export function deleteRow(rowIndex: number): void {
+export async function deleteRow(rowIndex: number): Promise<void> {
   // Count total rows
   const grid = document.getElementById('dashboard-grid');
   const totalRows = grid?.querySelectorAll('.dashboard-row').length ?? 0;
@@ -211,7 +212,7 @@ export function deleteRow(rowIndex: number): void {
   const widgetsInRow = state.dashboard.widgets.filter(w => w.position.row === rowIndex);
 
   if (widgetsInRow.length > 0) {
-    if (!confirm(`Cette ligne contient ${widgetsInRow.length} widget(s). Supprimer ?`)) return;
+    if (!await confirmDialog(`Cette ligne contient ${widgetsInRow.length} widget(s). Supprimer ?`)) return;
   }
 
   // Remove widgets in the row

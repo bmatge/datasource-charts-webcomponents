@@ -2,7 +2,7 @@
  * Dashboard app - Widget management
  */
 
-import { escapeHtml, navigateTo } from '@gouv-widgets/shared';
+import { escapeHtml, navigateTo, confirmDialog } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import { openConfigModal } from './widget-config.js';
 import { updateGeneratedCode } from './code-generator.js';
@@ -143,8 +143,8 @@ export function editWidget(widgetId: string): void {
   }
 }
 
-export function deleteWidget(widgetId: string): void {
-  if (!confirm('Supprimer ce widget ?')) return;
+export async function deleteWidget(widgetId: string): Promise<void> {
+  if (!await confirmDialog('Supprimer ce widget ?')) return;
 
   const index = state.dashboard.widgets.findIndex(w => w.id === widgetId);
   if (index > -1) {

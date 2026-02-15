@@ -2,7 +2,7 @@
  * Dashboard app - Main entry point
  */
 
-import { escapeHtml, loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { escapeHtml, loadFromStorage, STORAGE_KEYS, confirmDialog } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import { createEmptyDashboard } from './state.js';
 import { initDragAndDrop, handleFavoriteDragStart } from './drag-drop.js';
@@ -68,9 +68,9 @@ function renderSources(sources: any[]): void {
   `).join('');
 }
 
-function loadTemplate(name: string): void {
+async function loadTemplate(name: string): Promise<void> {
   if (state.dashboard.widgets.length > 0) {
-    if (!confirm('Charger un template ? Les modifications non sauvegardees seront perdues.')) return;
+    if (!await confirmDialog('Charger un template ? Les modifications non sauvegardees seront perdues.')) return;
   }
   state.dashboard = createEmptyDashboard();
 

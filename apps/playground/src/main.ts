@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -78,9 +78,9 @@ function runCode(): void {
   }
 }
 
-function loadExample(name: string, skipConfirm = false): void {
+async function loadExample(name: string, skipConfirm = false): Promise<void> {
   if (examples[name]) {
-    if (!skipConfirm && editor.getValue().trim() && !confirm('Remplacer le code actuel par cet exemple ?')) return;
+    if (!skipConfirm && editor.getValue().trim() && !await confirmDialog('Remplacer le code actuel par cet exemple ?')) return;
     editor.setValue(examples[name]);
     DEPS_LINE_RE.lastIndex = 0;
     updateDepsButton(hasDeps(examples[name]));

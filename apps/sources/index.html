@@ -24,11 +24,10 @@
   </div>
 
   <!-- CONTENU PRINCIPAL -->
-  <div class="fr-container">
-    <div class="content-grid">
+  <app-layout-builder left-ratio="30">
 
       <!-- SIDEBAR : Liste des connexions -->
-      <aside class="sidebar">
+      <aside slot="left" class="sidebar">
         <h2><i class="ri-link"></i> Connexions</h2>
 
         <div id="connections-list">
@@ -53,7 +52,7 @@
       </aside>
 
       <!-- MAIN : Explorateur -->
-      <main class="main-content" id="main-content">
+      <main slot="right" class="main-content" id="main-content">
         <div id="explorer-empty" class="empty-state">
           <i class="ri-database-2-line"></i>
           <p>Sélectionnez une connexion pour explorer ses données,<br>ou créez une nouvelle source manuelle.</p>
@@ -111,8 +110,7 @@
         </div>
       </main>
 
-    </div>
-  </div>
+  </app-layout-builder>
 
   <!-- MODAL : Ajouter une connexion -->
   <div class="modal-overlay" id="connection-modal">

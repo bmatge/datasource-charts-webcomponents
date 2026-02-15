@@ -2,7 +2,7 @@
  * Dashboard app - Dashboard CRUD operations
  */
 
-import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo } from '@gouv-widgets/shared';
+import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo, confirmDialog } from '@gouv-widgets/shared';
 import { state, createEmptyDashboard } from './state.js';
 import { resetGrid, rebuildGrid } from './grid.js';
 import { updateGeneratedCode, generateHTMLCode } from './code-generator.js';
@@ -65,9 +65,9 @@ export function confirmSave(): void {
   toastSuccess('Tableau de bord sauvegarde !');
 }
 
-export function newDashboard(): void {
+export async function newDashboard(): Promise<void> {
   if (state.dashboard.widgets.length > 0) {
-    if (!confirm('Creer un nouveau tableau de bord ? Les modifications non sauvegardees seront perdues.')) {
+    if (!await confirmDialog('Creer un nouveau tableau de bord ? Les modifications non sauvegardees seront perdues.')) {
       return;
     }
   }
@@ -107,11 +107,11 @@ export function openDashboardsList(): void {
   modal.classList.add('active');
 }
 
-export function deleteDashboard(id: string): void {
+export async function deleteDashboard(id: string): Promise<void> {
   const dashboard = state.savedDashboards.find(d => d.id === id);
   if (!dashboard) return;
 
-  if (!confirm(`Supprimer le tableau de bord "${dashboard.name}" ?`)) return;
+  if (!await confirmDialog(`Supprimer le tableau de bord "${dashboard.name}" ?`)) return;
 
   state.savedDashboards = state.savedDashboards.filter(d => d.id !== id);
   saveToStorage(STORAGE_KEYS.DASHBOARDS, state.savedDashboards);

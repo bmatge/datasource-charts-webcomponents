@@ -14,6 +14,7 @@ import {
   toastWarning,
   toastSuccess,
   toastError,
+  confirmDialog,
 } from '@gouv-widgets/shared';
 
 import { state, EXTERNAL_PROXY } from '../state.js';
@@ -82,17 +83,17 @@ export function renderConnections(): void {
     });
 
     // Delete button
-    card.querySelector('.delete-conn-btn')?.addEventListener('click', (e: Event) => {
+    card.querySelector('.delete-conn-btn')?.addEventListener('click', async (e: Event) => {
       e.stopPropagation();
-      if (confirm(`Supprimer la connexion "${conn.name}" ?`)) {
+      if (await confirmDialog(`Supprimer la connexion "${conn.name}" ?`)) {
         deleteConnection(index);
       }
     });
 
     // Context menu (right-click to delete)
-    card.addEventListener('contextmenu', (e: Event) => {
+    card.addEventListener('contextmenu', async (e: Event) => {
       e.preventDefault();
-      if (confirm(`Supprimer la connexion "${conn.name}" ?`)) {
+      if (await confirmDialog(`Supprimer la connexion "${conn.name}" ?`)) {
         deleteConnection(index);
       }
     });
@@ -579,16 +580,16 @@ export function renderSources(): void {
       }
     });
 
-    card.querySelector('.delete-source-btn')?.addEventListener('click', (e: Event) => {
+    card.querySelector('.delete-source-btn')?.addEventListener('click', async (e: Event) => {
       e.stopPropagation();
-      if (confirm(`Supprimer la source "${source.name}" ?`)) {
+      if (await confirmDialog(`Supprimer la source "${source.name}" ?`)) {
         deleteSource(index);
       }
     });
 
-    card.addEventListener('contextmenu', (e: Event) => {
+    card.addEventListener('contextmenu', async (e: Event) => {
       e.preventDefault();
-      if (confirm(`Supprimer la source "${source.name}" ?`)) {
+      if (await confirmDialog(`Supprimer la source "${source.name}" ?`)) {
         deleteSource(index);
       }
     });

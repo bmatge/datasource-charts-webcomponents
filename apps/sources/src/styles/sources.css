@@ -15,16 +15,8 @@ body { min-height: 100vh; background: var(--background-alt-grey); }
 
 .page-header p { margin: 0.5rem 0 0; color: var(--text-mention-grey); }
 
-.content-grid {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
 .sidebar {
   background: var(--background-default-grey);
-  border-radius: 8px;
   padding: 1rem;
 }
 
@@ -37,7 +29,6 @@ body { min-height: 100vh; background: var(--background-alt-grey); }
 
 .main-content {
   background: var(--background-default-grey);
-  border-radius: 8px;
   padding: 1.5rem;
 }
 
@@ -346,11 +337,6 @@ body { min-height: 100vh; background: var(--background-alt-grey); }
   max-width: 800px;
 }
 
-@media (max-width: 900px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* Edit/Delete button hover */
 .edit-conn-btn:hover,
