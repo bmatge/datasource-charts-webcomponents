@@ -198,12 +198,20 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       // DSFR Chart attend un tableau JSON pour name (ex: '["Série 1"]')
       // Si l'utilisateur passe une string simple, on l'enveloppe automatiquement
       const trimmed = this.name.trim();
-      attrs['name'] = trimmed.startsWith('[') ? trimmed : JSON.stringify([trimmed]);
+      const isMap = this.type === 'map' || this.type === 'map-reg';
+      attrs['name'] = isMap
+        ? trimmed
+        : trimmed.startsWith('[') ? trimmed : JSON.stringify([trimmed]);
     } else if (this.valueField) {
-      const names = this.valueField2
-        ? [this.valueField, this.valueField2]
-        : [this.valueField];
-      attrs['name'] = JSON.stringify(names);
+      const isMap = this.type === 'map' || this.type === 'map-reg';
+      if (isMap) {
+        attrs['name'] = this.valueField;
+      } else {
+        const names = this.valueField2
+          ? [this.valueField, this.valueField2]
+          : [this.valueField];
+        attrs['name'] = JSON.stringify(names);
+      }
     }
 
     return attrs;
