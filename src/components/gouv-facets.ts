@@ -805,6 +805,8 @@ export class GouvFacets extends LitElement {
         .gouv-facets__groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
         .gouv-facets__group { min-width: 0; }
         .gouv-facets__count { font-weight: 400; font-size: 0.75rem; color: var(--text-mention-grey, #666); margin-left: 0.25rem; }
+        .gouv-facets .fr-radio-group .fr-label,
+        .gouv-facets .fr-checkbox-group .fr-label { flex-wrap: nowrap; }
         .gouv-facets__multiselect { position: relative; }
         .gouv-facets__multiselect-trigger { width: 100%; text-align: left; cursor: pointer; appearance: none; }
         .gouv-facets__multiselect-trigger[aria-expanded="true"]::after { transform: rotate(180deg); }
@@ -1041,6 +1043,13 @@ export class GouvFacets extends LitElement {
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
                role="dialog" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
+            ${selectedValue ? html`
+              <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left fr-icon-close-circle-line gouv-facets__multiselect-toggle"
+                type="button"
+                @click="${() => this._clearFieldSelections(group.field)}">
+                Reinitialiser
+              </button>
+            ` : nothing}
             <div class="fr-search-bar" role="search">
               <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>
               <input class="fr-input" type="search" id="${uid}-search"

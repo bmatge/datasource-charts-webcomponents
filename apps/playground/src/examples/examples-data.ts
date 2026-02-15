@@ -1064,13 +1064,12 @@ export const examples: Record<string, string> = {
     trim>
   </gouv-normalize>
 
-  <!-- Facettes : filtres interactifs sur Departement, Categorie et Sexe -->
+  <!-- Facettes : multiselect, select et radio avec colonnage DSFR -->
   <gouv-facets id="filtered" source="clean"
     fields="Departement, Categorie, Sexe"
     labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-    searchable="Departement"
-    disjunctive="Departement"
-    max-values="8">
+    display="Departement:multiselect | Categorie:select | Sexe:radio"
+    cols="4">
   </gouv-facets>
 
   <gouv-datalist source="filtered"
@@ -1107,12 +1106,11 @@ export const examples: Record<string, string> = {
     trim>
   </gouv-normalize>
 
-  <!-- Facettes : filtrer par region avant aggregation -->
+  <!-- Facettes : filtrer par region (multiselect) avant aggregation -->
   <gouv-facets id="filtered" source="clean"
     fields="Region"
-    disjunctive="Region"
-    sort="alpha"
-    max-values="8">
+    display="Region:multiselect"
+    sort="alpha">
   </gouv-facets>
 
   <gouv-query id="stats" source="filtered"
@@ -1406,7 +1404,8 @@ export const examples: Record<string, string> = {
   <gouv-facets id="filtered" source="searched"
     fields="Departement, Categorie"
     labels="Departement:Departement | Categorie:Categorie socio-pro"
-    max-values="6">
+    display="Departement:multiselect | Categorie:select"
+    cols="6">
   </gouv-facets>
 
   <gouv-display source="filtered" cols="3" pagination="9">
@@ -1518,10 +1517,10 @@ export const examples: Record<string, string> = {
     trim>
   </gouv-normalize>
 
-  <!-- Facettes : filtrer par region -->
+  <!-- Facettes : filtrer par region (multiselect) -->
   <gouv-facets id="filtered" source="clean"
     fields="Region"
-    disjunctive="Region"
+    display="Region:multiselect"
     sort="alpha">
   </gouv-facets>
 
@@ -1676,7 +1675,8 @@ export const examples: Record<string, string> = {
     server-facets
     fields="nom_region,type_aide"
     labels="nom_region:Region | type_aide:Type d'aide"
-    max-values="8">
+    display="nom_region:multiselect | type_aide:select"
+    cols="6">
   </gouv-facets>
 
   <gouv-display source="filtered" cols="3" pagination="12">

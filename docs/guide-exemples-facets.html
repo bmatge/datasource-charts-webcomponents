@@ -90,7 +90,7 @@
 
         <!-- facets-datalist -->
         <h4>Tableau filtrable — Maires avec facettes</h4>
-        <p>Facettes sur Departement, Categorie et Sexe avec recherche dans les facettes (<code>searchable</code>) et mode disjonctif (<code>disjunctive</code>). Les donnees filtrees alimentent un <code>gouv-datalist</code>.
+        <p>Facettes sur Departement (multiselect), Categorie (select) et Sexe (radio) avec colonnage DSFR (<code>cols="4"</code>). Les donnees filtrees alimentent un <code>gouv-datalist</code>.
           <a href="../apps/playground/index.html?example=facets-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
@@ -109,9 +109,8 @@
 &lt;gouv-facets id="filtered" source="clean"
   fields="Departement, Categorie, Sexe"
   labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-  searchable="Departement"
-  disjunctive="Departement"
-  max-values="8"&gt;
+  display="Departement:multiselect | Categorie:select | Sexe:radio"
+  cols="4"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
@@ -126,7 +125,7 @@
 
         <!-- facets-bar -->
         <h4>Barres — Beneficiaires filtres par region</h4>
-        <p>Les facettes filtrent par region, puis <code>gouv-query</code> agrege les donnees filtrees pour le graphique en barres. Selectionner une region recalcule instantanement le graphique.
+        <p>La facette Region en mode multiselect filtre les donnees, puis <code>gouv-query</code> agrege pour le graphique en barres. Selectionner des regions recalcule instantanement le graphique.
           <a href="../apps/playground/index.html?example=facets-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
@@ -145,9 +144,8 @@
 
 &lt;gouv-facets id="filtered" source="clean"
   fields="Region"
-  disjunctive="Region"
-  sort="alpha"
-  max-values="8"&gt;
+  display="Region:multiselect"
+  sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-query id="stats" source="filtered"
@@ -168,7 +166,7 @@
 
         <!-- facets-map -->
         <h4>Carte + KPI — Fiscalite locale filtree par region</h4>
-        <p>Les facettes filtrent par region, les KPI et la carte departementale se recalculent en temps reel sur les donnees filtrees.
+        <p>La facette Region en mode multiselect filtre les donnees, les KPI et la carte departementale se recalculent en temps reel.
           <a href="../apps/playground/index.html?example=facets-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
@@ -187,7 +185,7 @@
 
 &lt;gouv-facets id="filtered" source="clean"
   fields="Region"
-  disjunctive="Region"
+  display="Region:multiselect"
   sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
@@ -279,7 +277,8 @@
   server-facets
   fields="nom_region,type_aide"
   labels="nom_region:Region | type_aide:Type d'aide"
-  max-values="8"&gt;
+  display="nom_region:multiselect | type_aide:select"
+  cols="6"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-display source="filtered" cols="3" pagination="12"&gt;
@@ -324,6 +323,7 @@
               <tr><td><code>url-params</code></td><td>Boolean</td><td>Initialise les selections depuis les parametres URL</td></tr>
               <tr><td><code>url-param-map</code></td><td>String</td><td>Mapping URL param → champ : <code>param:field | param2:field2</code></td></tr>
               <tr><td><code>url-sync</code></td><td>Boolean</td><td>Synchronise l'URL quand l'utilisateur change les facettes</td></tr>
+              <tr><td><code>cols</code></td><td>String</td><td>Colonnage DSFR : <code>"4"</code> (global) ou <code>"champ:4 | champ2:6"</code> (par facette). Utilise la grille DSFR <code>fr-col-N</code></td></tr>
               <tr><td><code>server-facets</code></td><td>Boolean</td><td>Active le mode facettes serveur ODS (API <code>/facets</code>). Requiert <code>source</code> vers un <code>gouv-query server-side api-type="opendatasoft"</code>. <code>fields</code> obligatoire</td></tr>
             </tbody>
           </table>

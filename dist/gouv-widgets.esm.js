@@ -288,7 +288,7 @@ se.elementStyles = [], se.shadowRootOptions = { mode: "open" }, se[ke("elementPr
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ee = globalThis, Nt = /* @__PURE__ */ h((n) => n, "i$1"), Ve = Ee.trustedTypes, zt = Ve ? Ve.createPolicy("lit-html", { createHTML: /* @__PURE__ */ h((n) => n, "createHTML") }) : void 0, ii = "$lit$", V = `lit$${Math.random().toFixed(9).slice(2)}$`, ri = "?" + V, vi = `<${ri}>`, ee = document, Re = /* @__PURE__ */ h(() => ee.createComment(""), "c"), Me = /* @__PURE__ */ h((n) => n === null || typeof n != "object" && typeof n != "function", "a"), mt = Array.isArray, yi = /* @__PURE__ */ h((n) => mt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), Ze = `[ 	
+const Re = globalThis, Nt = /* @__PURE__ */ h((n) => n, "i$1"), Ve = Re.trustedTypes, zt = Ve ? Ve.createPolicy("lit-html", { createHTML: /* @__PURE__ */ h((n) => n, "createHTML") }) : void 0, ii = "$lit$", V = `lit$${Math.random().toFixed(9).slice(2)}$`, ri = "?" + V, vi = `<${ri}>`, ee = document, Ee = /* @__PURE__ */ h(() => ee.createComment(""), "c"), Me = /* @__PURE__ */ h((n) => n === null || typeof n != "object" && typeof n != "function", "a"), mt = Array.isArray, yi = /* @__PURE__ */ h((n) => mt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), Ze = `[ 	
 \f\r]`, Ae = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, jt = /-->/g, Bt = />/g, Z = RegExp(`>|${Ze}(?:([^\\s"'>=/]+)(${Ze}*=${Ze}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), qt = /'/g, It = /"/g, si = /^(?:script|style|textarea|title)$/i, $i = /* @__PURE__ */ h((n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), "x"), d = $i(1), $e = Symbol.for("lit-noChange"), b = Symbol.for("lit-nothing"), Ht = /* @__PURE__ */ new WeakMap(), X = ee.createTreeWalker(ee, 129);
 function ai(n, e) {
@@ -320,15 +320,15 @@ const wi = /* @__PURE__ */ h((n, e) => {
     for (; (r = X.nextNode()) !== null && l.length < o; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const f of r.getAttributeNames()) if (f.endsWith(ii)) {
-          const g = p[a++], _ = r.getAttribute(f).split(V), R = /([.?@])?(.*)/.exec(g);
-          l.push({ type: 1, index: s, name: R[2], strings: _, ctor: R[1] === "." ? nt : R[1] === "?" ? ot : R[1] === "@" ? lt : Se }), r.removeAttribute(f);
+          const g = p[a++], _ = r.getAttribute(f).split(V), E = /([.?@])?(.*)/.exec(g);
+          l.push({ type: 1, index: s, name: E[2], strings: _, ctor: E[1] === "." ? nt : E[1] === "?" ? ot : E[1] === "@" ? lt : Se }), r.removeAttribute(f);
         } else f.startsWith(V) && (l.push({ type: 6, index: s }), r.removeAttribute(f));
         if (si.test(r.tagName)) {
           const f = r.textContent.split(V), g = f.length - 1;
           if (g > 0) {
             r.textContent = Ve ? Ve.emptyScript : "";
-            for (let _ = 0; _ < g; _++) r.append(f[_], Re()), X.nextNode(), l.push({ type: 2, index: ++s });
-            r.append(f[g], Re());
+            for (let _ = 0; _ < g; _++) r.append(f[_], Ee()), X.nextNode(), l.push({ type: 2, index: ++s });
+            r.append(f[g], Ee());
           }
         }
       } else if (r.nodeType === 8) if (r.data === ri) l.push({ type: 2, index: s });
@@ -432,7 +432,7 @@ const We = class We {
     mt(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let i, r = 0;
-    for (const s of e) r === t.length ? t.push(i = new We(this.O(Re()), this.O(Re()), this, this.options)) : i = t[r], i._$AI(s), r++;
+    for (const s of e) r === t.length ? t.push(i = new We(this.O(Ee()), this.O(Ee()), this, this.options)) : i = t[r], i._$AI(s), r++;
     r < t.length && (this._$AR(i && i._$AB.nextSibling, r), t.length = r);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -525,14 +525,14 @@ const kt = class kt {
 };
 h(kt, "Z");
 let ct = kt;
-const Xe = Ee.litHtmlPolyfillSupport;
-Xe == null || Xe(De, Fe), (Ee.litHtmlVersions ?? (Ee.litHtmlVersions = [])).push("3.3.2");
+const Xe = Re.litHtmlPolyfillSupport;
+Xe == null || Xe(De, Fe), (Re.litHtmlVersions ?? (Re.litHtmlVersions = [])).push("3.3.2");
 const Si = /* @__PURE__ */ h((n, e, t) => {
   const i = (t == null ? void 0 : t.renderBefore) ?? e;
   let r = i._$litPart$;
   if (r === void 0) {
     const s = (t == null ? void 0 : t.renderBefore) ?? null;
-    i._$litPart$ = r = new Fe(e.insertBefore(Re(), s), s, void 0, t ?? {});
+    i._$litPart$ = r = new Fe(e.insertBefore(Ee(), s), s, void 0, t ?? {});
   }
   return r._$AI(n), r;
 }, "D");
@@ -541,7 +541,7 @@ const Si = /* @__PURE__ */ h((n, e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Y = globalThis, Et = class Et extends se {
+const Y = globalThis, Rt = class Rt extends se {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -566,8 +566,8 @@ const Y = globalThis, Et = class Et extends se {
     return $e;
   }
 };
-h(Et, "i");
-let C = Et;
+h(Rt, "i");
+let C = Rt;
 var Yt;
 C._$litElement$ = !0, C.finalized = !0, (Yt = Y.litElementHydrateSupport) == null || Yt.call(Y, { LitElement: C });
 const Ye = Y.litElementPolyfillSupport;
@@ -717,18 +717,18 @@ const et = {
     tabular: "/tabular-proxy"
   }
 };
-function Ei() {
+function Ri() {
   return typeof window < "u" && window.location.hostname === "localhost" && window.location.port === "5173";
 }
-h(Ei, "isViteDevMode");
-function Ri() {
+h(Ri, "isViteDevMode");
+function Ei() {
   return typeof window < "u" && "__TAURI__" in window;
 }
-h(Ri, "isTauriMode");
+h(Ei, "isTauriMode");
 function ni() {
   var i;
   const n = { ...et.endpoints };
-  return Ei() ? { baseUrl: "", endpoints: n } : Ri() ? { baseUrl: et.baseUrl, endpoints: n } : {
+  return Ri() ? { baseUrl: "", endpoints: n } : Ei() ? { baseUrl: et.baseUrl, endpoints: n } : {
     baseUrl: ((i = import.meta.env) == null ? void 0 : i.VITE_PROXY_URL) || et.baseUrl,
     endpoints: n
   };
@@ -989,7 +989,7 @@ L([
 F = L([
   D("gouv-source")
 ], F);
-const Rt = class Rt {
+const Et = class Et {
   constructor() {
     this.type = "generic", this.capabilities = {
       serverFetch: !1,
@@ -1016,8 +1016,8 @@ const Rt = class Rt {
     throw new Error("GenericAdapter ne supporte pas le mode server-side");
   }
 };
-h(Rt, "GenericAdapter");
-let ht = Rt;
+h(Et, "GenericAdapter");
+let ht = Et;
 function tt(n, e) {
   const t = {};
   return e && (t.signal = e), n.headers && Object.keys(n.headers).length > 0 && (t.headers = n.headers), t;
@@ -1054,10 +1054,10 @@ const je = 100, it = 10, Mt = class Mt {
       const f = this.buildUrl(e, Math.min(s, p), o), g = await fetch(f, tt(e, t));
       if (!g.ok)
         throw new Error(`HTTP ${g.status}: ${g.statusText}`);
-      const _ = await g.json(), R = _.results || [];
-      if (a = a.concat(R), typeof _.total_count == "number" && (l = _.total_count), l >= 0 && a.length >= l || R.length < s)
+      const _ = await g.json(), E = _.results || [];
+      if (a = a.concat(E), typeof _.total_count == "number" && (l = _.total_count), l >= 0 && a.length >= l || E.length < s)
         break;
-      o += R.length;
+      o += E.length;
     }
     return l >= 0 && a.length < l && a.length < r && console.warn(`gouv-query: pagination incomplete - ${a.length}/${l} resultats recuperes (limite de securite: ${it} pages de ${je})`), {
       data: a,
@@ -1197,8 +1197,8 @@ const Be = 100, rt = 500, Dt = class Dt {
       const f = this.buildUrl(e, Be, o), g = await fetch(f, Qt(e, t));
       if (!g.ok)
         throw new Error(`HTTP ${g.status}: ${g.statusText}`);
-      const _ = await g.json(), R = _.data || [];
-      s = s.concat(R), _.meta && typeof _.meta.total == "number" && (a = _.meta.total);
+      const _ = await g.json(), E = _.data || [];
+      s = s.concat(E), _.meta && typeof _.meta.total == "number" && (a = _.meta.total);
       let re = !1;
       if ((l = _.links) != null && l.next)
         try {
@@ -1206,7 +1206,7 @@ const Be = 100, rt = 500, Dt = class Dt {
           Ft > 0 && (o = Ft, re = !0);
         } catch {
         }
-      if (!re || a >= 0 && s.length >= a || R.length < Be)
+      if (!re || a >= 0 && s.length >= a || E.length < Be)
         break;
     }
     return !i && s.length > r && (s = s.slice(0, r)), a >= 0 && s.length < a && s.length < r && console.warn(`gouv-query: pagination incomplete - ${s.length}/${a} resultats recuperes (limite de securite: ${rt} pages de ${Be})`), {
@@ -2148,13 +2148,13 @@ let y = (ue = class extends C {
       return;
     const l = this._parseLabels(), c = /* @__PURE__ */ new Map();
     for (const _ of o) {
-      const R = ((g = e.getEffectiveWhere) == null ? void 0 : g.call(e, this.id)) || "", re = this._buildFacetWhereExcluding(_), B = [R, re].filter(Boolean).join(" AND ");
+      const E = ((g = e.getEffectiveWhere) == null ? void 0 : g.call(e, this.id)) || "", re = this._buildFacetWhereExcluding(_), B = [E, re].filter(Boolean).join(" AND ");
       c.has(B) || c.set(B, []), c.get(B).push(_);
     }
     const p = [];
-    for (const [_, R] of c)
+    for (const [_, E] of c)
       try {
-        const re = await t.fetchFacets({ baseUrl: i, datasetId: r, headers: s }, R, _);
+        const re = await t.fetchFacets({ baseUrl: i, datasetId: r, headers: s }, E, _);
         for (const B of re)
           p.push({
             field: B.field,
@@ -2163,7 +2163,7 @@ let y = (ue = class extends C {
           });
       } catch {
       }
-    this._facetGroups = o.map((_) => p.find((R) => R.field === _)).filter((_) => !!_).filter((_) => !(this.hideEmpty && _.values.length <= 1));
+    this._facetGroups = o.map((_) => p.find((E) => E.field === _)).filter((_) => !!_).filter((_) => !(this.hideEmpty && _.values.length <= 1));
   }
   /** Build ODSQL where clause for all active facet selections EXCEPT the given field */
   _buildFacetWhereExcluding(e) {
@@ -2366,6 +2366,8 @@ let y = (ue = class extends C {
         .gouv-facets__groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
         .gouv-facets__group { min-width: 0; }
         .gouv-facets__count { font-weight: 400; font-size: 0.75rem; color: var(--text-mention-grey, #666); margin-left: 0.25rem; }
+        .gouv-facets .fr-radio-group .fr-label,
+        .gouv-facets .fr-checkbox-group .fr-label { flex-wrap: nowrap; }
         .gouv-facets__multiselect { position: relative; }
         .gouv-facets__multiselect-trigger { width: 100%; text-align: left; cursor: pointer; appearance: none; }
         .gouv-facets__multiselect-trigger[aria-expanded="true"]::after { transform: rotate(180deg); }
@@ -2542,7 +2544,7 @@ let y = (ue = class extends C {
     const t = `facet-${this.id}-${e.field}`, i = this._activeSelections[e.field] ?? /* @__PURE__ */ new Set(), r = this._openMultiselectField === e.field, s = (this._searchQueries[e.field] ?? "").toLowerCase();
     let a = e.values;
     s && (a = a.filter((c) => c.value.toLowerCase().includes(s)));
-    const l = (i.size > 0 ? [...i][0] : null) ?? "Selectionnez une option";
+    const o = i.size > 0 ? [...i][0] : null, l = o ?? "Selectionnez une option";
     return d`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${e.field}"
@@ -2565,6 +2567,13 @@ let y = (ue = class extends C {
           <div class="gouv-facets__multiselect-panel" id="${t}-panel"
                role="dialog" aria-label="${e.label}"
                @click="${(c) => c.stopPropagation()}">
+            ${o ? d`
+              <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left fr-icon-close-circle-line gouv-facets__multiselect-toggle"
+                type="button"
+                @click="${() => this._clearFieldSelections(e.field)}">
+                Reinitialiser
+              </button>
+            ` : b}
             <div class="fr-search-bar" role="search">
               <label class="fr-label fr-sr-only" for="${t}-search">Rechercher dans ${e.label}</label>
               <input class="fr-input" type="search" id="${t}-search"
@@ -2668,7 +2677,7 @@ function qe(n) {
   return n ? n.split(",").map((e) => e.trim()).filter(Boolean) : [];
 }
 h(qe, "_parseCSV");
-var E = function(n, e, t, i) {
+var R = function(n, e, t, i) {
   var r = arguments.length, s = r < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, i);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (r < 3 ? a(s) : r > 3 ? a(e, t, s) : a(e, t)) || s);
@@ -2878,61 +2887,61 @@ let A = (he = class extends C {
     `;
   }
 }, h(he, "GouvSearch"), he);
-E([
+R([
   u({ type: String })
 ], A.prototype, "source", void 0);
-E([
+R([
   u({ type: String })
 ], A.prototype, "fields", void 0);
-E([
+R([
   u({ type: String })
 ], A.prototype, "placeholder", void 0);
-E([
+R([
   u({ type: String })
 ], A.prototype, "label", void 0);
-E([
+R([
   u({ type: Number })
 ], A.prototype, "debounce", void 0);
-E([
+R([
   u({ type: Number, attribute: "min-length" })
 ], A.prototype, "minLength", void 0);
-E([
+R([
   u({ type: Boolean })
 ], A.prototype, "highlight", void 0);
-E([
+R([
   u({ type: String })
 ], A.prototype, "operator", void 0);
-E([
+R([
   u({ type: Boolean, attribute: "sr-label" })
 ], A.prototype, "srLabel", void 0);
-E([
+R([
   u({ type: Boolean })
 ], A.prototype, "count", void 0);
-E([
+R([
   u({ type: String, attribute: "url-search-param" })
 ], A.prototype, "urlSearchParam", void 0);
-E([
+R([
   u({ type: Boolean, attribute: "url-sync" })
 ], A.prototype, "urlSync", void 0);
-E([
+R([
   u({ type: Boolean, attribute: "server-search" })
 ], A.prototype, "serverSearch", void 0);
-E([
+R([
   u({ type: String, attribute: "search-template" })
 ], A.prototype, "searchTemplate", void 0);
-E([
+R([
   m()
 ], A.prototype, "_allData", void 0);
-E([
+R([
   m()
 ], A.prototype, "_filteredData", void 0);
-E([
+R([
   m()
 ], A.prototype, "_term", void 0);
-E([
+R([
   m()
 ], A.prototype, "_resultCount", void 0);
-A = E([
+A = R([
   D("gouv-search")
 ], A);
 function Qe(n) {

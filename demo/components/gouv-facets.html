@@ -138,16 +138,14 @@
              Exemple 1 : Facettes + Datalist (Elus municipaux)
              ======================================================== -->
         <h2 class="fr-mt-4w">Exemple 1 : tableau filtrable avec facettes</h2>
-        <p>Les facettes <code>Departement</code>, <code>Categorie</code> et <code>Sexe</code> filtrent
-        le tableau des maires. Le departement est en mode <strong>disjonctif</strong> (multi-selection OU)
-        et dispose d'une <strong>barre de recherche</strong>.</p>
+        <p>Les facettes <code>Departement</code> (multiselect), <code>Categorie</code> (select) et <code>Sexe</code> (radio) filtrent
+        le tableau des maires avec colonnage DSFR (<code>cols="4"</code>).</p>
 
         <gouv-facets id="elus-filtered" source="elus-clean"
           fields="Departement, Categorie, Sexe"
           labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-          searchable="Departement"
-          disjunctive="Departement"
-          max-values="8">
+          display="Departement:multiselect | Categorie:select | Sexe:radio"
+          cols="4">
         </gouv-facets>
 
         <gouv-datalist source="elus-filtered"
@@ -171,9 +169,8 @@
 &lt;gouv-facets id="filtered" source="clean"
   fields="Departement, Categorie, Sexe"
   labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-  searchable="Departement"
-  disjunctive="Departement"
-  max-values="8"&gt;
+  display="Departement:multiselect | Categorie:select | Sexe:radio"
+  cols="4"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
@@ -187,14 +184,13 @@
              Exemple 2 : Facettes + Query + Barres (Industrie du futur)
              ======================================================== -->
         <h2 class="fr-mt-6w">Exemple 2 : graphique filtre par region</h2>
-        <p>Les facettes filtrent par <code>Region</code>, puis <code>gouv-query</code> agrege les donnees
-        filtrees pour produire un graphique en barres des beneficiaires par departement.</p>
+        <p>La facette Region en mode multiselect filtre les donnees, puis <code>gouv-query</code> agrege
+        pour le graphique en barres des beneficiaires par departement.</p>
 
         <gouv-facets id="industrie-filtered" source="industrie-clean"
           fields="Region"
-          disjunctive="Region"
-          sort="alpha"
-          max-values="8">
+          display="Region:multiselect"
+          sort="alpha">
         </gouv-facets>
 
         <gouv-query id="industrie-stats" source="industrie-filtered"
@@ -225,9 +221,8 @@
 
 &lt;gouv-facets id="filtered" source="clean"
   fields="Region"
-  disjunctive="Region"
-  sort="alpha"
-  max-values="8"&gt;
+  display="Region:multiselect"
+  sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-query id="stats" source="filtered"
@@ -252,7 +247,7 @@
 
         <gouv-facets id="fisca-filtered" source="fisca-clean"
           fields="Region"
-          disjunctive="Region"
+          display="Region:multiselect"
           sort="alpha">
         </gouv-facets>
 
@@ -302,7 +297,7 @@
 
 &lt;gouv-facets id="filtered" source="clean"
   fields="Region"
-  disjunctive="Region"
+  display="Region:multiselect"
   sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
@@ -369,10 +364,9 @@
         <gouv-facets id="elus-hide-counts-demo" source="elus-clean"
           fields="Departement, Categorie"
           labels="Departement:Departement | Categorie:Categorie"
-          disjunctive="Departement"
-          searchable="Departement"
+          display="Departement:multiselect | Categorie:select"
           hide-counts
-          max-values="8">
+          cols="6">
         </gouv-facets>
 
         <gouv-datalist source="elus-hide-counts-demo"
@@ -385,10 +379,9 @@
         <pre><code>&lt;gouv-facets id="filtered" source="clean"
   fields="Departement, Categorie"
   labels="Departement:Departement | Categorie:Categorie"
-  disjunctive="Departement"
-  searchable="Departement"
+  display="Departement:multiselect | Categorie:select"
   hide-counts
-  max-values="8"&gt;
+  cols="6"&gt;
 &lt;/gouv-facets&gt;</code></pre>
 
         <!-- ========================================================
