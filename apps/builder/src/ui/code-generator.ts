@@ -144,7 +144,7 @@ function dsfrDeferredScript(tagName: string): string {
 /**
  * Convert gouv-query filter format (field:operator:value) to ODSQL where clause.
  */
-function filterToOdsql(filterExpr: string): string {
+export function filterToOdsql(filterExpr: string): string {
   const opMap: Record<string, string> = {
     eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=',
   };
@@ -169,7 +169,7 @@ function filterToOdsql(filterExpr: string): string {
 /**
  * Apply gouv-query style filter (field:operator:value) to local data rows.
  */
-function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): Record<string, unknown>[] {
+export function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): Record<string, unknown>[] {
   const filters = filterExpr.split(',').map(p => p.trim()).filter(Boolean).map(part => {
     const segs = part.split(':');
     if (segs.length < 2) return null;
@@ -201,7 +201,65 @@ function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): 
  * to insert between gouv-source and gouv-query/gouv-dsfr-chart.
  * Returns the generated HTML and the final source ID for downstream components.
  */
-function generateMiddlewareElements(
+/**
+ * Generate a <gouv-facets> element if facets are enabled and configured.
+ * Returns the generated HTML and the new source ID for downstream components,
+ * or empty string/unchanged sourceId if facets are not enabled.
+ */
+export function generateFacetsElement(
+  sourceId: string
+): { element: string; finalSourceId: string } {
+  const activeFields = state.facetsConfig.fields.filter(f => f.field);
+  if (!state.facetsConfig.enabled || activeFields.length === 0) {
+    return { element: '', finalSourceId: sourceId };
+  }
+
+  const facetsId = 'faceted-data';
+  const attrs: string[] = [`source="${sourceId}"`];
+
+  attrs.push(`fields="${activeFields.map(f => f.field).join(', ')}"`);
+
+  const labelsWithCustom = activeFields.filter(f => f.label && f.label !== f.field);
+  if (labelsWithCustom.length > 0) {
+    attrs.push(`labels="${escapeHtml(labelsWithCustom.map(f => `${f.field}:${f.label}`).join(' | '))}"`);
+  }
+
+  const nonDefaultDisplay = activeFields.filter(f => f.display !== 'checkbox');
+  if (nonDefaultDisplay.length > 0) {
+    attrs.push(`display="${nonDefaultDisplay.map(f => `${f.field}:${f.display}`).join(' | ')}"`);
+  }
+
+  const disjunctiveFields = activeFields.filter(f => f.disjunctive);
+  if (disjunctiveFields.length > 0) {
+    attrs.push(`disjunctive="${disjunctiveFields.map(f => f.field).join(', ')}"`);
+  }
+
+  const searchableFields = activeFields.filter(f => f.searchable);
+  if (searchableFields.length > 0) {
+    attrs.push(`searchable="${searchableFields.map(f => f.field).join(', ')}"`);
+  }
+
+  if (state.facetsConfig.maxValues !== 6) {
+    attrs.push(`max-values="${state.facetsConfig.maxValues}"`);
+  }
+  if (state.facetsConfig.sort !== 'count') {
+    attrs.push(`sort="${state.facetsConfig.sort}"`);
+  }
+  if (state.facetsConfig.hideEmpty) {
+    attrs.push('hide-empty');
+  }
+
+  const element = `
+  <!-- Filtres a facettes -->
+  <gouv-facets
+    id="${facetsId}"
+    ${attrs.join('\n    ')}>
+  </gouv-facets>`;
+
+  return { element, finalSourceId: facetsId };
+}
+
+export function generateMiddlewareElements(
   sourceId: string
 ): { elements: string; finalSourceId: string } {
   let currentSourceId = sourceId;
@@ -230,50 +288,10 @@ function generateMiddlewareElements(
   }
 
   // gouv-facets
-  const activeFields = state.facetsConfig.fields.filter(f => f.field);
-  if (state.facetsConfig.enabled && activeFields.length > 0) {
-    const facetsId = 'faceted-data';
-    const attrs: string[] = [`source="${currentSourceId}"`];
-
-    attrs.push(`fields="${activeFields.map(f => f.field).join(', ')}"`);
-
-    const labelsWithCustom = activeFields.filter(f => f.label && f.label !== f.field);
-    if (labelsWithCustom.length > 0) {
-      attrs.push(`labels="${escapeHtml(labelsWithCustom.map(f => `${f.field}:${f.label}`).join(' | '))}"`);
-    }
-
-    const nonDefaultDisplay = activeFields.filter(f => f.display !== 'checkbox');
-    if (nonDefaultDisplay.length > 0) {
-      attrs.push(`display="${nonDefaultDisplay.map(f => `${f.field}:${f.display}`).join(' | ')}"`);
-    }
-
-    const disjunctiveFields = activeFields.filter(f => f.disjunctive);
-    if (disjunctiveFields.length > 0) {
-      attrs.push(`disjunctive="${disjunctiveFields.map(f => f.field).join(', ')}"`);
-    }
-
-    const searchableFields = activeFields.filter(f => f.searchable);
-    if (searchableFields.length > 0) {
-      attrs.push(`searchable="${searchableFields.map(f => f.field).join(', ')}"`);
-    }
-
-    if (state.facetsConfig.maxValues !== 6) {
-      attrs.push(`max-values="${state.facetsConfig.maxValues}"`);
-    }
-    if (state.facetsConfig.sort !== 'count') {
-      attrs.push(`sort="${state.facetsConfig.sort}"`);
-    }
-    if (state.facetsConfig.hideEmpty) {
-      attrs.push('hide-empty');
-    }
-
-    elements += `
-  <!-- Filtres a facettes -->
-  <gouv-facets
-    id="${facetsId}"
-    ${attrs.join('\n    ')}>
-  </gouv-facets>`;
-    currentSourceId = facetsId;
+  const facets = generateFacetsElement(currentSourceId);
+  if (facets.element) {
+    elements += facets.element;
+    currentSourceId = facets.finalSourceId;
   }
 
   return { elements, finalSourceId: currentSourceId };
@@ -814,7 +832,7 @@ datalist.onSourceData(data);
  * Parse an ODS explore v2.1 API URL to extract base URL and dataset ID.
  * Returns null if the URL is not a recognized ODS pattern.
  */
-function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | null {
+export function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | null {
   const match = url.match(/^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/);
   return match ? { baseUrl: match[1], datasetId: match[2] } : null;
 }
@@ -824,7 +842,7 @@ function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | n
  * Matches: https://tabular-api.data.gouv.fr/api/resources/{id}/data/
  * Returns null if the URL is not a recognized Tabular pattern.
  */
-function parseTabularApiUrl(url: string): { baseUrl: string; resourceId: string } | null {
+export function parseTabularApiUrl(url: string): { baseUrl: string; resourceId: string } | null {
   const match = url.match(/^(https?:\/\/[^/]+)\/api\/resources\/([^/]+)\/data\/?/);
   return match ? { baseUrl: match[1], resourceId: match[2] } : null;
 }
@@ -834,7 +852,7 @@ function parseTabularApiUrl(url: string): { baseUrl: string; resourceId: string 
  * Uses server-side aggregation (ODSQL) with automatic pagination,
  * bypassing gouv-source entirely.
  */
-function generateOdsQueryCode(
+export function generateOdsQueryCode(
   odsInfo: { baseUrl: string; datasetId: string },
   labelFieldPath: string,
   valueFieldPath: string
@@ -928,7 +946,7 @@ function generateOdsQueryCode(
  * Uses automatic pagination (up to 50K records) with client-side aggregation,
  * bypassing gouv-source entirely.
  */
-function generateTabularQueryCode(
+export function generateTabularQueryCode(
   tabularInfo: { baseUrl: string; resourceId: string },
   labelFieldPath: string,
   valueFieldPath: string
@@ -1102,9 +1120,10 @@ export function generateDynamicCode(): void {
   const labelFieldInfo = state.fields.find(f => f.name === state.labelField);
   const valueFieldInfo = state.fields.find(f => f.name === state.valueField);
 
-  // Use fullPath for dynamic mode (fields.X)
-  const labelFieldPath = labelFieldInfo?.fullPath || `fields.${state.labelField}`;
-  const valueFieldPath = valueFieldInfo?.fullPath || `fields.${state.valueField}`;
+  // After normalize flatten, data has flat field names (not nested fields.X)
+  const isFlattened = state.normalizeConfig.enabled && !!state.normalizeConfig.flatten;
+  const labelFieldPath = isFlattened ? state.labelField : (labelFieldInfo?.fullPath || `fields.${state.labelField}`);
+  const valueFieldPath = isFlattened ? state.valueField : (valueFieldInfo?.fullPath || `fields.${state.valueField}`);
 
   const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
@@ -1153,12 +1172,17 @@ ${middlewareHtml}
   // Middleware (normalize, facets) between source and query
   const { elements: middlewareHtml, finalSourceId: querySourceId } = generateMiddlewareElements('chart-data');
 
+  // For maps, group by codeField (not labelField)
+  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
+  const groupByPath = isMap && state.codeField
+    ? (isFlattened ? state.codeField : (`fields.${state.codeField}`))
+    : labelFieldPath;
+
   // Generate gouv-query for aggregation, sorting, filtering
   const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField, valueField2: queryValueField2 } =
-    generateGouvQueryCode(querySourceId, labelFieldPath, valueFieldPath);
+    generateGouvQueryCode(querySourceId, groupByPath, valueFieldPath);
 
   // Map palette
-  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
   const palette = isMap
     ? (state.palette.includes('sequential') || state.palette.includes('divergent') ? state.palette : 'sequentialAscending')
     : state.palette;
@@ -1218,12 +1242,13 @@ export function generateDynamicCodeForApi(): void {
   const codeEl = document.getElementById('generated-code');
   if (!codeEl) return;
 
-  // Get field paths
+  // Get field paths — after normalize flatten, data has flat field names
   const labelFieldInfo = state.fields.find(f => f.name === state.labelField);
   const valueFieldInfo = state.fields.find(f => f.name === state.valueField);
 
-  const labelFieldPath = labelFieldInfo?.fullPath || state.labelField;
-  const valueFieldPath = valueFieldInfo?.fullPath || state.valueField;
+  const isFlattened = state.normalizeConfig.enabled && !!state.normalizeConfig.flatten;
+  const labelFieldPath = isFlattened ? state.labelField : (labelFieldInfo?.fullPath || state.labelField);
+  const valueFieldPath = isFlattened ? state.valueField : (valueFieldInfo?.fullPath || state.valueField);
 
   const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
@@ -1349,6 +1374,10 @@ ${middlewareHtml}
   const odsInfo = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
   const tabularInfo = source.apiUrl ? parseTabularApiUrl(source.apiUrl) : null;
 
+  // For maps, group by codeField (not labelField)
+  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
+  const groupByPath = isMap && state.codeField ? state.codeField : labelFieldPath;
+
   let queryElement: string;
   let chartSource: string;
   let queryLabelField: string;
@@ -1356,34 +1385,39 @@ ${middlewareHtml}
   let queryValueField2 = '';
   let sourceElement: string;
   let middlewareHtml = '';
+  let facetsHtml = '';
 
   if (odsInfo) {
     // ODS source: use gouv-query with api-type="opendatasoft" for
     // server-side aggregation and automatic pagination (limit > 100)
-    // No middleware for ODS (data is aggregated server-side)
-    const result = generateOdsQueryCode(odsInfo, labelFieldPath, valueFieldPath);
+    const result = generateOdsQueryCode(odsInfo, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
     queryValueField = result.valueField;
     queryValueField2 = result.valueField2 || '';
     sourceElement = '';
+    // Facets after ODS query (filters aggregated results)
+    const facets = generateFacetsElement(chartSource);
+    if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
   } else if (tabularInfo) {
     // Tabular source: use gouv-query with api-type="tabular" for
     // automatic pagination (up to 50K records) and client-side aggregation
-    // No middleware for Tabular (data is aggregated client-side by gouv-query)
-    const result = generateTabularQueryCode(tabularInfo, labelFieldPath, valueFieldPath);
+    const result = generateTabularQueryCode(tabularInfo, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
     queryValueField = result.valueField;
     queryValueField2 = result.valueField2 || '';
     sourceElement = '';
+    // Facets after Tabular query (filters aggregated results)
+    const facets = generateFacetsElement(chartSource);
+    if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
   } else {
     // Non-ODS/Tabular source: use gouv-source + gouv-query (generic, client-side)
     const mw = generateMiddlewareElements('chart-data');
     middlewareHtml = mw.elements;
-    const result = generateGouvQueryCode(mw.finalSourceId, labelFieldPath, valueFieldPath);
+    const result = generateGouvQueryCode(mw.finalSourceId, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
@@ -1398,7 +1432,6 @@ ${middlewareHtml}
   }
 
   // Map palette
-  const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
   const palette = isMap
     ? (state.palette.includes('sequential') || state.palette.includes('divergent') ? state.palette : 'sequentialAscending')
     : state.palette;
@@ -1425,7 +1458,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-${sourceElement}${middlewareHtml}${queryElement}
+${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
     source="${chartSource}"
