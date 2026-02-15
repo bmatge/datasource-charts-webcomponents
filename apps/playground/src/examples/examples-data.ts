@@ -1201,7 +1201,7 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-query id="q" api-type="tabular"
-    resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+    resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
     filter="DEP:eq:01"
     server-side page-size="8">
   </gouv-query>
@@ -1631,7 +1631,7 @@ export const examples: Record<string, string> = {
   </p>
 
   <gouv-query id="q" api-type="tabular"
-    resource="8ef8bb8f-1507-4a3a-9942-c51f0c6a0b5d"
+    resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
     server-side page-size="20">
   </gouv-query>
 
