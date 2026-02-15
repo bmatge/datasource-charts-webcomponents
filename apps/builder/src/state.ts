@@ -64,7 +64,7 @@ export interface NormalizeConfig {
 export interface FacetFieldConfig {
   field: string;
   label: string;
-  display: 'checkbox' | 'select' | 'multiselect';
+  display: 'checkbox' | 'select' | 'multiselect' | 'radio';
   searchable: boolean;
   disjunctive: boolean;
 }

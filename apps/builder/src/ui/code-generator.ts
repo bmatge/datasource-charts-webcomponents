@@ -480,11 +480,12 @@ export function generateChartFromLocalData(): void {
   }
 
   // Aggregate local data
-  const aggregated: Record<string, { values: number[]; count: number }> = {};
+  const aggregated: Record<string, { values: number[]; values2: number[]; count: number }> = {};
 
   // For maps, aggregate by codeField; for other charts, by labelField
   const isMap = state.chartType === 'map';
   const groupField = isMap ? state.codeField : state.labelField;
+  const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
 
   // Apply advanced mode filter to local data
   let filteredLocal = state.localData || [];
@@ -503,38 +504,45 @@ export function generateChartFromLocalData(): void {
       const value = toNumber(record[state.valueField]);
 
       if (!aggregated[groupKey]) {
-        aggregated[groupKey] = { values: [], count: 0 };
+        aggregated[groupKey] = { values: [], values2: [], count: 0 };
       }
       aggregated[groupKey].values.push(value);
+      if (hasSecondSeries) {
+        aggregated[groupKey].values2.push(toNumber(record[state.valueField2]));
+      }
       aggregated[groupKey].count++;
     });
   }
 
   // Apply aggregation function
-  let results = Object.entries(aggregated).map(([groupKey, data]) => {
-    let value: number;
+  function applyAgg(vals: number[], count: number): number {
     switch (state.aggregation) {
-      case 'sum':
-        value = data.values.reduce((a, b) => a + b, 0);
-        break;
-      case 'count':
-        value = data.count;
-        break;
-      case 'min':
-        value = Math.min(...data.values);
-        break;
-      case 'max':
-        value = Math.max(...data.values);
-        break;
+      case 'sum': return vals.reduce((a, b) => a + b, 0);
+      case 'count': return count;
+      case 'min': return Math.min(...vals);
+      case 'max': return Math.max(...vals);
       case 'avg':
-      default:
-        value = data.values.reduce((a, b) => a + b, 0) / data.values.length;
+      default: return vals.reduce((a, b) => a + b, 0) / vals.length;
     }
+  }
+
+  let results = Object.entries(aggregated).map(([groupKey, data]) => {
+    const value = applyAgg(data.values, data.count);
+    const result: Record<string, unknown> = { value };
+
     // For maps, include codeField; for others, include labelField
     if (isMap) {
-      return { [state.codeField]: groupKey, value };
+      result[state.codeField] = groupKey;
+    } else {
+      result[state.labelField] = groupKey;
     }
-    return { [state.labelField]: groupKey, value };
+
+    // Second series
+    if (hasSecondSeries && data.values2.length > 0) {
+      result.value2 = applyAgg(data.values2, data.count);
+    }
+
+    return result;
   });
 
   // Sort
@@ -819,7 +827,7 @@ function generateOdsQueryCode(
   odsInfo: { baseUrl: string; datasetId: string },
   labelFieldPath: string,
   valueFieldPath: string
-): { queryElement: string; chartSource: string; labelField: string; valueField: string } {
+): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
   const attrs: string[] = [];
   attrs.push('api-type="opendatasoft"');
   attrs.push(`base-url="${odsInfo.baseUrl}"`);
@@ -833,8 +841,11 @@ function generateOdsQueryCode(
 
   // Build ODSQL select clause with aggregation
   let resultValueField: string;
+  let resultValueField2 = '';
   let selectParts: string[] = [];
   if (groupByField) selectParts.push(groupByField);
+
+  const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
 
   if (state.advancedMode && state.queryAggregate) {
     // Advanced mode: parse custom aggregation expressions
@@ -859,6 +870,13 @@ function generateOdsQueryCode(
       const alias = `${valueFieldPath}__${state.aggregation}`;
       selectParts.push(`${state.aggregation}(${valueFieldPath}) as ${alias}`);
       resultValueField = alias;
+
+      // Add second series aggregation
+      if (hasSecondSeries) {
+        const alias2 = `${state.valueField2}__${state.aggregation}`;
+        selectParts.push(`${state.aggregation}(${state.valueField2}) as ${alias2}`);
+        resultValueField2 = alias2;
+      }
     }
   }
   attrs.push(`select="${escapeHtml(selectParts.join(', '))}"`);
@@ -890,6 +908,7 @@ function generateOdsQueryCode(
     chartSource: 'query-data',
     labelField: groupByField,
     valueField: resultValueField,
+    valueField2: resultValueField2,
   };
 }
 
@@ -902,7 +921,7 @@ export function generateGouvQueryCode(
   sourceId: string,
   labelFieldPath: string,
   valueFieldPath: string
-): { queryElement: string; chartSource: string; labelField: string; valueField: string } {
+): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
   const attrs: string[] = [];
   attrs.push(`source="${sourceId}"`);
 
@@ -921,6 +940,12 @@ export function generateGouvQueryCode(
   let aggregateExpr: string;
   let sortField: string;
   let resultValueField: string;
+  let resultValueField2 = '';
+
+  const hasSecondSeries = state.valueField2 && ['bar', 'horizontalBar', 'line', 'radar'].includes(state.chartType);
+  // Resolve valueField2 path for dynamic mode
+  const vf2Info = state.fields.find(f => f.name === state.valueField2);
+  const valueField2Path = vf2Info?.fullPath || state.valueField2;
 
   if (state.advancedMode && state.queryAggregate) {
     aggregateExpr = state.queryAggregate;
@@ -930,6 +955,11 @@ export function generateGouvQueryCode(
     resultValueField = sortField;
   } else {
     aggregateExpr = `${valueFieldPath}:${state.aggregation}`;
+    // Add second series aggregation
+    if (hasSecondSeries) {
+      aggregateExpr += `, ${valueField2Path}:${state.aggregation}`;
+      resultValueField2 = `${valueField2Path}__${state.aggregation}`;
+    }
     sortField = `${valueFieldPath}__${state.aggregation}`;
     resultValueField = sortField;
   }
@@ -956,6 +986,7 @@ export function generateGouvQueryCode(
     chartSource: 'query-data',
     labelField: groupByField,
     valueField: resultValueField,
+    valueField2: resultValueField2,
   };
 }
 
@@ -1040,7 +1071,7 @@ ${middlewareHtml}
   const { elements: middlewareHtml, finalSourceId: querySourceId } = generateMiddlewareElements('chart-data');
 
   // Generate gouv-query for aggregation, sorting, filtering
-  const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField } =
+  const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField, valueField2: queryValueField2 } =
     generateGouvQueryCode(querySourceId, labelFieldPath, valueFieldPath);
 
   // Map palette
@@ -1051,6 +1082,9 @@ ${middlewareHtml}
 
   // Map-specific attributes
   const codeFieldAttr = isMap && state.codeField ? `\n    code-field="${state.codeField}"` : '';
+
+  // Second series attribute
+  const valueField2Attr = queryValueField2 ? `\n    value-field-2="${queryValueField2}"` : '';
 
   const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
@@ -1082,7 +1116,7 @@ ${middlewareHtml}${queryElement}
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
     label-field="${queryLabelField}"
-    value-field="${queryValueField}"
+    value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
   </gouv-dsfr-chart>
@@ -1161,6 +1195,7 @@ ${middlewareHtml}
   let chartSource: string;
   let queryLabelField: string;
   let queryValueField: string;
+  let queryValueField2 = '';
   let sourceElement: string;
   let middlewareHtml = '';
 
@@ -1173,6 +1208,7 @@ ${middlewareHtml}
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
     queryValueField = result.valueField;
+    queryValueField2 = result.valueField2 || '';
     sourceElement = '';
   } else {
     // Non-ODS source: use gouv-source + gouv-query (generic, client-side)
@@ -1183,6 +1219,7 @@ ${middlewareHtml}
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
     queryValueField = result.valueField;
+    queryValueField2 = result.valueField2 || '';
     sourceElement = `
   <!-- Source de donnees API -->
   <gouv-source
@@ -1199,6 +1236,9 @@ ${middlewareHtml}
 
   // Map-specific attributes
   const codeFieldAttr = isMap && state.codeField ? `\n    code-field="${state.codeField}"` : '';
+
+  // Second series attribute
+  const valueField2Attr = queryValueField2 ? `\n    value-field-2="${queryValueField2}"` : '';
 
   const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
@@ -1222,7 +1262,7 @@ ${sourceElement}${middlewareHtml}${queryElement}
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
     label-field="${queryLabelField}"
-    value-field="${queryValueField}"
+    value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
   </gouv-dsfr-chart>

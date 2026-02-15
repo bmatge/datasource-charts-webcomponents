@@ -64,6 +64,7 @@ export function openFacetsModal(): void {
       <input type="text" class="fr-input fr-input--sm facets-field-label" value="${label}" placeholder="Label">
       <select class="fr-select fr-select--sm facets-field-display">
         <option value="checkbox" ${display === 'checkbox' ? 'selected' : ''}>Cases a cocher</option>
+        <option value="radio" ${display === 'radio' ? 'selected' : ''}>Boutons radio</option>
         <option value="select" ${display === 'select' ? 'selected' : ''}>Liste deroulante</option>
         <option value="multiselect" ${display === 'multiselect' ? 'selected' : ''}>Multi-selection</option>
       </select>
