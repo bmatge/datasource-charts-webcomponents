@@ -1,11 +1,17 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { getUser, logout, onAuthChange, isDbMode } from '@gouv-widgets/shared';
+import type { User } from '@gouv-widgets/shared';
+
+// Side-effect import: register <auth-modal> custom element
+import './auth-modal.js';
 
 /**
  * <app-header> - Header DSFR avec navigation
  *
  * Affiche le header conforme DSFR avec logo, titre du service,
  * et menu de navigation. La page active est mise en surbrillance.
+ * En mode DB, affiche un bouton Connexion/Deconnexion.
  *
  * @example
  * <app-header current-page="builder" base-path=""></app-header>
@@ -28,6 +34,14 @@ export class AppHeader extends LitElement {
 
   @state()
   private _favCount = 0;
+
+  @state()
+  private _user: User | null = null;
+
+  @state()
+  private _dbMode = false;
+
+  private _unsubAuth?: () => void;
 
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
@@ -55,6 +69,38 @@ export class AppHeader extends LitElement {
       style.textContent = `.fr-nav__link[aria-current="page"]{font-weight:700;border-bottom:2px solid var(--border-action-high-blue-france);color:var(--text-action-high-blue-france)}`;
       document.head.appendChild(style);
     }
+    // Check auth state
+    this._initAuth();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._unsubAuth?.();
+  }
+
+  private async _initAuth(): Promise<void> {
+    try {
+      const dbAvailable = await isDbMode();
+      this._dbMode = dbAvailable;
+      if (!dbAvailable) return;
+
+      this._user = getUser();
+      this._unsubAuth = onAuthChange((state) => {
+        this._user = state.user;
+      });
+    } catch {
+      // Backend not available — stay in simple mode
+    }
+  }
+
+  private _openAuthModal(): void {
+    const modal = this.querySelector('auth-modal') as any;
+    modal?.open('login');
+  }
+
+  private async _handleLogout(): Promise<void> {
+    await logout();
+    window.location.reload();
   }
 
   private _getNavItems() {
@@ -68,6 +114,35 @@ export class AppHeader extends LitElement {
       { id: 'sources', label: 'Sources', href: 'apps/sources/index.html' },
       { id: 'monitoring', label: 'Monitoring', href: 'apps/monitoring/index.html' },
     ];
+  }
+
+  private _renderAuthButton() {
+    if (!this._dbMode) return nothing;
+
+    if (this._user) {
+      return html`
+        <li>
+          <span class="fr-btn fr-btn--tertiary-no-outline fr-icon-account-circle-line" style="pointer-events:none;">
+            ${this._user.displayName || this._user.email}
+          </span>
+        </li>
+        <li>
+          <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-logout-box-r-line"
+                  @click=${this._handleLogout}>
+            Deconnexion
+          </button>
+        </li>
+      `;
+    }
+
+    return html`
+      <li>
+        <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-account-circle-line"
+                @click=${this._openAuthModal}>
+          Connexion
+        </button>
+      </li>
+    `;
   }
 
   render() {
@@ -119,6 +194,7 @@ export class AppHeader extends LitElement {
                         Favoris${this._favCount > 0 ? html` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : nothing}
                       </a>
                     </li>
+                    ${this._renderAuthButton()}
                   </ul>
                 </div>
               </div>
@@ -147,6 +223,7 @@ export class AppHeader extends LitElement {
           </div>
         </div>
       </header>
+      ${this._dbMode ? html`<auth-modal></auth-modal>` : nothing}
     `;
   }
 }

@@ -29,6 +29,7 @@ export {
   setAuthBaseUrl, isDbMode, checkAuth, login, register, logout,
   onAuthChange, getAuthState, getUser, isAuthenticated,
 } from './auth/auth-service.js';
+export { initAuth } from './auth/init-auth.js';
 
 // UI
 export { openModal, closeModal, setupModalOverlayClose, confirmDialog } from './ui/modal.js';

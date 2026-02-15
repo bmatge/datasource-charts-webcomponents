@@ -2,7 +2,7 @@
  * Dashboard app - Main entry point
  */
 
-import { escapeHtml, loadFromStorage, STORAGE_KEYS, confirmDialog } from '@gouv-widgets/shared';
+import { escapeHtml, loadFromStorage, STORAGE_KEYS, confirmDialog, initAuth } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import { createEmptyDashboard } from './state.js';
 import { initDragAndDrop, handleFavoriteDragStart } from './drag-drop.js';
@@ -192,7 +192,9 @@ function initEventListeners(): void {
 }
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
+
   loadFavorites();
   loadSavedDashboards();
   loadSources();

@@ -4,7 +4,7 @@
  */
 
 import './styles/sources.css';
-import { openModal, closeModal, saveToStorage, STORAGE_KEYS, toastWarning, navigateTo } from '@gouv-widgets/shared';
+import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, navigateTo, initAuth } from '@gouv-widgets/shared';
 
 import {
   state,
@@ -147,7 +147,13 @@ function openInBuilder(): void {
 // DOM initialization
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Init auth + storage adapter (populates localStorage from server if in DB mode)
+  await initAuth();
+  // Reload state from (now-updated) localStorage
+  state.connections = loadFromStorage(STORAGE_KEYS.CONNECTIONS, []);
+  state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []);
+
   // Initial render
   renderConnections();
   renderSources();

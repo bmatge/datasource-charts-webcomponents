@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -145,7 +145,9 @@ function saveFavorite(): void {
 }
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
+
   // Show back link if navigated from another app
   const fromApp = new URLSearchParams(window.location.search).get('from');
   if (fromApp) {
