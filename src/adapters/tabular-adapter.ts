@@ -157,16 +157,7 @@ export class TabularAdapter implements ApiAdapter {
     // Filtres (format: "field:operator:value")
     const filterExpr = params.filter || params.where;
     if (filterExpr) {
-      const filters = filterExpr.split(',').map(f => f.trim());
-      for (const filter of filters) {
-        const parts = filter.split(':');
-        if (parts.length >= 3) {
-          const field = parts[0];
-          const op = this._mapOperator(parts[1]);
-          const value = parts.slice(2).join(':');
-          url.searchParams.set(`${field}__${op}`, value);
-        }
-      }
+      this._applyColonFilters(url, filterExpr);
     }
 
     // Group by
@@ -222,19 +213,10 @@ export class TabularAdapter implements ApiAdapter {
       : undefined;
     const url = new URL(`${base}/api/resources/${params.resource}/data/`, origin);
 
-    // Filtres statiques
-    const filterExpr = params.filter || params.where;
+    // Filtres : effectiveWhere (statique + dynamique fusionne) ou fallback statique
+    const filterExpr = overlay.effectiveWhere || params.filter || params.where;
     if (filterExpr) {
-      const filters = filterExpr.split(',').map(f => f.trim());
-      for (const filter of filters) {
-        const parts = filter.split(':');
-        if (parts.length >= 3) {
-          const field = parts[0];
-          const op = this._mapOperator(parts[1]);
-          const value = parts.slice(2).join(':');
-          url.searchParams.set(`${field}__${op}`, value);
-        }
-      }
+      this._applyColonFilters(url, filterExpr);
     }
 
     // ORDER BY: overlay prioritaire, fallback statique
@@ -251,6 +233,22 @@ export class TabularAdapter implements ApiAdapter {
     url.searchParams.set('page', String(overlay.page));
 
     return url.toString();
+  }
+
+  /**
+   * Applique des filtres colon-syntax (field:op:value, ...) comme query params.
+   */
+  private _applyColonFilters(url: URL, filterExpr: string): void {
+    const filters = filterExpr.split(',').map(f => f.trim());
+    for (const filter of filters) {
+      const parts = filter.split(':');
+      if (parts.length >= 3) {
+        const field = parts[0];
+        const op = this._mapOperator(parts[1]);
+        const value = parts.slice(2).join(':');
+        url.searchParams.set(`${field}__${op}`, value);
+      }
+    }
   }
 
   /**

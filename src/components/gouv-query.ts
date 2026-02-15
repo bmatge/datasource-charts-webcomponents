@@ -856,10 +856,18 @@ export class GouvQuery extends LitElement {
   }
 
   /**
+   * Retourne le separateur de clauses WHERE selon le format de l'adapter.
+   * ODSQL: ' AND ', colon: ', '
+   */
+  private _getWhereSeparator(): string {
+    return this._adapter.capabilities.whereFormat === 'colon' ? ', ' : ' AND ';
+  }
+
+  /**
    * Retourne le where dynamique fusionne de toutes les sources (search, facets, etc.)
    */
   private _getMergedWhere(): string {
-    return [...this._serverWheres.values()].filter(Boolean).join(' AND ');
+    return [...this._serverWheres.values()].filter(Boolean).join(this._getWhereSeparator());
   }
 
   /**
@@ -876,7 +884,7 @@ export class GouvQuery extends LitElement {
       if (excludeKey && key === excludeKey) continue;
       if (w) parts.push(w);
     }
-    return parts.join(' AND ');
+    return parts.join(this._getWhereSeparator());
   }
 
   // --- Public API ---

@@ -847,6 +847,76 @@ describe('GouvFacets', () => {
     });
   });
 
+  // --- Static values mode ---
+
+  describe('static-values mode', () => {
+    it('builds facet groups from static-values JSON', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region, type';
+      facets.staticValues = JSON.stringify({
+        region: ['Bretagne', 'IDF', 'PACA'],
+        type: ['Commune', 'Prefecture'],
+      });
+      facets.connectedCallback();
+
+      dispatchDataLoaded('test-source', []);
+
+      expect(facets._facetGroups.length).toBe(2);
+      expect(facets._facetGroups[0].field).toBe('region');
+      expect(facets._facetGroups[0].values.map(v => v.value)).toEqual(['Bretagne', 'IDF', 'PACA']);
+      expect(facets._facetGroups[0].values[0].count).toBe(0);
+    });
+
+    it('hides counts automatically in static-values mode', () => {
+      facets.staticValues = '{"region": ["A"]}';
+      expect(facets._effectiveHideCounts).toBe(true);
+    });
+
+    it('dispatches colon-syntax WHERE command on selection', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region';
+      facets.staticValues = JSON.stringify({ region: ['IDF', 'Bretagne'] });
+      facets.connectedCallback();
+
+      dispatchDataLoaded('test-source', []);
+
+      (facets as any)._activeSelections = { region: new Set(['IDF']) };
+      const where = facets._buildColonFacetWhere();
+      expect(where).toBe('region:eq:IDF');
+    });
+
+    it('uses IN operator for multi-value selection in colon syntax', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region';
+      facets.staticValues = JSON.stringify({ region: ['IDF', 'Bretagne', 'PACA'] });
+      facets.connectedCallback();
+
+      dispatchDataLoaded('test-source', []);
+
+      (facets as any)._activeSelections = { region: new Set(['IDF', 'Bretagne']) };
+      const where = facets._buildColonFacetWhere();
+      expect(where).toBe('region:in:IDF|Bretagne');
+    });
+
+    it('forwards pagination metadata from upstream', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region';
+      facets.staticValues = JSON.stringify({ region: ['IDF'] });
+      facets.connectedCallback();
+
+      setDataMeta('test-source', { page: 1, pageSize: 20, total: 35000 });
+      dispatchDataLoaded('test-source', [{ region: 'IDF' }]);
+
+      const meta = getDataMeta('test-facets');
+      expect(meta).toBeDefined();
+      expect(meta!.total).toBe(35000);
+    });
+  });
+
   // --- Column layout (cols) ---
 
   describe('cols attribute', () => {

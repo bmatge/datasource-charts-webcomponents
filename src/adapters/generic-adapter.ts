@@ -14,7 +14,7 @@ export class GenericAdapter implements ApiAdapter {
     serverSearch: false,
     serverGroupBy: false,
     serverOrderBy: false,
-    whereFormat: 'colon',
+    whereFormat: 'odsql',
   };
 
   validate(_params: AdapterParams): string | null {

@@ -202,12 +202,25 @@ export function applyLocalFilter(data: Record<string, unknown>[], filterExpr: st
  * Returns the generated HTML and the final source ID for downstream components.
  */
 /**
+ * Options pour le mode de fonctionnement des facettes.
+ * - serverFacets: mode serveur ODS (fetch depuis /facets API)
+ * - staticValues: valeurs pre-calculees avec WHERE en colon syntax (Tabular/Grist)
+ */
+export interface FacetsMode {
+  serverFacets?: boolean;
+  staticValues?: Record<string, string[]>;
+  /** Prefix to prepend to field names (e.g. "fields." for Grist without flatten) */
+  fieldPrefix?: string;
+}
+
+/**
  * Generate a <gouv-facets> element if facets are enabled and configured.
  * Returns the generated HTML and the new source ID for downstream components,
  * or empty string/unchanged sourceId if facets are not enabled.
  */
 export function generateFacetsElement(
-  sourceId: string
+  sourceId: string,
+  mode?: FacetsMode
 ): { element: string; finalSourceId: string } {
   const activeFields = state.facetsConfig.fields.filter(f => f.field);
   if (!state.facetsConfig.enabled || activeFields.length === 0) {
@@ -216,27 +229,28 @@ export function generateFacetsElement(
 
   const facetsId = 'faceted-data';
   const attrs: string[] = [`source="${sourceId}"`];
+  const pfx = mode?.fieldPrefix || '';
 
-  attrs.push(`fields="${activeFields.map(f => f.field).join(', ')}"`);
+  attrs.push(`fields="${activeFields.map(f => pfx + f.field).join(', ')}"`);
 
   const labelsWithCustom = activeFields.filter(f => f.label && f.label !== f.field);
   if (labelsWithCustom.length > 0) {
-    attrs.push(`labels="${escapeHtml(labelsWithCustom.map(f => `${f.field}:${f.label}`).join(' | '))}"`);
+    attrs.push(`labels="${escapeHtml(labelsWithCustom.map(f => `${pfx}${f.field}:${f.label}`).join(' | '))}"`);
   }
 
   const nonDefaultDisplay = activeFields.filter(f => f.display !== 'checkbox');
   if (nonDefaultDisplay.length > 0) {
-    attrs.push(`display="${nonDefaultDisplay.map(f => `${f.field}:${f.display}`).join(' | ')}"`);
+    attrs.push(`display="${nonDefaultDisplay.map(f => `${pfx}${f.field}:${f.display}`).join(' | ')}"`);
   }
 
   const disjunctiveFields = activeFields.filter(f => f.disjunctive);
   if (disjunctiveFields.length > 0) {
-    attrs.push(`disjunctive="${disjunctiveFields.map(f => f.field).join(', ')}"`);
+    attrs.push(`disjunctive="${disjunctiveFields.map(f => pfx + f.field).join(', ')}"`);
   }
 
   const searchableFields = activeFields.filter(f => f.searchable);
   if (searchableFields.length > 0) {
-    attrs.push(`searchable="${searchableFields.map(f => f.field).join(', ')}"`);
+    attrs.push(`searchable="${searchableFields.map(f => pfx + f.field).join(', ')}"`);
   }
 
   if (state.facetsConfig.maxValues !== 6) {
@@ -249,6 +263,17 @@ export function generateFacetsElement(
     attrs.push('hide-empty');
   }
 
+  // Mode server-facets (ODS)
+  if (mode?.serverFacets) {
+    attrs.push('server-facets');
+  }
+
+  // Mode static-values (Tabular/Grist) : valeurs pre-calculees
+  if (mode?.staticValues) {
+    const json = JSON.stringify(mode.staticValues);
+    attrs.push(`static-values='${json}'`);
+  }
+
   const element = `
   <!-- Filtres a facettes -->
   <gouv-facets
@@ -259,8 +284,35 @@ export function generateFacetsElement(
   return { element, finalSourceId: facetsId };
 }
 
+/**
+ * Pre-compute unique values for facet fields from loaded data.
+ * Used to generate static-values for non-ODS sources.
+ */
+export function computeStaticFacetValues(): Record<string, string[]> | null {
+  const activeFields = state.facetsConfig.fields.filter(f => f.field);
+  if (!state.facetsConfig.enabled || activeFields.length === 0) return null;
+  if (!state.localData || state.localData.length === 0) return null;
+
+  const result: Record<string, string[]> = {};
+  for (const fieldConfig of activeFields) {
+    const field = fieldConfig.field;
+    const uniqueValues = new Set<string>();
+    for (const row of state.localData) {
+      const val = row[field];
+      if (val !== null && val !== undefined && val !== '') {
+        uniqueValues.add(String(val));
+      }
+    }
+    if (uniqueValues.size > 0 && uniqueValues.size <= 200) {
+      result[field] = [...uniqueValues].sort();
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
 export function generateMiddlewareElements(
-  sourceId: string
+  sourceId: string,
+  facetsMode?: FacetsMode
 ): { elements: string; finalSourceId: string } {
   let currentSourceId = sourceId;
   let elements = '';
@@ -288,7 +340,7 @@ export function generateMiddlewareElements(
   }
 
   // gouv-facets
-  const facets = generateFacetsElement(currentSourceId);
+  const facets = generateFacetsElement(currentSourceId, facetsMode);
   if (facets.element) {
     elements += facets.element;
     currentSourceId = facets.finalSourceId;
@@ -1127,6 +1179,9 @@ export function generateDynamicCode(): void {
 
   const refreshAttr = state.refreshInterval > 0 ? `\n    refresh="${state.refreshInterval}"` : '';
 
+  // Grist data has {fields: {X: ...}} structure — prefix facet field paths when not flattened
+  const gristFacetsMode: FacetsMode | undefined = isFlattened ? undefined : { fieldPrefix: 'fields.' };
+
   // Handle KPI type (no DSFR Chart equivalent, fallback to embedded)
   if (state.chartType === 'kpi') {
     generateCodeForLocalData();
@@ -1138,7 +1193,7 @@ export function generateDynamicCode(): void {
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
-    const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data');
+    const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data', gristFacetsMode);
     const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 
@@ -1170,7 +1225,7 @@ ${middlewareHtml}
   }
 
   // Middleware (normalize, facets) between source and query
-  const { elements: middlewareHtml, finalSourceId: querySourceId } = generateMiddlewareElements('chart-data');
+  const { elements: middlewareHtml, finalSourceId: querySourceId } = generateMiddlewareElements('chart-data', gristFacetsMode);
 
   // For maps, group by codeField (not labelField)
   const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
@@ -1274,8 +1329,11 @@ export function generateDynamicCodeForApi(): void {
     if (odsInfoDl) {
       const whereAttr = state.advancedMode && state.queryFilter
         ? `\n    where="${escapeHtml(filterToOdsql(state.queryFilter))}"` : '';
+      // Facettes serveur ODS (fetch depuis l'API /facets)
+      const facets = generateFacetsElement('table-data', { serverFacets: true });
+      const datalistSource = facets.element ? facets.finalSourceId : 'table-data';
       const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
-<!-- Source : ${escapeHtml(source.name)} (chargement dynamique avec pagination automatique) -->
+<!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1292,13 +1350,16 @@ export function generateDynamicCodeForApi(): void {
     id="table-data"
     api-type="opendatasoft"
     base-url="${odsInfoDl.baseUrl}"
-    dataset-id="${odsInfoDl.datasetId}"${whereAttr}>
+    dataset-id="${odsInfoDl.datasetId}"${whereAttr}
+    server-side
+    page-size="20">
   </gouv-query>
-
+${facets.element}
   <gouv-datalist
-    source="table-data"
+    source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="10">
+    server-tri
+    pagination="20">
   </gouv-datalist>
 </div>`;
       codeEl.textContent = code;
@@ -1308,8 +1369,12 @@ export function generateDynamicCodeForApi(): void {
     if (tabularInfoDl) {
       const filterAttr = state.advancedMode && state.queryFilter
         ? `\n    filter="${escapeHtml(state.queryFilter)}"` : '';
+      // Facettes pre-calculees (Tabular ne supporte pas les facettes serveur)
+      const staticVals = computeStaticFacetValues();
+      const facets = generateFacetsElement('table-data', staticVals ? { staticValues: staticVals } : undefined);
+      const datalistSource = facets.element ? facets.finalSourceId : 'table-data';
       const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
-<!-- Source : ${escapeHtml(source.name)} (chargement dynamique avec pagination automatique) -->
+<!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -1326,13 +1391,16 @@ export function generateDynamicCodeForApi(): void {
     id="table-data"
     api-type="tabular"
     base-url="${tabularInfoDl.baseUrl}"
-    resource="${tabularInfoDl.resourceId}"${filterAttr}>
+    resource="${tabularInfoDl.resourceId}"${filterAttr}
+    server-side
+    page-size="20">
   </gouv-query>
-
+${facets.element}
   <gouv-datalist
-    source="table-data"
+    source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
-    pagination="10">
+    server-tri
+    pagination="20">
   </gouv-datalist>
 </div>`;
       codeEl.textContent = code;

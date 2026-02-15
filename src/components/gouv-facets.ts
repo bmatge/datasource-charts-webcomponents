@@ -101,9 +101,25 @@ export class GouvFacets extends LitElement {
   @property({ type: Boolean, attribute: 'server-facets' })
   serverFacets = false;
 
+  /**
+   * Valeurs de facettes pre-calculees (JSON).
+   * Format: {"field": ["val1", "val2"], "field2": ["a", "b"]}
+   * Quand cet attribut est defini, les facettes utilisent ces valeurs sans les
+   * calculer depuis les donnees. Les selections envoient des commandes WHERE
+   * en colon syntax (compatible Tabular / generique) au gouv-query en amont.
+   * Attribut fields requis (pas d'auto-detection).
+   */
+  @property({ type: String, attribute: 'static-values' })
+  staticValues = '';
+
   /** Masquer les compteurs a cote de chaque valeur de facette */
   @property({ type: Boolean, attribute: 'hide-counts' })
   hideCounts = false;
+
+  /** Compteurs effectivement masques (force a true en mode static-values) */
+  get _effectiveHideCounts(): boolean {
+    return this.hideCounts || !!this.staticValues;
+  }
 
   /** Colonnage DSFR des facettes : "6" (global) ou "field:4 | field2:6" (par facette) */
   @property({ type: String })
@@ -174,7 +190,7 @@ export class GouvFacets extends LitElement {
       return;
     }
 
-    if (changedProperties.has('serverFacets')) {
+    if (changedProperties.has('serverFacets') || changedProperties.has('staticValues')) {
       this._initialize();
       return;
     }
@@ -184,6 +200,8 @@ export class GouvFacets extends LitElement {
     if (hasFacetChange && this._rawData.length > 0) {
       if (this.serverFacets) {
         this._fetchServerFacets();
+      } else if (this.staticValues) {
+        this._buildStaticFacetGroups();
       } else {
         this._buildFacetGroups();
         this._applyFilters();
@@ -230,11 +248,12 @@ export class GouvFacets extends LitElement {
 
   private _onData(data: unknown) {
     this._rawData = Array.isArray(data) ? data : [];
+    const isServerMode = this.serverFacets || !!this.staticValues;
     if (this.urlParams && !this._urlParamsApplied) {
       this._applyUrlParams();
       this._urlParamsApplied = true;
       // In server mode, send initial URL-selected facets as command
-      if (this.serverFacets && this._hasActiveSelections()) {
+      if (isServerMode && this._hasActiveSelections()) {
         this._dispatchFacetCommand();
         return; // command will trigger a new data load
       }
@@ -242,6 +261,14 @@ export class GouvFacets extends LitElement {
     if (this.serverFacets) {
       this._fetchServerFacets();
       // Re-emit data as-is (no local filtering), forwarding pagination metadata
+      if (this.id) {
+        const meta = getDataMeta(this.source);
+        if (meta) setDataMeta(this.id, meta);
+        dispatchDataLoaded(this.id, this._rawData);
+      }
+    } else if (this.staticValues) {
+      this._buildStaticFacetGroups();
+      // Re-emit data as-is (filtering happens server-side), forwarding pagination metadata
       if (this.id) {
         const meta = getDataMeta(this.source);
         if (meta) setDataMeta(this.id, meta);
@@ -272,6 +299,56 @@ export class GouvFacets extends LitElement {
         if (this.hideEmpty && group.values.length <= 1) return false;
         return group.values.length > 0;
       });
+  }
+
+  /**
+   * Build facet groups from static-values attribute (pre-computed values).
+   * Values are displayed without counts (count=0, hidden via hideCounts).
+   */
+  _buildStaticFacetGroups() {
+    if (!this.staticValues) return;
+    try {
+      const parsed = JSON.parse(this.staticValues) as Record<string, string[]>;
+      const labelMap = this._parseLabels();
+      const fields = this.fields ? _parseCSV(this.fields) : Object.keys(parsed);
+
+      this._facetGroups = fields
+        .filter(field => parsed[field] && parsed[field].length > 0)
+        .map(field => ({
+          field,
+          label: labelMap.get(field) ?? field,
+          values: parsed[field].map(v => ({ value: v, count: 0 })),
+        }))
+        .filter(group => !(this.hideEmpty && group.values.length <= 1));
+    } catch {
+      console.warn('gouv-facets: static-values invalide (JSON attendu)');
+    }
+  }
+
+  /** Build colon-syntax where clause for all active facet selections */
+  _buildColonFacetWhere(): string {
+    const parts: string[] = [];
+    for (const [field, values] of Object.entries(this._activeSelections)) {
+      if (values.size === 0) continue;
+      if (values.size === 1) {
+        parts.push(`${field}:eq:${[...values][0]}`);
+      } else {
+        parts.push(`${field}:in:${[...values].join('|')}`);
+      }
+    }
+    return parts.join(', ');
+  }
+
+  /** Resolve a possibly dotted field path on a row (e.g. "fields.Region") */
+  private _resolveValue(row: Record<string, unknown>, field: string): unknown {
+    if (!field.includes('.')) return row[field];
+    const parts = field.split('.');
+    let current: unknown = row;
+    for (const part of parts) {
+      if (current === null || current === undefined || typeof current !== 'object') return undefined;
+      current = (current as Record<string, unknown>)[part];
+    }
+    return current;
   }
 
   /** Get fields to use as facets — explicit or auto-detected */
@@ -322,7 +399,7 @@ export class GouvFacets extends LitElement {
 
     const counts = new Map<string, number>();
     for (const row of dataForCounting) {
-      const val = row[field];
+      const val = this._resolveValue(row, field);
       if (val === null || val === undefined || val === '') continue;
       const strVal = String(val);
       counts.set(strVal, (counts.get(strVal) ?? 0) + 1);
@@ -347,7 +424,7 @@ export class GouvFacets extends LitElement {
     return this._rawData.filter(row => {
       return activeFields.every(field => {
         const selected = this._activeSelections[field];
-        const val = row[field];
+        const val = this._resolveValue(row, field);
         if (val === null || val === undefined) return false;
         return selected.has(String(val));
       });
@@ -478,7 +555,9 @@ export class GouvFacets extends LitElement {
 
   /** Dispatch facet where command to upstream gouv-query */
   private _dispatchFacetCommand() {
-    const facetWhere = this._buildFullFacetWhere();
+    const facetWhere = this.staticValues
+      ? this._buildColonFacetWhere()
+      : this._buildFullFacetWhere();
     dispatchSourceCommand(this.source, { where: facetWhere, whereKey: this.id });
   }
 
@@ -496,7 +575,7 @@ export class GouvFacets extends LitElement {
       filtered = this._rawData.filter(row => {
         return activeFields.every(field => {
           const selected = this._activeSelections[field];
-          const val = row[field];
+          const val = this._resolveValue(row, field);
           if (val === null || val === undefined) return false;
           return selected.has(String(val));
         });
@@ -701,9 +780,9 @@ export class GouvFacets extends LitElement {
     this._afterSelectionChange();
   }
 
-  /** Common logic after any selection change — routes to client or server mode */
+  /** Common logic after any selection change — routes to client, server, or static mode */
   private _afterSelectionChange() {
-    if (this.serverFacets) {
+    if (this.serverFacets || this.staticValues) {
       this._dispatchFacetCommand();
     } else {
       this._buildFacetGroups();
@@ -896,7 +975,7 @@ export class GouvFacets extends LitElement {
                   .checked="${isChecked}"
                   @change="${() => this._toggleValue(group.field, fv.value)}">
                 <label class="fr-label" for="${checkId}">
-                  ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                  ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
                 </label>
               </div>
             </div>
@@ -927,7 +1006,7 @@ export class GouvFacets extends LitElement {
           <option value="" ?selected="${!selectedValue}">Tous</option>
           ${group.values.map(fv => html`
             <option value="${fv.value}" ?selected="${fv.value === selectedValue}">
-              ${this.hideCounts ? fv.value : `${fv.value} (${fv.count})`}
+              ${this._effectiveHideCounts ? fv.value : `${fv.value} (${fv.count})`}
             </option>
           `)}
         </select>
@@ -996,7 +1075,7 @@ export class GouvFacets extends LitElement {
                         .checked="${isChecked}"
                         @change="${() => this._toggleValue(group.field, fv.value)}">
                       <label class="fr-label" for="${checkId}">
-                        ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                        ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
                       </label>
                     </div>
                   </div>
@@ -1071,7 +1150,7 @@ export class GouvFacets extends LitElement {
                         .checked="${isChecked}"
                         @change="${() => this._toggleValue(group.field, fv.value)}">
                       <label class="fr-label" for="${radioId}">
-                        ${fv.value}${this.hideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                        ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
                       </label>
                     </div>
                   </div>

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   generateChartFromLocalData,
   generateCodeForLocalData,
+  generateCode,
   generateGouvQueryCode,
   generateDynamicCode,
   generateDynamicCodeForApi,
@@ -13,6 +14,7 @@ import {
   applyLocalFilter,
   parseOdsApiUrl,
   parseTabularApiUrl,
+  computeStaticFacetValues,
 } from '../../../apps/builder/src/ui/code-generator';
 import { state } from '../../../apps/builder/src/state';
 
@@ -1606,7 +1608,7 @@ describe('generateDynamicCodeForApi', () => {
     expect(code).toContain('kpi');
   });
 
-  it('should generate datalist for ODS source', () => {
+  it('should generate datalist for ODS source with server-side pagination', () => {
     state.savedSource = {
       id: '1', name: 'ODS Source', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -1619,9 +1621,13 @@ describe('generateDynamicCodeForApi', () => {
     expect(code).toContain('api-type="opendatasoft"');
     expect(code).toContain('<gouv-datalist');
     expect(code).not.toContain('<gouv-dsfr-chart');
+    expect(code).toContain('server-side');
+    expect(code).toContain('page-size="20"');
+    expect(code).toContain('server-tri');
+    expect(code).toContain('pagination="20"');
   });
 
-  it('should generate datalist for Tabular source', () => {
+  it('should generate datalist for Tabular source with server-side pagination', () => {
     state.savedSource = {
       id: '1', name: 'Tabular', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1633,9 +1639,13 @@ describe('generateDynamicCodeForApi', () => {
     const code = document.getElementById('generated-code')!.textContent!;
     expect(code).toContain('api-type="tabular"');
     expect(code).toContain('<gouv-datalist');
+    expect(code).toContain('server-side');
+    expect(code).toContain('page-size="20"');
+    expect(code).toContain('server-tri');
+    expect(code).toContain('pagination="20"');
   });
 
-  it('should generate datalist for generic API source with gouv-source', () => {
+  it('should generate datalist for generic API source without server-side', () => {
     state.savedSource = {
       id: '1', name: 'API', type: 'api',
       apiUrl: 'https://example.com/api/data',
@@ -1647,6 +1657,8 @@ describe('generateDynamicCodeForApi', () => {
     const code = document.getElementById('generated-code')!.textContent!;
     expect(code).toContain('<gouv-source');
     expect(code).toContain('<gouv-datalist');
+    expect(code).not.toContain('server-side');
+    expect(code).not.toContain('server-tri');
   });
 
   it('should use flat field paths when normalize flatten enabled', () => {
@@ -2081,5 +2093,576 @@ describe('alignment: normalize config attributes', () => {
     expect(result.elements).not.toContain('numeric=');
     expect(result.elements).not.toContain('rename=');
     expect(result.elements).not.toContain('replace=');
+  });
+});
+
+// =====================================================================
+// generateCode (API fetch embedded mode)
+// =====================================================================
+describe('generateCode (API fetch embedded)', () => {
+  beforeEach(() => {
+    resetState();
+    document.body.innerHTML = `
+      <div id="generated-code"></div>
+      <div id="raw-data"></div>
+      <select id="kpi-variant"><option value="">Default</option><option value="info">Info</option></select>
+      <input id="kpi-unit" value="">
+    `;
+  });
+
+  it('should generate KPI with fetch and formatKPIValue', () => {
+    state.chartType = 'kpi';
+    state.title = 'Population totale';
+    state.valueField = 'population';
+    state.aggregation = 'sum';
+    generateCode('https://api.example.com?select=sum(population)%20as%20value&limit=1');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('kpi-card');
+    expect(code).toContain('kpi-value');
+    expect(code).toContain('Population totale');
+    expect(code).toContain('async function loadKPI');
+    expect(code).toContain('fetch(API_URL)');
+    expect(code).toContain('json.results');
+    expect(code).toContain('formatKPIValue');
+  });
+
+  it('should generate KPI with variant class', () => {
+    state.chartType = 'kpi';
+    state.title = 'Alerte';
+    const variantSelect = document.getElementById('kpi-variant') as HTMLSelectElement;
+    variantSelect.value = 'info';
+    generateCode('https://api.example.com?select=count(*)&limit=1');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('kpi-card--info');
+  });
+
+  it('should generate KPI with unit', () => {
+    state.chartType = 'kpi';
+    state.title = 'Prix moyen';
+    const unitInput = document.getElementById('kpi-unit') as HTMLInputElement;
+    unitInput.value = '\u20ac';
+    generateCode('https://api.example.com?select=avg(prix)%20as%20value&limit=1');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('\u20ac');
+  });
+
+  it('should generate gauge with fetch and dynamic value', () => {
+    state.chartType = 'gauge';
+    state.title = 'Taux de completion';
+    generateCode('https://api.example.com?select=avg(taux)%20as%20value&limit=1');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('gauge-chart');
+    expect(code).toContain('Taux de completion');
+    expect(code).toContain('async function loadGauge');
+    expect(code).toContain('percent=');
+    expect(code).toContain('gauge-container');
+  });
+
+  it('should generate datalist with fetch and ODS pagination helper', () => {
+    state.chartType = 'datalist';
+    state.title = 'Ma liste';
+    state.labelField = 'region';
+    state.datalistColumns = [
+      { field: 'region', label: 'Region', visible: true, filtrable: false },
+      { field: 'population', label: 'Pop.', visible: true, filtrable: false },
+    ];
+    state.datalistRecherche = true;
+    state.datalistExportCsv = true;
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('gouv-datalist');
+    expect(code).toContain('colonnes="region:Region, population:Pop."');
+    expect(code).toContain('recherche');
+    expect(code).toContain('export="csv"');
+    expect(code).toContain('async function loadTable');
+    expect(code).toContain('fetchAllODS');
+    expect(code).toContain('onSourceData(data)');
+  });
+
+  it('should generate datalist with multiple export formats', () => {
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.datalistExportCsv = true;
+    state.datalistExportHtml = true;
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('export="csv,html"');
+  });
+
+  it('should generate datalist with filtrable columns', () => {
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.datalistFiltres = true;
+    state.datalistColumns = [
+      { field: 'region', label: 'Region', visible: true, filtrable: true },
+      { field: 'population', label: 'Pop.', visible: true, filtrable: false },
+    ];
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('filtres="region"');
+  });
+
+  it('should generate datalist with sort attribute', () => {
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.sortOrder = 'asc';
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('tri="region:asc"');
+  });
+
+  it('should not generate sort attribute when sortOrder is none', () => {
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.sortOrder = 'none';
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).not.toContain('tri=');
+  });
+
+  it('should generate scatter chart with fetch and createElement', () => {
+    state.chartType = 'scatter';
+    state.title = 'Nuage de points';
+    state.labelField = 'x_values';
+    state.valueField = 'y_values';
+    state.palette = 'categorical';
+    generateCode('https://api.example.com?select=x_values,y_values&limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('scatter-chart');
+    expect(code).toContain('scatter-container');
+    expect(code).toContain('async function loadChart');
+    expect(code).toContain('fetchAllODS');
+    expect(code).toContain('setAttribute');
+    expect(code).toContain('selected-palette');
+    expect(code).toContain('categorical');
+  });
+
+  it('should generate map chart with fetch, isValidDeptCode, and mapData', () => {
+    state.chartType = 'map';
+    state.title = 'Carte departements';
+    state.codeField = 'code_dept';
+    state.valueField = 'population';
+    state.palette = 'sequentialAscending';
+    generateCode('https://api.example.com?select=code_dept,sum(pop)%20as%20value&group_by=code_dept&limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('map-chart');
+    expect(code).toContain('map-container');
+    expect(code).toContain('async function loadMap');
+    expect(code).toContain('isValidDeptCode');
+    expect(code).toContain('mapData');
+    expect(code).toContain("d['code_dept']");
+    expect(code).toContain('selected-palette');
+    expect(code).toContain('sequentialAscending');
+    expect(code).toContain('padStart(2');
+  });
+
+  it('should generate map with default palette when non-sequential chosen', () => {
+    state.chartType = 'map';
+    state.codeField = 'code_dept';
+    state.palette = 'default';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('sequentialAscending');
+  });
+
+  it('should generate bar chart with fetch and DSFR element', () => {
+    state.chartType = 'bar';
+    state.title = 'Population par region';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.palette = 'default';
+    state.sortOrder = 'desc';
+    generateCode('https://api.example.com?select=region,sum(pop)%20as%20value&group_by=region&order_by=value%20desc&limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('bar-chart');
+    expect(code).toContain('chart-container');
+    expect(code).toContain('async function loadChart');
+    expect(code).toContain('fetchAllODS');
+    expect(code).toContain('setAttribute');
+    expect(code).toContain('selected-palette');
+  });
+
+  it('should generate line chart', () => {
+    state.chartType = 'line';
+    state.labelField = 'annee';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('line-chart');
+  });
+
+  it('should generate pie chart with fill attribute', () => {
+    state.chartType = 'pie';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('pie-chart');
+    expect(code).toContain('fill');
+  });
+
+  it('should generate doughnut as pie chart without fill', () => {
+    state.chartType = 'doughnut';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('pie-chart');
+    expect(code).not.toContain('fill');
+  });
+
+  it('should generate horizontal bar chart with horizontal attribute', () => {
+    state.chartType = 'horizontalBar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('bar-chart');
+    expect(code).toContain('horizontal');
+  });
+
+  it('should generate radar chart', () => {
+    state.chartType = 'radar';
+    state.labelField = 'critere';
+    state.valueField = 'score';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('radar-chart');
+  });
+
+  it('should generate second series for bar chart', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.valueField2 = 'budget';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('bar-chart');
+    expect(code).toContain('value2');
+    // name attribute should include both series
+    expect(code).toContain('population');
+    expect(code).toContain('budget');
+  });
+
+  it('should not generate second series for pie chart', () => {
+    state.chartType = 'pie';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.valueField2 = 'budget';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).not.toContain('value2');
+  });
+
+  it('should include subtitle when set', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.subtitle = 'Donnees 2024';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('Donnees 2024');
+    expect(code).toContain('fr-text--sm');
+  });
+
+  it('should not include subtitle when empty', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.subtitle = '';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).not.toContain('fr-text--sm');
+  });
+
+  it('should include ODS fetch helper in standard chart code', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('async function fetchAllODS');
+    expect(code).toContain('offset');
+    expect(code).toContain('total_count');
+  });
+
+  it('should include DSFR CSS and JS dependencies', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('dsfr.min.css');
+    expect(code).toContain('DSFRChart.css');
+    expect(code).toContain('DSFRChart.js');
+  });
+
+  it('should use the API URL in generated code', () => {
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    const apiUrl = 'https://data.gouv.fr/api/explore/v2.1/catalog/datasets/test/records?select=region,sum(pop)%20as%20value&group_by=region';
+    generateCode(apiUrl);
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain(apiUrl);
+  });
+
+  it('should auto-detect columns from fields when no custom datalistColumns', () => {
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.datalistColumns = [];
+    state.fields = [
+      { name: 'region', type: 'string', sample: 'Bretagne' },
+      { name: 'population', type: 'number', sample: 100 },
+    ];
+    generateCode('https://api.example.com?limit=200');
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('colonnes="region:region, population:population"');
+  });
+
+  it('should do nothing when generated-code element is missing', () => {
+    document.body.innerHTML = '';
+    state.chartType = 'bar';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    // Should not throw
+    expect(() => generateCode('https://api.example.com')).not.toThrow();
+  });
+});
+
+// =====================================================================
+// generateFacetsElement with FacetsMode
+// =====================================================================
+describe('generateFacetsElement with FacetsMode', () => {
+  beforeEach(() => {
+    resetState();
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+      { field: 'dept', label: 'Departement', display: 'select', searchable: true, disjunctive: true },
+    ];
+  });
+
+  it('should generate server-facets attribute when serverFacets mode', () => {
+    const result = generateFacetsElement('src', { serverFacets: true });
+    expect(result.element).toContain('server-facets');
+  });
+
+  it('should not generate server-facets by default', () => {
+    const result = generateFacetsElement('src');
+    expect(result.element).not.toContain('server-facets');
+  });
+
+  it('should generate static-values attribute when staticValues mode', () => {
+    const result = generateFacetsElement('src', {
+      staticValues: { region: ['Bretagne', 'Normandie'], dept: ['35', '76'] },
+    });
+    expect(result.element).toContain("static-values='");
+    expect(result.element).toContain('"Bretagne"');
+    expect(result.element).toContain('"Normandie"');
+  });
+
+  it('should prefix field names with fieldPrefix', () => {
+    const result = generateFacetsElement('src', { fieldPrefix: 'fields.' });
+    expect(result.element).toContain('fields="fields.region, fields.dept"');
+    expect(result.element).toContain('display="fields.dept:select"');
+    expect(result.element).toContain('disjunctive="fields.dept"');
+    expect(result.element).toContain('searchable="fields.dept"');
+  });
+
+  it('should prefix labels with fieldPrefix', () => {
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Ma Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    const result = generateFacetsElement('src', { fieldPrefix: 'fields.' });
+    expect(result.element).toContain('labels="fields.region:Ma Region"');
+  });
+
+  it('should not prefix when fieldPrefix is empty/undefined', () => {
+    const result = generateFacetsElement('src');
+    expect(result.element).toContain('fields="region, dept"');
+    expect(result.element).not.toContain('fields.region');
+  });
+});
+
+// =====================================================================
+// computeStaticFacetValues
+// =====================================================================
+describe('computeStaticFacetValues', () => {
+  beforeEach(() => {
+    resetState();
+  });
+
+  it('should return null when facets disabled', () => {
+    state.facetsConfig.enabled = false;
+    state.localData = [{ region: 'Bretagne' }];
+    expect(computeStaticFacetValues()).toBeNull();
+  });
+
+  it('should return null when no fields configured', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [];
+    state.localData = [{ region: 'Bretagne' }];
+    expect(computeStaticFacetValues()).toBeNull();
+  });
+
+  it('should return null when no local data', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [{ field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false }];
+    state.localData = null;
+    expect(computeStaticFacetValues()).toBeNull();
+  });
+
+  it('should compute unique sorted values for each field', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    state.localData = [
+      { region: 'Normandie' },
+      { region: 'Bretagne' },
+      { region: 'Normandie' },
+      { region: 'Occitanie' },
+    ];
+    const result = computeStaticFacetValues();
+    expect(result).not.toBeNull();
+    expect(result!.region).toEqual(['Bretagne', 'Normandie', 'Occitanie']);
+  });
+
+  it('should skip null/undefined/empty values', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    state.localData = [
+      { region: 'Bretagne' },
+      { region: null },
+      { region: undefined },
+      { region: '' },
+    ];
+    const result = computeStaticFacetValues();
+    expect(result).not.toBeNull();
+    expect(result!.region).toEqual(['Bretagne']);
+  });
+
+  it('should return null when field has too many unique values (>200)', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'id', label: 'ID', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    state.localData = Array.from({ length: 201 }, (_, i) => ({ id: `id-${i}` }));
+    const result = computeStaticFacetValues();
+    expect(result).toBeNull();
+  });
+
+  it('should compute values for multiple fields', () => {
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+      { field: 'type', label: 'Type', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    state.localData = [
+      { region: 'Bretagne', type: 'A' },
+      { region: 'Normandie', type: 'B' },
+    ];
+    const result = computeStaticFacetValues();
+    expect(result).not.toBeNull();
+    expect(result!.region).toEqual(['Bretagne', 'Normandie']);
+    expect(result!.type).toEqual(['A', 'B']);
+  });
+});
+
+// =====================================================================
+// Grist facets field paths (BUG FIX)
+// =====================================================================
+describe('Grist facets field paths', () => {
+  beforeEach(() => {
+    resetState();
+    document.body.innerHTML = `
+      <div id="generated-code"></div>
+      <div id="raw-data"></div>
+      <select id="kpi-variant"><option value="">Default</option></select>
+      <input id="kpi-unit" value="">
+    `;
+    state.generationMode = 'dynamic';
+    state.savedSource = {
+      id: '1',
+      name: 'Ma source Grist',
+      type: 'grist',
+      apiUrl: 'https://grist.numerique.gouv.fr/api/docs/doc1/tables/Table1/records',
+      documentId: 'doc1',
+      tableId: 'Table1',
+    };
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.fields = [
+      { name: 'region', fullPath: 'fields.region', type: 'string', sample: 'Bretagne' },
+      { name: 'population', fullPath: 'fields.population', type: 'number', sample: 100 },
+    ];
+  });
+
+  it('BUG FIX: facets should use fields.X paths when Grist without normalize flatten', () => {
+    state.normalizeConfig.enabled = false;
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    generateDynamicCode();
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('fields="fields.region"');
+  });
+
+  it('facets should use flat names when Grist WITH normalize flatten', () => {
+    state.normalizeConfig.enabled = true;
+    state.normalizeConfig.flatten = 'fields';
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    generateDynamicCode();
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('fields="region"');
+    expect(code).not.toContain('fields="fields.region"');
+  });
+
+  it('BUG FIX: Grist datalist facets should also use fields.X paths', () => {
+    state.normalizeConfig.enabled = false;
+    state.chartType = 'datalist';
+    state.datalistColumns = [
+      { field: 'region', label: 'Region', visible: true, filtrable: false },
+    ];
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    generateDynamicCode();
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('fields="fields.region"');
+  });
+
+  it('should prefix disjunctive and display fields for Grist without flatten', () => {
+    state.normalizeConfig.enabled = false;
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'region', label: 'Region', display: 'select', searchable: true, disjunctive: true },
+    ];
+    generateDynamicCode();
+    const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('fields="fields.region"');
+    expect(code).toContain('display="fields.region:select"');
+    expect(code).toContain('disjunctive="fields.region"');
+    expect(code).toContain('searchable="fields.region"');
   });
 });
