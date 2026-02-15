@@ -60,7 +60,7 @@ export class AppHeader extends LitElement {
   private _getNavItems() {
     return [
       { id: 'accueil', label: 'Accueil', href: 'index.html' },
-      { id: 'composants', label: 'Composants', href: 'demo/index.html' },
+      { id: 'composants', label: 'Composants', href: 'specs/index.html' },
       { id: 'builder', label: 'Builder', href: 'apps/builder/index.html' },
       { id: 'builder-ia', label: 'Builder IA', href: 'apps/builder-ia/index.html' },
       { id: 'playground', label: 'Playground', href: 'apps/playground/index.html' },
@@ -78,7 +78,7 @@ export class AppHeader extends LitElement {
         <nav class="fr-container" role="navigation" aria-label="Accès rapide">
           <ul class="fr-skiplinks__list">
             <li><a class="fr-link" href="#main-content">Contenu</a></li>
-            <li><a class="fr-link" href="${this._base}demo/index.html">Composants</a></li>
+            <li><a class="fr-link" href="${this._base}specs/index.html">Composants</a></li>
           </ul>
         </nav>
       </div>
@@ -110,7 +110,7 @@ export class AppHeader extends LitElement {
                 <div class="fr-header__tools-links">
                   <ul class="fr-btns-group">
                     <li>
-                      <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-book-2-line" href="${this._base}docs/guide.html">
+                      <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-book-2-line" href="${this._base}guide/guide.html">
                         Guide
                       </a>
                     </li>

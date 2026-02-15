@@ -10,7 +10,7 @@ import { mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DIR = join(__dirname, '..', 'docs', 'images');
+const DIR = join(__dirname, '..', 'guide', 'images');
 
 // ============================================================================
 // TEST DATA
@@ -761,22 +761,22 @@ test.describe('User Guide Screenshots', () => {
     await page.setViewportSize({ width: 1200, height: 900 });
 
     // KPI demo
-    await page.goto('/demo/components/gouv-kpi.html');
+    await page.goto('/specs/components/gouv-kpi.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-kpi.png');
 
     // Datalist demo
-    await page.goto('/demo/components/gouv-datalist.html');
+    await page.goto('/specs/components/gouv-datalist.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-datalist.png');
 
     // Chart demo
-    await page.goto('/demo/components/gouv-dsfr-chart.html');
+    await page.goto('/specs/components/gouv-dsfr-chart.html');
     await page.waitForTimeout(6000);
     await fullScreenshot(page, 'guide-comp-chart.png');
 
     // Query demo
-    await page.goto('/demo/components/gouv-query.html');
+    await page.goto('/specs/components/gouv-query.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-query.png');
   });

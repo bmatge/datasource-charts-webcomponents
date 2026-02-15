@@ -47,7 +47,7 @@
 
         <p class="fr-mt-2w">
           <a class="fr-link fr-link--icon-right fr-icon-arrow-right-line"
-             href="../../docs/guide-exemples-query.html">
+             href="../../guide/guide-exemples-query.html">
             Voir les exemples live dans le Guide utilisateur
           </a>
         </p>
@@ -168,7 +168,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <p>
             Recupere les donnees d'une <code>&lt;gouv-source&gt;</code> et les filtre/trie cote client.
             Ici on filtre les 10 premieres lignes triees par nom.
-            <a href="../../docs/guide-exemples-query.html#query-datalist" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#query-datalist" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-source
   id="raw-data"
@@ -197,7 +197,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <p>
             Regroupe les donnees par region et calcule la somme de la population
             et le nombre d'enregistrements par groupe.
-            <a href="../../docs/guide-exemples-query.html#query-bar" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#query-bar" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-source
   id="communes"
@@ -227,7 +227,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <p>
             Interroge directement une API OpenDataSoft avec des agregations et filtres ODSQL.
             La requete est executee cote serveur.
-            <a href="../../docs/guide-exemples-query.html#server-side-ods" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#server-side-ods" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="ods-stats"
@@ -253,7 +253,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <h3>Mode Tabular API : requete data.gouv.fr</h3>
           <p>
             Interroge directement l'API Tabular de data.gouv.fr avec groupement et agregation.
-            <a href="../../docs/guide-exemples-query.html#query-tabular-pie" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#query-tabular-pie" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="tabular-stats"
@@ -278,7 +278,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <p>
             Plusieurs filtres peuvent etre combines en les separant par des virgules.
             Tous les filtres doivent etre satisfaits (logique ET).
-            <a href="../../docs/guide-exemples-query.html#query-kpi" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#query-kpi" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="filtered"
@@ -294,7 +294,7 @@ select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
           <p>
             L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
             pour acceder a des datasets prives. Accepte un objet JSON en chaine de caracteres.
-            <a href="../../docs/guide-exemples-query.html#headers" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#headers" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="private-data"

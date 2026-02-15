@@ -23,7 +23,8 @@ Architecture monorepo avec npm workspaces.
 │   └── shared/              # Utilitaires partages (@gouv-widgets/shared)
 ├── src/                     # Composants web gouv-widgets (Lit)
 ├── dist/                    # Build output (ESM + UMD)
-├── demo/                    # Pages de demonstration
+├── specs/                   # Specifications des composants
+├── guide/                   # Guide utilisateur et exemples
 ├── tests/                   # Tests Vitest + Playwright E2E
 ├── e2e/                     # Tests E2E Playwright
 ├── src-tauri/               # App desktop Tauri

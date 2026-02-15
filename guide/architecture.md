@@ -82,7 +82,8 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
     parse-beacon-logs.sh        Parsing des beacon logs nginx -> JSON
     docker-entrypoint.sh        Entrypoint Docker (parse periodique + nginx)
   src-tauri/                    Application desktop Tauri
-  demo/                         Pages de demonstration
+  specs/                        Specifications des composants
+  guide/                        Guide utilisateur et exemples
   app-dist/                     Sortie assemblee pour Tauri
 ```
 
@@ -264,7 +265,8 @@ Le script `build-app.js` assemble le dossier `app-dist/` qui sert de frontendDis
 app-dist/
   index.html              Page d'accueil (hub)
   dist/                   Bibliotheque gouv-widgets (ESM + UMD)
-  demo/                   Pages de demonstration
+  specs/                  Specifications des composants
+  guide/                  Guide utilisateur et exemples
   apps/
     favorites/            Build de l'app favorites
     playground/           Build de l'app playground

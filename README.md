@@ -122,8 +122,8 @@ Le projet inclut sept applications web pour creer et gerer des visualisations :
 │   └── monitoring/      # Suivi des deployements
 ├── packages/
 │   └── shared/          # Utilitaires partages (@gouv-widgets/shared)
-├── demo/                # Pages de demonstration des composants
-├── docs/                # Guide utilisateur et documentation
+├── specs/               # Specifications des composants
+├── guide/               # Guide utilisateur et exemples
 ├── tests/               # Tests unitaires Vitest
 ├── e2e/                 # Tests E2E Playwright
 ├── src-tauri/           # Application desktop Tauri
@@ -215,9 +215,9 @@ Le conteneur sert l'application sur le port 80 et persiste les logs de monitorin
 
 ## Documentation
 
-- [Guide utilisateur](docs/USER-GUIDE.md) — Parcours, exemples, reference des composants
-- [Architecture](docs/architecture.md) — Architecture technique detaillee
-- [Contribuer](docs/CONTRIBUTING.md) — Guide de contribution
+- [Guide utilisateur](guide/USER-GUIDE.md) — Parcours, exemples, reference des composants
+- [Architecture](guide/architecture.md) — Architecture technique detaillee
+- [Contribuer](guide/CONTRIBUTING.md) — Guide de contribution
 
 ## Licence
 

@@ -48,7 +48,7 @@ for (const file of rootFiles) {
 
 // Copy core directories
 console.log('\nCopying core directories...');
-const directories = ['demo', 'dist', 'docs'];
+const directories = ['specs', 'dist', 'guide'];
 for (const dir of directories) {
   const src = join(rootDir, dir);
   const dest = join(distDir, dir);
