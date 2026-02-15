@@ -9,7 +9,8 @@ import {
   subscribeToSource,
   getDataCache,
   dispatchSourceCommand,
-  getDataMeta
+  getDataMeta,
+  setDataMeta
 } from '../utils/data-bridge.js';
 
 type SearchOperator = 'contains' | 'starts' | 'words';
@@ -232,8 +233,9 @@ export class GouvSearch extends LitElement {
       const meta = getDataMeta(this.source);
       this._resultCount = meta ? meta.total : rows.length;
 
-      // Re-emit under our own ID
+      // Re-emit under our own ID, forwarding pagination metadata
       if (this.id) {
+        if (meta) setDataMeta(this.id, meta);
         dispatchDataLoaded(this.id, rows);
       }
 

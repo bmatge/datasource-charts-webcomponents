@@ -5,6 +5,7 @@ import {
   clearDataMeta,
   dispatchDataLoaded,
   getDataCache,
+  getDataMeta,
   setDataMeta,
   subscribeToSourceCommands
 } from '../src/utils/data-bridge.js';
@@ -28,6 +29,8 @@ describe('GouvSearch', () => {
   beforeEach(() => {
     clearDataCache('test-search');
     clearDataCache('test-source');
+    clearDataMeta('test-search');
+    clearDataMeta('test-source');
     search = new GouvSearch();
     setUrlParams('');
   });
@@ -748,6 +751,27 @@ describe('GouvSearch', () => {
 
       const result = getDataCache('test-search') as Record<string, unknown>[];
       expect(result).toEqual(SAMPLE_DATA);
+    });
+
+    it('forwards pagination metadata from upstream source', () => {
+      search.connectedCallback();
+
+      setDataMeta('test-source', { page: 3, pageSize: 20, total: 1500 });
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const meta = getDataMeta('test-search');
+      expect(meta).toBeDefined();
+      expect(meta!.total).toBe(1500);
+      expect(meta!.page).toBe(3);
+      expect(meta!.pageSize).toBe(20);
+    });
+
+    it('does not forward metadata when no upstream meta exists', () => {
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const meta = getDataMeta('test-search');
+      expect(meta).toBeUndefined();
     });
   });
 });

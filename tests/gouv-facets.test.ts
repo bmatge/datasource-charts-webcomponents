@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvFacets, _parseCSV } from '../src/components/gouv-facets.js';
-import { clearDataCache, dispatchDataLoaded, getDataCache } from '../src/utils/data-bridge.js';
+import { clearDataCache, dispatchDataLoaded, getDataCache, setDataMeta, getDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
 const SAMPLE_DATA = [
   { nom: 'Paris', region: 'Ile-de-France', type: 'Commune', population: 2200000 },
@@ -26,6 +26,8 @@ describe('GouvFacets', () => {
   beforeEach(() => {
     clearDataCache('test-facets');
     clearDataCache('test-source');
+    clearDataMeta('test-facets');
+    clearDataMeta('test-source');
     facets = new GouvFacets();
     // Reset URL to clean state
     setUrlParams('');
@@ -808,6 +810,40 @@ describe('GouvFacets', () => {
       // Should re-emit all data without filtering
       const result = getDataCache('test-facets') as Record<string, unknown>[];
       expect(result).toHaveLength(SAMPLE_DATA.length);
+    });
+
+    it('forwards pagination metadata from upstream source in server mode', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region, type';
+      facets.serverFacets = true;
+      facets.connectedCallback();
+
+      (facets as any)._fetchServerFacets = () => {};
+
+      setDataMeta('test-source', { page: 2, pageSize: 20, total: 1500 });
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const meta = getDataMeta('test-facets');
+      expect(meta).toBeDefined();
+      expect(meta!.total).toBe(1500);
+      expect(meta!.page).toBe(2);
+      expect(meta!.pageSize).toBe(20);
+    });
+
+    it('does not forward metadata when no upstream meta exists', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'region, type';
+      facets.serverFacets = true;
+      facets.connectedCallback();
+
+      (facets as any)._fetchServerFacets = () => {};
+
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const meta = getDataMeta('test-facets');
+      expect(meta).toBeUndefined();
     });
   });
 

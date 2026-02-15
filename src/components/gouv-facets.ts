@@ -8,7 +8,9 @@ import {
   clearDataCache,
   subscribeToSource,
   getDataCache,
-  dispatchSourceCommand
+  dispatchSourceCommand,
+  getDataMeta,
+  setDataMeta
 } from '../utils/data-bridge.js';
 import type { ApiAdapter } from '../adapters/api-adapter.js';
 
@@ -239,8 +241,12 @@ export class GouvFacets extends LitElement {
     }
     if (this.serverFacets) {
       this._fetchServerFacets();
-      // Re-emit data as-is (no local filtering)
-      if (this.id) dispatchDataLoaded(this.id, this._rawData);
+      // Re-emit data as-is (no local filtering), forwarding pagination metadata
+      if (this.id) {
+        const meta = getDataMeta(this.source);
+        if (meta) setDataMeta(this.id, meta);
+        dispatchDataLoaded(this.id, this._rawData);
+      }
     } else {
       this._buildFacetGroups();
       this._applyFilters();
@@ -656,14 +662,13 @@ export class GouvFacets extends LitElement {
     }
   }
 
-  private _handleMultiselectFocusout(field: string) {
+  private _handleMultiselectFocusout(field: string, e: FocusEvent) {
     if (this._openMultiselectField !== field) return;
-    setTimeout(() => {
-      const wrapper = this.querySelector(`[data-multiselect="${field}"]`);
-      if (wrapper && !wrapper.contains(document.activeElement)) {
-        this._openMultiselectField = null;
-      }
-    }, 0);
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    if (!relatedTarget) return; // focus leaves document — let _onClickOutsideMultiselect handle it
+    const wrapper = this.querySelector(`[data-multiselect="${field}"]`);
+    if (wrapper?.contains(relatedTarget)) return; // focus stays inside wrapper
+    this._openMultiselectField = null;
   }
 
   private _onClickOutsideMultiselect = (e: MouseEvent) => {
@@ -948,7 +953,7 @@ export class GouvFacets extends LitElement {
            data-multiselect="${group.field}"
            data-field="${group.field}"
            @keydown="${(e: KeyboardEvent) => this._handleMultiselectKeydown(group.field, e)}"
-           @focusout="${() => this._handleMultiselectFocusout(group.field)}">
+           @focusout="${(e: FocusEvent) => this._handleMultiselectFocusout(group.field, e)}">
         <label class="fr-label" id="${uid}-legend">${group.label}</label>
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
@@ -1021,7 +1026,7 @@ export class GouvFacets extends LitElement {
            data-multiselect="${group.field}"
            data-field="${group.field}"
            @keydown="${(e: KeyboardEvent) => this._handleMultiselectKeydown(group.field, e)}"
-           @focusout="${() => this._handleMultiselectFocusout(group.field)}">
+           @focusout="${(e: FocusEvent) => this._handleMultiselectFocusout(group.field, e)}">
         <label class="fr-label" id="${uid}-legend">${group.label}</label>
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
