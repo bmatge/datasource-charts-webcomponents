@@ -26,8 +26,22 @@ export interface MonitoringData {
 
 const DATA_URL = 'https://chartsbuilder.matge.com/public/monitoring-data.json';
 const REFRESH_URL = 'https://chartsbuilder.matge.com/api/refresh-monitoring';
+const API_DATA_URL = '/api/monitoring/data';
+
+function isDbMode(): boolean {
+  return typeof window !== 'undefined' && (window as any).__gwDbMode === true;
+}
 
 export async function fetchMonitoringData(): Promise<MonitoringData> {
+  if (isDbMode()) {
+    const response = await fetch(`${API_DATA_URL}?_=${Date.now()}`, {
+      cache: 'no-cache',
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }
+
   const response = await fetch(`${DATA_URL}?_=${Date.now()}`, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const ct = response.headers.get('content-type') || '';
@@ -39,6 +53,7 @@ export async function fetchMonitoringData(): Promise<MonitoringData> {
 
 /** Trigger server-side log parsing, then wait for it to complete */
 export async function triggerRefresh(): Promise<void> {
+  if (isDbMode()) return; // In DB mode, data is stored in SQLite — no log parsing needed
   await fetch(REFRESH_URL, { mode: 'no-cors' }).catch(() => {});
   // Wait for the entrypoint to detect the trigger and run the parser (~3s max)
   await new Promise((r) => setTimeout(r, 4000));

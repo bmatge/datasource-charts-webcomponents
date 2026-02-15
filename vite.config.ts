@@ -29,6 +29,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Proxy vers le backend Express (mode database)
+      '/api': {
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+        secure: false,
+      },
       // Proxy pour Grist (docs.getgrist.com)
       '/grist-proxy': {
         target: 'https://docs.getgrist.com',

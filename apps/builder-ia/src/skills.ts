@@ -208,6 +208,7 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 | refresh | Number | \`0\` | non | Rafraichissement auto en secondes (0 = desactive) |
 | paginate | Boolean | \`false\` | non | Active la pagination serveur (injecte page/page_size dans l'URL, stocke la meta) |
 | page-size | Number | \`20\` | non | Taille de page pour la pagination serveur (nombre de records par page) |
+| cache-ttl | Number | \`3600\` | non | TTL du cache serveur en secondes (0 = pas de cache). Actif uniquement en mode database. |
 
 ### Evenements emis
 - \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)

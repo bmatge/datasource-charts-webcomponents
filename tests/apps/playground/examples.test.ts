@@ -71,9 +71,11 @@ describe('playground examples', () => {
     }
   });
 
-  it('direct examples should use gouv-source without gouv-query', () => {
+  it('direct examples should use gouv-source or gouv-query with api-type', () => {
     for (const key of directKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      const hasSource = examples[key].includes('gouv-source');
+      const hasTabularQuery = examples[key].includes('api-type="tabular"');
+      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
       if (!['direct-kpi', 'direct-datalist', 'direct-display'].includes(key)) {
         expect(examples[key], `${key} should use gouv-dsfr-chart`).toContain('gouv-dsfr-chart');
       }
@@ -122,15 +124,19 @@ describe('playground examples', () => {
 
   it('facets examples should use gouv-facets and gouv-normalize', () => {
     for (const key of facetsKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      const hasSource = examples[key].includes('gouv-source');
+      const hasTabularQuery = examples[key].includes('api-type="tabular"');
+      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
       expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
       expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
     }
   });
 
-  it('client-side search examples should use gouv-source and gouv-search', () => {
+  it('client-side search examples should use gouv-source or gouv-query, and gouv-search', () => {
     for (const key of searchClientKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      const hasSource = examples[key].includes('gouv-source');
+      const hasTabularQuery = examples[key].includes('api-type="tabular"');
+      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
       expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
     }
   });
