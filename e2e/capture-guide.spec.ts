@@ -577,16 +577,20 @@ test.describe('User Guide Screenshots', () => {
     await fullScreenshot(page, 'guide-D1-playground-overview.png');
     await clearAnnotations(page);
 
-    // --- D2: Select DSFR bar example ---
-    await page.selectOption('#example-select', 'dsfr-bar');
+    // --- D2: Select bar chart example (direct mode) ---
+    await page.selectOption('#example-select', 'direct-bar');
+    // Confirm dialog may appear when switching examples
+    const confirm1 = page.locator('[data-action="confirm"]');
+    if (await confirm1.isVisible({ timeout: 1000 }).catch(() => false)) await confirm1.click();
     await page.waitForTimeout(500);
-    // Click Execute
     await page.click('#run-btn');
     await page.waitForTimeout(3000);
     await fullScreenshot(page, 'guide-D2-playground-dsfr-bar.png');
 
-    // --- D3: Select gouv-widgets dashboard example ---
-    await page.selectOption('#example-select', 'gouv-dashboard');
+    // --- D3: Select query bar example ---
+    await page.selectOption('#example-select', 'query-bar');
+    const confirm2 = page.locator('[data-action="confirm"]');
+    if (await confirm2.isVisible({ timeout: 1000 }).catch(() => false)) await confirm2.click();
     await page.waitForTimeout(500);
     await page.click('#run-btn');
     await page.waitForTimeout(4000);
@@ -596,8 +600,10 @@ test.describe('User Guide Screenshots', () => {
     await fullScreenshot(page, 'guide-D3-playground-dashboard.png');
     await clearAnnotations(page);
 
-    // --- D4: Playground with gouv-source example ---
-    await page.selectOption('#example-select', 'gouv-source-chart');
+    // --- D4: Playground with gouv-source line chart ---
+    await page.selectOption('#example-select', 'direct-line');
+    const confirm3 = page.locator('[data-action="confirm"]');
+    if (await confirm3.isVisible({ timeout: 1000 }).catch(() => false)) await confirm3.click();
     await page.waitForTimeout(500);
     await page.click('#run-btn');
     await page.waitForTimeout(5000);

@@ -87,40 +87,10 @@ test.describe('Grist widgets - individual widget pages', () => {
 
     await page.goto('/apps/grist-widgets/chart/index.html');
     await expect(page.locator('#empty-state')).toBeVisible();
-    await expect(page.locator('gouv-dsfr-chart')).toBeAttached();
+    // Note: gouv-dsfr-chart is created dynamically by chart.ts when data arrives
   });
 
-  test('kpi/index.html loads with empty state', async ({ page }) => {
-    await page.addInitScript(() => {
-      (window as Record<string, unknown>).grist = {
-        ready: () => {},
-        onRecords: () => {},
-        onOptions: () => {},
-        mapColumnNames: (r: unknown) => r,
-        setOptions: () => {},
-      };
-    });
-
-    await page.goto('/apps/grist-widgets/kpi/index.html');
-    await expect(page.locator('#empty-state')).toBeVisible();
-    await expect(page.locator('gouv-kpi')).toBeAttached();
-  });
-
-  test('map/index.html loads with empty state', async ({ page }) => {
-    await page.addInitScript(() => {
-      (window as Record<string, unknown>).grist = {
-        ready: () => {},
-        onRecords: () => {},
-        onOptions: () => {},
-        mapColumnNames: (r: unknown) => r,
-        setOptions: () => {},
-      };
-    });
-
-    await page.goto('/apps/grist-widgets/map/index.html');
-    await expect(page.locator('#empty-state')).toBeVisible();
-    await expect(page.locator('gouv-dsfr-chart')).toBeAttached();
-  });
+  // Note: kpi/ and map/ pages were merged into chart/index.html (unified widget)
 
   test('datalist/index.html loads with empty state', async ({ page }) => {
     await page.addInitScript(() => {

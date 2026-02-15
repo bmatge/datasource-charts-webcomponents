@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { request as httpsRequest } from 'https';
 import { request as httpRequest } from 'http';
+import { existsSync, readFileSync } from 'fs';
 
 export default defineConfig({
   esbuild: {
@@ -110,6 +111,26 @@ export default defineConfig({
     }
   },
   plugins: [
+    {
+      name: 'gouv-widgets-umd',
+      // Serve the UMD bundle for grist-widgets pages (test-local.html, chart/, datalist/)
+      configureServer(server) {
+        const umdPath = resolve(__dirname, 'dist/gouv-widgets.umd.js');
+        server.middlewares.use((req, res, next) => {
+          if (req.url && req.url.endsWith('/lib/gouv-widgets.umd.js')) {
+            if (!existsSync(umdPath)) {
+              res.statusCode = 404;
+              res.end('UMD not found. Run "npm run build" first.');
+              return;
+            }
+            res.setHeader('Content-Type', 'application/javascript');
+            res.end(readFileSync(umdPath));
+            return;
+          }
+          next();
+        });
+      },
+    },
     {
       name: 'ia-proxy',
       configureServer(server) {

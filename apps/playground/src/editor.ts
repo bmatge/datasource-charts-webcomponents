@@ -19,7 +19,7 @@ export function initEditor(textareaId: string): CodeMirrorEditor {
     throw new Error(`Textarea #${textareaId} not found`);
   }
 
-  return CodeMirror.fromTextArea(textarea, {
+  const editor = CodeMirror.fromTextArea(textarea, {
     mode: 'htmlmixed',
     theme: 'dracula',
     lineNumbers: true,
@@ -27,4 +27,10 @@ export function initEditor(textareaId: string): CodeMirrorEditor {
     tabSize: 2,
     indentWithTabs: false
   });
+
+  // CodeMirror creates a hidden textarea for input; label it for accessibility
+  const cmTextarea = document.querySelector('.CodeMirror textarea');
+  if (cmTextarea) cmTextarea.setAttribute('aria-label', 'Editeur de code HTML');
+
+  return editor;
 }

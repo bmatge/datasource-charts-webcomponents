@@ -36,6 +36,10 @@ body {
   height: auto !important;
 }
 
+/* Dracula theme accessibility fixes: increase contrast to meet WCAG 2 AA (4.5:1) on #282a36 */
+.cm-s-dracula .cm-comment { color: #8a9dc4 !important; }
+.cm-s-dracula .CodeMirror-linenumber { color: #88aba9 !important; }
+
 .preview-frame {
   width: 100%;
   flex: 1;
