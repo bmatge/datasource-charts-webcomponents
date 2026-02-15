@@ -14,11 +14,11 @@
 </head>
 <body>
   <!-- Source de donnees pour les exemples client-side (maires de France) -->
-  <gouv-source
+  <gouv-query
     id="demo-communes"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
-    transform="data">
-  </gouv-source>
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <!-- Header -->
   <app-header current-page="composants" base-path="../../"></app-header>

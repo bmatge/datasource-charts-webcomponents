@@ -287,22 +287,23 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'direct-datalist': `<!--
-  Tableau — Maires de France
-  Mode direct : gouv-source → gouv-datalist
-  Source : Registre des maires (tabular-api)
-  Affiche un tableau avec recherche, filtres, tri et export
+  Tableau — Maires de France (dataset complet)
+  Mode : gouv-query (api-type="tabular") → gouv-datalist
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge automatiquement toutes les pages avant affichage
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="data"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <gouv-datalist source="data"
     colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
@@ -576,24 +577,22 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-pie': `<!--
-  Camembert — Maires par categorie socio-professionnelle
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
-  Source : Registre des maires (tabular-api)
-  gouv-query regroupe par categorie et compte le nombre de maires
+  Camembert — Maires par categorie socio-professionnelle (dataset complet)
+  Mode requete : gouv-query (api-type="tabular") → gouv-dsfr-chart (pie)
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge toutes les pages puis regroupe par categorie
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires par categorie socio-professionnelle</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
-
-  <gouv-query id="q-pie" source="data"
+  <gouv-query id="q-pie"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Code sexe:count:nombre"
     order-by="nombre:desc"
@@ -776,9 +775,9 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-kpi': `<!--
-  KPI — Statistiques des maires avec filtre
-  Mode requete : gouv-source → gouv-query (filtre) → gouv-kpi
-  Source : Registre des maires (tabular-api)
+  KPI — Statistiques des maires avec filtre (dataset complet)
+  Mode requete : gouv-query (api-type="tabular") → gouv-query (filtre) → gouv-kpi
+  Source : Registre des maires (tabular-api) — 34 874 records
   Compare le total des maires au nombre de femmes maires
 -->
 
@@ -786,12 +785,13 @@ export const examples: Record<string, string> = {
   <h2>Statistiques des maires</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="data"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <!-- Filtre client-side : uniquement les femmes -->
   <gouv-query id="q-femmes" source="data"
@@ -822,22 +822,23 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-datalist': `<!--
-  Tableau — Maires filtres par departement
-  Mode requete : gouv-source → gouv-query → gouv-datalist
-  Source : Registre des maires (tabular-api)
-  gouv-query filtre les maires d'un departement
+  Tableau — Maires filtres par departement (dataset complet)
+  Mode requete : gouv-query (api-type="tabular") → gouv-query (filtre) → gouv-datalist
+  Source : Registre des maires (tabular-api) — 34 874 records
+  gouv-query charge tout, puis filtre par departement
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
+    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-source id="data"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-    transform="data">
-  </gouv-source>
+  <gouv-query id="data"
+    api-type="tabular"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-query>
 
   <gouv-query id="q-datalist" source="data"
     filter="Libellé du département:contains:Ain">

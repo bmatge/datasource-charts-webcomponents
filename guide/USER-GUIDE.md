@@ -421,9 +421,9 @@ Les donnees de la source sont transmises directement au composant de visualisati
 #### Tableau — Maires de France
 
 ```html
-<gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
-  transform="data"></gouv-source>
+<gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"></gouv-query>
 
 <gouv-datalist source="data"
   colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
@@ -465,9 +465,9 @@ Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion num
 #### Tableau — Renommage de champs accentes
 
 ```html
-<gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=50"
-  transform="data"></gouv-source>
+<gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"></gouv-query>
 
 <gouv-normalize id="clean" source="data"
   trim
@@ -552,11 +552,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 #### Camembert — Maires par categorie socio-pro
 
 ```html
-<gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"></gouv-source>
-
-<gouv-query id="q" source="data"
+<gouv-query id="q"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
   group-by="Libellé de la catégorie socio-professionnelle"
   aggregate="Code sexe:count:nombre"
   order-by="nombre:desc" limit="8">
@@ -589,9 +587,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 #### KPI — Statistiques des maires avec filtre
 
 ```html
-<gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"></gouv-source>
+<gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"></gouv-query>
 
 <gouv-query id="q-femmes" source="data"
   filter="Code sexe:eq:F">
@@ -608,9 +606,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 #### Tableau — Maires filtres par departement
 
 ```html
-<gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"></gouv-source>
+<gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"></gouv-query>
 
 <gouv-query id="q" source="data"
   filter="Libellé du département:contains:Ain">

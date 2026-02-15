@@ -188,11 +188,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-pie">Code source</button></h3>
           <div class="fr-collapse" id="code-q-pie">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
-
-&lt;gouv-query id="q" source="data"
+<pre class="example-code">&lt;gouv-query id="q"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
   group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
   aggregate="Code sexe:count:nombre"
   order-by="nombre:desc" limit="8"&gt;
@@ -212,11 +210,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-limit">Code source</button></h3>
           <div class="fr-collapse" id="code-v-limit">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
-
-&lt;gouv-query id="q" source="data"
+<pre class="example-code">&lt;gouv-query id="q"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
   group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
   aggregate="Code sexe:count:nombre"
   order-by="nombre:desc" limit="4"&gt;
@@ -388,9 +384,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-q-kpi">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
 
 &lt;gouv-query id="q-femmes" source="data"
   filter="Code sexe:eq:F"&gt;
@@ -412,9 +408,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-filter">Code source</button></h3>
           <div class="fr-collapse" id="code-v-filter">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
 
 &lt;gouv-query id="q-combine" source="data"
   filter="Code sexe:eq:F, Libell&#233; du d&#233;partement:contains:Ain"&gt;
@@ -438,9 +434,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-q-datalist">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
 
 &lt;gouv-query id="q" source="data"
   filter="Libell&#233; du d&#233;partement:contains:Ain"&gt;
@@ -460,9 +456,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-in">Code source</button></h3>
           <div class="fr-collapse" id="code-v-in">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
-  transform="data"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-query id="data"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
 
 &lt;gouv-query id="q" source="data"
   filter="Libell&#233; du d&#233;partement:in:Ain|Rh&#244;ne|Is&#232;re"&gt;
