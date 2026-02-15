@@ -218,6 +218,7 @@ function generateMiddlewareElements(
     if (state.normalizeConfig.stripHtml) attrs.push('strip-html');
     if (state.normalizeConfig.replace) attrs.push(`replace="${escapeHtml(state.normalizeConfig.replace)}"`);
     if (state.normalizeConfig.lowercaseKeys) attrs.push('lowercase-keys');
+    if (state.normalizeConfig.flatten) attrs.push(`flatten="${escapeHtml(state.normalizeConfig.flatten)}"`);
 
     elements += `
   <!-- Nettoyage des donnees -->

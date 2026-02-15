@@ -1226,6 +1226,15 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 <gouv-dsfr-chart source="top5" type="pie" label-field="region" value-field="montant__sum"></gouv-dsfr-chart>
 \`\`\`
 
+### IMPORTANT : Source Grist, ODS v1 ou Airtable
+Si la source utilise \`transform="records"\` et que les donnees sont sous \`fields\`,
+ajouter TOUJOURS \`<gouv-normalize flatten="fields" trim numeric-auto>\` apres la source.
+Sans cette etape, gouv-query et gouv-dsfr-chart fonctionneront (dot notation interne),
+mais gouv-facets, gouv-datalist, gouv-search et gouv-kpi seront VIDES.
+
+Les noms de champs dans labelField, valueField, codeField et where doivent etre
+les noms APLATIS (ex: \`Departement\`) et non les chemins imbriques (\`fields.Departement\`).
+
 ### Pipeline Grist / ODS v1 : Source -> Normalize(flatten) -> Visualisation
 
 Pour les APIs qui wrappent les donnees sous un sous-objet (\`fields\`, \`properties\`),
@@ -1627,6 +1636,16 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     }
     if (!relevant.find(s => s.id === 'odsApiVersions')) {
       relevant.push(SKILLS.odsApiVersions);
+    }
+  }
+
+  // Always include gouvNormalize + compositionPatterns for Grist sources (nested fields need flatten)
+  if (currentSource?.type === 'grist') {
+    if (!relevant.find(s => s.id === 'gouvNormalize')) {
+      relevant.push(SKILLS.gouvNormalize);
+    }
+    if (!relevant.find(s => s.id === 'compositionPatterns')) {
+      relevant.push(SKILLS.compositionPatterns);
     }
   }
 

@@ -95,4 +95,34 @@ export function setupNormalizeListeners(): void {
       state.normalizeConfig.lowercaseKeys = lowercaseKeysEl.checked;
     });
   }
+
+  const flattenEl = document.getElementById('normalize-flatten') as HTMLInputElement | null;
+  if (flattenEl) {
+    flattenEl.addEventListener('input', () => {
+      state.normalizeConfig.flatten = flattenEl.value;
+    });
+  }
+}
+
+/**
+ * Auto-enable normalize with flatten="fields" for Grist sources.
+ * Updates both state and UI to reflect the pre-configured state.
+ */
+export function autoEnableNormalizeForGrist(): void {
+  state.normalizeConfig.enabled = true;
+  state.normalizeConfig.flatten = 'fields';
+  state.normalizeConfig.trim = true;
+  state.normalizeConfig.numericAuto = true;
+
+  const toggle = document.getElementById('normalize-enabled') as HTMLInputElement | null;
+  const options = document.getElementById('normalize-options');
+  const flattenEl = document.getElementById('normalize-flatten') as HTMLInputElement | null;
+  const trimEl = document.getElementById('normalize-trim') as HTMLInputElement | null;
+  const numericAutoEl = document.getElementById('normalize-numeric-auto') as HTMLInputElement | null;
+
+  if (toggle) toggle.checked = true;
+  if (options) options.style.display = 'block';
+  if (flattenEl) flattenEl.value = 'fields';
+  if (trimEl) trimEl.checked = true;
+  if (numericAutoEl) numericAutoEl.checked = true;
 }

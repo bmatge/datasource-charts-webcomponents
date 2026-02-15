@@ -185,9 +185,13 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
       : isTabular
         ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000).`
         : '';
+    const isGrist = state.source?.type === 'grist';
+    const gristNote = isGrist
+      ? `\nIMPORTANT: Source Grist detectee. Les donnees sont sous "records[].fields". Pour le code embarquable, utiliser <gouv-normalize flatten="fields" trim numeric-auto> et referencer les champs par leur nom plat (sans prefixe "fields.").`
+      : '';
     dataContext = `\n\nDonnees actuelles (${state.localData.length} enregistrements${totalNote}) :
 Champs : ${state.fields.map(f => `${f.name} (${f.type})`).join(', ')}
-Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}${paginationNote}`;
+Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}${paginationNote}${gristNote}`;
   }
 
   // Inject relevant skills based on the user message

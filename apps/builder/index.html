@@ -125,7 +125,15 @@
           </div>
 
           <div id="normalize-options" style="display: none;" class="fr-mt-2w">
-            <div class="fr-checkbox-group fr-checkbox-group--sm">
+            <div class="fr-input-group fr-input-group--sm">
+              <label class="fr-label" for="normalize-flatten">
+                Aplatir un sous-objet
+                <span class="fr-hint-text">Cle du sous-objet a promouvoir (ex: fields)</span>
+              </label>
+              <input class="fr-input" type="text" id="normalize-flatten" placeholder="Ex: fields">
+            </div>
+
+            <div class="fr-checkbox-group fr-checkbox-group--sm fr-mt-1w">
               <input type="checkbox" id="normalize-trim">
               <label class="fr-label" for="normalize-trim">Supprimer les espaces (trim)</label>
             </div>

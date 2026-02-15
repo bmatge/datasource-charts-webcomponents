@@ -10,7 +10,7 @@ import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
 import { renderChart } from './ui/chart-renderer.js';
 import { generateCodeForLocalData } from './ui/code-generator.js';
-import { updateMiddlewareSections } from './ui/normalize-config.js';
+import { updateMiddlewareSections, autoEnableNormalizeForGrist } from './ui/normalize-config.js';
 
 /**
  * Load saved sources from localStorage and populate the dropdown.
@@ -160,14 +160,16 @@ export function loadFieldsFromLocalData(): void {
   if (source?.type === 'grist' && source.rawRecords && source.rawRecords.length > 0) {
     const rawRecord = source.rawRecords[0];
     if (rawRecord && rawRecord.fields) {
-      // Use Grist field structure with "fields." prefix for dynamic mode
+      // Use flat field names — gouv-normalize flatten="fields" will promote them
       state.fields = Object.keys(rawRecord.fields).map((key): Field => ({
         name: key,
-        fullPath: `fields.${key}`,
+        fullPath: key,
         displayName: key,
         type: typeof rawRecord.fields[key],
         sample: rawRecord.fields[key],
       }));
+      // Auto-enable normalize with flatten for Grist sources
+      autoEnableNormalizeForGrist();
     }
   } else {
     // Flat data structure

@@ -51,6 +51,7 @@ export interface DatalistColumn {
 /** Normalize pipeline configuration */
 export interface NormalizeConfig {
   enabled: boolean;
+  flatten: string;
   trim: boolean;
   numericAuto: boolean;
   numeric: string;
@@ -190,6 +191,7 @@ export const state: BuilderState = {
   datalistColumns: [],
   normalizeConfig: {
     enabled: false,
+    flatten: '',
     trim: false,
     numericAuto: false,
     numeric: '',

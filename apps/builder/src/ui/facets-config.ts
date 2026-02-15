@@ -49,7 +49,7 @@ export function openFacetsModal(): void {
     state.facetsConfig.fields.filter(f => f.field).map(f => f.field)
   );
 
-  listEl.innerHTML = state.fields.map((field) => {
+  const rows = state.fields.map((field) => {
     const config = state.facetsConfig.fields.find(c => c.field === field.name);
     const isActive = config && activeFieldNames.has(field.name);
     const label = config?.label || field.name;
@@ -58,20 +58,47 @@ export function openFacetsModal(): void {
     const disjunctive = config?.disjunctive || false;
 
     return `
-    <div class="facets-field-row" data-field="${field.name}">
-      <input type="checkbox" class="facets-field-active" ${isActive ? 'checked' : ''}>
-      <span class="facets-field-name">${field.name}</span>
-      <input type="text" class="fr-input fr-input--sm facets-field-label" value="${label}" placeholder="Label">
-      <select class="fr-select fr-select--sm facets-field-display">
+    <tr data-field="${field.name}">
+      <td><input type="checkbox" class="facets-field-active" ${isActive ? 'checked' : ''}></td>
+      <td><code>${field.name}</code></td>
+      <td><input type="text" class="fr-input fr-input--sm facets-field-label" value="${label}" placeholder="Label"></td>
+      <td><select class="fr-select fr-select--sm facets-field-display">
         <option value="checkbox" ${display === 'checkbox' ? 'selected' : ''}>Cases a cocher</option>
         <option value="radio" ${display === 'radio' ? 'selected' : ''}>Boutons radio</option>
         <option value="select" ${display === 'select' ? 'selected' : ''}>Liste deroulante</option>
         <option value="multiselect" ${display === 'multiselect' ? 'selected' : ''}>Multi-selection</option>
-      </select>
-      <label class="facets-field-option"><input type="checkbox" class="facets-field-searchable" ${searchable ? 'checked' : ''}> Recherche</label>
-      <label class="facets-field-option"><input type="checkbox" class="facets-field-disjunctive" ${disjunctive ? 'checked' : ''}> Multi (OU)</label>
-    </div>`;
+      </select></td>
+      <td class="text-center"><input type="checkbox" class="facets-field-searchable" ${searchable ? 'checked' : ''}></td>
+      <td class="text-center"><input type="checkbox" class="facets-field-disjunctive" ${disjunctive ? 'checked' : ''}></td>
+    </tr>`;
   }).join('');
+
+  listEl.innerHTML = `
+    <div class="facets-toolbar">
+      <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" id="facets-select-all" type="button">Tout selectionner</button>
+      <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" id="facets-select-none" type="button">Tout deselectionner</button>
+    </div>
+    <table class="fr-table fr-table--no-caption facets-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Champ</th>
+          <th>Label</th>
+          <th>Affichage</th>
+          <th>Recherche</th>
+          <th>Multi (OU)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  // Toolbar actions
+  document.getElementById('facets-select-all')?.addEventListener('click', () => {
+    listEl.querySelectorAll<HTMLInputElement>('.facets-field-active').forEach(cb => cb.checked = true);
+  });
+  document.getElementById('facets-select-none')?.addEventListener('click', () => {
+    listEl.querySelectorAll<HTMLInputElement>('.facets-field-active').forEach(cb => cb.checked = false);
+  });
 
   openModal('facets-fields-modal');
 }
@@ -80,7 +107,7 @@ export function openFacetsModal(): void {
  * Read modal inputs and save facet field config back to state.
  */
 export function saveFacetsModal(): void {
-  const rows = document.querySelectorAll('#facets-fields-list .facets-field-row');
+  const rows = document.querySelectorAll('#facets-fields-list tr[data-field]');
   const fields: FacetFieldConfig[] = [];
 
   rows.forEach(row => {

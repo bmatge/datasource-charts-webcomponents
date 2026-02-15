@@ -357,14 +357,14 @@ describe('builder sources', () => {
       expect(state.fields).toHaveLength(2);
       expect(state.fields[0]).toMatchObject({
         name: 'nom_region',
-        fullPath: 'fields.nom_region',
+        fullPath: 'nom_region',
         displayName: 'nom_region',
         type: 'string',
         sample: 'Bretagne',
       });
       expect(state.fields[1]).toMatchObject({
         name: 'population',
-        fullPath: 'fields.population',
+        fullPath: 'population',
         displayName: 'population',
         type: 'number',
         sample: 3300000,
