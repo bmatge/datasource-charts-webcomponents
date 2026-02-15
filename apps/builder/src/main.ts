@@ -4,6 +4,7 @@
  */
 
 import './styles/builder.css';
+import { initAuth } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import {
   loadSavedSources,
@@ -30,7 +31,9 @@ import { setupFacetsListeners } from './ui/facets-config.js';
 // Expose functions called from inline onclick in HTML
 (window as any).toggleSection = toggleSection;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
+
   // Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {

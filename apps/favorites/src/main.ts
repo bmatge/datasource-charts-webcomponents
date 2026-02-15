@@ -2,12 +2,12 @@
  * Favorites app - main entry point
  */
 
-import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo } from '@gouv-widgets/shared';
+import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo, initAuth } from '@gouv-widgets/shared';
 import { loadFavorites, saveFavorites, deleteFavorite, findFavorite } from './favorites-manager.js';
 import type { Favorite } from './favorites-manager.js';
 import { getPreviewHTML } from './preview.js';
 
-// State
+// State (re-loaded after initAuth in DOMContentLoaded)
 let favorites = loadFavorites();
 let selectedId: string | null = null;
 let deleteTargetId: string | null = null;
@@ -297,7 +297,11 @@ function confirmDelete(): void {
 }
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
+  // Reload favorites from (now-updated) localStorage
+  favorites = loadFavorites();
+
   if (favorites.length > 0) {
     selectedId = favorites[0].id;
   }

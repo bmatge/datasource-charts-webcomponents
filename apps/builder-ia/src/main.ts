@@ -4,6 +4,7 @@
  */
 
 import './styles/builder-ia.css';
+import { initAuth } from '@gouv-widgets/shared';
 
 import { loadSavedSources, handleSourceChange, loadSavedSourceData, initDataPreviewModal } from './sources.js';
 import { loadIAConfig, saveIAConfig, addExtraParam } from './ia/ia-config.js';
@@ -20,7 +21,9 @@ import { state } from './state.js';
 (window as unknown as Record<string, unknown>).copyCode = copyCode;
 (window as unknown as Record<string, unknown>).switchTab = switchTab;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
+
   // Source selection
   const savedSourceEl = document.getElementById('saved-source');
   if (savedSourceEl) {

@@ -12,6 +12,18 @@ export const STORAGE_KEYS = {
 } as const;
 
 /**
+ * Optional hook called after every saveToStorage().
+ * Used by initAuth() to sync writes to the backend API.
+ */
+let _saveHook: ((key: string, data: unknown) => void) | null = null;
+let _inHook = false;
+
+/** Register a hook that fires after every saveToStorage call (for API sync). */
+export function setSaveHook(hook: ((key: string, data: unknown) => void) | null): void {
+  _saveHook = hook;
+}
+
+/**
  * Load a JSON value from localStorage
  * Returns the parsed value or the provided default on error
  */
@@ -27,10 +39,17 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
 /**
  * Save a JSON value to localStorage.
  * Shows a toast if quota is exceeded.
+ * If a save hook is registered (DB mode), also syncs to backend in background.
  */
 export function saveToStorage<T>(key: string, data: T): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(data));
+    // Fire save hook for API sync (with re-entry guard)
+    if (_saveHook && !_inHook) {
+      _inHook = true;
+      try { _saveHook(key, data); } catch { /* ignore hook errors */ }
+      _inHook = false;
+    }
     return true;
   } catch (e) {
     if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
