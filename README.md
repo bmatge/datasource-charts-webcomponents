@@ -1,31 +1,44 @@
 # gouv-widgets
 
-Bibliotheque de Web Components de dataviz pour sites gouvernementaux francais, conformes au DSFR (Design System de l'Etat).
+Bibliotheque de Web Components pour integrer des graphiques dynamiques, accessibles et conformes DSFR dans les sites gouvernementaux francais.
 
-## Pourquoi ce projet
+## Le probleme
 
-Les sites gouvernementaux ont regulierement besoin d'integrer des graphiques dans leurs articles : barres, camemberts, courbes, cartes, indicateurs chiffres cles. En pratique, les equipes de communication recourent souvent a des captures d'ecran, des infographies statiques ou des donnees saisies manuellement dans le CMS. Le resultat est statique, non accessible, non responsive et difficile a maintenir.
+Les sites gouvernementaux illustrent leurs donnees avec des captures d'ecran Excel, des infographies statiques ou des donnees saisies manuellement dans le CMS. Le resultat est non accessible, non interactif et difficile a maintenir.
 
-Les plateformes open data et les outils de dataviz existants comme Chartsgoug / Superset couvrent d'autres besoins — stockage et diffusion de jeux de donnees, analyse interne, reporting et publication de tableaux de bords complets et autonomes. 
+Les plateformes BI (Metabase, Superset, Chartsgoug) repondent a un autre besoin : exploration de donnees, reporting interne, publication de dashboards autonomes. Elles ne proposent pas de solution simple pour **embarquer un graphique directement dans une page web existante** — leur modele repose sur l'iframe, isole du DOM de la page (pas d'heritage CSS, pas d'accessibilite unifiee, pas de responsive naturel).
 
-A l'heure actuelle aucun ne semble proposer de solution simple pour **embarquer un graphique dynamique et accessible directement dans une page web**, sans dependance a une plateforme tierce et sans ecrire de code JavaScript.
+## La solution
 
-**gouv-widgets vise à courir ce besoin**. La bibliotheque s'appuie sur les **Web Components**, un standard HTML5 natif qui fonctionne dans n'importe quel environnement : Drupal, WordPress, page statique ou application JavaScript. Un integrateur web peut creer un graphique connecte a une API open data en quelques lignes de HTML. Les graphiques produits utilisent [DSFR Chart](https://github.com/GouvernementFR/dsfr-chart), la bibliotheque officielle du Design System de l'Etat : ils sont conformes DSFR, accessibles (RGAA) et responsive par defaut.
+gouv-widgets resout le **dernier kilometre** : permettre a un agent public non technique de transformer une donnee ouverte en graphique conforme, accessible et dynamique, embarque dans son site, **sans plateforme, sans developpeur, sans infra**.
 
-Pour les profils non techniques, le projet inclut des applications de creation : un **builder visuel** pas-a-pas, un **builder IA** par conversation, et un **playground** pour editer le code en temps reel.
+Le projet s'articule en **deux volets independants** :
+
+### Volet 1 — Composants web (pour developpeurs et integrateurs)
+
+Des balises HTML `<gouv-*>` qui s'enchainent pour former un pipeline de donnees declaratif :
+
+```
+Source de donnees → Nettoyage → Requetage → Visualisation
+```
+
+- **Zero JavaScript a ecrire** — tout se configure via des attributs HTML
+- **Agnostique** — fonctionne dans Drupal, WordPress, page statique, React, Vue, Angular
+- **Un seul fichier a charger** — ~50 Ko gzippe
+- **Connecteurs integres** — OpenDataSoft, Tabular API (data.gouv.fr), Grist, toute API REST
+- **DSFR-natif** — utilise [DSFR Chart](https://github.com/GouvernementFR/dsfr-chart), la bibliotheque officielle du Design System de l'Etat
+- **Accessible par defaut** — conforme RGAA/WCAG 2 AA
+- **Open source** — MIT, mutualisable entre administrations
+
+### Volet 2 — Applications de creation (pour non-developpeurs)
+
+Une suite d'outils web pour **generer le code HTML du volet 1 sans le connaitre** : builder visuel pas-a-pas, builder IA par conversation, playground interactif, editeur de tableaux de bord. La cible : les redacteurs web et communicants qui illustrent des articles avec des donnees publiques.
 
 ## A qui ca s'adresse
 
-- **Integrateurs web** des sites gouvernementaux — embarquer des graphiques dynamiques via copier-coller de HTML
-- **Communicants** — creer des visualisations via les builders sans ecrire de code
-- **Producteurs de donnees** — valoriser des jeux de donnees open data par des graphiques interactifs
-
-## Principes
-
-- **Declaratif** : tout se configure via des attributs HTML, pas de JavaScript a ecrire cote integrateur
-- **Agnostique** : fonctionne avec n'importe quelle API REST, pas verrouille sur un fournisseur
-- **DSFR-natif** : utilise les tokens CSS, les couleurs illustratives et la grille du DSFR
-- **Leger** : un seul fichier JS a charger
+- **Redacteurs web / communicants** — creer des graphiques via les builders, copier-coller le code dans le CMS
+- **Integrateurs web** — embarquer des graphiques dynamiques en quelques lignes de HTML
+- **Producteurs de donnees** — valoriser des jeux de donnees open data par des visualisations interactives
 
 ## Composants
 
