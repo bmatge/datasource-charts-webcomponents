@@ -177,8 +177,9 @@
           <img src="images/guide-B4-builder-grist-code.png" alt="Code dynamique Grist">
           <p>Le code genere ressemble a :</p>
 <pre>&lt;gouv-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
-             transform="records[].fields"&gt;&lt;/gouv-source&gt;
-&lt;gouv-query id="query-result" source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/gouv-query&gt;
+             transform="records"&gt;&lt;/gouv-source&gt;
+&lt;gouv-normalize id="clean" source="data" flatten="fields" trim numeric-auto&gt;&lt;/gouv-normalize&gt;
+&lt;gouv-query id="query-result" source="clean" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/gouv-query&gt;
 &lt;gouv-dsfr-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
                  title="PIB par pays"&gt;&lt;/gouv-dsfr-chart&gt;</pre>
         </section>
@@ -319,7 +320,7 @@
             <ul>
               <li>OpenDataSoft : <code>data.economie.gouv.fr</code> (chemin : <code>results</code>)</li>
               <li>Tabular API : <code>tabular-api.data.gouv.fr</code> (chemin : <code>data</code>)</li>
-              <li>Grist API : <code>grist.numerique.gouv.fr</code> (chemin : <code>records[].fields</code>)</li>
+              <li>Grist API : <code>grist.numerique.gouv.fr</code> (chemin : <code>records</code>, puis <code>gouv-normalize flatten="fields"</code>)</li>
             </ul>
           </div>
 

@@ -116,6 +116,37 @@
           </div>
         </section>
 
+        <!-- normalize-flatten (Grist) -->
+        <h4>Aplatissement — Source Grist avec sous-objet fields</h4>
+        <p>Les sources Grist renvoient des enregistrements imbriques <code>{id, fields: {col1, col2}}</code>. L'attribut <code>flatten="fields"</code> promeut les sous-cles au premier niveau. Sans cette etape, les facettes, tableaux, KPI et recherche restent vides.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-flatten">Code source</button></h3>
+          <div class="fr-collapse" id="code-n-flatten">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;!-- flatten est sans effet ici car les donnees sont deja plates,
+     mais illustre la syntaxe pour des sources Grist/ODS v1 --&gt;
+&lt;gouv-normalize id="clean" source="data"
+  trim numeric-auto&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-query id="stats" source="clean"
+  group-by="nom_region"
+  aggregate="nombre_beneficiaires:sum:Beneficiaires"
+  order-by="Beneficiaires:desc"
+  limit="8"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="nom_region" value-field="Beneficiaires"
+  titre="Beneficiaires par region (normalize + query)"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
         <!-- normalize-datalist (maires) -->
         <h4>Tableau — Renommage de champs accentes</h4>
         <p>Les champs de l'API tabular contiennent des accents (<code>Nom de l'&#233;lu</code>, <code>Libell&#233; du d&#233;partement</code>). <code>gouv-normalize</code> renomme ces champs en noms simples avant l'affichage en tableau.</p>

@@ -108,7 +108,7 @@ Dans le **Builder**, selectionnez la source Grist et chargez les champs. Une sec
 - **Chargement dynamique** : utilise `<gouv-source>` + `<gouv-query>` + `<gouv-dsfr-chart>` pour charger les donnees en temps reel
 
 En mode dynamique, deux sections supplementaires apparaissent :
-- **Nettoyage des donnees** : configure `<gouv-normalize>` pour nettoyer les donnees (trim, conversion numerique, renommage de champs, remplacement de valeurs)
+- **Nettoyage des donnees** : configure `<gouv-normalize>` pour nettoyer les donnees (aplatissement de sous-objets, trim, conversion numerique, renommage de champs, remplacement de valeurs). Pour les sources Grist, cette etape est pre-configuree automatiquement avec `flatten="fields"`.
 - **Filtres a facettes** : configure `<gouv-facets>` pour ajouter des filtres interactifs (cases a cocher, listes deroulantes, multi-selection)
 
 ### Etape 4 — Code genere avec composants dynamiques
@@ -119,8 +119,9 @@ Apres avoir configure et genere le graphique, le code genere contient les Web Co
 
 ```html
 <gouv-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
-             transform="records[].fields"></gouv-source>
-<gouv-query id="query-result" source="data" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"></gouv-query>
+             transform="records"></gouv-source>
+<gouv-normalize id="clean" source="data" flatten="fields" trim numeric-auto></gouv-normalize>
+<gouv-query id="query-result" source="clean" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"></gouv-query>
 <gouv-dsfr-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
                  title="PIB par pays"></gouv-dsfr-chart>
 ```
@@ -244,7 +245,7 @@ Dans **Sources**, cliquez sur **Nouvelle connexion** et selectionnez le type **A
 > **APIs testees** :
 > - OpenDataSoft : `data.economie.gouv.fr` (chemin : `results`)
 > - Tabular API : `tabular-api.data.gouv.fr` (chemin : `data`)
-> - Grist API : `grist.numerique.gouv.fr` (chemin : `records[].fields`)
+> - Grist API : `grist.numerique.gouv.fr` (chemin : `records`, puis `gouv-normalize flatten="fields"`)
 
 ### Etape 2 — Generer le graphique
 
@@ -478,6 +479,33 @@ Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion num
   recherche pagination="10" export="csv">
 </gouv-datalist>
 ```
+
+#### Source Grist — Aplatissement des champs imbriques
+
+Les sources Grist renvoient des enregistrements imbriques `{id, fields: {col1, col2}}`. L'attribut `flatten="fields"` de `gouv-normalize` promeut les sous-cles au premier niveau pour que tous les composants (facettes, tableau, KPI) fonctionnent correctement.
+
+```html
+<gouv-source id="data"
+  url="https://grist.numerique.gouv.fr/api/docs/DOC_ID/tables/TABLE/records"
+  transform="records"></gouv-source>
+
+<gouv-normalize id="clean" source="data"
+  flatten="fields" trim numeric-auto>
+</gouv-normalize>
+
+<gouv-query id="stats" source="clean"
+  group-by="Pays"
+  aggregate="PIB:avg"
+  order-by="PIB__avg:desc">
+</gouv-query>
+
+<gouv-dsfr-chart source="stats" type="bar"
+  label-field="Pays" value-field="PIB__avg"
+  titre="PIB moyen par pays">
+</gouv-dsfr-chart>
+```
+
+> **Note** : le Builder pre-configure automatiquement `flatten="fields"`, `trim` et `numeric-auto` quand une source Grist est detectee.
 
 ### Avec requete : gouv-source → gouv-query → composant
 
