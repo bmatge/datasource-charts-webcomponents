@@ -28,6 +28,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "npm run build:all && npm run build:app && tauri build",
     "build:app": "node scripts/build-app.js",
+    "build:server": "npm run build --workspace=@gouv-widgets/server",
+    "dev:server": "npm run dev --workspace=@gouv-widgets/server",
     "test:e2e": "playwright test"
   },
   "keywords": [

@@ -28,6 +28,13 @@ sh "$PARSE_SCRIPT" 2>&1
   done
 ) &
 
+# Start backend Express server in database mode
+if [ "$GOUV_WIDGETS_MODE" = "database" ] && [ -f /app/server/dist/index.js ]; then
+  echo "[entrypoint] Database mode detected, starting Express backend on port 3002..."
+  cd /app/server && node dist/index.js &
+  echo "[entrypoint] Express backend started"
+fi
+
 # Start MCP server in background (reads skills from local file, no network dependency)
 SKILLS_FILE="/usr/share/nginx/html/dist/skills.json"
 if [ -f "$SKILLS_FILE" ]; then
