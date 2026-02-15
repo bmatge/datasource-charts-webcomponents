@@ -133,9 +133,9 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
 
   // --- Data processing ---
 
-  private _processData(): { x: string; y: string; y2?: string; labels: string[] } {
+  private _processData(): { x: string; y: string; y2?: string; yMulti?: string; labels: string[]; values: number[]; values2: number[] } {
     if (!this._data || this._data.length === 0) {
-      return { x: '[[]]', y: '[[]]', labels: [] };
+      return { x: '[[]]', y: '[[]]', labels: [], values: [], values2: [] };
     }
 
     const labels: string[] = [];
@@ -155,7 +155,11 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       x: JSON.stringify([labels]),
       y: JSON.stringify([values]),
       y2: this.valueField2 ? JSON.stringify([values2]) : undefined,
+      // Combined y with both series for multi-series charts (bar, line, radar)
+      yMulti: this.valueField2 ? JSON.stringify([values, values2]) : undefined,
       labels,
+      values,
+      values2,
     };
   }
 
@@ -206,7 +210,7 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
   }
 
   private _getTypeSpecificAttributes(): { attrs: Record<string, string>; deferred: Record<string, string> } {
-    const { x, y, y2, labels } = this._processData();
+    const { x, y, yMulti, labels, values, values2 } = this._processData();
     const attrs: Record<string, string> = {};
     const deferred: Record<string, string> = {};
 
@@ -227,12 +231,26 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
           attrs['name'] = JSON.stringify(labels);
         }
         break;
-      case 'bar-line':
-        attrs['x'] = x;
-        attrs['y-bar'] = y;
-        attrs['y-line'] = y2 || y;
+      case 'bar-line': {
+        // DSFR BarLineChart expects flat arrays (not double-wrapped [[values]])
+        // unlike BarChart which uses xparse[0] to unwrap.
+        attrs['x'] = JSON.stringify(labels);
+        attrs['y-bar'] = JSON.stringify(values);
+        attrs['y-line'] = JSON.stringify(values2.length ? values2 : values);
+        // BarLineChart uses name-bar/name-line (not name)
+        if (this.name) {
+          try {
+            const trimmed = this.name.trim();
+            const names: string[] = trimmed.startsWith('[') ? JSON.parse(trimmed) : [trimmed];
+            if (names[0]) attrs['name-bar'] = names[0];
+            if (names[1]) attrs['name-line'] = names[1];
+          } catch { /* ignore parse errors */ }
+        }
+        // BarLineChart uses unit-tooltip-bar / unit-tooltip-line (not unit-tooltip)
         if (this.unitTooltipBar) attrs['unit-tooltip-bar'] = this.unitTooltipBar;
+        if (this.unitTooltip) attrs['unit-tooltip-line'] = this.unitTooltip;
         break;
+      }
       case 'map':
       case 'map-reg': {
         attrs['data'] = this._processMapData();
@@ -256,7 +274,8 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       }
       default:
         attrs['x'] = x;
-        attrs['y'] = y;
+        // For bar/line/radar with a second series, combine both into y
+        attrs['y'] = yMulti || y;
         break;
     }
 
@@ -327,6 +346,13 @@ export class GouvDsfrChart extends SourceSubscriberMixin(LitElement) {
       ...this._getCommonAttributes(),
       ...typeAttrs,
     };
+
+    // BarLineChart uses name-bar/name-line and unit-tooltip-bar/unit-tooltip-line
+    // instead of the generic name/unit-tooltip attributes
+    if (this.type === 'bar-line') {
+      delete allAttrs['name'];
+      delete allAttrs['unit-tooltip'];
+    }
 
     const wrapper = this._createChartElement(tagName, allAttrs, deferred);
 

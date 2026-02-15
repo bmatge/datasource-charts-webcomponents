@@ -303,6 +303,48 @@ describe('GouvDsfrChart', () => {
       expect(attrs['unit-tooltip-bar']).toBe('kg');
     });
 
+    it('bar-line uses flat arrays (not double-wrapped)', () => {
+      (chart as any)._data = [
+        { cat: 'A', v1: 10, v2: 100 },
+        { cat: 'B', v1: 20, v2: 200 },
+      ];
+      chart.type = 'bar-line';
+      chart.labelField = 'cat';
+      chart.valueField = 'v1';
+      chart.valueField2 = 'v2';
+
+      const { attrs } = (chart as any)._getTypeSpecificAttributes();
+      // BarLineChart expects flat arrays, not [[values]]
+      expect(JSON.parse(attrs['x'])).toEqual(['A', 'B']);
+      expect(JSON.parse(attrs['y-bar'])).toEqual([10, 20]);
+      expect(JSON.parse(attrs['y-line'])).toEqual([100, 200]);
+    });
+
+    it('bar-line maps name to name-bar/name-line', () => {
+      (chart as any)._data = [{ cat: 'A', v1: 10, v2: 100 }];
+      chart.type = 'bar-line';
+      chart.labelField = 'cat';
+      chart.valueField = 'v1';
+      chart.valueField2 = 'v2';
+      chart.name = '["Barres", "Ligne"]';
+
+      const { attrs } = (chart as any)._getTypeSpecificAttributes();
+      expect(attrs['name-bar']).toBe('Barres');
+      expect(attrs['name-line']).toBe('Ligne');
+    });
+
+    it('bar-line maps unit-tooltip to unit-tooltip-line', () => {
+      (chart as any)._data = [{ cat: 'A', v1: 10, v2: 100 }];
+      chart.type = 'bar-line';
+      chart.labelField = 'cat';
+      chart.valueField = 'v1';
+      chart.valueField2 = 'v2';
+      (chart as any).unitTooltip = '%';
+
+      const { attrs } = (chart as any)._getTypeSpecificAttributes();
+      expect(attrs['unit-tooltip-line']).toBe('%');
+    });
+
     it('returns map data and deferred value/date', () => {
       (chart as any)._data = [
         { dept: '75', val: 100 },
