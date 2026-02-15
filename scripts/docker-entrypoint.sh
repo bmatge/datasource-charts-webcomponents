@@ -31,8 +31,15 @@ sh "$PARSE_SCRIPT" 2>&1
 # Start backend Express server in database mode
 if [ "$GOUV_WIDGETS_MODE" = "database" ] && [ -f /app/server/dist/index.js ]; then
   echo "[entrypoint] Database mode detected, starting Express backend on port 3002..."
-  cd /app/server && node dist/index.js &
-  echo "[entrypoint] Express backend started"
+  cd /app/server && node dist/index.js 2>&1 &
+  EXPRESS_PID=$!
+  # Wait briefly and check if it survived startup
+  sleep 2
+  if kill -0 "$EXPRESS_PID" 2>/dev/null; then
+    echo "[entrypoint] Express backend started (PID $EXPRESS_PID)"
+  else
+    echo "[entrypoint] ERROR: Express backend crashed on startup (PID $EXPRESS_PID)"
+  fi
 fi
 
 # Start MCP server in background (reads skills from local file, no network dependency)
