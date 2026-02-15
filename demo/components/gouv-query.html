@@ -45,7 +45,14 @@
           </p>
         </div>
 
-        <h2>Modes de fonctionnement</h2>
+        <p class="fr-mt-2w">
+          <a class="fr-link fr-link--icon-right fr-icon-arrow-right-line"
+             href="../../docs/guide-exemples-query.html">
+            Voir les exemples live dans le Guide utilisateur
+          </a>
+        </p>
+
+        <h2 id="modes">Modes de fonctionnement</h2>
         <p>Le composant supporte trois modes via l'attribut <code>api-type</code> :</p>
         <table class="attr-table">
           <thead><tr><th>Mode</th><th>Description</th></tr></thead>
@@ -65,32 +72,70 @@
           </tbody>
         </table>
 
-        <h2 class="fr-mt-4w">Attributs</h2>
+        <h2 id="attributs" class="fr-mt-4w">Attributs</h2>
         <table class="attr-table">
-          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <thead><tr><th>Attribut</th><th>Type</th><th>Format / Valeurs</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><code>id</code></td><td>String</td><td>Identifiant unique (requis). Les composants de visualisation l'utilisent pour s'abonner aux donnees transformees.</td></tr>
-            <tr><td><code>api-type</code></td><td>String</td><td>Mode de fonctionnement : <code>generic</code> (defaut), <code>opendatasoft</code> ou <code>tabular</code></td></tr>
-            <tr><td><code>source</code></td><td>String</td><td>ID de la <code>&lt;gouv-source&gt;</code> a ecouter (mode <code>generic</code> uniquement)</td></tr>
-            <tr><td><code>base-url</code></td><td>String</td><td>URL de base de l'API (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
-            <tr><td><code>dataset-id</code></td><td>String</td><td>Identifiant du dataset (mode <code>opendatasoft</code>)</td></tr>
-            <tr><td><code>resource</code></td><td>String</td><td>Identifiant de la ressource (mode <code>tabular</code> uniquement)</td></tr>
-            <tr><td><code>select</code></td><td>String</td><td>Clause SELECT avec agregations en syntaxe ODSQL (mode <code>opendatasoft</code>). Ex: <code>"sum(population) as total, region"</code></td></tr>
-            <tr><td><code>where</code></td><td>String</td><td>Filtres. OpenDataSoft : syntaxe ODSQL. Generic/Tabular : format <code>"champ:operateur:valeur"</code></td></tr>
-            <tr><td><code>filter</code></td><td>String</td><td>Alias pour <code>where</code></td></tr>
-            <tr><td><code>group-by</code></td><td>String</td><td>Champs de regroupement separes par virgule. Ex: <code>"region, departement"</code></td></tr>
-            <tr><td><code>aggregate</code></td><td>String</td><td>Agregations (modes <code>generic</code> / <code>tabular</code>). Format: <code>"champ:fonction"</code>. Fonctions : <code>count</code>, <code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code></td></tr>
-            <tr><td><code>order-by</code></td><td>String</td><td>Tri des resultats. Format: <code>"champ:direction"</code>. Ex: <code>"population__sum:desc"</code></td></tr>
-            <tr><td><code>limit</code></td><td>Number</td><td>Nombre maximum de resultats (0 = pas de limite)</td></tr>
-            <tr><td><code>transform</code></td><td>String</td><td>Chemin JSONPath pour extraire les donnees de la reponse API</td></tr>
-            <tr><td><code>headers</code></td><td>String</td><td>Headers HTTP en JSON pour APIs privees (modes <code>opendatasoft</code> / <code>tabular</code>). Ex: <code>'{"apikey":"abc123"}'</code></td></tr>
-            <tr><td><code>server-side</code></td><td>Boolean</td><td>Active le mode server-side pilotable (une page a la fois, ecoute les commandes des composants en aval)</td></tr>
-            <tr><td><code>page-size</code></td><td>Number</td><td>Taille de page en mode server-side (defaut : 20)</td></tr>
-            <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
+            <tr><td><code>id</code></td><td>String</td><td><code>id="mon-query"</code></td><td>Identifiant unique (requis). Les composants de visualisation l'utilisent pour s'abonner aux donnees transformees.</td></tr>
+            <tr><td><code>api-type</code></td><td>String</td><td><code>generic</code> | <code>opendatasoft</code> | <code>tabular</code></td><td>Mode de fonctionnement. Defaut : <code>generic</code></td></tr>
+            <tr><td><code>source</code></td><td>String</td><td><code>source="id-source"</code></td><td>ID de la <code>&lt;gouv-source&gt;</code> a ecouter (mode <code>generic</code> uniquement)</td></tr>
+            <tr><td><code>base-url</code></td><td>String</td><td><code>"https://data.opendatasoft.com"</code></td><td>URL de base de l'API (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
+            <tr><td><code>dataset-id</code></td><td>String</td><td><code>"mon-dataset-2024"</code></td><td>Identifiant (slug) du dataset (mode <code>opendatasoft</code>)</td></tr>
+            <tr><td><code>resource</code></td><td>String</td><td><code>"2876a346-d50c-..."</code> (UUID)</td><td>Identifiant de la ressource (mode <code>tabular</code> uniquement)</td></tr>
+            <tr><td><code>select</code></td><td>String</td><td><code>"sum(pop) as total, region"</code></td><td>Clause SELECT en syntaxe ODSQL (mode <code>opendatasoft</code> uniquement)</td></tr>
+            <tr><td><code>where</code></td><td>String</td><td>Generic/Tabular : <code>"champ:op:val, ..."</code><br>ODS : ODSQL libre</td><td>Filtres. Plusieurs filtres separes par <code>,</code> (logique ET)</td></tr>
+            <tr><td><code>filter</code></td><td>String</td><td>(meme format que <code>where</code>)</td><td>Alias pour <code>where</code></td></tr>
+            <tr><td><code>group-by</code></td><td>String</td><td><code>"champ1, champ2"</code></td><td>Champs de regroupement separes par virgule</td></tr>
+            <tr><td><code>aggregate</code></td><td>String</td><td><code>"champ:fn"</code> ou <code>"champ:fn:alias"</code></td><td>Agregations. Fonctions : <code>count</code> <code>sum</code> <code>avg</code> <code>min</code> <code>max</code>. Modes <code>generic</code> / <code>tabular</code></td></tr>
+            <tr><td><code>order-by</code></td><td>String</td><td><code>"champ:asc"</code> ou <code>"champ:desc"</code></td><td>Tri des resultats. Champs agreges : <code>"champ__fn:desc"</code> ou <code>"alias:desc"</code></td></tr>
+            <tr><td><code>limit</code></td><td>Number</td><td>Entier positif. <code>0</code> = illimite</td><td>Nombre maximum de resultats</td></tr>
+            <tr><td><code>transform</code></td><td>String</td><td><code>"results"</code>, <code>"data.items"</code></td><td>Chemin JSONPath pour extraire les donnees de la reponse API</td></tr>
+            <tr><td><code>headers</code></td><td>String</td><td><code>'{"apikey":"abc123"}'</code></td><td>Headers HTTP en JSON pour APIs privees (modes <code>opendatasoft</code> / <code>tabular</code>)</td></tr>
+            <tr><td><code>server-side</code></td><td>Boolean</td><td>Presence = <code>true</code></td><td>Active le mode server-side pilotable (une page a la fois, ecoute les commandes des composants en aval)</td></tr>
+            <tr><td><code>page-size</code></td><td>Number</td><td>Entier positif. Defaut : <code>20</code></td><td>Taille de page en mode server-side</td></tr>
+            <tr><td><code>refresh</code></td><td>Number</td><td>Entier en secondes. <code>0</code> = off</td><td>Intervalle de rafraichissement automatique</td></tr>
           </tbody>
         </table>
 
-        <h2 class="fr-mt-4w">Operateurs de filtre</h2>
+        <h3 class="fr-mt-3w">Syntaxe detaillee des attributs cles</h3>
+
+        <section class="demo-section">
+          <h4><code>where</code> / <code>filter</code> (modes generic et tabular)</h4>
+          <p>Format : <code>champ:operateur:valeur</code>. Plusieurs filtres separes par <code>,</code> (logique ET).</p>
+          <div class="code-block"><pre>where="population:gt:5000"
+where="population:gt:5000, region:in:IDF|OCC|BRE"
+where="email:isnull"                 &lt;!-- pas de valeur pour isnull/isnotnull --&gt;
+where="region:in:IDF|OCC|BRE"        &lt;!-- separateur | pour in/notin --&gt;</pre></div>
+          <p class="fr-text--sm fr-mt-1w">Les valeurs <code>"true"</code>/<code>"false"</code> sont parsees en booleen, les chaines numeriques en nombre.</p>
+        </section>
+
+        <section class="demo-section">
+          <h4><code>aggregate</code></h4>
+          <p>Format de base : <code>champ:fonction</code> — le champ de sortie est nomme <code>champ__fonction</code>.<br>
+            Avec alias : <code>champ:fonction:alias</code> — le champ de sortie porte le nom de l'alias.</p>
+          <div class="code-block"><pre>aggregate="population:sum"            &lt;!-- sortie : population__sum --&gt;
+aggregate="population:sum:total"      &lt;!-- sortie : total --&gt;
+aggregate="pop:sum:total, pop:count:nb"  &lt;!-- deux agregations --&gt;</pre></div>
+          <p class="fr-text--sm fr-mt-1w">Fonctions : <code>count</code> (nombre de lignes), <code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code>.</p>
+        </section>
+
+        <section class="demo-section">
+          <h4><code>order-by</code></h4>
+          <p>Format : <code>champ:direction</code> ou <code>champ</code> (defaut : <code>asc</code>).<br>
+            Pour trier des resultats agreges, utiliser le nom du champ de sortie.</p>
+          <div class="code-block"><pre>order-by="nom:asc"
+order-by="population__sum:desc"       &lt;!-- champ agrege sans alias --&gt;
+order-by="total:desc"                 &lt;!-- champ agrege avec alias --&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h4><code>select</code> (mode opendatasoft uniquement)</h4>
+          <p>Syntaxe ODSQL libre. Non utilise en modes <code>generic</code> / <code>tabular</code>.</p>
+          <div class="code-block"><pre>select="sum(population) as total_pop, nom_reg"
+select="count(*) as nb, avg(salaire) as salaire_moyen"</pre></div>
+        </section>
+
+        <h2 id="operateurs" class="fr-mt-4w">Operateurs de filtre</h2>
         <p>Utilisables dans les attributs <code>where</code> / <code>filter</code> (format <code>"champ:operateur:valeur"</code>) :</p>
         <table class="attr-table">
           <thead><tr><th>Operateur</th><th>Description</th><th>Exemple</th></tr></thead>
@@ -109,14 +154,21 @@
             <tr><td><code>isnotnull</code></td><td>N'est pas null</td><td><code>email:isnotnull</code></td></tr>
           </tbody>
         </table>
+        <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>Mode opendatasoft :</strong> ces operateurs ne s'appliquent pas. Utilisez la syntaxe
+            ODSQL libre dans l'attribut <code>where</code>, ex : <code>where="population &gt; 5000 AND status = 'active'"</code>.
+          </p>
+        </div>
 
-        <h2 class="fr-mt-4w">Exemples</h2>
+        <h2 id="exemples" class="fr-mt-4w">Exemples</h2>
 
         <section class="demo-section">
           <h3>Mode generic : filtrer et trier des donnees existantes</h3>
           <p>
             Recupere les donnees d'une <code>&lt;gouv-source&gt;</code> et les filtre/trie cote client.
             Ici on filtre les 10 premieres lignes triees par nom.
+            <a href="../../docs/guide-exemples-query.html#query-datalist" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-source
   id="raw-data"
@@ -145,6 +197,7 @@
           <p>
             Regroupe les donnees par region et calcule la somme de la population
             et le nombre d'enregistrements par groupe.
+            <a href="../../docs/guide-exemples-query.html#query-bar" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-source
   id="communes"
@@ -174,6 +227,7 @@
           <p>
             Interroge directement une API OpenDataSoft avec des agregations et filtres ODSQL.
             La requete est executee cote serveur.
+            <a href="../../docs/guide-exemples-query.html#server-side-ods" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="ods-stats"
@@ -199,6 +253,7 @@
           <h3>Mode Tabular API : requete data.gouv.fr</h3>
           <p>
             Interroge directement l'API Tabular de data.gouv.fr avec groupement et agregation.
+            <a href="../../docs/guide-exemples-query.html#query-tabular-pie" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="tabular-stats"
@@ -223,6 +278,7 @@
           <p>
             Plusieurs filtres peuvent etre combines en les separant par des virgules.
             Tous les filtres doivent etre satisfaits (logique ET).
+            <a href="../../docs/guide-exemples-query.html#query-kpi" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="filtered"
@@ -238,6 +294,7 @@
           <p>
             L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
             pour acceder a des datasets prives. Accepte un objet JSON en chaine de caracteres.
+            <a href="../../docs/guide-exemples-query.html#headers" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-query
   id="private-data"
@@ -280,7 +337,7 @@
 &gt;&lt;/gouv-query&gt;</pre></div>
         </section>
 
-        <h2 class="fr-mt-4w">Evenements</h2>
+        <h2 id="evenements" class="fr-mt-4w">Evenements</h2>
         <p>Le composant emet les memes evenements que <code>&lt;gouv-source&gt;</code> :</p>
         <ul>
           <li><code>gouv-data-loaded</code> : Donnees transformees disponibles</li>
@@ -288,7 +345,7 @@
           <li><code>gouv-data-error</code> : Erreur de traitement ou de requete</li>
         </ul>
 
-        <h2 class="fr-mt-4w">Methodes publiques</h2>
+        <h2 id="methodes" class="fr-mt-4w">Methodes publiques</h2>
         <table class="attr-table">
           <thead><tr><th>Methode</th><th>Retour</th><th>Description</th></tr></thead>
           <tbody>
@@ -299,7 +356,7 @@
           </tbody>
         </table>
 
-        <h2 class="fr-mt-4w">Conseils d'utilisation</h2>
+        <h2 id="conseils" class="fr-mt-4w">Conseils d'utilisation</h2>
         <div class="fr-callout">
           <p class="fr-callout__text">
             <strong>Choisir le bon mode :</strong> Utilisez <code>generic</code> pour transformer des donnees deja chargees

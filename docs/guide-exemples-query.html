@@ -86,6 +86,13 @@
           Supporte <code>group-by</code>, <code>aggregate</code>, <code>filter</code>, <code>order-by</code> et <code>limit</code>.
         </p>
 
+        <p class="fr-mt-1w">
+          <a class="fr-link fr-link--icon-right fr-icon-arrow-right-line"
+             href="../demo/components/gouv-query.html">
+            Reference API complete (attributs, operateurs, methodes)
+          </a>
+        </p>
+
         <div class="fr-callout fr-callout--green-emeraude fr-mb-3w">
           <h4 class="fr-callout__title">gouv-source vs gouv-query</h4>
           <p class="fr-callout__text">
@@ -100,7 +107,7 @@
         </div>
 
         <!-- query-bar -->
-        <h4>Barres — Beneficiaires agreges par region</h4>
+        <h4 id="query-bar">Barres — Beneficiaires agreges par region</h4>
         <p>Regroupe par region et somme les beneficiaires avec <code>group-by</code> + <code>aggregate</code>.
           <a href="../apps/playground/index.html?example=query-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -124,8 +131,31 @@
           </div>
         </section>
 
+        <!-- Variation: order-by asc vs desc -->
+        <h4 id="variation-order">Variation : tri ascendant</h4>
+        <p>Le meme graphique avec <code>order-by="beneficiaires:asc"</code> au lieu de <code>:desc</code> — les barres sont inversees.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-order">Code source</button></h3>
+          <div class="fr-collapse" id="code-v-order">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="nom_region"
+  aggregate="nombre_beneficiaires:sum:beneficiaires"
+  order-by="beneficiaires:asc" limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="bar"
+  label-field="nom_region" value-field="beneficiaires"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
         <!-- query-line -->
-        <h4>Courbe — Taux moyen TFB par region</h4>
+        <h4 id="query-line">Courbe — Taux moyen TFB par region</h4>
         <p>Calcule la moyenne du taux de taxe fonciere par region.
           <a href="../apps/playground/index.html?example=query-line" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -150,7 +180,7 @@
         </section>
 
         <!-- query-pie (FIXED: maires dataset) -->
-        <h4>Camembert — Maires par categorie socio-professionnelle</h4>
+        <h4 id="query-pie">Camembert — Maires par categorie socio-professionnelle</h4>
         <p>Compte les maires par categorie socio-professionnelle via <code>count</code>.
           <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -175,8 +205,32 @@
           </div>
         </section>
 
+        <!-- Variation: limit 4 vs 8 -->
+        <h4 id="variation-limit">Variation : top 4 vs top 8</h4>
+        <p>Reduire <code>limit</code> de 8 a 4 concentre le camembert sur les categories principales.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-limit">Code source</button></h3>
+          <div class="fr-collapse" id="code-v-limit">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  aggregate="Code sexe:count:nombre"
+  order-by="nombre:desc" limit="4"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="pie"
+  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  value-field="nombre"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
         <!-- query-radar -->
-        <h4>Radar — Investissement moyen par region</h4>
+        <h4 id="query-radar">Radar — Investissement moyen par region</h4>
         <p>Calcule l'investissement moyen par region (limite a 6 pour lisibilite).
           <a href="../apps/playground/index.html?example=query-radar" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -201,7 +255,7 @@
         </section>
 
         <!-- query-gauge -->
-        <h4>Jauge — Taux moyen TFB regional</h4>
+        <h4 id="query-gauge">Jauge — Taux moyen TFB regional</h4>
         <p>Calcule la moyenne du taux de taxe fonciere par region, trie par taux decroissant et affiche le plus eleve (limit=1). Les taux TFB varient de 30 a 55%.
           <a href="../apps/playground/index.html?example=query-gauge" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -226,7 +280,7 @@
         </section>
 
         <!-- query-scatter -->
-        <h4>Nuage — TFB vs TH par departement</h4>
+        <h4 id="query-scatter">Nuage — TFB vs TH par departement</h4>
         <p>Double agregation : moyenne TFB (axe X) et TH (axe Y) par departement.
           <a href="../apps/playground/index.html?example=query-scatter" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -251,7 +305,7 @@
         </section>
 
         <!-- query-barline -->
-        <h4>Barres + ligne — TFB et TH par region</h4>
+        <h4 id="query-barline">Barres + ligne — TFB et TH par region</h4>
         <p>Barres pour le TFB moyen et ligne pour le TH moyen, combines via <code>value-field-2</code>.
           <a href="../apps/playground/index.html?example=query-barline" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -278,7 +332,7 @@
         </section>
 
         <!-- query-map -->
-        <h4>Carte — Taux TFB par departement</h4>
+        <h4 id="query-map">Carte — Taux TFB par departement</h4>
         <p>Moyenne du taux TFB par code departement, affichee sur la carte de France.
           <a href="../apps/playground/index.html?example=query-map" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -302,8 +356,31 @@
           </div>
         </section>
 
+        <!-- Variation: max vs avg -->
+        <h4 id="variation-aggregate">Variation : max vs avg</h4>
+        <p>Remplace <code>avg</code> par <code>max</code> dans l'agregation pour voir le taux maximal par departement au lieu de la moyenne.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-agg">Code source</button></h3>
+          <div class="fr-collapse" id="code-v-agg">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
+  transform="results"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  group-by="dep"
+  aggregate="taux_global_tfb:max:taux"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="q" type="map"
+  code-field="dep" value-field="taux"
+  selected-palette="sequentialAscending"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre>
+          </div>
+        </section>
+
         <!-- query-kpi (FIXED: maires dataset, filter by sex) -->
-        <h4>KPI — Statistiques des maires avec filtre</h4>
+        <h4 id="query-kpi">KPI — Statistiques des maires avec filtre</h4>
         <p>Compare le nombre total de maires au nombre de femmes maires via <code>filter</code>.
           <a href="../apps/playground/index.html?example=query-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -328,8 +405,32 @@
           </div>
         </section>
 
+        <!-- Variation: filtres combines -->
+        <h4 id="variation-filter">Variation : filtres combines</h4>
+        <p>Combine deux filtres avec <code>,</code> (logique ET) : ne garder que les femmes maires de l'Ain.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-filter">Code source</button></h3>
+          <div class="fr-collapse" id="code-v-filter">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q-combine" source="data"
+  filter="Code sexe:eq:F, Libell&#233; du d&#233;partement:contains:Ain"&gt;
+&lt;/gouv-query&gt;
+
+&lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
+  &lt;gouv-kpi source="data" valeur="count"
+    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="q-combine" valeur="count"
+    label="Femmes maires (Ain)" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+&lt;/div&gt;</pre>
+          </div>
+        </section>
+
         <!-- query-datalist (FIXED: maires dataset, filter by department) -->
-        <h4>Tableau — Maires filtres par departement</h4>
+        <h4 id="query-datalist">Tableau — Maires filtres par departement</h4>
         <p>Filtre les maires de Paris et affiche le resultat dans un tableau interactif.
           <a href="../apps/playground/index.html?example=query-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -352,15 +453,37 @@
           </div>
         </section>
 
+        <!-- Variation: operateur in -->
+        <h4 id="variation-in">Variation : operateur <code>in</code> pour plusieurs departements</h4>
+        <p>Utilise <code>filter="Libelle du departement:in:Ain|Rhone|Isere"</code> pour selectionner plusieurs departements avec le separateur <code>|</code>.</p>
+        <div class="example-loading" data-example>Chargement...</div>
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-in">Code source</button></h3>
+          <div class="fr-collapse" id="code-v-in">
+<pre class="example-code">&lt;gouv-source id="data"
+  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/?page_size=100"
+  transform="data"&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="q" source="data"
+  filter="Libell&#233; du d&#233;partement:in:Ain|Rh&#244;ne|Is&#232;re"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-datalist source="q"
+  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
+  recherche="true" tri="Libell&#233; du d&#233;partement:asc" pagination="10" export="csv"&gt;
+&lt;/gouv-datalist&gt;</pre>
+          </div>
+        </section>
+
         <!-- Multi-page Tabular -->
-        <h2 class="fr-mt-6w">Multi-page Tabular</h2>
+        <h2 id="multi-page" class="fr-mt-6w">Multi-page Tabular</h2>
         <p>
           Avec <code>api-type="tabular"</code>, <code>gouv-query</code> charge automatiquement <strong>toutes les pages</strong>
           du dataset (par tranches de 100 records) avant d'appliquer les agregations client-side.
           Cela permet de faire un camembert ou un KPI sur l'ensemble d'un dataset de 35 000 records, pas seulement les 100 premiers.
         </p>
 
-        <h4>Camembert — Tous les maires par categorie (dataset complet)</h4>
+        <h4 id="query-tabular-pie">Camembert — Tous les maires par categorie (dataset complet)</h4>
         <p>Charge les 34 874 maires page par page, puis compte par categorie socio-professionnelle.
           <a href="../apps/playground/index.html?example=query-tabular-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -385,14 +508,14 @@
         </section>
 
         <!-- Pagination serveur + KPI globaux -->
-        <h2 class="fr-mt-6w">Pagination serveur + KPI globaux</h2>
+        <h2 id="pagination-kpi" class="fr-mt-6w">Pagination serveur + KPI globaux</h2>
         <p>
           Quand <code>gouv-source paginate</code> est actif, les composants en aval ne voient que la page courante.
           Les KPI et facettes calcules sur une seule page sont trompeurs. La solution : utiliser <strong>deux sources</strong> —
           <code>gouv-source paginate</code> pour la navigation + <code>gouv-query api-type="tabular"</code> pour les KPI globaux.
         </p>
 
-        <h4>Double source — Navigation pagin&#233;e + KPI sur le dataset complet</h4>
+        <h4 id="paginate-kpi">Double source — Navigation pagin&#233;e + KPI sur le dataset complet</h4>
         <p>La datalist navigue dans les 34 874 maires page par page. Les KPI calculent les statistiques globales via <code>api-type="tabular"</code>.
           <a href="../apps/playground/index.html?example=paginate-kpi-global" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -434,7 +557,7 @@
           </div>
         </section>
 
-        <h2 class="fr-mt-6w">Mode server-side</h2>
+        <h2 id="server-side" class="fr-mt-6w">Mode server-side</h2>
         <p>
           Avec <code>server-side</code>, <code>gouv-query</code> ne charge qu'<strong>une page</strong> a la fois
           et ecoute les commandes des composants en aval (pagination, recherche, tri).
@@ -449,7 +572,7 @@
           </p>
         </div>
 
-        <h4>Recherche serveur — Rappels de produits (ODS)</h4>
+        <h4 id="server-side-ods">Recherche serveur — Rappels de produits (ODS)</h4>
         <p>Utilise <code>gouv-query server-side</code> + <code>gouv-search server-search</code> pour rechercher dans le dataset RappelConso.
           <a href="../apps/playground/index.html?example=server-side-ods" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -490,7 +613,7 @@
           </div>
         </section>
 
-        <h4>Tri serveur — Communes (Tabular)</h4>
+        <h4 id="server-side-tabular">Tri serveur — Communes (Tabular)</h4>
         <p>Utilise <code>gouv-query server-side</code> + <code>gouv-datalist server-tri</code> pour trier cote serveur.
           <a href="../apps/playground/index.html?example=server-side-tabular-tri" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -512,7 +635,7 @@
           </div>
         </section>
 
-        <h2 class="fr-mt-6w">Datasets prives (headers)</h2>
+        <h2 id="headers" class="fr-mt-6w">Datasets prives (headers)</h2>
         <p>
           L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
           pour acceder a des datasets prives ou proteges. Il accepte un objet JSON en chaine de caracteres.
@@ -526,7 +649,7 @@
           </p>
         </div>
 
-        <h4>Dataset prive ODS avec API key</h4>
+        <h4 id="headers-ods">Dataset prive ODS avec API key</h4>
         <p>Passe une <code>apikey</code> pour acceder a un dataset prive sur une instance OpenDataSoft.</p>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-headers">Code source</button></h3>
