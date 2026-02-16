@@ -821,24 +821,6 @@ datalist.onSourceData(data);
   codeEl.textContent = code;
 }
 
-/**
- * Parse an ODS explore v2.1 API URL to extract base URL and dataset ID.
- * Returns null if the URL is not a recognized ODS pattern.
- */
-export function parseOdsApiUrl(url: string): { baseUrl: string; datasetId: string } | null {
-  const match = url.match(/^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/);
-  return match ? { baseUrl: match[1], datasetId: match[2] } : null;
-}
-
-/**
- * Parse a Tabular API URL to extract base URL and resource ID.
- * Matches: https://tabular-api.data.gouv.fr/api/resources/{id}/data/
- * Returns null if the URL is not a recognized Tabular pattern.
- */
-export function parseTabularApiUrl(url: string): { baseUrl: string; resourceId: string } | null {
-  const match = url.match(/^(https?:\/\/[^/]+)\/api\/resources\/([^/]+)\/data\/?/);
-  return match ? { baseUrl: match[1], resourceId: match[2] } : null;
-}
 
 /**
  * Generate a <gouv-query api-type="opendatasoft"> element for ODS sources.

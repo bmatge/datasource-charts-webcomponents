@@ -250,7 +250,7 @@ function generateScatterCode(config: ChartConfig, data: AggregatedResult[]): str
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Nuage de points')}</h2>
@@ -326,7 +326,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
@@ -372,7 +372,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
@@ -415,7 +415,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
@@ -674,7 +674,7 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
@@ -723,7 +723,7 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
@@ -775,7 +775,7 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
@@ -884,7 +884,7 @@ ${hasSecondSeries ? '<!-- Note: Graphique multi-series -->' : ''}
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="${CDN_URLS.chartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>

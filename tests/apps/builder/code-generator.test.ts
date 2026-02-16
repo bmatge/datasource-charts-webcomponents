@@ -10,8 +10,6 @@ import {
   generateFacetsElement,
   generateOdsQueryCode,
   generateTabularQueryCode,
-  parseOdsApiUrl,
-  parseTabularApiUrl,
   computeStaticFacetValues,
 } from '../../../apps/builder/src/ui/code-generator';
 import { filterToOdsql, applyLocalFilter } from '@gouv-widgets/shared';
@@ -811,31 +809,6 @@ describe('applyLocalFilter', () => {
     const result = applyLocalFilter(data, 'pop:gt:100, pop:lt:300');
     expect(result).toHaveLength(1);
     expect(result[0].region).toBe('Normandie');
-  });
-});
-
-// =====================================================================
-// parseOdsApiUrl / parseTabularApiUrl
-// =====================================================================
-describe('parseOdsApiUrl', () => {
-  it('should parse a standard ODS API URL', () => {
-    const result = parseOdsApiUrl('https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus-regionaux/records');
-    expect(result).toEqual({ baseUrl: 'https://data.iledefrance.fr', datasetId: 'elus-regionaux' });
-  });
-
-  it('should return null for non-ODS URLs', () => {
-    expect(parseOdsApiUrl('https://example.com/api/data')).toBeNull();
-  });
-});
-
-describe('parseTabularApiUrl', () => {
-  it('should parse a standard Tabular API URL', () => {
-    const result = parseTabularApiUrl('https://tabular-api.data.gouv.fr/api/resources/abc-123/data/');
-    expect(result).toEqual({ baseUrl: 'https://tabular-api.data.gouv.fr', resourceId: 'abc-123' });
-  });
-
-  it('should return null for non-Tabular URLs', () => {
-    expect(parseTabularApiUrl('https://example.com/api/data')).toBeNull();
   });
 });
 
