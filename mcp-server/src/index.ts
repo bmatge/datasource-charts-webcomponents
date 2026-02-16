@@ -191,7 +191,7 @@ function createMcpServer(): McpServer {
     async ({ chart_type }) => {
       const skills = await loadSkills();
 
-      const ids = ['compositionPatterns', 'gouvSource', 'gouvDsfrChart', 'troubleshooting'];
+      const ids = ['compositionPatterns', 'gouvSource', 'gouvDsfrChart', 'apiProviders', 'troubleshooting'];
 
       if (chart_type) {
         const lower = chart_type.toLowerCase();

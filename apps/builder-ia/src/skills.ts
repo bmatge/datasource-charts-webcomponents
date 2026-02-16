@@ -279,12 +279,13 @@ Sortie : tableau d'objets plats, transforme selon les attributs.
 Apres agregation, les champs sont nommes automatiquement : \`champ__fonction\`
 (ex: \`population__sum\`, \`prix__avg\`).
 
-### 3 modes (attribut api-type)
+### 4 modes (attribut api-type)
 | Mode | Description | Source des donnees |
 |------|-------------|-------------------|
 | generic (defaut) | Traitement client-side | Attribut \`source\` -> ID d'une gouv-source ou gouv-query |
 | opendatasoft | Requete serveur ODSQL | Attributs \`base-url\` + \`dataset-id\` |
 | tabular | Requete serveur Tabular API | Attributs \`base-url\` + \`resource\` |
+| grist | Fetch Grist + auto-flatten | Attribut \`base-url\` (URL complete avec proxy) |
 
 **Mode tabular — Multi-page automatique** : en mode tabular avec \`resource\`,
 gouv-query recupere automatiquement **toutes les pages** du dataset (100 records par page)
@@ -295,7 +296,7 @@ sur des datasets de plusieurs dizaines de milliers d'enregistrements, pas seulem
 | Attribut | Type | Defaut | Requis | Description |
 |----------|------|--------|--------|-------------|
 | id | String | - | oui | Identifiant unique |
-| api-type | String | \`"generic"\` | non | Mode : generic, opendatasoft, tabular |
+| api-type | String | \`"generic"\` | non | Mode : generic, opendatasoft, tabular, grist |
 | source | String | \`""\` | mode generic | ID de la gouv-source ou gouv-query parente |
 | base-url | String | \`""\` | mode ods/tabular | URL de base de l'API |
 | dataset-id | String | \`""\` | mode ods | Identifiant du dataset OpenDataSoft |
@@ -387,6 +388,15 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 <gouv-query id="tab" api-type="tabular"
   resource="RESOURCE_ID"
   group-by="departement"
+  aggregate="population:sum"
+  order-by="population__sum:desc">
+</gouv-query>
+
+<!-- Mode grist : fetch + auto-flatten records[].fields -->
+<gouv-query id="grist" api-type="grist"
+  base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
+  headers='{"Authorization":"Bearer API_KEY"}'
+  group-by="region"
   aggregate="population:sum"
   order-by="population__sum:desc">
 </gouv-query>
@@ -1229,32 +1239,35 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 <gouv-dsfr-chart source="top5" type="pie" label-field="region" value-field="montant__sum"></gouv-dsfr-chart>
 \`\`\`
 
-### IMPORTANT : Source Grist, ODS v1 ou Airtable
-Si la source utilise \`transform="records"\` et que les donnees sont sous \`fields\`,
-ajouter TOUJOURS \`<gouv-normalize flatten="fields" trim numeric-auto>\` apres la source.
-Sans cette etape, gouv-query et gouv-dsfr-chart fonctionneront (dot notation interne),
-mais gouv-facets, gouv-datalist, gouv-search et gouv-kpi seront VIDES.
+### Pipeline Grist : Query(api-type=grist) -> Visualisation
 
-Les noms de champs dans labelField, valueField, codeField et where doivent etre
-les noms APLATIS (ex: \`Departement\`) et non les chemins imbriques (\`fields.Departement\`).
-
-### Pipeline Grist / ODS v1 : Source -> Normalize(flatten) -> Visualisation
-
-Pour les APIs qui wrappent les donnees sous un sous-objet (\`fields\`, \`properties\`),
-\`gouv-normalize\` avec \`flatten\` permet de conserver un pipeline 100% declaratif :
+Le mode \`api-type="grist"\` fetch et aplatit automatiquement \`records[].fields\`.
+Plus besoin de gouv-source ni gouv-normalize :
 
 \`\`\`html
-<gouv-source id="raw"
-  url="https://grist.example.com/api/docs/DOC_ID/tables/TABLE/records"
-  transform="records">
-</gouv-source>
+<gouv-query id="data" api-type="grist"
+  base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
+  headers='{"Authorization":"Bearer API_KEY"}'
+  group-by="region"
+  aggregate="population:sum"
+  order-by="population__sum:desc"
+  limit="10">
+</gouv-query>
 
-<gouv-normalize id="clean" source="raw"
-  flatten="fields"
-  trim numeric-auto>
-</gouv-normalize>
+<gouv-dsfr-chart source="data" type="bar"
+  label-field="region" value-field="population__sum"
+  selected-palette="categorical">
+</gouv-dsfr-chart>
+\`\`\`
 
-<gouv-facets id="filtered" source="clean"
+### Pipeline Grist avec facettes :
+\`\`\`html
+<gouv-query id="data" api-type="grist"
+  base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
+  headers='{"Authorization":"Bearer API_KEY"}'>
+</gouv-query>
+
+<gouv-facets id="filtered" source="data"
   fields="categorie, region"
   labels="categorie:Categorie | region:Region">
 </gouv-facets>
@@ -1272,6 +1285,11 @@ Pour les APIs qui wrappent les donnees sous un sous-objet (\`fields\`, \`propert
   </template>
 </gouv-display>
 \`\`\`
+
+### IMPORTANT : Source ODS v1 ou Airtable (donnees imbriquees)
+Si la source utilise \`transform="records"\` et que les donnees sont sous \`fields\`,
+ajouter \`<gouv-normalize flatten="fields" trim numeric-auto>\` apres la source.
+Les noms de champs doivent etre les noms APLATIS (ex: \`Departement\`) et non les chemins imbriques (\`fields.Departement\`).
 
 ### Pipeline avec recherche : Source -> Search -> Facets -> Visualisation
 \`\`\`html
@@ -1544,6 +1562,108 @@ Utiliser value-field-2 pour une seconde serie. Definir les noms avec \`name='["S
   },
 
   // ---------------------------------------------------------------------------
+  // Providers API
+  // ---------------------------------------------------------------------------
+
+  apiProviders: {
+    id: 'apiProviders',
+    name: 'Providers API',
+    description: 'Fournisseurs de donnees supportes et leurs capacites',
+    trigger: ['provider', 'fournisseur', 'opendatasoft', 'tabular', 'data.gouv', 'grist', 'api-type', 'source de donnees', 'quel api', 'quelle source'],
+    content: `## Providers API supportes
+
+gouv-widgets detecte automatiquement le provider a partir de l'URL de l'API.
+Chaque provider a des capacites differentes pour la pagination, l'agregation et les facettes.
+
+### Matrice des capacites
+| Capacite | OpenDataSoft | Tabular (data.gouv.fr) | Grist | Generique |
+|----------|:---:|:---:|:---:|:---:|
+| Fetch serveur | oui | oui | oui | non (gouv-source) |
+| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages) | non (tout en 1 requete) | non |
+| Facettes serveur | oui | non | non | non |
+| Recherche serveur | oui (full-text) | non | non | non |
+| Group-by serveur | oui | non | non | non |
+| Agregation serveur | oui (ODSQL) | non | non | non |
+| Tri serveur | oui | oui | non | non |
+| Format filtre | ODSQL (SQL-like) | colon (champ:op:valeur) | colon | colon |
+
+### Detection automatique du provider
+| Provider | Pattern URL |
+|----------|------------|
+| OpenDataSoft | \`/api/explore/v2.1/catalog/datasets/{datasetId}\` |
+| Tabular | \`tabular-api.data.gouv.fr/api/resources/{resourceId}\` |
+| Grist | \`/api/docs/{documentId}/tables/{tableId}\` |
+| Generique | Tout autre URL (fallback) |
+
+### Usage dans gouv-query (attribut api-type)
+| api-type | Provider | Attributs requis |
+|----------|---------|-----------------|
+| \`"opendatasoft"\` | OpenDataSoft | \`base-url\` + \`dataset-id\` |
+| \`"tabular"\` | Tabular | \`base-url\` + \`resource\` |
+| \`"grist"\` | Grist | \`base-url\` (URL complete avec proxy) |
+| \`"generic"\` (defaut) | Generique | \`source\` (ID d'une gouv-source) |
+
+### Pipeline par provider
+
+**OpenDataSoft** (tout serveur, le plus puissant) :
+\`\`\`html
+<gouv-query id="data" api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr"
+  dataset-id="rappelconso"
+  select="categorie_de_produit, count(*) as total"
+  group-by="categorie_de_produit"
+  order-by="total:desc" limit="10">
+</gouv-query>
+\`\`\`
+
+**Tabular** (fetch serveur + agregation client) :
+\`\`\`html
+<gouv-query id="data" api-type="tabular"
+  base-url="https://tabular-api.data.gouv.fr"
+  resource="RESOURCE_ID"
+  group-by="departement"
+  aggregate="population:sum"
+  order-by="population__sum:desc">
+</gouv-query>
+\`\`\`
+
+**Grist** (fetch serveur + auto-flatten + traitement client) :
+\`\`\`html
+<gouv-query id="data" api-type="grist"
+  base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
+  headers='{"Authorization":"Bearer API_KEY"}'
+  group-by="region"
+  aggregate="population:sum">
+</gouv-query>
+\`\`\`
+L'adapter Grist aplatit automatiquement \`records[].fields\` — pas besoin de gouv-normalize.
+
+**Generique** (gouv-source obligatoire) :
+\`\`\`html
+<gouv-source id="raw" url="https://api.exemple.fr/data" transform="results"></gouv-source>
+<gouv-query id="data" source="raw"
+  group-by="region"
+  aggregate="montant:sum">
+</gouv-query>
+\`\`\`
+
+### Authentification par provider
+| Provider | Methode | Header/Param |
+|----------|---------|-------------|
+| OpenDataSoft | API Key | \`headers='{"apikey":"KEY"}'\` |
+| Tabular | Aucune | Acces public uniquement |
+| Grist | Bearer token | \`headers='{"Authorization":"Bearer KEY"}'\` |
+| Generique | Variable | Via \`headers\` sur gouv-source |
+
+### Proxy CORS
+Les APIs externes necessitent un proxy CORS en production.
+Les URLs Grist connues sont automatiquement proxifiees :
+- \`grist.numerique.gouv.fr\` -> \`${PROXY_BASE_URL}/grist-gouv-proxy\`
+- \`docs.getgrist.com\` -> \`${PROXY_BASE_URL}/grist-proxy\`
+- \`tabular-api.data.gouv.fr\` -> \`${PROXY_BASE_URL}/tabular-proxy\``,
+  },
+
+  // ---------------------------------------------------------------------------
   // Troubleshooting et pieges courants
   // ---------------------------------------------------------------------------
 
@@ -1642,10 +1762,10 @@ export function getRelevantSkills(message: string, currentSource: Source | null)
     }
   }
 
-  // Always include gouvNormalize + compositionPatterns for Grist sources (nested fields need flatten)
+  // Always include apiProviders + compositionPatterns for Grist sources
   if (currentSource?.type === 'grist') {
-    if (!relevant.find(s => s.id === 'gouvNormalize')) {
-      relevant.push(SKILLS.gouvNormalize);
+    if (!relevant.find(s => s.id === 'apiProviders')) {
+      relevant.push(SKILLS.apiProviders);
     }
     if (!relevant.find(s => s.id === 'compositionPatterns')) {
       relevant.push(SKILLS.compositionPatterns);
