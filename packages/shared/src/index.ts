@@ -11,6 +11,13 @@ export type { PaletteType } from './constants/dsfr-palettes.js';
 // Templates / CDN
 export { CDN_VERSIONS, CDN_URLS } from './templates/cdn-versions.js';
 
+// Charts
+export { DSFR_TAG_MAP, normalizeChartType, isValidChartType } from './charts/chart-types.js';
+export type { DSFRChartType } from './charts/chart-types.js';
+
+// Query / Filters
+export { filterToOdsql, applyLocalFilter } from './query/filter-translator.js';
+
 // API / Proxy
 export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG, PROXY_BASE_URL } from './api/proxy-config.js';
 export type { ProxyConfig } from './api/proxy-config.js';

@@ -10,12 +10,11 @@ import {
   generateFacetsElement,
   generateOdsQueryCode,
   generateTabularQueryCode,
-  filterToOdsql,
-  applyLocalFilter,
   parseOdsApiUrl,
   parseTabularApiUrl,
   computeStaticFacetValues,
 } from '../../../apps/builder/src/ui/code-generator';
+import { filterToOdsql, applyLocalFilter } from '@gouv-widgets/shared';
 import { state } from '../../../apps/builder/src/state';
 
 vi.mock('../../../apps/builder/src/ui/chart-renderer', () => ({

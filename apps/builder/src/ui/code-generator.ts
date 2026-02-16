@@ -12,6 +12,9 @@ import {
   toastWarning,
   toastError,
   CDN_URLS,
+  DSFR_TAG_MAP,
+  filterToOdsql,
+  applyLocalFilter,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
@@ -72,20 +75,7 @@ async function fetchOdsResults(baseUrl: string): Promise<Record<string, unknown>
   return allResults;
 }
 
-/** Maps builder chart types to DSFR Chart element tags */
-const DSFR_TAG_MAP: Record<string, string> = {
-  bar: 'bar-chart',
-  horizontalBar: 'bar-chart',
-  line: 'line-chart',
-  pie: 'pie-chart',
-  doughnut: 'pie-chart',
-  radar: 'radar-chart',
-  scatter: 'scatter-chart',
-  gauge: 'gauge-chart',
-  'bar-line': 'bar-line-chart',
-  map: 'map-chart',
-  'map-reg': 'map-chart-reg',
-};
+// DSFR_TAG_MAP imported from @gouv-widgets/shared
 
 /** Build DSFR Chart specific attributes from builder state */
 function dsfrChartAttrs(): string {
@@ -142,60 +132,7 @@ function dsfrDeferredScript(tagName: string): string {
 <\/script>`;
 }
 
-/**
- * Convert gouv-query filter format (field:operator:value) to ODSQL where clause.
- */
-export function filterToOdsql(filterExpr: string): string {
-  const opMap: Record<string, string> = {
-    eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=',
-  };
-  return filterExpr.split(',').map(p => p.trim()).filter(Boolean).map(part => {
-    const segs = part.split(':');
-    if (segs.length < 3) return '';
-    const field = segs[0];
-    const op = segs[1];
-    const val = segs.slice(2).join(':');
-    if (op === 'contains') return `${field} like "%${val}%"`;
-    if (op === 'notcontains') return `NOT ${field} like "%${val}%"`;
-    if (op === 'in') return `${field} in (${val.split('|').map(v => `"${v}"`).join(', ')})`;
-    if (op === 'notin') return `NOT ${field} in (${val.split('|').map(v => `"${v}"`).join(', ')})`;
-    if (op === 'isnull') return `${field} is null`;
-    if (op === 'isnotnull') return `${field} is not null`;
-    const sqlOp = opMap[op];
-    if (!sqlOp) return '';
-    return `${field} ${sqlOp} "${val}"`;
-  }).filter(Boolean).join(' AND ');
-}
-
-/**
- * Apply gouv-query style filter (field:operator:value) to local data rows.
- */
-export function applyLocalFilter(data: Record<string, unknown>[], filterExpr: string): Record<string, unknown>[] {
-  const filters = filterExpr.split(',').map(p => p.trim()).filter(Boolean).map(part => {
-    const segs = part.split(':');
-    if (segs.length < 2) return null;
-    return { field: segs[0], op: segs[1], value: segs.slice(2).join(':') };
-  }).filter(Boolean) as { field: string; op: string; value: string }[];
-
-  return data.filter(row => filters.every(f => {
-    const v = row[f.field];
-    switch (f.op) {
-      // eslint-disable-next-line eqeqeq
-      case 'eq': return v == f.value;
-      // eslint-disable-next-line eqeqeq
-      case 'neq': return v != f.value;
-      case 'gt': return Number(v) > Number(f.value);
-      case 'gte': return Number(v) >= Number(f.value);
-      case 'lt': return Number(v) < Number(f.value);
-      case 'lte': return Number(v) <= Number(f.value);
-      case 'contains': return String(v).toLowerCase().includes(f.value.toLowerCase());
-      case 'notcontains': return !String(v).toLowerCase().includes(f.value.toLowerCase());
-      case 'isnull': return v === null || v === undefined;
-      case 'isnotnull': return v !== null && v !== undefined;
-      default: return true;
-    }
-  }));
-}
+// filterToOdsql and applyLocalFilter imported from @gouv-widgets/shared
 
 /**
  * Generate optional middleware elements (gouv-normalize, gouv-facets)
