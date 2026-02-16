@@ -10,6 +10,7 @@ import {
   closeModal,
   getProxiedUrl,
   getProxyUrl,
+  buildGristHeaders,
   isViteDevMode,
   toastWarning,
   toastSuccess,
@@ -171,12 +172,7 @@ export async function saveGristConnection(name: string): Promise<void> {
     testUrl = `${url}/api/orgs`;
   }
 
-  const headers: Record<string, string> = {};
-  if (!isPublic && apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  }
-
-  const response = await fetch(testUrl, { headers });
+  const response = await fetch(testUrl, { headers: buildGristHeaders(isPublic ? null : apiKey) });
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
@@ -740,16 +736,13 @@ export async function loadExportDocuments(): Promise<void> {
   docSelect.innerHTML = '<option value="">Chargement...</option>';
 
   try {
-    const headers: Record<string, string> = {};
-    if (!(conn as Record<string, unknown>).isPublic && (conn as Record<string, unknown>).apiKey) {
-      headers['Authorization'] = `Bearer ${(conn as Record<string, unknown>).apiKey as string}`;
-    }
+    const gristApiKey = (conn as Record<string, unknown>).isPublic ? null : (conn as Record<string, unknown>).apiKey as string | null;
 
     const proxyUrl = getProxyUrl(
       (conn as Record<string, unknown>).url as string,
       '/orgs',
     );
-    const orgsResp = await fetch(proxyUrl, { headers });
+    const orgsResp = await fetch(proxyUrl, { headers: buildGristHeaders(gristApiKey) });
     const orgs = (await orgsResp.json()) as Array<{ id: number; name: string }>;
 
     let options = '<option value="">-- Choisir un document --</option>';
@@ -759,7 +752,7 @@ export async function loadExportDocuments(): Promise<void> {
         (conn as Record<string, unknown>).url as string,
         `/orgs/${org.id}/workspaces`,
       );
-      const wsResp = await fetch(wsUrl, { headers });
+      const wsResp = await fetch(wsUrl, { headers: buildGristHeaders(gristApiKey) });
       const workspaces = (await wsResp.json()) as Array<{
         name: string;
         docs?: Array<{ id: string; name: string }>;
@@ -817,12 +810,10 @@ export async function exportToGrist(): Promise<void> {
   }
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (!(conn as Record<string, unknown>).isPublic && (conn as Record<string, unknown>).apiKey) {
-      headers['Authorization'] = `Bearer ${(conn as Record<string, unknown>).apiKey as string}`;
-    }
+    const headers = buildGristHeaders(
+      (conn as Record<string, unknown>).isPublic ? null : (conn as Record<string, unknown>).apiKey as string | null,
+      { contentType: true },
+    );
 
     // Sanitize column IDs for Grist
     function sanitizeColumnId(name: string): string {

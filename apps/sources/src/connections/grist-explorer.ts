@@ -5,6 +5,7 @@
 import {
   escapeHtml,
   getProxyUrl,
+  buildGristHeaders,
   saveToStorage,
   STORAGE_KEYS,
   toastWarning,
@@ -28,12 +29,8 @@ export async function gristFetch(endpoint: string): Promise<unknown> {
   const conn = state.connections[state.selectedConnection];
   const proxyUrl = getProxyUrl((conn as Record<string, unknown>).url as string, endpoint);
 
-  const headers: Record<string, string> = {};
-  if (!(conn as Record<string, unknown>).isPublic && (conn as Record<string, unknown>).apiKey) {
-    headers['Authorization'] = `Bearer ${(conn as Record<string, unknown>).apiKey as string}`;
-  }
-
-  const response = await fetch(proxyUrl, { headers });
+  const apiKey = (conn as Record<string, unknown>).isPublic ? null : (conn as Record<string, unknown>).apiKey as string | null;
+  const response = await fetch(proxyUrl, { headers: buildGristHeaders(apiKey) });
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
@@ -271,10 +268,7 @@ export async function createGristTable(): Promise<void> {
 
     const response = await fetch(createUrl, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${(conn as Record<string, unknown>).apiKey as string}`,
-        'Content-Type': 'application/json',
-      },
+      headers: buildGristHeaders((conn as Record<string, unknown>).apiKey as string, { contentType: true }),
       body: JSON.stringify({
         tables: [{ id: tableName, columns }],
       }),
@@ -390,7 +384,7 @@ export async function loadExportDocuments(): Promise<void> {
 
     const orgsUrl = getProxyUrl((conn as Record<string, unknown>).url as string, '/orgs');
     const orgsResponse = await fetch(orgsUrl, {
-      headers: { Authorization: `Bearer ${(conn as Record<string, unknown>).apiKey as string}` },
+      headers: buildGristHeaders((conn as Record<string, unknown>).apiKey as string),
     });
 
     if (!orgsResponse.ok) throw new Error(`HTTP ${orgsResponse.status}`);
@@ -404,7 +398,7 @@ export async function loadExportDocuments(): Promise<void> {
       try {
         const wsUrl = getProxyUrl((conn as Record<string, unknown>).url as string, `/orgs/${org.id}/workspaces`);
         const wsResponse = await fetch(wsUrl, {
-          headers: { Authorization: `Bearer ${(conn as Record<string, unknown>).apiKey as string}` },
+          headers: buildGristHeaders((conn as Record<string, unknown>).apiKey as string),
         });
 
         if (wsResponse.ok) {
@@ -522,10 +516,7 @@ export async function exportToGrist(): Promise<void> {
 
     const createResponse = await fetch(createTableUrl, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${(conn as Record<string, unknown>).apiKey as string}`,
-        'Content-Type': 'application/json',
-      },
+      headers: buildGristHeaders((conn as Record<string, unknown>).apiKey as string, { contentType: true }),
       body: JSON.stringify({
         tables: [{ id: tableName, columns }],
       }),
@@ -559,10 +550,7 @@ export async function exportToGrist(): Promise<void> {
 
     const insertResponse = await fetch(insertUrl, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${(conn as Record<string, unknown>).apiKey as string}`,
-        'Content-Type': 'application/json',
-      },
+      headers: buildGristHeaders((conn as Record<string, unknown>).apiKey as string, { contentType: true }),
       body: JSON.stringify({ records }),
     });
 

@@ -9,7 +9,7 @@ import type { IAConfig } from '../ia/ia-config.js';
 import { SKILLS, getRelevantSkills, buildSkillsContext } from '../skills.js';
 import { applyChartConfig } from '../ui/chart-renderer.js';
 import { analyzeFields, updateFieldsList, updateRawData } from '../sources.js';
-import { fetchWithTimeout, httpErrorMessage } from '@gouv-widgets/shared';
+import { fetchWithTimeout, httpErrorMessage, detectProvider } from '@gouv-widgets/shared';
 
 /**
  * Add a message to the chat UI and state
@@ -175,8 +175,9 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
   // Build context with data info
   let dataContext = '';
   if (state.localData && state.fields.length > 0) {
-    const isOds = state.source?.apiUrl && /\/api\/explore\/v2\.1\/catalog\/datasets\//.test(state.source.apiUrl);
-    const isTabular = state.source?.apiUrl && /\/api\/resources\/[^/]+\/data/.test(state.source.apiUrl);
+    const detectedProvider = state.source?.apiUrl ? detectProvider(state.source.apiUrl).id : null;
+    const isOds = detectedProvider === 'opendatasoft';
+    const isTabular = detectedProvider === 'tabular';
     const totalNote = state.source?.recordCount && state.source.recordCount > state.localData.length
       ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
       : '';

@@ -16,6 +16,7 @@ export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG, PROXY
 export type { ProxyConfig } from './api/proxy-config.js';
 export { getProxyUrl, getProxiedUrl, getExternalProxyUrl } from './api/proxy.js';
 export { fetchWithTimeout, httpErrorMessage } from './api/fetch-helpers.js';
+export { buildGristHeaders } from './api/grist.js';
 
 // Storage
 export { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from './storage/local-storage.js';
