@@ -109,14 +109,14 @@ export interface ProviderConfig {
 
   // --- Code generation ---
   codeGen: {
-    /** Does the generated pipeline use gouv-source? */
+    /** Does the generated pipeline use gouv-source? (always true) */
     usesGouvSource: boolean;
     /** Does the generated pipeline use gouv-query? */
     usesGouvQuery: boolean;
     /** Does the generated pipeline use gouv-normalize? */
     usesGouvNormalize: boolean;
-    /** api-type value for gouv-query */
-    queryApiType: string | null;
+    /** api-type value for gouv-source */
+    sourceApiType: ProviderId;
     /** Field prefix for nested data paths (e.g. 'fields.' for Grist without flatten) */
     fieldPrefix: string;
     /** Required CSS/JS dependencies */
@@ -124,12 +124,6 @@ export interface ProviderConfig {
       dsfr: boolean;
       dsfrChart: boolean;
       gouvWidgets: boolean;
-    };
-    /** New pattern for Stage 2: gouv-source as fetcher, gouv-query as transformer */
-    v2?: {
-      usesGouvSource: boolean;
-      usesGouvQuery: boolean;
-      sourceApiType: ProviderId;
     };
   };
 }

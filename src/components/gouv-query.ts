@@ -14,10 +14,8 @@ import {
   subscribeToSourceCommands
 } from '../utils/data-bridge.js';
 
-/**
- * Types d'API supportes
- */
-export type ApiType = 'generic' | 'opendatasoft' | 'tabular' | 'grist';
+/** @deprecated Use ProviderId from @gouv-widgets/shared instead */
+type ApiType = string;
 
 /**
  * Operateurs de filtre supportes

@@ -54,9 +54,8 @@ export const GENERIC_CONFIG: ProviderConfig = {
     usesGouvSource: true,
     usesGouvQuery: true,
     usesGouvNormalize: false,
-    queryApiType: null,
+    sourceApiType: 'generic',
     fieldPrefix: '',
     dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
-    v2: { usesGouvSource: true, usesGouvQuery: true, sourceApiType: 'generic' },
   },
 };

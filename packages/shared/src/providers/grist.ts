@@ -59,12 +59,11 @@ export const GRIST_CONFIG: ProviderConfig = {
   },
 
   codeGen: {
-    usesGouvSource: false,
+    usesGouvSource: true,
     usesGouvQuery: true,
     usesGouvNormalize: false,
-    queryApiType: 'grist',
+    sourceApiType: 'grist',
     fieldPrefix: '',
     dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
-    v2: { usesGouvSource: true, usesGouvQuery: true, sourceApiType: 'grist' },
   },
 };

@@ -88,10 +88,10 @@ describe('ODS config', () => {
     expect(ODS_CONFIG.facets.defaultMode).toBe('server');
   });
 
-  it('should not use gouv-source in code gen', () => {
-    expect(ODS_CONFIG.codeGen.usesGouvSource).toBe(false);
+  it('should use gouv-source + gouv-query in code gen', () => {
+    expect(ODS_CONFIG.codeGen.usesGouvSource).toBe(true);
     expect(ODS_CONFIG.codeGen.usesGouvQuery).toBe(true);
-    expect(ODS_CONFIG.codeGen.queryApiType).toBe('opendatasoft');
+    expect(ODS_CONFIG.codeGen.sourceApiType).toBe('opendatasoft');
   });
 });
 
@@ -150,10 +150,10 @@ describe('Grist config', () => {
     expect(GRIST_CONFIG.defaultAuthType).toBe('bearer');
   });
 
-  it('should use gouv-query api-type grist in code gen', () => {
-    expect(GRIST_CONFIG.codeGen.usesGouvSource).toBe(false);
+  it('should use gouv-source api-type grist in code gen', () => {
+    expect(GRIST_CONFIG.codeGen.usesGouvSource).toBe(true);
     expect(GRIST_CONFIG.codeGen.usesGouvNormalize).toBe(false);
-    expect(GRIST_CONFIG.codeGen.queryApiType).toBe('grist');
+    expect(GRIST_CONFIG.codeGen.sourceApiType).toBe('grist');
     expect(GRIST_CONFIG.codeGen.fieldPrefix).toBe('');
   });
 
