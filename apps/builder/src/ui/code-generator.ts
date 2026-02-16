@@ -15,6 +15,9 @@ import {
   DSFR_TAG_MAP,
   filterToOdsql,
   applyLocalFilter,
+  detectProvider,
+  extractResourceIds,
+  getProvider,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
@@ -1091,19 +1094,17 @@ export function generateDynamicCode(): void {
   const codeEl = document.getElementById('generated-code');
   if (!codeEl) return;
 
-  // Build full proxy URL via chartsbuilder.matge.com
-  let proxyUrl = '';
-  let gristHost = '';
+  // Build full proxy URL via ProviderConfig knownHosts
+  const gristProvider = getProvider('grist');
+  let proxyUrl = source.apiUrl || '';
+  let gristHost = 'Grist';
 
-  if (source.apiUrl?.includes('grist.numerique.gouv.fr')) {
-    proxyUrl = `${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
-  } else if (source.apiUrl?.includes('docs.getgrist.com')) {
-    proxyUrl = `${PROXY_BASE_URL}/grist-proxy/api/docs/${source.documentId}/tables/${source.tableId}/records`;
-    gristHost = 'docs.getgrist.com';
-  } else {
-    // Self-hosted - use direct URL
-    proxyUrl = source.apiUrl || '';
-    gristHost = 'Grist';
+  for (const host of gristProvider.knownHosts) {
+    if (source.apiUrl?.includes(host.hostname)) {
+      proxyUrl = `${PROXY_BASE_URL}${host.proxyEndpoint}/api/docs/${source.documentId}/tables/${source.tableId}/records`;
+      gristHost = host.hostname;
+      break;
+    }
   }
 
   // Get field info for labels
@@ -1235,6 +1236,11 @@ export function generateDynamicCodeForApi(): void {
   const codeEl = document.getElementById('generated-code');
   if (!codeEl) return;
 
+  // Detect provider and extract resource IDs using centralized infrastructure
+  const provider = source.apiUrl ? detectProvider(source.apiUrl) : getProvider('generic');
+  const resourceIds = source.apiUrl ? extractResourceIds(source.apiUrl, provider) : null;
+  const apiBaseUrl = source.apiUrl ? new URL(source.apiUrl).origin : '';
+
   // Get field paths — after normalize flatten, data has flat field names
   const labelFieldInfo = state.fields.find(f => f.name === state.labelField);
   const valueFieldInfo = state.fields.find(f => f.name === state.valueField);
@@ -1260,11 +1266,7 @@ export function generateDynamicCodeForApi(): void {
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
 
-    // Check for ODS or Tabular API to use gouv-query with pagination
-    const odsInfoDl = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
-    const tabularInfoDl = source.apiUrl ? parseTabularApiUrl(source.apiUrl) : null;
-
-    if (odsInfoDl) {
+    if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
       const whereAttr = state.advancedMode && state.queryFilter
         ? `\n    where="${escapeHtml(filterToOdsql(state.queryFilter))}"` : '';
       // Facettes serveur ODS (fetch depuis l'API /facets)
@@ -1287,8 +1289,8 @@ export function generateDynamicCodeForApi(): void {
   <gouv-query
     id="table-data"
     api-type="opendatasoft"
-    base-url="${odsInfoDl.baseUrl}"
-    dataset-id="${odsInfoDl.datasetId}"${whereAttr}
+    base-url="${apiBaseUrl}"
+    dataset-id="${resourceIds!.datasetId}"${whereAttr}
     server-side
     page-size="20">
   </gouv-query>
@@ -1304,7 +1306,7 @@ ${facets.element}
       return;
     }
 
-    if (tabularInfoDl) {
+    if (provider.id === 'tabular' && resourceIds?.resourceId) {
       const filterAttr = state.advancedMode && state.queryFilter
         ? `\n    filter="${escapeHtml(state.queryFilter)}"` : '';
       // Facettes pre-calculees (Tabular ne supporte pas les facettes serveur)
@@ -1328,8 +1330,8 @@ ${facets.element}
   <gouv-query
     id="table-data"
     api-type="tabular"
-    base-url="${tabularInfoDl.baseUrl}"
-    resource="${tabularInfoDl.resourceId}"${filterAttr}
+    base-url="${apiBaseUrl}"
+    resource="${resourceIds!.resourceId}"${filterAttr}
     server-side
     page-size="20">
   </gouv-query>
@@ -1376,10 +1378,6 @@ ${middlewareHtml}
     return;
   }
 
-  // Detect ODS or Tabular API source for automatic pagination
-  const odsInfo = source.apiUrl ? parseOdsApiUrl(source.apiUrl) : null;
-  const tabularInfo = source.apiUrl ? parseTabularApiUrl(source.apiUrl) : null;
-
   // For maps, group by codeField (not labelField)
   const isMap = state.chartType === 'map' || state.chartType === ('mapReg' as any);
   const groupByPath = isMap && state.codeField ? state.codeField : labelFieldPath;
@@ -1393,9 +1391,10 @@ ${middlewareHtml}
   let middlewareHtml = '';
   let facetsHtml = '';
 
-  if (odsInfo) {
+  if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
     // ODS source: use gouv-query with api-type="opendatasoft" for
     // server-side aggregation and automatic pagination (limit > 100)
+    const odsInfo = { baseUrl: apiBaseUrl, datasetId: resourceIds.datasetId };
     const result = generateOdsQueryCode(odsInfo, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
@@ -1406,9 +1405,10 @@ ${middlewareHtml}
     // Facets after ODS query (filters aggregated results)
     const facets = generateFacetsElement(chartSource);
     if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
-  } else if (tabularInfo) {
+  } else if (provider.id === 'tabular' && resourceIds?.resourceId) {
     // Tabular source: use gouv-query with api-type="tabular" for
     // automatic pagination (up to 50K records) and client-side aggregation
+    const tabularInfo = { baseUrl: apiBaseUrl, resourceId: resourceIds.resourceId };
     const result = generateTabularQueryCode(tabularInfo, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
