@@ -448,7 +448,91 @@ avec le champ `provider` des le premier chargement.
 
 **Note :** `apps/dashboard/` et `apps/favorites/` n'utilisent pas Source ni provider-specific logic. Pas d'impact.
 
-### 1.7 Tests
+### 1.7 Alignement routes serveur (serialize/deserialize)
+
+Le client envoie des objets `Source` a plat (`{apiUrl, method, headers, data, recordCount, ...}`)
+via `ApiStorageAdapter.syncToApi()`. Le CRUD generique (`resource-crud.ts`) cherche
+`req.body[col]` ou `req.body[camelCase(col)]` — mais les noms de champs client ne
+correspondent ni aux colonnes DB (`config_json`, `data_json`, `record_count`) ni a leur
+version camelCase (`configJson`, `dataJson`). Resultat : les champs sont perdus apres un
+round-trip serveur, causant `URL constructor: undefined is not a valid URL` au rechargement.
+
+La route `/api/migrate` fonctionne car elle utilise `extractConfig()` pour empaqueter les
+champs plats dans `config_json`. Le CRUD generique ne fait pas ca.
+
+**Fichier 1 : `server/src/routes/resource-crud.ts`**
+
+Ajouter des hooks optionnels `serialize` et `deserialize` a `ResourceConfig` :
+
+```typescript
+interface ResourceConfig {
+  // ... existant
+  /** Transforme le body client en colonnes DB avant INSERT/UPDATE */
+  serialize?: (body: Record<string, unknown>) => Record<string, unknown>;
+  /** Transforme la row DB en objet client apres SELECT */
+  deserialize?: (row: Record<string, unknown>) => Record<string, unknown>;
+}
+```
+
+- POST/PUT : appliquer `serialize(req.body)` avant extraction des colonnes
+- GET list/single + reponses POST/PUT : appliquer `deserialize(parsed)` apres `parseJsonColumns`
+
+**Fichier 2 : `server/src/routes/sources.ts`**
+
+```typescript
+serialize(body) {
+  // Si body a deja config_json, passer tel quel (retro-compat tests existants)
+  // Sinon: extraire apiUrl/method/headers/dataPath/... dans config_json,
+  //   data → data_json, recordCount → record_count
+}
+deserialize(row) {
+  // Etaler config_json au top level (apiUrl, method, headers, dataPath, ...)
+  //   data_json → data, record_count → recordCount
+  // Supprimer config_json, data_json, record_count, owner_id
+}
+```
+
+**Fichier 3 : `server/src/routes/connections.ts`**
+
+```typescript
+serialize(body) {
+  // Extraire url/apiUrl/method/headers/dataPath/... dans config_json, apiKey → api_key_encrypted
+}
+deserialize(row) {
+  // Etaler config_json, api_key_encrypted → apiKey
+}
+```
+
+**Fichier 4 : `server/src/routes/favorites.ts`**
+
+```typescript
+serialize(body) {
+  // chartType → chart_type, builderState → builder_state_json, source → source_app
+}
+deserialize(row) {
+  // chart_type → chartType, builder_state_json → builderState, source_app → source
+}
+```
+
+**Fichier 5 : `server/src/routes/dashboards.ts`**
+
+```typescript
+serialize(body) {
+  // layout → layout_json, widgets → widgets_json
+}
+deserialize(row) {
+  // layout_json → layout, widgets_json → widgets
+}
+```
+
+**Tests :**
+- Les 20 tests existants envoient `config_json` directement — les hooks serialize doivent
+  etre transparents (pass-through si `config_json` est deja present)
+- Nouveaux tests : POST avec body plat (comme le client envoie) → GET → verifier que les
+  champs plats sont preserves apres le round-trip
+- Test round-trip complet : POST plat → GET list → verifier apiUrl, method, data, recordCount
+
+### 1.8 Tests
 
 - Tests unitaires pour chaque ProviderConfig (URL matching, extractIds)
 - Tests de non-regression : `detectProvider()` retourne le bon provider pour
@@ -456,7 +540,7 @@ avec le champ `provider` des le premier chargement.
 - Test d'alignement : chaque provider config couvre toutes les proprietes
 - Tests `migrateSource()` : sources legacy sans `provider` sont migrees correctement
 
-### 1.8 Critere de validation
+### 1.9 Critere de validation
 
 - `npm run test:run` passe sans regression
 - `npm run build:all` reussit
