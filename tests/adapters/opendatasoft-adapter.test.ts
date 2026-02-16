@@ -417,6 +417,53 @@ describe('OpenDataSoftAdapter', () => {
       const callUrl = mockFetch.mock.calls[0][0] as string;
       expect(callUrl).toContain('https://data.opendatasoft.com');
     });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(
+        adapter.fetchFacets!(
+          { baseUrl: 'https://data.example.com', datasetId: 'test' },
+          ['field1'],
+          ''
+        )
+      ).rejects.toThrow('HTTP 500');
+    });
+
+    it('fetches without where clause when empty', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ facets: [] }),
+      });
+
+      await adapter.fetchFacets!(
+        { baseUrl: 'https://data.example.com', datasetId: 'test' },
+        ['region'],
+        ''
+      );
+
+      const callUrl = mockFetch.mock.calls[0][0] as string;
+      expect(callUrl).not.toContain('where=');
+    });
+
+    it('handles empty facets array in response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ facets: [] }),
+      });
+
+      const results = await adapter.fetchFacets!(
+        { baseUrl: 'https://data.example.com', datasetId: 'test' },
+        ['field1'],
+        ''
+      );
+
+      expect(results).toEqual([]);
+    });
   });
 
   describe('Headers propagation', () => {
@@ -506,6 +553,67 @@ describe('OpenDataSoftAdapter', () => {
 
     it('returns empty array for empty string', () => {
       expect(adapter.parseAggregates!('')).toEqual([]);
+    });
+  });
+
+  describe('buildFacetWhere', () => {
+    it('builds ODSQL for single value', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set(['IDF']) }))
+        .toBe('region = "IDF"');
+    });
+
+    it('builds ODSQL IN for multiple values', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set(['IDF', 'PACA']) }))
+        .toBe('region IN ("IDF", "PACA")');
+    });
+
+    it('joins multiple fields with AND', () => {
+      const result = adapter.buildFacetWhere!({
+        region: new Set(['IDF']),
+        type: new Set(['A']),
+      });
+      expect(result).toBe('region = "IDF" AND type = "A"');
+    });
+
+    it('excludes specified field', () => {
+      expect(adapter.buildFacetWhere!(
+        { region: new Set(['IDF']), type: new Set(['A']) },
+        'region'
+      )).toBe('type = "A"');
+    });
+
+    it('escapes double quotes in values', () => {
+      expect(adapter.buildFacetWhere!({ name: new Set(['value with "quotes"']) }))
+        .toBe('name = "value with \\"quotes\\""');
+    });
+
+    it('returns empty string for empty selections', () => {
+      expect(adapter.buildFacetWhere!({})).toBe('');
+    });
+
+    it('skips fields with empty sets', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set() })).toBe('');
+    });
+  });
+
+  describe('getProviderConfig', () => {
+    it('returns ODS config', () => {
+      const config = adapter.getProviderConfig!();
+      expect(config.id).toBe('opendatasoft');
+    });
+  });
+
+  describe('fetchAll HTTP error', () => {
+    it('throws on HTTP error in pagination', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+      });
+
+      await expect(
+        adapter.fetchAll(makeParams({ limit: 50 }), new AbortController().signal)
+      ).rejects.toThrow('HTTP 429');
     });
   });
 });

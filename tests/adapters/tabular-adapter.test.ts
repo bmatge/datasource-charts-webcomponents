@@ -158,6 +158,22 @@ describe('TabularAdapter', () => {
       );
       expect(url).toContain('statut__exact=actif');
     });
+
+    it('uses effectiveWhere from overlay', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams(),
+        overlay({ effectiveWhere: 'region:eq:IDF' })
+      );
+      expect(url).toContain('region__exact=IDF');
+    });
+
+    it('falls back to static where when no effectiveWhere', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ where: 'statut:eq:actif' }),
+        overlay()
+      );
+      expect(url).toContain('statut__exact=actif');
+    });
   });
 
   describe('Pagination (fetchAll)', () => {
@@ -244,7 +260,7 @@ describe('TabularAdapter', () => {
       expect(secondCallUrl).toContain('page=2');
     });
 
-    it('returns needsClientProcessing=true', async () => {
+    it('returns needsClientProcessing=true when no groupBy/aggregate', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({
@@ -256,6 +272,103 @@ describe('TabularAdapter', () => {
 
       const result = await adapter.fetchAll(makeParams(), new AbortController().signal);
       expect(result.needsClientProcessing).toBe(true);
+    });
+
+    it('returns needsClientProcessing=false when groupBy is set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ region: 'IDF', count: 100 }],
+          links: {},
+          meta: { page: 1, page_size: 50, total: 1 },
+        }),
+      });
+
+      const result = await adapter.fetchAll(
+        makeParams({ groupBy: 'region' }),
+        new AbortController().signal
+      );
+
+      expect(result.needsClientProcessing).toBe(false);
+    });
+
+    it('returns needsClientProcessing=false when aggregate is set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ region: 'IDF', sum_pop: 12000000 }],
+          links: {},
+          meta: { page: 1, page_size: 50, total: 1 },
+        }),
+      });
+
+      const result = await adapter.fetchAll(
+        makeParams({ groupBy: 'region', aggregate: 'pop:sum' }),
+        new AbortController().signal
+      );
+
+      expect(result.needsClientProcessing).toBe(false);
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      await expect(
+        adapter.fetchAll(makeParams(), new AbortController().signal)
+      ).rejects.toThrow('HTTP 503');
+    });
+
+    it('handles missing links gracefully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ id: 1 }],
+          meta: { page: 1, page_size: 50, total: 1 },
+        }),
+      });
+
+      const result = await adapter.fetchAll(makeParams(), new AbortController().signal);
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('handles invalid links.next URL gracefully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 50 }, (_, i) => ({ id: i })),
+          links: { next: 'not-a-valid-url' },
+          meta: { page: 1, page_size: 50, total: 100 },
+        }),
+      });
+
+      // Should not throw, just stop pagination
+      const result = await adapter.fetchAll(makeParams(), new AbortController().signal);
+      expect(result.data).toHaveLength(50);
+    });
+
+    it('warns on incomplete pagination', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Simulate a case where total > fetched but no next link
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: Array.from({ length: 50 }, (_, i) => ({ id: i })),
+          links: {},
+          meta: { page: 1, page_size: 50, total: 200 },
+        }),
+      });
+
+      await adapter.fetchAll(makeParams(), new AbortController().signal);
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('pagination incomplete')
+      );
+      warnSpy.mockRestore();
     });
   });
 

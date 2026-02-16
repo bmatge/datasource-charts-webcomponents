@@ -345,4 +345,361 @@ describe('GouvSource', () => {
       expect(source.getError()).toBeNull();
     });
   });
+
+  describe('adapter mode detection', () => {
+    it('is not adapter mode when apiType=generic and url is set', () => {
+      source.apiType = 'generic';
+      source.url = 'https://api.example.com/data';
+      expect((source as any)._isAdapterMode()).toBe(false);
+    });
+
+    it('is adapter mode when apiType=opendatasoft', () => {
+      source.apiType = 'opendatasoft';
+      expect((source as any)._isAdapterMode()).toBe(true);
+    });
+
+    it('is adapter mode when apiType=tabular', () => {
+      source.apiType = 'tabular';
+      expect((source as any)._isAdapterMode()).toBe(true);
+    });
+
+    it('is adapter mode when apiType=grist', () => {
+      source.apiType = 'grist';
+      expect((source as any)._isAdapterMode()).toBe(true);
+    });
+
+    it('is adapter mode when generic with baseUrl and no url', () => {
+      source.apiType = 'generic';
+      source.url = '';
+      source.baseUrl = 'https://custom-api.example.com';
+      expect((source as any)._isAdapterMode()).toBe(true);
+    });
+  });
+
+  describe('getAdapter', () => {
+    it('returns null in URL mode', () => {
+      source.apiType = 'generic';
+      source.url = 'https://api.example.com/data';
+      expect(source.getAdapter()).toBeNull();
+    });
+
+    it('returns adapter in adapter mode', () => {
+      source.apiType = 'opendatasoft';
+      const adapter = source.getAdapter();
+      expect(adapter).toBeTruthy();
+      expect(adapter!.type).toBe('opendatasoft');
+    });
+
+    it('caches adapter instance', () => {
+      source.apiType = 'tabular';
+      const adapter1 = source.getAdapter();
+      const adapter2 = source.getAdapter();
+      expect(adapter1).toBe(adapter2);
+    });
+  });
+
+  describe('getEffectiveWhere', () => {
+    it('returns static where when no overlays', () => {
+      source.apiType = 'opendatasoft';
+      source.where = 'region = "IDF"';
+      expect(source.getEffectiveWhere()).toBe('region = "IDF"');
+    });
+
+    it('merges static where with overlays using ODSQL separator', () => {
+      source.apiType = 'opendatasoft';
+      source.where = 'region = "IDF"';
+      // Set overlays via command handling
+      (source as any)._whereOverlays.set('facets', 'dept = "75"');
+      (source as any)._whereOverlays.set('search', 'search("Paris")');
+
+      const result = source.getEffectiveWhere();
+      expect(result).toBe('region = "IDF" AND dept = "75" AND search("Paris")');
+    });
+
+    it('merges with colon separator for non-ODS providers', () => {
+      source.apiType = 'tabular';
+      source.where = 'region:eq:IDF';
+      (source as any)._whereOverlays.set('facets', 'dept:eq:75');
+
+      const result = source.getEffectiveWhere();
+      expect(result).toBe('region:eq:IDF, dept:eq:75');
+    });
+
+    it('excludes specified key from overlays', () => {
+      source.apiType = 'opendatasoft';
+      source.where = '';
+      (source as any)._whereOverlays.set('facets', 'dept = "75"');
+      (source as any)._whereOverlays.set('search', 'search("Paris")');
+
+      const result = source.getEffectiveWhere('facets');
+      expect(result).toBe('search("Paris")');
+    });
+
+    it('returns empty string when no where clauses', () => {
+      source.apiType = 'opendatasoft';
+      source.where = '';
+      expect(source.getEffectiveWhere()).toBe('');
+    });
+  });
+
+  describe('adapter mode fetching', () => {
+    it('warns and skips when id is not set in adapter mode', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      source.apiType = 'opendatasoft';
+      source.id = '';
+      source.datasetId = 'test-dataset';
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('id'));
+      expect(mockFetch).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('warns and skips when adapter validation fails', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.datasetId = ''; // Missing required dataset-id
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('dataset-id'));
+      expect(mockFetch).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('fetches data via adapter fetchAll', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: [{ dep: '75', value: 100 }],
+          total_count: 1,
+        }),
+      });
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(source.getData()).toBeTruthy();
+      expect(source.isLoading()).toBe(false);
+    });
+
+    it('handles adapter fetch errors', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockFetch.mockRejectedValueOnce(new Error('Server error'));
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(source.getError()?.message).toBe('Server error');
+      errorSpy.mockRestore();
+    });
+
+    it('ignores abort errors in adapter mode', async () => {
+      const abortError = new Error('Aborted');
+      abortError.name = 'AbortError';
+      mockFetch.mockRejectedValueOnce(abortError);
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(source.getError()).toBeNull();
+    });
+
+    it('uses serverSide mode with fetchPage when serverSide=true', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: [{ dep: '75', value: 100 }],
+          total_count: 500,
+        }),
+      });
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+      source.serverSide = true;
+      source.pageSize = 20;
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const meta = getDataMeta('test-source');
+      expect(meta).toBeDefined();
+      expect(meta!.page).toBe(1);
+      expect(meta!.pageSize).toBe(20);
+      expect(meta!.total).toBe(500);
+    });
+  });
+
+  describe('adapter params construction', () => {
+    it('builds correct AdapterParams', () => {
+      source.apiType = 'opendatasoft';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+      source.select = 'nom, count(*) as total';
+      source.where = 'region = "IDF"';
+      source.groupBy = 'region';
+      source.aggregate = 'population:sum';
+      source.orderBy = 'total:desc';
+      source.limit = 50;
+      source.pageSize = 20;
+      source.headers = '{"apikey": "secret"}';
+
+      const params = (source as any)._getAdapterParams();
+
+      expect(params.baseUrl).toBe('https://data.example.com');
+      expect(params.datasetId).toBe('test-dataset');
+      expect(params.select).toBe('nom, count(*) as total');
+      expect(params.groupBy).toBe('region');
+      expect(params.aggregate).toBe('population:sum');
+      expect(params.orderBy).toBe('total:desc');
+      expect(params.limit).toBe(50);
+      expect(params.pageSize).toBe(20);
+      expect(params.headers).toEqual({ apikey: 'secret' });
+    });
+
+    it('handles invalid headers JSON gracefully', () => {
+      source.apiType = 'tabular';
+      source.resource = 'abc-123';
+      source.headers = 'not-json';
+
+      const params = (source as any)._getAdapterParams();
+      expect(params.headers).toBeUndefined();
+    });
+
+    it('uses orderBy overlay when set', () => {
+      source.apiType = 'opendatasoft';
+      source.datasetId = 'test';
+      source.orderBy = 'nom:asc';
+      (source as any)._orderByOverlay = 'population:desc';
+
+      const params = (source as any)._getAdapterParams();
+      expect(params.orderBy).toBe('population:desc');
+    });
+  });
+
+  describe('inline data', () => {
+    it('dispatches parsed inline JSON data', () => {
+      source.id = 'test-source';
+      source.data = '[{"nom": "Paris"}, {"nom": "Lyon"}]';
+
+      (source as any)._dispatchInlineData();
+
+      expect(source.getData()).toEqual([{ nom: 'Paris' }, { nom: 'Lyon' }]);
+    });
+
+    it('warns when id is not set for inline data', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      source.data = '[1, 2, 3]';
+
+      (source as any)._dispatchInlineData();
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('id'));
+      warnSpy.mockRestore();
+    });
+
+    it('sets error for invalid inline JSON', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      source.id = 'test-source';
+      source.data = 'not-json';
+
+      (source as any)._dispatchInlineData();
+
+      expect(source.getError()).toBeTruthy();
+      expect(source.getError()?.message).toContain('JSON');
+      errorSpy.mockRestore();
+    });
+  });
+
+  describe('cleanup', () => {
+    it('clears refresh interval', () => {
+      source.refresh = 10;
+      (source as any)._setupRefresh();
+      expect((source as any)._refreshInterval).toBeTruthy();
+
+      (source as any)._cleanup();
+      expect((source as any)._refreshInterval).toBeNull();
+    });
+
+    it('aborts pending fetch', () => {
+      (source as any)._abortController = new AbortController();
+      const abortSpy = vi.spyOn((source as any)._abortController, 'abort');
+
+      (source as any)._cleanup();
+
+      expect(abortSpy).toHaveBeenCalled();
+      expect((source as any)._abortController).toBeNull();
+    });
+
+    it('unsubscribes command listener', () => {
+      const unsubFn = vi.fn();
+      (source as any)._unsubscribeCommands = unsubFn;
+
+      (source as any)._cleanup();
+
+      expect(unsubFn).toHaveBeenCalled();
+      expect((source as any)._unsubscribeCommands).toBeNull();
+    });
+  });
+
+  describe('refresh setup', () => {
+    afterEach(() => {
+      (source as any)._cleanup();
+    });
+
+    it('sets interval when refresh > 0', () => {
+      source.refresh = 60;
+      (source as any)._setupRefresh();
+      expect((source as any)._refreshInterval).toBeTruthy();
+    });
+
+    it('does not set interval when refresh = 0', () => {
+      source.refresh = 0;
+      (source as any)._setupRefresh();
+      expect((source as any)._refreshInterval).toBeNull();
+    });
+
+    it('clears previous interval when refresh changes', () => {
+      source.refresh = 60;
+      (source as any)._setupRefresh();
+      const firstInterval = (source as any)._refreshInterval;
+
+      source.refresh = 120;
+      (source as any)._setupRefresh();
+
+      expect((source as any)._refreshInterval).not.toBe(firstInterval);
+    });
+  });
+
+  describe('reload', () => {
+    it('calls _fetchData', async () => {
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
+
+      source.reload();
+
+      // reload triggers _fetchData which calls fetch
+      expect(mockFetch).toHaveBeenCalled();
+    });
+  });
 });

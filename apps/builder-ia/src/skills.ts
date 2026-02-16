@@ -1266,15 +1266,17 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 <gouv-dsfr-chart source="top5" type="pie" label-field="region" value-field="montant__sum"></gouv-dsfr-chart>
 \`\`\`
 
-### Pipeline Grist : Query(api-type=grist) -> Visualisation
+### Pipeline Grist : Source(api-type=grist) -> Query -> Visualisation
 
-Le mode \`api-type="grist"\` fetch et aplatit automatiquement \`records[].fields\`.
-Plus besoin de gouv-source ni gouv-normalize :
+gouv-source avec \`api-type="grist"\` fetch et aplatit automatiquement \`records[].fields\`.
+L'adapter choisit entre mode Records (filter/sort/pagination) et mode SQL (group-by, aggregation, facettes).
 
 \`\`\`html
-<gouv-query id="data" api-type="grist"
+<gouv-source id="src" api-type="grist"
   base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
-  headers='{"Authorization":"Bearer API_KEY"}'
+  headers='{"Authorization":"Bearer API_KEY"}'>
+</gouv-source>
+<gouv-query id="data" source="src"
   group-by="region"
   aggregate="population:sum"
   order-by="population__sum:desc"
@@ -1289,12 +1291,12 @@ Plus besoin de gouv-source ni gouv-normalize :
 
 ### Pipeline Grist avec facettes :
 \`\`\`html
-<gouv-query id="data" api-type="grist"
+<gouv-source id="src" api-type="grist"
   base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
   headers='{"Authorization":"Bearer API_KEY"}'>
-</gouv-query>
+</gouv-source>
 
-<gouv-facets id="filtered" source="data"
+<gouv-facets id="filtered" source="src"
   fields="categorie, region"
   labels="categorie:Categorie | region:Region">
 </gouv-facets>
@@ -1606,7 +1608,7 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 | Capacite | OpenDataSoft | Tabular (data.gouv.fr) | Grist | Generique |
 |----------|:---:|:---:|:---:|:---:|
 | Fetch serveur | oui | oui | oui | non (gouv-source) |
-| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages, max 50/page) | non (tout en 1 requete) | non |
+| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages, max 50/page) | oui (offset, 100/page) | non |
 | Facettes serveur | oui | non | oui (SQL) | non |
 | Recherche serveur | oui (full-text) | non | non | non |
 | Group-by serveur | oui | oui (column__groupby) | oui (SQL) | non |
@@ -1623,21 +1625,23 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 | Grist | \`/api/docs/{documentId}/tables/{tableId}\` |
 | Generique | Tout autre URL (fallback) |
 
-### Usage dans gouv-query (attribut api-type)
+### Usage dans gouv-source (attribut api-type)
 | api-type | Provider | Attributs requis |
 |----------|---------|-----------------|
 | \`"opendatasoft"\` | OpenDataSoft | \`base-url\` + \`dataset-id\` |
 | \`"tabular"\` | Tabular | \`base-url\` + \`resource\` |
 | \`"grist"\` | Grist | \`base-url\` (URL complete avec proxy) |
-| \`"generic"\` (defaut) | Generique | \`source\` (ID d'une gouv-source) |
+| \`"generic"\` (defaut) | Generique | \`url\` + \`transform\` |
 
 ### Pipeline par provider
 
 **OpenDataSoft** (tout serveur, le plus puissant) :
 \`\`\`html
-<gouv-query id="data" api-type="opendatasoft"
+<gouv-source id="src" api-type="opendatasoft"
   base-url="https://data.economie.gouv.fr"
-  dataset-id="rappelconso"
+  dataset-id="rappelconso">
+</gouv-source>
+<gouv-query id="data" source="src"
   select="categorie_de_produit, count(*) as total"
   group-by="categorie_de_produit"
   order-by="total:desc" limit="10">
@@ -1646,9 +1650,11 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 
 **Tabular** (fetch serveur + agregation serveur) :
 \`\`\`html
-<gouv-query id="data" api-type="tabular"
+<gouv-source id="src" api-type="tabular"
   base-url="https://tabular-api.data.gouv.fr"
-  resource="RESOURCE_ID"
+  resource="RESOURCE_ID">
+</gouv-source>
+<gouv-query id="data" source="src"
   group-by="departement"
   aggregate="population:sum"
   order-by="population__sum:desc">

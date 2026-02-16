@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock fetch globally
+const mockFetch = vi.fn();
+globalThis.fetch = mockFetch;
+
 import { GristAdapter } from '../../src/adapters/grist-adapter.js';
 import type { AdapterParams, ServerSideOverlay } from '../../src/adapters/api-adapter.js';
 
@@ -392,5 +397,591 @@ describe('GristAdapter — buildFacetWhere', () => {
 
   it('returns empty string for empty selections', () => {
     expect(adapter.buildFacetWhere({})).toBe('');
+  });
+});
+
+// ===========================================================================
+// Fetch-based tests (fetchAll, fetchPage, fetchFacets, fetchColumns, fetchTables)
+// ===========================================================================
+
+describe('GristAdapter — fetchAll', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('fetches records and flattens fields', async () => {
+    mockFetch
+      // SQL availability check
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ records: [[1]] }) })
+      // SQL not needed (no groupBy), so this won't be called — let's test Records mode
+    ;
+    // Reset and test Records mode (no groupBy/aggregate)
+    mockFetch.mockReset();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [
+          { id: 1, fields: { nom: 'Paris', pop: 2000000 } },
+          { id: 2, fields: { nom: 'Lyon', pop: 500000 } },
+        ],
+      }),
+    });
+
+    const result = await adapter.fetchAll(makeParams(), new AbortController().signal);
+
+    expect(result.data).toEqual([
+      { nom: 'Paris', pop: 2000000 },
+      { nom: 'Lyon', pop: 500000 },
+    ]);
+    expect(result.totalCount).toBe(2);
+    expect(result.needsClientProcessing).toBe(true);
+  });
+
+  it('returns needsClientProcessing=false when where is set', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [{ id: 1, fields: { nom: 'Paris' } }],
+      }),
+    });
+
+    const result = await adapter.fetchAll(
+      makeParams({ where: 'region:eq:IDF' }),
+      new AbortController().signal
+    );
+
+    expect(result.needsClientProcessing).toBe(false);
+  });
+
+  it('returns needsClientProcessing=false when orderBy is set', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [{ id: 1, fields: { nom: 'Paris' } }],
+      }),
+    });
+
+    const result = await adapter.fetchAll(
+      makeParams({ orderBy: 'nom:asc' }),
+      new AbortController().signal
+    );
+
+    expect(result.needsClientProcessing).toBe(false);
+  });
+
+  it('uses SQL mode when groupBy is set and SQL is available', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // SQL query
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        columns: ['region', 'count'],
+        records: [['Bretagne', 100], ['IDF', 200]],
+      }),
+    });
+
+    const result = await adapter.fetchAll(
+      makeParams({ groupBy: 'region' }),
+      new AbortController().signal
+    );
+
+    expect(result.data).toEqual([
+      { region: 'Bretagne', count: 100 },
+      { region: 'IDF', count: 200 },
+    ]);
+    expect(result.needsClientProcessing).toBe(false);
+    // Second call should be POST to /sql
+    expect(mockFetch.mock.calls[1][1]?.method).toBe('POST');
+  });
+
+  it('uses SQL mode when aggregate is set', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // SQL query
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        columns: ['region', 'sum_population'],
+        records: [['Bretagne', 3000000], ['IDF', 12000000]],
+      }),
+    });
+
+    const result = await adapter.fetchAll(
+      makeParams({ groupBy: 'region', aggregate: 'population:sum' }),
+      new AbortController().signal
+    );
+
+    expect(result.data).toHaveLength(2);
+    expect(result.needsClientProcessing).toBe(false);
+  });
+
+  it('falls back to Records mode when SQL check fails', async () => {
+    // SQL availability check fails
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' });
+    // Records mode fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [{ id: 1, fields: { nom: 'Paris' } }],
+      }),
+    });
+
+    const warnSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    const result = await adapter.fetchAll(
+      makeParams({ groupBy: 'region' }),
+      new AbortController().signal
+    );
+
+    // Should have fetched data via Records mode
+    expect(result.data).toEqual([{ nom: 'Paris' }]);
+    expect(result.needsClientProcessing).toBe(true);
+    warnSpy.mockRestore();
+  });
+
+  it('throws on HTTP error in Records mode', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    await expect(
+      adapter.fetchAll(makeParams(), new AbortController().signal)
+    ).rejects.toThrow('HTTP 500');
+  });
+
+  it('passes headers to fetch', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [] }),
+    });
+
+    await adapter.fetchAll(
+      makeParams({ headers: { Authorization: 'Bearer token123' } }),
+      new AbortController().signal
+    );
+
+    const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+    expect(fetchOpts.headers).toEqual({ Authorization: 'Bearer token123' });
+  });
+});
+
+describe('GristAdapter — fetchPage', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('fetches one page in Records mode', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: Array.from({ length: 20 }, (_, i) => ({
+          id: i,
+          fields: { nom: `item-${i}` },
+        })),
+      }),
+    });
+
+    const result = await adapter.fetchPage(
+      makeParams({ pageSize: 20 }),
+      { page: 1, effectiveWhere: '', orderBy: '' },
+      new AbortController().signal
+    );
+
+    expect(result.data).toHaveLength(20);
+    expect(result.needsClientProcessing).toBe(false);
+  });
+
+  it('calculates totalCount from last page (data < pageSize)', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: Array.from({ length: 15 }, (_, i) => ({
+          id: i,
+          fields: { nom: `item-${i}` },
+        })),
+      }),
+    });
+
+    const result = await adapter.fetchPage(
+      makeParams({ pageSize: 20 }),
+      { page: 3, effectiveWhere: '', orderBy: '' },
+      new AbortController().signal
+    );
+
+    // (3-1) * 20 + 15 = 55
+    expect(result.totalCount).toBe(55);
+  });
+
+  it('returns totalCount=-1 when page is full (more pages exist)', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: Array.from({ length: 20 }, (_, i) => ({
+          id: i,
+          fields: { nom: `item-${i}` },
+        })),
+      }),
+    });
+
+    const result = await adapter.fetchPage(
+      makeParams({ pageSize: 20 }),
+      { page: 1, effectiveWhere: '', orderBy: '' },
+      new AbortController().signal
+    );
+
+    expect(result.totalCount).toBe(-1);
+  });
+
+  it('uses SQL mode for fetchPage when groupBy is set', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // SQL query
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        columns: ['region', 'count'],
+        records: [['Bretagne', 100]],
+      }),
+    });
+
+    const result = await adapter.fetchPage(
+      makeParams({ groupBy: 'region', pageSize: 20 }),
+      { page: 1, effectiveWhere: '', orderBy: '' },
+      new AbortController().signal
+    );
+
+    expect(result.data).toEqual([{ region: 'Bretagne', count: 100 }]);
+    expect(result.needsClientProcessing).toBe(false);
+  });
+
+  it('throws on HTTP error', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+    });
+
+    await expect(
+      adapter.fetchPage(
+        makeParams({ pageSize: 20 }),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      )
+    ).rejects.toThrow('HTTP 404');
+  });
+});
+
+describe('GristAdapter — fetchFacets', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('fetches facet values via SQL GROUP BY', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // Facet query for "region"
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [['Bretagne', 50], ['IDF', 100], ['PACA', 30]],
+      }),
+    });
+
+    const results = await adapter.fetchFacets!(
+      { baseUrl: BASE_URL, datasetId: '', headers: {} },
+      ['region'],
+      ''
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0].field).toBe('region');
+    expect(results[0].values).toHaveLength(3);
+    expect(results[0].values[0]).toEqual({ value: 'Bretagne', count: 50 });
+  });
+
+  it('includes where clause in facet SQL', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // Facet query
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [['IDF', 100]] }),
+    });
+
+    await adapter.fetchFacets!(
+      { baseUrl: BASE_URL, datasetId: '', headers: {} },
+      ['region'],
+      'annee:eq:2023'
+    );
+
+    const body = JSON.parse(mockFetch.mock.calls[1][1]?.body as string);
+    expect(body.sql).toContain('WHERE');
+    expect(body.args).toContain('2023');
+  });
+
+  it('returns empty array when SQL is not available', async () => {
+    // SQL availability check fails
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' });
+
+    const warnSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const results = await adapter.fetchFacets!(
+      { baseUrl: BASE_URL, datasetId: '', headers: {} },
+      ['region'],
+      ''
+    );
+
+    expect(results).toEqual([]);
+    warnSpy.mockRestore();
+  });
+
+  it('filters out empty values from facet results', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // Facet query returns some empty values
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [['Bretagne', 50], [null, 10], ['', 5]],
+      }),
+    });
+
+    const results = await adapter.fetchFacets!(
+      { baseUrl: BASE_URL, datasetId: '', headers: {} },
+      ['region'],
+      ''
+    );
+
+    // null → "null" which is not empty, but '' should be filtered
+    expect(results[0].values.some(v => v.value === '')).toBe(false);
+  });
+
+  it('continues on fetch error for individual field', async () => {
+    // SQL availability check
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // First field fails
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Error' });
+    // Second field succeeds
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [['A', 10], ['B', 20]],
+      }),
+    });
+
+    const results = await adapter.fetchFacets!(
+      { baseUrl: BASE_URL, datasetId: '', headers: {} },
+      ['field1', 'field2'],
+      ''
+    );
+
+    // field1 was skipped, only field2 returned
+    expect(results).toHaveLength(1);
+    expect(results[0].field).toBe('field2');
+  });
+});
+
+describe('GristAdapter — fetchColumns', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('fetches and maps column metadata', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        columns: [
+          { id: 'nom', fields: { label: 'Nom', type: 'Text', isFormula: false, formula: '' } },
+          { id: 'pop', fields: { label: 'Population', type: 'Numeric', isFormula: true, formula: '$valeur * 1000' } },
+        ],
+      }),
+    });
+
+    const columns = await adapter.fetchColumns(makeParams());
+
+    expect(columns).toHaveLength(2);
+    expect(columns[0]).toEqual({
+      id: 'nom',
+      label: 'Nom',
+      type: 'Text',
+      isFormula: false,
+      formula: '',
+    });
+    expect(columns[1].isFormula).toBe(true);
+    expect(columns[1].formula).toBe('$valeur * 1000');
+  });
+
+  it('returns empty array on HTTP error', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+
+    const columns = await adapter.fetchColumns(makeParams());
+    expect(columns).toEqual([]);
+  });
+
+  it('returns empty array on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+    const columns = await adapter.fetchColumns(makeParams());
+    expect(columns).toEqual([]);
+  });
+
+  it('derives columns URL from baseUrl', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ columns: [] }),
+    });
+
+    await adapter.fetchColumns(makeParams());
+
+    const callUrl = mockFetch.mock.calls[0][0] as string;
+    expect(callUrl).toBe('https://proxy.example.com/grist-proxy/api/docs/docABC/tables/Table1/columns');
+  });
+});
+
+describe('GristAdapter — fetchTables', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('fetches and maps table list', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        tables: [
+          { id: 'Table1' },
+          { id: 'Table2' },
+        ],
+      }),
+    });
+
+    const tables = await adapter.fetchTables(makeParams());
+
+    expect(tables).toEqual([{ id: 'Table1' }, { id: 'Table2' }]);
+  });
+
+  it('returns empty array on HTTP error', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 403 });
+
+    const tables = await adapter.fetchTables(makeParams());
+    expect(tables).toEqual([]);
+  });
+
+  it('returns empty array on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Timeout'));
+
+    const tables = await adapter.fetchTables(makeParams());
+    expect(tables).toEqual([]);
+  });
+
+  it('derives tables URL from baseUrl', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ tables: [] }),
+    });
+
+    await adapter.fetchTables(makeParams());
+
+    const callUrl = mockFetch.mock.calls[0][0] as string;
+    expect(callUrl).toBe('https://proxy.example.com/grist-proxy/api/docs/docABC/tables');
+  });
+});
+
+describe('GristAdapter — SQL fallback on error', () => {
+  let adapter: GristAdapter;
+
+  beforeEach(() => {
+    adapter = new GristAdapter();
+    mockFetch.mockReset();
+  });
+
+  it('falls back to Records mode when SQL returns 404', async () => {
+    // SQL availability check → OK
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // SQL query → 404
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+    });
+    // Records fallback
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        records: [{ id: 1, fields: { nom: 'Paris' } }],
+      }),
+    });
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await adapter.fetchAll(
+      makeParams({ groupBy: 'region' }),
+      new AbortController().signal
+    );
+
+    expect(result.data).toEqual([{ nom: 'Paris' }]);
+    expect(result.needsClientProcessing).toBe(true);
+    warnSpy.mockRestore();
+  });
+
+  it('throws on non-404/403 SQL error', async () => {
+    // SQL availability check → OK
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ records: [[1]] }),
+    });
+    // SQL query → 500
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    await expect(
+      adapter.fetchAll(
+        makeParams({ groupBy: 'region' }),
+        new AbortController().signal
+      )
+    ).rejects.toThrow('Grist SQL HTTP 500');
   });
 });

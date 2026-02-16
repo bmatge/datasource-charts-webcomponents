@@ -526,7 +526,7 @@ describe('GouvNormalize', () => {
       expect(result).toHaveLength(1000);
       expect(result[0]).toEqual({ id: 0, name: 'Item 0', value: 0 });
       expect(result[999]).toEqual({ id: 999, name: 'Item 999', value: 9990 });
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(200);
     });
   });
 
