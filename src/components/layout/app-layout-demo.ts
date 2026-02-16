@@ -99,6 +99,17 @@ export class AppLayoutDemo extends LitElement {
     return [
       { id: 'overview', label: "Vue d'ensemble", href: 'index.html' },
       {
+        id: 'apis',
+        label: 'API supportees',
+        href: '#',
+        children: [
+          { id: 'apis/opendatasoft', label: 'OpenDataSoft', href: 'apis/opendatasoft.html' },
+          { id: 'apis/tabular', label: 'Tabular', href: 'apis/tabular.html' },
+          { id: 'apis/grist', label: 'Grist', href: 'apis/grist.html' },
+          { id: 'apis/generic', label: 'Generique (REST)', href: 'apis/generic.html' },
+        ]
+      },
+      {
         id: 'components',
         label: 'Composants gouv-widgets',
         href: '#',
