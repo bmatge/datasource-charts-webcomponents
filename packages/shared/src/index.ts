@@ -8,8 +8,11 @@ export { isValidDeptCode } from './utils/dept-codes.js';
 export { DSFR_COLORS, PALETTE_PRIMARY_COLOR, PALETTE_COLORS } from './constants/dsfr-palettes.js';
 export type { PaletteType } from './constants/dsfr-palettes.js';
 
+// Templates / CDN
+export { CDN_VERSIONS, CDN_URLS } from './templates/cdn-versions.js';
+
 // API / Proxy
-export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG } from './api/proxy-config.js';
+export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG, PROXY_BASE_URL } from './api/proxy-config.js';
 export type { ProxyConfig } from './api/proxy-config.js';
 export { getProxyUrl, getProxiedUrl, getExternalProxyUrl } from './api/proxy.js';
 export { fetchWithTimeout, httpErrorMessage } from './api/fetch-helpers.js';

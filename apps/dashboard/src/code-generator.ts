@@ -2,7 +2,7 @@
  * Dashboard app - Code generation
  */
 
-import { escapeHtml } from '@gouv-widgets/shared';
+import { escapeHtml, CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
 import { state, getRowColumns } from './state.js';
 import type { Widget } from './state.js';
 
@@ -54,16 +54,16 @@ export function generateHTMLCode(): string {
   <title>${escapeHtml(dashboard.name)} - gouv-widgets</title>
 
   <!-- DSFR -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+  <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
   <!-- DSFR Chart -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+  <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+  <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
   <!-- gouv-widgets -->
-  <script type="module" src="https://chartsbuilder.matge.com/dist/gouv-widgets.esm.js"><\/script>
+  <script type="module" src="${PROXY_BASE_URL}/dist/gouv-widgets.esm.js"><\/script>
 </head>
 <body>
   <div class="fr-container fr-my-4w">
@@ -72,7 +72,7 @@ export function generateHTMLCode(): string {
 ${widgetsHTML}
   </div>
 
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"><\/script>
+  <script type="module" src="${CDN_URLS.dsfrModuleJs}"><\/script>
 </body>
 </html>`;
 }

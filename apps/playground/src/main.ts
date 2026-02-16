@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth, CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -12,12 +12,12 @@ let editor: CodeMirrorEditor;
 
 /** Standard dependency block for external use */
 const DEPS_BLOCK = `<!-- Dependances (DSFR + DSFR Chart + gouv-widgets) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script src="${CDN_URLS.chartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 `;
 

@@ -13,6 +13,7 @@
 import './styles/grist-widgets.css';
 import { initGristBridge, onGristOptions, getGristApiInfo } from './shared/grist-bridge.js';
 import { createOptionsPanel, type OptionDef } from './shared/grist-options-panel.js';
+import { PROXY_BASE_URL } from '@gouv-widgets/shared';
 
 const ALL_OPTIONS: OptionDef[] = [
   {
@@ -274,7 +275,7 @@ function generateDynamicHtml(): string {
   if (!match) return '(URL API Grist non reconnue)';
   const docId = match[1];
 
-  const proxyUrl = `https://chartsbuilder.matge.com/grist-gouv-proxy/api/docs/${docId}/tables/${tableId}/records`;
+  const proxyUrl = `${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/${docId}/tables/${tableId}/records`;
 
   const type = currentType;
   const opts = currentOptions;

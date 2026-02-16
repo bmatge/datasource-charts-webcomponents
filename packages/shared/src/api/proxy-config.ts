@@ -13,9 +13,12 @@ export interface ProxyConfig {
   };
 }
 
+/** Production proxy base URL (single source of truth) */
+export const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
+
 /** Default production proxy configuration */
 export const DEFAULT_PROXY_CONFIG: ProxyConfig = {
-  baseUrl: 'https://chartsbuilder.matge.com',
+  baseUrl: PROXY_BASE_URL,
   endpoints: {
     grist: '/grist-proxy',
     gristGouv: '/grist-gouv-proxy',

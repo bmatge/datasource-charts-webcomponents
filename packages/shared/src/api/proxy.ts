@@ -2,9 +2,7 @@
  * Proxy URL helpers for Grist, Albert, and other external APIs
  */
 
-import { getProxyConfig } from './proxy-config.js';
-
-const EXTERNAL_PROXY = 'https://chartsbuilder.matge.com';
+import { getProxyConfig, PROXY_BASE_URL } from './proxy-config.js';
 
 /**
  * Get proxied URL for a Grist API endpoint
@@ -57,5 +55,5 @@ export function getProxiedUrl(url: string): string {
  * Get the external proxy base URL
  */
 export function getExternalProxyUrl(): string {
-  return EXTERNAL_PROXY;
+  return PROXY_BASE_URL;
 }

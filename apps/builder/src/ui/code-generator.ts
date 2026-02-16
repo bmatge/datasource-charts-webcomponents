@@ -11,6 +11,7 @@ import {
   isValidDeptCode,
   toastWarning,
   toastError,
+  CDN_URLS,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
 import { renderChart } from './chart-renderer.js';
@@ -668,8 +669,8 @@ export function generateCodeForLocalData(): void {
 <!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <style>
 .kpi-card {
@@ -704,9 +705,9 @@ export function generateCodeForLocalData(): void {
 <!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
 
 <!-- D\u00e9pendances (DSFR Chart) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -726,8 +727,8 @@ export function generateCodeForLocalData(): void {
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -762,9 +763,9 @@ datalist.onSourceData(data);
     const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -814,10 +815,10 @@ datalist.onSourceData(data);
 <!-- Palette: ${mapPalette} -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -860,10 +861,10 @@ datalist.onSourceData(data);
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1198,8 +1199,8 @@ export function generateDynamicCode(): void {
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -1254,12 +1255,12 @@ ${middlewareHtml}
 ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 
 <!-- Dependances JS -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -1336,8 +1337,8 @@ export function generateDynamicCodeForApi(): void {
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -1377,8 +1378,8 @@ ${facets.element}
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -1413,8 +1414,8 @@ ${facets.element}
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -1515,12 +1516,12 @@ ${middlewareHtml}
 ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 
 <!-- Dependances JS -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -1558,8 +1559,8 @@ export function generateCode(apiUrl: string): void {
     const code = `<!-- KPI g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <style>
 .kpi-card {
@@ -1619,10 +1620,10 @@ loadKPI();
     const code = `<!-- Jauge g\u00e9n\u00e9r\u00e9e avec gouv-widgets Builder -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1657,8 +1658,8 @@ loadGauge();
     const code = `<!-- Tableau genere avec gouv-widgets Builder -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -1695,10 +1696,10 @@ loadTable();
     const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1742,10 +1743,10 @@ loadChart();
 <!-- Palette: ${mapPalette} -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
@@ -1817,10 +1818,10 @@ loadMap();
   const code = `<!-- Graphique genere avec gouv-widgets Builder -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>

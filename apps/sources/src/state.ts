@@ -79,7 +79,7 @@ export interface SourcesState {
 // ============================================================
 
 /** External proxy URL for production / Tauri builds */
-export const EXTERNAL_PROXY = 'https://chartsbuilder.matge.com';
+export { PROXY_BASE_URL as EXTERNAL_PROXY } from '@gouv-widgets/shared';
 
 // ============================================================
 // Module-level mutable state singleton

@@ -4,14 +4,12 @@
  */
 
 import type { Source } from '@gouv-widgets/shared';
+export { PROXY_BASE_URL } from '@gouv-widgets/shared';
 
 // Chart.js loaded via CDN - use global reference
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Chart = (window as any).Chart as unknown;
 export { Chart };
-
-/** External proxy base URL for production usage */
-export const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 
 /** Favorites localStorage key */
 export const FAVORITES_KEY = 'gouv-widgets-favorites';

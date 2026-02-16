@@ -2,11 +2,9 @@
  * Code generation - produces embeddable HTML+JS code for each chart type
  */
 
-import { escapeHtml, DSFR_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
+import { escapeHtml, DSFR_COLORS, isValidDeptCode, PROXY_BASE_URL, CDN_URLS } from '@gouv-widgets/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
-
-const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
 
 /** Regex to parse an ODS v2.1 records URL into [baseUrl, datasetId] */
 const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
@@ -181,8 +179,8 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <style>
 .kpi-card {
@@ -245,8 +243,8 @@ loadKPI();
 <!-- Source : ${state.source?.name || 'Donnees locales'} - valeur embarquee -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <style>
 .kpi-card {
@@ -283,10 +281,10 @@ function generateGaugeCode(config: ChartConfig, data: AggregatedResult[]): strin
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances (DSFR Chart) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Jauge')}</h2>
@@ -306,8 +304,8 @@ function generateScatterCode(config: ChartConfig, data: AggregatedResult[]): str
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
@@ -381,11 +379,11 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -428,11 +426,11 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <!-- Source API Tabular avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -471,11 +469,11 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <!-- Source API dynamique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -505,10 +503,10 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
@@ -551,8 +549,8 @@ function generateDatalistCode(config: ChartConfig): string {
 <!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -587,8 +585,8 @@ function generateDatalistCode(config: ChartConfig): string {
 <!-- Source API Tabular avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -626,8 +624,8 @@ function generateDatalistCode(config: ChartConfig): string {
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -658,8 +656,8 @@ function generateDatalistCode(config: ChartConfig): string {
 <!-- Source : ${state.source?.name || 'Donnees locales'} - donnees embarquees -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
@@ -728,11 +726,11 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
 <!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -777,11 +775,11 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
 <!-- Source API Tabular avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 <script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
@@ -828,8 +826,8 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
@@ -937,8 +935,8 @@ function generateStandardChartCodeEmbedded(config: ChartConfig, data: Aggregated
 ${hasSecondSeries ? '<!-- Note: Graphique multi-series -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>

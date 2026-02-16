@@ -2,6 +2,8 @@
  * Types and data fetching for widget monitoring.
  */
 
+import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+
 export interface MonitoringEntry {
   referer: string;
   component: string;
@@ -24,8 +26,8 @@ export interface MonitoringData {
   summary: MonitoringSummary;
 }
 
-const DATA_URL = 'https://chartsbuilder.matge.com/public/monitoring-data.json';
-const REFRESH_URL = 'https://chartsbuilder.matge.com/api/refresh-monitoring';
+const DATA_URL = `${PROXY_BASE_URL}/public/monitoring-data.json`;
+const REFRESH_URL = `${PROXY_BASE_URL}/api/refresh-monitoring`;
 const API_DATA_URL = '/api/monitoring/data';
 
 function isDbMode(): boolean {

@@ -4,7 +4,9 @@
  * Used by the monitoring dashboard to track where widgets are deployed.
  */
 
-const BEACON_URL = 'https://chartsbuilder.matge.com/beacon';
+import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+
+const BEACON_URL = `${PROXY_BASE_URL}/beacon`;
 const sent = new Set<string>();
 
 /**
@@ -23,7 +25,7 @@ export function sendWidgetBeacon(component: string, subtype?: string): void {
   if (
     host === 'localhost' ||
     host === '127.0.0.1' ||
-    host === 'chartsbuilder.matge.com'
+    host === new URL(PROXY_BASE_URL).hostname
   ) {
     return;
   }

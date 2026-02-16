@@ -10,6 +10,7 @@
  * Tests in tests/apps/builder-ia/skills.test.ts verify alignment automatically.
  */
 
+import { CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
 import type { Source } from './state.js';
 
 /** A single skill definition */
@@ -1314,26 +1315,26 @@ Le code genere doit etre un **snippet** pret a copier-coller dans une page exist
 Toujours inclure ces 6 dependances dans cet ordre exact :
 \`\`\`html
 <!-- CSS DSFR (obligatoire) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- DSFR Chart (obligatoire pour les graphiques) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script src="${CDN_URLS.chartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <!-- gouv-widgets (obligatoire) -->
-<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 \`\`\`
 
 ### Exemple de snippet complet
 \`\`\`html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>
-<script src="https://chartsbuilder.matge.com/dist/gouv-widgets.umd.js"><\/script>
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
+<script src="${CDN_URLS.chartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
 
 <gouv-source id="data" url="VOTRE_URL_API" transform="results"></gouv-source>
 <gouv-dsfr-chart source="data" type="bar" label-field="CHAMP_LABEL" value-field="CHAMP_VALEUR"></gouv-dsfr-chart>

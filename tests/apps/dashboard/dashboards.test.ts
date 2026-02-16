@@ -10,6 +10,15 @@ vi.mock('@gouv-widgets/shared', () => ({
   toastSuccess: vi.fn(),
   navigateTo: vi.fn(),
   confirmDialog: vi.fn(),
+  PROXY_BASE_URL: 'https://chartsbuilder.matge.com',
+  CDN_URLS: {
+    dsfrCss: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css',
+    dsfrUtilityCss: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css',
+    dsfrModuleJs: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js',
+    dsfrChartCss: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css',
+    dsfrChartJs: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js',
+    chartJs: 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+  },
 }));
 
 import { confirmSave, openSaveModal, closeSaveModal, newDashboard, loadDashboard, deleteDashboard } from '../../../apps/dashboard/src/dashboards';
