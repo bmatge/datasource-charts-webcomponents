@@ -325,11 +325,20 @@ export class GouvFacets extends LitElement {
     }
   }
 
-  /** Build colon-syntax where clause for all active facet selections */
-  _buildColonFacetWhere(): string {
+  /**
+   * Build facet WHERE clause, delegating to the upstream source's adapter.
+   * Falls back to colon syntax if no adapter is available.
+   */
+  _buildFacetWhere(excludeField?: string): string {
+    const sourceEl = document.getElementById(this.source);
+    const adapter: ApiAdapter | undefined = (sourceEl as any)?.getAdapter?.();
+    if (adapter?.buildFacetWhere) {
+      return adapter.buildFacetWhere(this._activeSelections, excludeField);
+    }
+    // Fallback: colon syntax (for client-side mode without adapter)
     const parts: string[] = [];
     for (const [field, values] of Object.entries(this._activeSelections)) {
-      if (values.size === 0) continue;
+      if (field === excludeField || values.size === 0) continue;
       if (values.size === 1) {
         parts.push(`${field}:eq:${[...values][0]}`);
       } else {
@@ -498,7 +507,7 @@ export class GouvFacets extends LitElement {
     const whereToFields = new Map<string, string[]>();
     for (const field of fields) {
       const baseWhere = (sourceEl as any).getEffectiveWhere?.(this.id) || '';
-      const otherFacetWhere = this._buildFacetWhereExcluding(field);
+      const otherFacetWhere = this._buildFacetWhere(field);
       const effectiveWhere = [baseWhere, otherFacetWhere].filter(Boolean).join(' AND ');
       if (!whereToFields.has(effectiveWhere)) whereToFields.set(effectiveWhere, []);
       whereToFields.get(effectiveWhere)!.push(field);
@@ -532,32 +541,9 @@ export class GouvFacets extends LitElement {
       .filter(g => !(this.hideEmpty && g.values.length <= 1));
   }
 
-  /** Build ODSQL where clause for all active facet selections EXCEPT the given field */
-  _buildFacetWhereExcluding(excludeField: string): string {
-    const parts: string[] = [];
-    for (const [field, values] of Object.entries(this._activeSelections)) {
-      if (field === excludeField || values.size === 0) continue;
-      if (values.size === 1) {
-        const val = [...values][0].replace(/"/g, '\\"');
-        parts.push(`${field} = "${val}"`);
-      } else {
-        const vals = [...values].map(v => `"${v.replace(/"/g, '\\"')}"`).join(', ');
-        parts.push(`${field} IN (${vals})`);
-      }
-    }
-    return parts.join(' AND ');
-  }
-
-  /** Build ODSQL where clause for ALL active facet selections */
-  _buildFullFacetWhere(): string {
-    return this._buildFacetWhereExcluding(''); // exclude nothing
-  }
-
   /** Dispatch facet where command to upstream gouv-query */
   private _dispatchFacetCommand() {
-    const facetWhere = this.staticValues
-      ? this._buildColonFacetWhere()
-      : this._buildFullFacetWhere();
+    const facetWhere = this._buildFacetWhere();
     dispatchSourceCommand(this.source, { where: facetWhere, whereKey: this.id });
   }
 

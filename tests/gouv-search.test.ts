@@ -634,7 +634,17 @@ describe('GouvSearch', () => {
   // --- Server-search mode ---
 
   describe('server-search', () => {
+    let mockSource: HTMLElement;
+
     beforeEach(() => {
+      // Create mock source element with ODS-like adapter
+      mockSource = document.createElement('div');
+      mockSource.id = 'test-source';
+      (mockSource as any).getAdapter = () => ({
+        getDefaultSearchTemplate: () => 'search("{q}")',
+      });
+      document.body.appendChild(mockSource);
+
       search.id = 'test-search';
       search.source = 'test-source';
       search.serverSearch = true;
@@ -643,6 +653,7 @@ describe('GouvSearch', () => {
 
     afterEach(() => {
       clearDataMeta('test-source');
+      mockSource.remove();
     });
 
     it('dispatches source command with where on search', () => {
@@ -772,6 +783,30 @@ describe('GouvSearch', () => {
 
       const meta = getDataMeta('test-search');
       expect(meta).toBeUndefined();
+    });
+
+    it('reads search template from adapter when not set explicitly', () => {
+      // searchTemplate defaults to '' — should be read from adapter in _initialize
+      expect(search.searchTemplate).toBe('');
+      search.connectedCallback();
+      // After init, template should be set from mock adapter
+      expect(search.searchTemplate).toBe('search("{q}")');
+    });
+
+    it('does not override explicit search template', () => {
+      search.searchTemplate = '{q} IN nom';
+      search.connectedCallback();
+      expect(search.searchTemplate).toBe('{q} IN nom');
+    });
+
+    it('keeps empty template when adapter returns null', () => {
+      // Replace mock adapter with one that returns null
+      (mockSource as any).getAdapter = () => ({
+        getDefaultSearchTemplate: () => null,
+      });
+
+      search.connectedCallback();
+      expect(search.searchTemplate).toBe('');
     });
   });
 });

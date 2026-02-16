@@ -93,12 +93,13 @@ export class GouvSearch extends LitElement {
   serverSearch = false;
 
   /**
-   * Template ODSQL pour la recherche serveur.
+   * Template pour la recherche serveur.
    * {q} est remplace par le terme de recherche.
-   * Defaut: 'search("{q}")' (recherche full-text ODS)
+   * Si vide et server-search active, lu depuis l'adapter de la source amont.
+   * Ex ODS: 'search("{q}")', custom: '{q} IN nom'
    */
   @property({ type: String, attribute: 'search-template' })
-  searchTemplate = 'search("{q}")';
+  searchTemplate = '';
 
   @state()
   private _allData: Record<string, unknown>[] = [];
@@ -200,6 +201,15 @@ export class GouvSearch extends LitElement {
 
     if (this._unsubscribe) {
       this._unsubscribe();
+    }
+
+    // Read search template from adapter if empty and server-search enabled
+    if (this.serverSearch && !this.searchTemplate) {
+      const sourceEl = document.getElementById(this.source);
+      const adapter = (sourceEl as any)?.getAdapter?.();
+      if (adapter?.getDefaultSearchTemplate) {
+        this.searchTemplate = adapter.getDefaultSearchTemplate() || '';
+      }
     }
 
     const cachedData = getDataCache(this.source);

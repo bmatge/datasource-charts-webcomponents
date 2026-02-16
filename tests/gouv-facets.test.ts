@@ -737,61 +737,75 @@ describe('GouvFacets', () => {
       expect(facets.serverFacets).toBe(true);
     });
 
-    describe('_buildFacetWhereExcluding', () => {
-      it('builds ODSQL for single-value selection', () => {
+    describe('_buildFacetWhere (adapter delegation)', () => {
+      it('fallback: builds colon syntax for single value', () => {
         facets._activeSelections = { region: new Set(['IDF']) };
-        expect(facets._buildFacetWhereExcluding('other')).toBe('region = "IDF"');
+        expect(facets._buildFacetWhere()).toBe('region:eq:IDF');
       });
 
-      it('builds ODSQL for multi-value selection with IN', () => {
+      it('fallback: builds colon syntax for multi value', () => {
         facets._activeSelections = { region: new Set(['IDF', 'PACA']) };
-        expect(facets._buildFacetWhereExcluding('other')).toBe('region IN ("IDF", "PACA")');
+        expect(facets._buildFacetWhere()).toBe('region:in:IDF|PACA');
       });
 
-      it('excludes the specified field', () => {
+      it('fallback: excludes specified field', () => {
         facets._activeSelections = {
           region: new Set(['IDF']),
           type: new Set(['Commune'])
         };
-        expect(facets._buildFacetWhereExcluding('region')).toBe('type = "Commune"');
+        expect(facets._buildFacetWhere('region')).toBe('type:eq:Commune');
       });
 
-      it('combines multiple field selections with AND', () => {
+      it('fallback: combines multiple fields', () => {
         facets._activeSelections = {
           region: new Set(['IDF']),
           type: new Set(['Commune'])
         };
-        expect(facets._buildFacetWhereExcluding('other')).toBe('region = "IDF" AND type = "Commune"');
+        expect(facets._buildFacetWhere()).toBe('region:eq:IDF, type:eq:Commune');
       });
 
-      it('returns empty string when no selections', () => {
+      it('fallback: returns empty string when no selections', () => {
         facets._activeSelections = {};
-        expect(facets._buildFacetWhereExcluding('any')).toBe('');
+        expect(facets._buildFacetWhere()).toBe('');
       });
 
-      it('skips fields with empty sets', () => {
+      it('fallback: skips fields with empty sets', () => {
         facets._activeSelections = { region: new Set(), type: new Set(['Commune']) };
-        expect(facets._buildFacetWhereExcluding('other')).toBe('type = "Commune"');
+        expect(facets._buildFacetWhere()).toBe('type:eq:Commune');
       });
 
-      it('escapes double quotes in values', () => {
-        facets._activeSelections = { nom: new Set(['L\'entreprise "Test"']) };
-        expect(facets._buildFacetWhereExcluding('other')).toBe('nom = "L\'entreprise \\"Test\\""');
-      });
-    });
+      it('delegates to adapter.buildFacetWhere when source has adapter', () => {
+        // Create mock source with ODS-like adapter
+        const mockSource = document.createElement('div');
+        mockSource.id = 'test-source';
+        (mockSource as any).getAdapter = () => ({
+          buildFacetWhere: (selections: Record<string, Set<string>>, excludeField?: string) => {
+            const parts: string[] = [];
+            for (const [field, values] of Object.entries(selections)) {
+              if (field === excludeField || values.size === 0) continue;
+              if (values.size === 1) {
+                parts.push(`${field} = "${[...values][0]}"`);
+              } else {
+                parts.push(`${field} IN (${[...values].map(v => `"${v}"`).join(', ')})`);
+              }
+            }
+            return parts.join(' AND ');
+          }
+        });
+        document.body.appendChild(mockSource);
 
-    describe('_buildFullFacetWhere', () => {
-      it('includes all selected facets', () => {
+        facets.source = 'test-source';
         facets._activeSelections = {
           region: new Set(['IDF']),
           type: new Set(['Commune', 'Prefecture'])
         };
-        expect(facets._buildFullFacetWhere()).toBe('region = "IDF" AND type IN ("Commune", "Prefecture")');
-      });
 
-      it('returns empty string when nothing selected', () => {
-        facets._activeSelections = {};
-        expect(facets._buildFullFacetWhere()).toBe('');
+        // Should use adapter's ODSQL syntax
+        expect(facets._buildFacetWhere()).toBe('region = "IDF" AND type IN ("Commune", "Prefecture")');
+        // With excludeField
+        expect(facets._buildFacetWhere('region')).toBe('type IN ("Commune", "Prefecture")');
+
+        mockSource.remove();
       });
     });
 
@@ -873,7 +887,7 @@ describe('GouvFacets', () => {
       expect(facets._effectiveHideCounts).toBe(true);
     });
 
-    it('dispatches colon-syntax WHERE command on selection', () => {
+    it('dispatches colon-syntax WHERE command on selection (fallback)', () => {
       facets.id = 'test-facets';
       facets.source = 'test-source';
       facets.fields = 'region';
@@ -883,11 +897,11 @@ describe('GouvFacets', () => {
       dispatchDataLoaded('test-source', []);
 
       (facets as any)._activeSelections = { region: new Set(['IDF']) };
-      const where = facets._buildColonFacetWhere();
+      const where = facets._buildFacetWhere();
       expect(where).toBe('region:eq:IDF');
     });
 
-    it('uses IN operator for multi-value selection in colon syntax', () => {
+    it('uses IN operator for multi-value selection in colon syntax (fallback)', () => {
       facets.id = 'test-facets';
       facets.source = 'test-source';
       facets.fields = 'region';
@@ -897,7 +911,7 @@ describe('GouvFacets', () => {
       dispatchDataLoaded('test-source', []);
 
       (facets as any)._activeSelections = { region: new Set(['IDF', 'Bretagne']) };
-      const where = facets._buildColonFacetWhere();
+      const where = facets._buildFacetWhere();
       expect(where).toBe('region:in:IDF|Bretagne');
     });
 
