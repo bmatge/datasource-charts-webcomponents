@@ -2,15 +2,12 @@
  * Code generation - produces embeddable HTML+JS code for each chart type
  */
 
-import { escapeHtml, DSFR_COLORS, isValidDeptCode, PROXY_BASE_URL, CDN_URLS } from '@gouv-widgets/shared';
+import {
+  escapeHtml, DSFR_COLORS, isValidDeptCode, PROXY_BASE_URL, CDN_URLS,
+  detectProvider, extractResourceIds, filterToOdsql, formatKPIValue,
+} from '@gouv-widgets/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
-
-/** Regex to parse an ODS v2.1 records URL into [baseUrl, datasetId] */
-const ODS_URL_RE = /^(https?:\/\/[^/]+)\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)\/records/;
-
-/** Regex to parse a Tabular API URL into [baseUrl, resourceId] */
-const TABULAR_URL_RE = /^(https?:\/\/[^/]+)\/api\/resources\/([^/]+)\/data\/?/;
 
 /**
  * Build ODSQL select expression from aggregation config + group-by field.
@@ -55,61 +52,6 @@ function needsPagination(): boolean {
   return !!(state.source?.recordCount
     && state.localData
     && state.source.recordCount > state.localData.length);
-}
-
-/**
- * Parse the current source URL as a Tabular API URL.
- * Returns baseUrl and resourceId, or null if not Tabular.
- */
-function parseTabularUrl(): { baseUrl: string; resourceId: string } | null {
-  if (!state.source?.apiUrl) return null;
-  const match = state.source.apiUrl.match(TABULAR_URL_RE);
-  return match ? { baseUrl: match[1], resourceId: match[2] } : null;
-}
-
-/**
- * Convert where filter syntax "field:op:value" to ODSQL WHERE clause.
- * Example: "code_departement:eq:48, prix:gte:100" -> "code_departement='48' AND prix>=100"
- */
-function whereToOdsql(where: string): string {
-  const parts = where.split(',').map(p => p.trim()).filter(Boolean);
-  const clauses = parts.map(part => {
-    const segments = part.split(':');
-    if (segments.length < 2) return '';
-    const field = segments[0];
-    const op = segments[1];
-    const value = segments.slice(2).join(':');
-    const isNum = !isNaN(Number(value)) && value !== '';
-    const quoted = isNum ? value : `'${value}'`;
-
-    switch (op) {
-      case 'eq': return `${field}=${quoted}`;
-      case 'neq': return `${field}!=${quoted}`;
-      case 'gt': return `${field}>${quoted}`;
-      case 'gte': return `${field}>=${quoted}`;
-      case 'lt': return `${field}<${quoted}`;
-      case 'lte': return `${field}<=${quoted}`;
-      case 'contains': return `${field} like '%${value}%'`;
-      case 'in': return `${field} in (${value.split('|').map(v => isNaN(Number(v)) ? `'${v}'` : v).join(',')})`;
-      default: return '';
-    }
-  }).filter(Boolean);
-  return clauses.join(' AND ');
-}
-
-/**
- * Format a KPI value with optional unit (for generated code templates)
- */
-function formatKPIValueLocal(value: number, unit?: string): string {
-  const num = Math.round(value * 100) / 100;
-  if (unit === '\u20AC' || unit === 'EUR') {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(num);
-  } else if (unit === '%') {
-    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(num) + ' %';
-  } else {
-    const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(num);
-    return unit ? `${formatted} ${unit}` : formatted;
-  }
 }
 
 /**
@@ -171,7 +113,7 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
 
     const params = new URLSearchParams({ select: valueExpr });
     if (config.where) {
-      params.set('where', whereToOdsql(config.where));
+      params.set('where', filterToOdsql(config.where));
     }
     const apiUrl = `${state.source.apiUrl}?${params}`;
 
@@ -264,7 +206,7 @@ loadKPI();
 
 <div class="fr-container fr-my-4w">
   <div class="kpi-card${variant ? ' kpi-card--' + variant : ''}">
-    <span class="kpi-value">${formatKPIValueLocal(kpiValue, unit)}</span>
+    <span class="kpi-value">${formatKPIValue(kpiValue, unit)}</span>
     <span class="kpi-label">${escapeHtml(config.title || 'Indicateur')}</span>
   </div>
 </div>`;
@@ -365,15 +307,17 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 
   // API-dynamic variant using gouv-query + gouv-dsfr-chart (auto-pagination)
   if (state.source?.type === 'api' && state.source?.apiUrl) {
-    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
+    const provider = detectProvider(state.source.apiUrl);
+    const resourceIds = extractResourceIds(state.source.apiUrl, provider);
+    const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
-    if (odsMatch && needsPagination()) {
+    if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
       // ODS source: use gouv-query with api-type="opendatasoft" for automatic pagination
-      const baseUrl = odsMatch[1];
-      const datasetId = odsMatch[2];
+      const baseUrl = apiBaseUrl;
+      const datasetId = resourceIds.datasetId;
       const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, codeField!);
       const whereAttr = config.where
-        ? `\n    where="${whereToOdsql(config.where)}"` : '';
+        ? `\n    where="${filterToOdsql(config.where)}"` : '';
 
       return `<!-- Carte generee avec gouv-widgets Builder IA -->
 <!-- Source API dynamique avec pagination automatique -->
@@ -411,8 +355,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     }
 
     // Tabular source with pagination needed: use gouv-query with api-type="tabular"
-    const tabularMatch = parseTabularUrl();
-    if (tabularMatch && needsPagination()) {
+    if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
       const aggregateExpr = config.aggregation === 'count'
         ? `${codeField}:count`
         : `${config.valueField}:${config.aggregation || 'sum'}`;
@@ -440,8 +383,8 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
   <gouv-query
     id="map-data"
     api-type="tabular"
-    base-url="${tabularMatch.baseUrl}"
-    resource="${tabularMatch.resourceId}"
+    base-url="${apiBaseUrl}"
+    resource="${resourceIds.resourceId}"
     group-by="${codeField}"
     aggregate="${aggregateExpr}"${filterAttr}>
   </gouv-query>
@@ -461,7 +404,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     let sourceUrl = state.source.apiUrl;
     if (config.where) {
       const url = new URL(sourceUrl);
-      url.searchParams.set('where', whereToOdsql(config.where));
+      url.searchParams.set('where', filterToOdsql(config.where));
       sourceUrl = url.toString();
     }
 
@@ -538,11 +481,13 @@ function generateDatalistCode(config: ChartConfig): string {
 
   // API-dynamic variant
   if (state.source?.type === 'api' && state.source?.apiUrl) {
-    const whereOds = config.where ? whereToOdsql(config.where) : '';
+    const whereOds = config.where ? filterToOdsql(config.where) : '';
+    const provider = detectProvider(state.source.apiUrl);
+    const resourceIds = extractResourceIds(state.source.apiUrl, provider);
+    const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
     // ODS with pagination: use gouv-query for auto-pagination
-    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
-    if (odsMatch && needsPagination()) {
+    if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
       const whereAttr = whereOds ? `\n    where="${whereOds}"` : '';
 
       return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
@@ -562,8 +507,8 @@ function generateDatalistCode(config: ChartConfig): string {
   <gouv-query
     id="table-data"
     api-type="opendatasoft"
-    base-url="${odsMatch[1]}"
-    dataset-id="${odsMatch[2]}"${whereAttr}>
+    base-url="${apiBaseUrl}"
+    dataset-id="${resourceIds.datasetId}"${whereAttr}>
   </gouv-query>
 
   <gouv-datalist
@@ -577,8 +522,7 @@ function generateDatalistCode(config: ChartConfig): string {
     }
 
     // Tabular with pagination: use gouv-query for auto-pagination
-    const tabularMatch = parseTabularUrl();
-    if (tabularMatch && needsPagination()) {
+    if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
       const filterAttr = config.where ? `\n    filter="${config.where}"` : '';
 
       return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
@@ -598,8 +542,8 @@ function generateDatalistCode(config: ChartConfig): string {
   <gouv-query
     id="table-data"
     api-type="tabular"
-    base-url="${tabularMatch.baseUrl}"
-    resource="${tabularMatch.resourceId}"${filterAttr}>
+    base-url="${apiBaseUrl}"
+    resource="${resourceIds.resourceId}"${filterAttr}>
   </gouv-query>
 
   <gouv-datalist
@@ -694,13 +638,14 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
 
   // ODS/Tabular with pagination needed: use gouv-query + gouv-dsfr-chart
   if (state.source?.type === 'api' && state.source?.apiUrl && needsPagination()) {
-    const odsMatch = state.source.apiUrl.match(ODS_URL_RE);
-    if (odsMatch) {
-      return generateStandardChartCodeODS(config, odsMatch[1], odsMatch[2]);
+    const provider = detectProvider(state.source.apiUrl);
+    const resourceIds = extractResourceIds(state.source.apiUrl, provider);
+    const apiBaseUrl = new URL(state.source.apiUrl).origin;
+    if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
+      return generateStandardChartCodeODS(config, apiBaseUrl, resourceIds.datasetId);
     }
-    const tabularMatch = parseTabularUrl();
-    if (tabularMatch) {
-      return generateStandardChartCodeTabular(config, tabularMatch.baseUrl, tabularMatch.resourceId);
+    if (provider.id === 'tabular' && resourceIds?.resourceId) {
+      return generateStandardChartCodeTabular(config, apiBaseUrl, resourceIds.resourceId);
     }
   }
 
@@ -716,7 +661,7 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
 function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, datasetId: string): string {
   const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, config.labelField!);
   const whereAttr = config.where
-    ? `\n    where="${whereToOdsql(config.where)}"` : '';
+    ? `\n    where="${filterToOdsql(config.where)}"` : '';
   const orderAttr = config.sortOrder && config.labelField
     ? `\n    order-by="${config.labelField}:${config.sortOrder}"` : '';
   const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
@@ -817,7 +762,7 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
     order_by: `value ${config.sortOrder || 'desc'}`,
   });
   if (config.where) {
-    params.set('where', whereToOdsql(config.where));
+    params.set('where', filterToOdsql(config.where));
   }
 
   const apiUrl = `${state.source!.apiUrl}?${params}`;
