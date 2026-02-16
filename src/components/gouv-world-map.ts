@@ -3,7 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
-import { PALETTE_COLORS } from '@gouv-widgets/shared';
 import { geoPath, geoNaturalEarth1 } from 'd3-geo';
 import type { GeoPermissibleObjects } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
@@ -35,6 +34,41 @@ interface CountryFeature {
   properties: { name: string };
   geometry: GeoPermissibleObjects;
 }
+
+/**
+ * Palettes choropleth 9 teintes — tokens DSFR complets
+ * blue-france: 975→main-525 | red-marianne: 975→main-472 | grey: 975→main-50
+ */
+const CHOROPLETH_PALETTES: Record<string, readonly string[]> = {
+  'sequentialAscending': [
+    '#F5F5FE', '#E3E3FD', '#C1C1FB', '#A1A1F8', '#8585F6',
+    '#6A6AF4', '#4747E5', '#2323B4', '#000091',
+  ],
+  'sequentialDescending': [
+    '#000091', '#2323B4', '#4747E5', '#6A6AF4', '#8585F6',
+    '#A1A1F8', '#C1C1FB', '#E3E3FD', '#F5F5FE',
+  ],
+  'divergentAscending': [
+    '#000091', '#4747E5', '#8585F6', '#C1C1FB', '#F5F5F5',
+    '#FCC0B4', '#F58050', '#E3541C', '#C9191E',
+  ],
+  'divergentDescending': [
+    '#C9191E', '#E3541C', '#F58050', '#FCC0B4', '#F5F5F5',
+    '#C1C1FB', '#8585F6', '#4747E5', '#000091',
+  ],
+  'neutral': [
+    '#F6F6F6', '#E5E5E5', '#CECECE', '#B5B5B5', '#929292',
+    '#777777', '#666666', '#3A3A3A', '#161616',
+  ],
+  'default': [
+    '#F5F5FE', '#E3E3FD', '#C1C1FB', '#A1A1F8', '#8585F6',
+    '#6A6AF4', '#4747E5', '#2323B4', '#000091',
+  ],
+  'categorical': [
+    '#000091', '#6A6AF4', '#009081', '#C9191E', '#FF9940',
+    '#A558A0', '#417DC4', '#716043', '#18753C',
+  ],
+};
 
 const CONTINENT_LABELS: Record<string, string> = {
   'Africa': 'Afrique',
@@ -136,17 +170,27 @@ export class GouvWorldMap extends SourceSubscriberMixin(LitElement) {
     return map;
   }
 
+  private _getChoroplethPalette(): readonly string[] {
+    return CHOROPLETH_PALETTES[this.selectedPalette] || CHOROPLETH_PALETTES['sequentialAscending'];
+  }
+
   private _getColorScale(values: number[]): (v: number) => string {
     if (values.length === 0) return () => '#E5E5F4';
-    const palette = PALETTE_COLORS[this.selectedPalette] || PALETTE_COLORS['sequentialAscending'];
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const range = max - min || 1;
+    const palette = this._getChoroplethPalette();
+
+    // Quantile breaks: each color bucket covers the same number of countries
+    const sorted = [...values].sort((a, b) => a - b);
+    const breaks: number[] = [];
+    for (let i = 1; i < palette.length; i++) {
+      breaks.push(sorted[Math.floor((i / palette.length) * sorted.length)]);
+    }
 
     return (v: number) => {
-      const t = (v - min) / range;
-      const idx = Math.min(Math.floor(t * palette.length), palette.length - 1);
-      return palette[idx];
+      let idx = 0;
+      for (let i = 0; i < breaks.length; i++) {
+        if (v >= breaks[i]) idx = i + 1;
+      }
+      return palette[Math.min(idx, palette.length - 1)];
     };
   }
 
@@ -316,17 +360,18 @@ export class GouvWorldMap extends SourceSubscriberMixin(LitElement) {
   private _renderLegend(values: number[], _colorScale: (v: number) => string) {
     if (values.length === 0) return nothing;
 
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const palette = PALETTE_COLORS[this.selectedPalette] || PALETTE_COLORS['sequentialAscending'];
+    const palette = this._getChoroplethPalette();
+    const sorted = [...values].sort((a, b) => a - b);
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
 
     return html`
       <div class="gouv-world-map__legend" style="display: flex; align-items: center; gap: 4px;
         margin-top: 8px; font-size: 0.75rem; color: var(--text-mention-grey, #666);">
-        ${this.name ? html`<span style="margin-right: 8px; font-weight: 500;">${this.name}</span>` : nothing}
+        ${this.name ? html`<span style="margin-right: 4px; font-weight: 500;">${this.name}</span>` : nothing}
         <span>${min.toLocaleString('fr-FR')}</span>
         <div style="display: flex; height: 12px; border-radius: 2px; overflow: hidden;">
-          ${palette.map(c => html`<div style="width: 32px; background: ${c};"></div>`)}
+          ${palette.map(c => html`<div style="width: 20px; background: ${c};"></div>`)}
         </div>
         <span>${max.toLocaleString('fr-FR')}</span>
         ${this.unitTooltip ? html`<span>${this.unitTooltip}</span>` : nothing}

@@ -68,6 +68,12 @@ export class GouvSource extends LitElement {
   @property({ type: Number, attribute: 'cache-ttl' })
   cacheTtl = 3600;
 
+  // --- Mode inline data ---
+
+  /** Donnees JSON inline (pas de fetch) */
+  @property({ type: String })
+  data = '';
+
   // --- Mode adapter (nouveau) ---
 
   /** Type d'API — active le mode adapter si != 'generic' et url est vide */
@@ -163,6 +169,12 @@ export class GouvSource extends LitElement {
   }
 
   updated(changedProperties: Map<string, unknown>) {
+    // Mode inline data : pas de fetch, dispatch direct
+    if (changedProperties.has('data') && this.data) {
+      this._dispatchInlineData();
+      return;
+    }
+
     // Detect changes that should trigger a re-fetch
     const urlModeChanged = changedProperties.has('url') || changedProperties.has('params') || changedProperties.has('transform');
     const adapterModeChanged = changedProperties.has('apiType') || changedProperties.has('baseUrl') ||
@@ -233,6 +245,22 @@ export class GouvSource extends LitElement {
   }
 
   // --- Private methods ---
+
+  private _dispatchInlineData() {
+    if (!this.id) {
+      console.warn('gouv-source: attribut "id" requis pour identifier la source');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(this.data);
+      this._data = parsed;
+      dispatchDataLoaded(this.id, this._data);
+    } catch (e) {
+      this._error = new Error('Donnees inline invalides (JSON attendu)');
+      dispatchDataError(this.id, this._error);
+      console.error(`gouv-source[${this.id}]: JSON invalide dans data`, e);
+    }
+  }
 
   private _isAdapterMode(): boolean {
     return this.apiType !== 'generic' || (this.apiType === 'generic' && !this.url && this.baseUrl !== '');

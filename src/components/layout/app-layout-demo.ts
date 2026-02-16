@@ -123,6 +123,7 @@ export class AppLayoutDemo extends LitElement {
           { id: 'components/gouv-datalist', label: 'gouv-datalist', href: 'components/gouv-datalist.html' },
           { id: 'components/gouv-display', label: 'gouv-display', href: 'components/gouv-display.html' },
           { id: 'components/gouv-dsfr-chart', label: 'gouv-dsfr-chart', href: 'components/gouv-dsfr-chart.html' },
+          { id: 'components/gouv-world-map', label: 'gouv-world-map', href: 'components/gouv-world-map.html' },
         ]
       },
       {
