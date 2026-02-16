@@ -82,12 +82,73 @@ export interface SourcesState {
 export { PROXY_BASE_URL as EXTERNAL_PROXY } from '@gouv-widgets/shared';
 
 // ============================================================
+// Normalize connections from backend API
+// ============================================================
+
+/**
+ * Normalize a connection object from the backend API.
+ * The backend stores type-specific fields (url, apiKey, apiUrl, method, etc.)
+ * inside a `config_json` column. When synced back to localStorage via
+ * ApiStorageAdapter, these fields are missing from the top level.
+ * This function merges config_json fields back into the connection object.
+ */
+export function normalizeConnection(conn: StoredConnection): StoredConnection {
+  const configJson = conn.config_json;
+  if (configJson && typeof configJson === 'object') {
+    // Merge config_json fields into top level (config_json takes priority for type-specific fields)
+    const config = configJson as Record<string, unknown>;
+    const normalized = { ...conn };
+
+    // Restore type from config_json if the top-level type was wrongly set
+    if (config.url && !normalized.url) {
+      normalized.url = config.url as string;
+    }
+    if (config.apiKey !== undefined && normalized.apiKey === undefined) {
+      normalized.apiKey = config.apiKey as string | null;
+    }
+    if (config.isPublic !== undefined && normalized.isPublic === undefined) {
+      normalized.isPublic = config.isPublic as boolean;
+    }
+    if (config.apiUrl && !normalized.apiUrl) {
+      normalized.apiUrl = config.apiUrl as string;
+    }
+    if (config.method && !normalized.method) {
+      normalized.method = config.method as string;
+    }
+    if (config.headers !== undefined && normalized.headers === undefined) {
+      normalized.headers = config.headers as string | null;
+    }
+    if (config.dataPath !== undefined && normalized.dataPath === undefined) {
+      normalized.dataPath = config.dataPath as string | null;
+    }
+    if (config.statusText && !normalized.statusText) {
+      normalized.statusText = config.statusText as string;
+    }
+
+    // Fix type if config_json contains url (indicates grist, not api)
+    if (config.url && normalized.type === 'api') {
+      (normalized as Record<string, unknown>).type = 'grist';
+    }
+
+    return normalized as StoredConnection;
+  }
+  return conn;
+}
+
+/**
+ * Normalize an array of connections loaded from storage.
+ */
+export function normalizeConnections(connections: StoredConnection[]): StoredConnection[] {
+  return connections.map(normalizeConnection);
+}
+
+// ============================================================
 // Module-level mutable state singleton
 // ============================================================
 
 export function createInitialState(): SourcesState {
   return {
-    connections: loadFromStorage<StoredConnection[]>(STORAGE_KEYS.CONNECTIONS, []),
+    connections: normalizeConnections(loadFromStorage<StoredConnection[]>(STORAGE_KEYS.CONNECTIONS, [])),
     sources: loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []).map(migrateSource),
     selectedConnection: null,
     selectedDocument: null,

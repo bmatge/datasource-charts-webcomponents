@@ -8,6 +8,7 @@ import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, to
 
 import {
   state,
+  normalizeConnections,
   currentSourceMode,
   parsedJsonData,
   parsedCsvData,
@@ -150,8 +151,8 @@ function openInBuilder(): void {
 document.addEventListener('DOMContentLoaded', async () => {
   // Init auth + storage adapter (populates localStorage from server if in DB mode)
   await initAuth();
-  // Reload state from (now-updated) localStorage
-  state.connections = loadFromStorage(STORAGE_KEYS.CONNECTIONS, []);
+  // Reload state from (now-updated) localStorage, normalizing backend format
+  state.connections = normalizeConnections(loadFromStorage(STORAGE_KEYS.CONNECTIONS, []));
   state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []);
 
   // Initial render

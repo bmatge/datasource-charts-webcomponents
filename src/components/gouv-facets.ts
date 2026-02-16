@@ -228,6 +228,18 @@ export class GouvFacets extends LitElement {
     this._expandedFacets = new Set();
     this._searchQueries = {};
 
+    // In server/static mode with URL params, read selections and send command
+    // proactively BEFORE data arrives. This lets gouv-query (which defers its
+    // first fetch in server-side mode) include the facet filter in the initial request.
+    const isServerMode = this.serverFacets || !!this.staticValues;
+    if (isServerMode && this.urlParams && !this._urlParamsApplied) {
+      this._applyUrlParams();
+      this._urlParamsApplied = true;
+      if (this._hasActiveSelections()) {
+        this._dispatchFacetCommand();
+      }
+    }
+
     const cachedData = getDataCache(this.source);
     if (cachedData !== undefined) {
       this._onData(cachedData);
