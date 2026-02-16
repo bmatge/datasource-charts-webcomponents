@@ -97,8 +97,8 @@
         \-- gouv-display (liste complete, pagination 20)</div>
 
         <p class="fr-mt-2w">
-          La source <code>gouv-query</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
-          La recherche et les facettes envoient chacune un <code>where</code> au query (merge via <code>whereKey</code>).
+          La source <code>gouv-source</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
+          La recherche et les facettes envoient chacune un <code>where</code> a la source (merge via <code>whereKey</code>).
           Les donnees filtrees sont re-emises par <code>gouv-facets</code> sous l'id <code>"filtered"</code>,
           puis splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
         </p>
@@ -109,14 +109,14 @@
         <!-- LIVE EXAMPLE                                                    -->
         <!-- ============================================================= -->
 
-        <gouv-query id="q"
+        <gouv-source id="q"
           api-type="opendatasoft"
           dataset-id="rappelconso-v2-gtin-trie"
           base-url="https://data.economie.gouv.fr"
           order-by="date_publication:desc"
           server-side
           page-size="100">
-        </gouv-query>
+        </gouv-source>
 
         <gouv-search source="q" server-search
           placeholder="Rechercher un produit, une marque, un numero de fiche..."
@@ -259,14 +259,14 @@
 &lt;/style&gt;
 
 &lt;!-- Source commune --&gt;
-&lt;gouv-query id="q"
+&lt;gouv-source id="q"
   api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   order-by="date_publication:desc"
   server-side
   page-size="100"&gt;
-&lt;/gouv-query&gt;
+&lt;/gouv-source&gt;
 
 &lt;!-- Recherche server-side --&gt;
 &lt;gouv-search source="q" server-search

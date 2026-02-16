@@ -97,9 +97,8 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-f-datalist">
-<pre class="example-code">&lt;gouv-query id="raw"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   rename="Nom de l'&amp;eacute;lu:Nom | Pr&amp;eacute;nom de l'&amp;eacute;lu:Prenom | Libell&amp;eacute; du d&amp;eacute;partement:Departement | Libell&amp;eacute; de la commune:Commune | Libell&amp;eacute; de la cat&amp;eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
@@ -225,9 +224,8 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-modes">Code source</button></h3>
           <div class="fr-collapse" id="code-f-modes">
-<pre class="example-code">&lt;gouv-query id="raw"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-query&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   rename="Nom de l'&amp;eacute;lu:Nom | Pr&amp;eacute;nom de l'&amp;eacute;lu:Prenom | Libell&amp;eacute; du d&amp;eacute;partement:Departement | Libell&amp;eacute; de la commune:Commune | Libell&amp;eacute; de la cat&amp;eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
@@ -251,22 +249,22 @@
 
         <h2>Mode server-facets (ODS)</h2>
         <p>En mode <code>server-facets</code>, <code>gouv-facets</code> fetche les valeurs de facettes depuis l'API ODS <code>/facets</code> au lieu de les calculer localement. Cela permet des facettes dynamiques sur des datasets de millions de records. Les compteurs se mettent a jour automatiquement selon la recherche et les selections cross-facet.</p>
-        <p>Requis : <code>source</code> pointant vers un <code>gouv-query</code> avec <code>api-type="opendatasoft"</code> et <code>server-side</code>. L'attribut <code>fields</code> est obligatoire (pas d'auto-detection en mode serveur).</p>
+        <p>Requis : <code>source</code> pointant vers un <code>gouv-source</code> avec <code>api-type="opendatasoft"</code> et <code>server-side</code>. L'attribut <code>fields</code> est obligatoire (pas d'auto-detection en mode serveur).</p>
 
         <!-- server-facets-display -->
         <h4>Recherche + facettes serveur + cartes</h4>
-        <p>Pipeline complet server-side : <code>gouv-search server-search</code> et <code>gouv-facets server-facets</code> envoient leurs filtres a <code>gouv-query</code> qui merge les <code>where</code> avec AND. Les compteurs de facettes se mettent a jour dynamiquement (cross-facet).
+        <p>Pipeline complet server-side : <code>gouv-search server-search</code> et <code>gouv-facets server-facets</code> envoient leurs filtres a <code>gouv-source</code> qui merge les <code>where</code> avec AND. Les compteurs de facettes se mettent a jour dynamiquement (cross-facet).
           <a href="../apps/playground/index.html?example=server-facets-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-sf-display">Code source</button></h3>
           <div class="fr-collapse" id="code-sf-display">
-<pre class="example-code">&lt;gouv-query id="q" server-side page-size="12"
-  api-type="opendatasoft"
+<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;
-&lt;/gouv-query&gt;
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="12"&gt;
+&lt;/gouv-source&gt;
 
 &lt;gouv-search source="q" server-search
   placeholder="Rechercher une entreprise..."

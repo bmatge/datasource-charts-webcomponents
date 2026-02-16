@@ -1,15 +1,15 @@
-var Ur = Object.defineProperty;
-var u = (n, e) => Ur(n, "name", { value: e, configurable: !0 });
+var Nr = Object.defineProperty;
+var u = (n, e) => Nr(n, "name", { value: e, configurable: !0 });
 /**
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const tt = globalThis, Rt = tt.ShadowRoot && (tt.ShadyCSS === void 0 || tt.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ft = Symbol(), Yt = /* @__PURE__ */ new WeakMap();
+const tt = globalThis, Rt = tt.ShadowRoot && (tt.ShadyCSS === void 0 || tt.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Tt = Symbol(), Kt = /* @__PURE__ */ new WeakMap();
 var he;
-let $r = (he = class {
+let yr = (he = class {
   constructor(e, t, r) {
-    if (this._$cssResult$ = !0, r !== Ft) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, r !== Tt) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
   }
   get styleSheet() {
@@ -17,7 +17,7 @@ let $r = (he = class {
     const t = this.t;
     if (Rt && e === void 0) {
       const r = t !== void 0 && t.length === 1;
-      r && (e = Yt.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), r && Yt.set(t, e));
+      r && (e = Kt.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), r && Kt.set(t, e));
     }
     return e;
   }
@@ -25,33 +25,33 @@ let $r = (he = class {
     return this.cssText;
   }
 }, u(he, "n"), he);
-const Lr = /* @__PURE__ */ u((n) => new $r(typeof n == "string" ? n : n + "", void 0, Ft), "r$4"), wr = /* @__PURE__ */ u((n, ...e) => {
+const Ur = /* @__PURE__ */ u((n) => new yr(typeof n == "string" ? n : n + "", void 0, Tt), "r$4"), wr = /* @__PURE__ */ u((n, ...e) => {
   const t = n.length === 1 ? n[0] : e.reduce((r, i, s) => r + ((a) => {
     if (a._$cssResult$ === !0) return a.cssText;
     if (typeof a == "number") return a;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + a + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(i) + n[s + 1], n[0]);
-  return new $r(t, n, Ft);
-}, "i$3"), zr = /* @__PURE__ */ u((n, e) => {
+  return new yr(t, n, Tt);
+}, "i$3"), Lr = /* @__PURE__ */ u((n, e) => {
   if (Rt) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
     const r = document.createElement("style"), i = tt.litNonce;
     i !== void 0 && r.setAttribute("nonce", i), r.textContent = t.cssText, n.appendChild(r);
   }
-}, "S$1"), Xt = Rt ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
+}, "S$1"), Yt = Rt ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const r of e.cssRules) t += r.cssText;
-  return Lr(t);
+  return Ur(t);
 })(n) : n;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Br, defineProperty: jr, getOwnPropertyDescriptor: Ir, getOwnPropertyNames: qr, getOwnPropertySymbols: Gr, getPrototypeOf: Vr } = Object, Q = globalThis, Zt = Q.trustedTypes, Hr = Zt ? Zt.emptyScript : "", ct = Q.reactiveElementPolyfillSupport, ze = /* @__PURE__ */ u((n, e) => n, "d$1"), it = { toAttribute(n, e) {
+const { is: zr, defineProperty: Br, getOwnPropertyDescriptor: Ir, getOwnPropertyNames: jr, getOwnPropertySymbols: qr, getPrototypeOf: Gr } = Object, J = globalThis, Xt = J.trustedTypes, Vr = Xt ? Xt.emptyScript : "", ct = J.reactiveElementPolyfillSupport, Be = /* @__PURE__ */ u((n, e) => n, "d$1"), rt = { toAttribute(n, e) {
   switch (e) {
     case Boolean:
-      n = n ? Hr : null;
+      n = n ? Vr : null;
       break;
     case Object:
     case Array:
@@ -76,8 +76,8 @@ const { is: Br, defineProperty: jr, getOwnPropertyDescriptor: Ir, getOwnProperty
       }
   }
   return t;
-} }, Mt = /* @__PURE__ */ u((n, e) => !Br(n, e), "f$1"), er = { attribute: !0, type: String, converter: it, reflect: !1, useDefault: !1, hasChanged: Mt };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), Q.litPropertyMetadata ?? (Q.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
+} }, Ft = /* @__PURE__ */ u((n, e) => !zr(n, e), "f$1"), Zt = { attribute: !0, type: String, converter: rt, reflect: !1, useDefault: !1, hasChanged: Ft };
+Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), J.litPropertyMetadata ?? (J.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 var de;
 let ue = (de = class extends HTMLElement {
   static addInitializer(e) {
@@ -86,10 +86,10 @@ let ue = (de = class extends HTMLElement {
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, t = er) {
+  static createProperty(e, t = Zt) {
     if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
       const r = Symbol(), i = this.getPropertyDescriptor(e, r, t);
-      i !== void 0 && jr(this.prototype, e, i);
+      i !== void 0 && Br(this.prototype, e, i);
     }
   }
   static getPropertyDescriptor(e, t, r) {
@@ -104,17 +104,17 @@ let ue = (de = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? er;
+    return this.elementProperties.get(e) ?? Zt;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(ze("elementProperties"))) return;
-    const e = Vr(this);
+    if (this.hasOwnProperty(Be("elementProperties"))) return;
+    const e = Gr(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(ze("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(ze("properties"))) {
-      const t = this.properties, r = [...qr(t), ...Gr(t)];
+    if (this.hasOwnProperty(Be("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(Be("properties"))) {
+      const t = this.properties, r = [...jr(t), ...qr(t)];
       for (const i of r) this.createProperty(i, t[i]);
     }
     const e = this[Symbol.metadata];
@@ -133,8 +133,8 @@ let ue = (de = class extends HTMLElement {
     const t = [];
     if (Array.isArray(e)) {
       const r = new Set(e.flat(1 / 0).reverse());
-      for (const i of r) t.unshift(Xt(i));
-    } else e !== void 0 && t.push(Xt(e));
+      for (const i of r) t.unshift(Yt(i));
+    } else e !== void 0 && t.push(Yt(e));
     return t;
   }
   static _$Eu(e, t) {
@@ -163,7 +163,7 @@ let ue = (de = class extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return zr(e, this.constructor.elementStyles), e;
+    return Lr(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     var e;
@@ -188,7 +188,7 @@ let ue = (de = class extends HTMLElement {
     var s;
     const r = this.constructor.elementProperties.get(e), i = this.constructor._$Eu(e, r);
     if (i !== void 0 && r.reflect === !0) {
-      const a = (((s = r.converter) == null ? void 0 : s.toAttribute) !== void 0 ? r.converter : it).toAttribute(t, r.type);
+      const a = (((s = r.converter) == null ? void 0 : s.toAttribute) !== void 0 ? r.converter : rt).toAttribute(t, r.type);
       this._$Em = e, a == null ? this.removeAttribute(i) : this.setAttribute(i, a), this._$Em = null;
     }
   }
@@ -196,7 +196,7 @@ let ue = (de = class extends HTMLElement {
     var s, a;
     const r = this.constructor, i = r._$Eh.get(e);
     if (i !== void 0 && this._$Em !== i) {
-      const o = r.getPropertyOptions(i), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((s = o.converter) == null ? void 0 : s.fromAttribute) !== void 0 ? o.converter : it;
+      const o = r.getPropertyOptions(i), l = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((s = o.converter) == null ? void 0 : s.fromAttribute) !== void 0 ? o.converter : rt;
       this._$Em = i;
       const h = l.fromAttribute(t, o.type);
       this[i] = h ?? ((a = this._$Ej) == null ? void 0 : a.get(i)) ?? h, this._$Em = null;
@@ -206,7 +206,7 @@ let ue = (de = class extends HTMLElement {
     var a;
     if (e !== void 0) {
       const o = this.constructor;
-      if (i === !1 && (s = this[e]), r ?? (r = o.getPropertyOptions(e)), !((r.hasChanged ?? Mt)(s, t) || r.useDefault && r.reflect && s === ((a = this._$Ej) == null ? void 0 : a.get(e)) && !this.hasAttribute(o._$Eu(e, r)))) return;
+      if (i === !1 && (s = this[e]), r ?? (r = o.getPropertyOptions(e)), !((r.hasChanged ?? Ft)(s, t) || r.useDefault && r.reflect && s === ((a = this._$Ej) == null ? void 0 : a.get(e)) && !this.hasAttribute(o._$Eu(e, r)))) return;
       this.C(e, t, r);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -282,29 +282,29 @@ let ue = (de = class extends HTMLElement {
   firstUpdated(e) {
   }
 }, u(de, "y"), de);
-ue.elementStyles = [], ue.shadowRootOptions = { mode: "open" }, ue[ze("elementProperties")] = /* @__PURE__ */ new Map(), ue[ze("finalized")] = /* @__PURE__ */ new Map(), ct == null || ct({ ReactiveElement: ue }), (Q.reactiveElementVersions ?? (Q.reactiveElementVersions = [])).push("2.1.2");
+ue.elementStyles = [], ue.shadowRootOptions = { mode: "open" }, ue[Be("elementProperties")] = /* @__PURE__ */ new Map(), ue[Be("finalized")] = /* @__PURE__ */ new Map(), ct == null || ct({ ReactiveElement: ue }), (J.reactiveElementVersions ?? (J.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Be = globalThis, tr = /* @__PURE__ */ u((n) => n, "i$1"), st = Be.trustedTypes, rr = st ? st.createPolicy("lit-html", { createHTML: /* @__PURE__ */ u((n) => n, "createHTML") }) : void 0, Sr = "$lit$", J = `lit$${Math.random().toFixed(9).slice(2)}$`, Cr = "?" + J, Wr = `<${Cr}>`, ie = document, je = /* @__PURE__ */ u(() => ie.createComment(""), "c"), Ie = /* @__PURE__ */ u((n) => n === null || typeof n != "object" && typeof n != "function", "a"), Tt = Array.isArray, Jr = /* @__PURE__ */ u((n) => Tt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), ut = `[ 	
-\f\r]`, Ue = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ir = /-->/g, sr = />/g, Z = RegExp(`>|${ut}(?:([^\\s"'>=/]+)(${ut}*=${ut}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ar = /'/g, nr = /"/g, Pr = /^(?:script|style|textarea|title)$/i, Qr = /* @__PURE__ */ u((n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), "x"), d = Qr(1), ke = Symbol.for("lit-noChange"), b = Symbol.for("lit-nothing"), or = /* @__PURE__ */ new WeakMap(), ee = ie.createTreeWalker(ie, 129);
+const Ie = globalThis, er = /* @__PURE__ */ u((n) => n, "i$1"), it = Ie.trustedTypes, tr = it ? it.createPolicy("lit-html", { createHTML: /* @__PURE__ */ u((n) => n, "createHTML") }) : void 0, $r = "$lit$", W = `lit$${Math.random().toFixed(9).slice(2)}$`, Sr = "?" + W, Hr = `<${Sr}>`, ie = document, je = /* @__PURE__ */ u(() => ie.createComment(""), "c"), qe = /* @__PURE__ */ u((n) => n === null || typeof n != "object" && typeof n != "function", "a"), Mt = Array.isArray, Wr = /* @__PURE__ */ u((n) => Mt(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", "d"), ut = `[ 	
+\f\r]`, Le = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, rr = /-->/g, ir = />/g, Z = RegExp(`>|${ut}(?:([^\\s"'>=/]+)(${ut}*=${ut}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), sr = /'/g, ar = /"/g, Cr = /^(?:script|style|textarea|title)$/i, Jr = /* @__PURE__ */ u((n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), "x"), d = Jr(1), ke = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), nr = /* @__PURE__ */ new WeakMap(), ee = ie.createTreeWalker(ie, 129);
 function xr(n, e) {
-  if (!Tt(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return rr !== void 0 ? rr.createHTML(e) : e;
+  if (!Mt(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return tr !== void 0 ? tr.createHTML(e) : e;
 }
 u(xr, "V");
-const Kr = /* @__PURE__ */ u((n, e) => {
+const Qr = /* @__PURE__ */ u((n, e) => {
   const t = n.length - 1, r = [];
-  let i, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = Ue;
+  let i, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = Le;
   for (let o = 0; o < t; o++) {
     const l = n[o];
     let h, p, f = -1, g = 0;
-    for (; g < l.length && (a.lastIndex = g, p = a.exec(l), p !== null); ) g = a.lastIndex, a === Ue ? p[1] === "!--" ? a = ir : p[1] !== void 0 ? a = sr : p[2] !== void 0 ? (Pr.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = Z) : p[3] !== void 0 && (a = Z) : a === Z ? p[0] === ">" ? (a = i ?? Ue, f = -1) : p[1] === void 0 ? f = -2 : (f = a.lastIndex - p[2].length, h = p[1], a = p[3] === void 0 ? Z : p[3] === '"' ? nr : ar) : a === nr || a === ar ? a = Z : a === ir || a === sr ? a = Ue : (a = Z, i = void 0);
-    const m = a === Z && n[o + 1].startsWith("/>") ? " " : "";
-    s += a === Ue ? l + Wr : f >= 0 ? (r.push(h), l.slice(0, f) + Sr + l.slice(f) + J + m) : l + J + (f === -2 ? o : m);
+    for (; g < l.length && (a.lastIndex = g, p = a.exec(l), p !== null); ) g = a.lastIndex, a === Le ? p[1] === "!--" ? a = rr : p[1] !== void 0 ? a = ir : p[2] !== void 0 ? (Cr.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = Z) : p[3] !== void 0 && (a = Z) : a === Z ? p[0] === ">" ? (a = i ?? Le, f = -1) : p[1] === void 0 ? f = -2 : (f = a.lastIndex - p[2].length, h = p[1], a = p[3] === void 0 ? Z : p[3] === '"' ? ar : sr) : a === ar || a === sr ? a = Z : a === rr || a === ir ? a = Le : (a = Z, i = void 0);
+    const b = a === Z && n[o + 1].startsWith("/>") ? " " : "";
+    s += a === Le ? l + Hr : f >= 0 ? (r.push(h), l.slice(0, f) + $r + l.slice(f) + W + b) : l + W + (f === -2 ? o : b);
   }
   return [xr(n, s + (n[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), r];
 }, "N"), at = class at {
@@ -312,29 +312,29 @@ const Kr = /* @__PURE__ */ u((n, e) => {
     let i;
     this.parts = [];
     let s = 0, a = 0;
-    const o = e.length - 1, l = this.parts, [h, p] = Kr(e, t);
+    const o = e.length - 1, l = this.parts, [h, p] = Qr(e, t);
     if (this.el = at.createElement(h, r), ee.currentNode = this.el.content, t === 2 || t === 3) {
       const f = this.el.content.firstChild;
       f.replaceWith(...f.childNodes);
     }
     for (; (i = ee.nextNode()) !== null && l.length < o; ) {
       if (i.nodeType === 1) {
-        if (i.hasAttributes()) for (const f of i.getAttributeNames()) if (f.endsWith(Sr)) {
-          const g = p[a++], m = i.getAttribute(f).split(J), M = /([.?@])?(.*)/.exec(g);
-          l.push({ type: 1, index: s, name: M[2], strings: m, ctor: M[1] === "." ? vt : M[1] === "?" ? yt : M[1] === "@" ? $t : Re }), i.removeAttribute(f);
-        } else f.startsWith(J) && (l.push({ type: 6, index: s }), i.removeAttribute(f));
-        if (Pr.test(i.tagName)) {
-          const f = i.textContent.split(J), g = f.length - 1;
+        if (i.hasAttributes()) for (const f of i.getAttributeNames()) if (f.endsWith($r)) {
+          const g = p[a++], b = i.getAttribute(f).split(W), F = /([.?@])?(.*)/.exec(g);
+          l.push({ type: 1, index: s, name: F[2], strings: b, ctor: F[1] === "." ? vt : F[1] === "?" ? yt : F[1] === "@" ? wt : Re }), i.removeAttribute(f);
+        } else f.startsWith(W) && (l.push({ type: 6, index: s }), i.removeAttribute(f));
+        if (Cr.test(i.tagName)) {
+          const f = i.textContent.split(W), g = f.length - 1;
           if (g > 0) {
-            i.textContent = st ? st.emptyScript : "";
-            for (let m = 0; m < g; m++) i.append(f[m], je()), ee.nextNode(), l.push({ type: 2, index: ++s });
+            i.textContent = it ? it.emptyScript : "";
+            for (let b = 0; b < g; b++) i.append(f[b], je()), ee.nextNode(), l.push({ type: 2, index: ++s });
             i.append(f[g], je());
           }
         }
-      } else if (i.nodeType === 8) if (i.data === Cr) l.push({ type: 2, index: s });
+      } else if (i.nodeType === 8) if (i.data === Sr) l.push({ type: 2, index: s });
       else {
         let f = -1;
-        for (; (f = i.data.indexOf(J, f + 1)) !== -1; ) l.push({ type: 7, index: s }), f += J.length - 1;
+        for (; (f = i.data.indexOf(W, f + 1)) !== -1; ) l.push({ type: 7, index: s }), f += W.length - 1;
       }
       s++;
     }
@@ -345,16 +345,16 @@ const Kr = /* @__PURE__ */ u((n, e) => {
   }
 };
 u(at, "S");
-let qe = at;
+let Ge = at;
 function Ee(n, e, t = n, r) {
   var a, o;
   if (e === ke) return e;
   let i = r !== void 0 ? (a = t._$Co) == null ? void 0 : a[r] : t._$Cl;
-  const s = Ie(e) ? void 0 : e._$litDirective$;
+  const s = qe(e) ? void 0 : e._$litDirective$;
   return (i == null ? void 0 : i.constructor) !== s && ((o = i == null ? void 0 : i._$AO) == null || o.call(i, !1), s === void 0 ? i = void 0 : (i = new s(n), i._$AT(n, t, r)), r !== void 0 ? (t._$Co ?? (t._$Co = []))[r] = i : t._$Cl = i), i !== void 0 && (e = Ee(n, i._$AS(n, e.values), i, r)), e;
 }
 u(Ee, "M");
-const zt = class zt {
+const Lt = class Lt {
   constructor(e, t) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
   }
@@ -371,7 +371,7 @@ const zt = class zt {
     for (; l !== void 0; ) {
       if (a === l.index) {
         let h;
-        l.type === 2 ? h = new Ge(s, s.nextSibling, this, e) : l.type === 1 ? h = new l.ctor(s, l.name, l.strings, this, e) : l.type === 6 && (h = new wt(s, this, e)), this._$AV.push(h), l = r[++o];
+        l.type === 2 ? h = new Ve(s, s.nextSibling, this, e) : l.type === 1 ? h = new l.ctor(s, l.name, l.strings, this, e) : l.type === 6 && (h = new $t(s, this, e)), this._$AV.push(h), l = r[++o];
       }
       a !== (l == null ? void 0 : l.index) && (s = ee.nextNode(), a++);
     }
@@ -382,15 +382,15 @@ const zt = class zt {
     for (const r of this._$AV) r !== void 0 && (r.strings !== void 0 ? (r._$AI(e, r, t), t += r.strings.length - 2) : r._$AI(e[t])), t++;
   }
 };
-u(zt, "R");
-let mt = zt;
+u(Lt, "R");
+let bt = Lt;
 const nt = class nt {
   get _$AU() {
     var e;
     return ((e = this._$AM) == null ? void 0 : e._$AU) ?? this._$Cv;
   }
   constructor(e, t, r, i) {
-    this.type = 2, this._$AH = b, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = r, this.options = i, this._$Cv = (i == null ? void 0 : i.isConnected) ?? !0;
+    this.type = 2, this._$AH = m, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = r, this.options = i, this._$Cv = (i == null ? void 0 : i.isConnected) ?? !0;
   }
   get parentNode() {
     let e = this._$AA.parentNode;
@@ -404,7 +404,7 @@ const nt = class nt {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = Ee(this, e, t), Ie(e) ? e === b || e == null || e === "" ? (this._$AH !== b && this._$AR(), this._$AH = b) : e !== this._$AH && e !== ke && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Jr(e) ? this.k(e) : this._(e);
+    e = Ee(this, e, t), qe(e) ? e === m || e == null || e === "" ? (this._$AH !== m && this._$AR(), this._$AH = m) : e !== this._$AH && e !== ke && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Wr(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -413,23 +413,23 @@ const nt = class nt {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== b && Ie(this._$AH) ? this._$AA.nextSibling.data = e : this.T(ie.createTextNode(e)), this._$AH = e;
+    this._$AH !== m && qe(this._$AH) ? this._$AA.nextSibling.data = e : this.T(ie.createTextNode(e)), this._$AH = e;
   }
   $(e) {
     var s;
-    const { values: t, _$litType$: r } = e, i = typeof r == "number" ? this._$AC(e) : (r.el === void 0 && (r.el = qe.createElement(xr(r.h, r.h[0]), this.options)), r);
+    const { values: t, _$litType$: r } = e, i = typeof r == "number" ? this._$AC(e) : (r.el === void 0 && (r.el = Ge.createElement(xr(r.h, r.h[0]), this.options)), r);
     if (((s = this._$AH) == null ? void 0 : s._$AD) === i) this._$AH.p(t);
     else {
-      const a = new mt(i, this), o = a.u(this.options);
+      const a = new bt(i, this), o = a.u(this.options);
       a.p(t), this.T(o), this._$AH = a;
     }
   }
   _$AC(e) {
-    let t = or.get(e.strings);
-    return t === void 0 && or.set(e.strings, t = new qe(e)), t;
+    let t = nr.get(e.strings);
+    return t === void 0 && nr.set(e.strings, t = new Ge(e)), t;
   }
   k(e) {
-    Tt(this._$AH) || (this._$AH = [], this._$AR());
+    Mt(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let r, i = 0;
     for (const s of e) i === t.length ? t.push(r = new nt(this.O(je()), this.O(je()), this, this.options)) : r = t[i], r._$AI(s), i++;
@@ -438,8 +438,8 @@ const nt = class nt {
   _$AR(e = this._$AA.nextSibling, t) {
     var r;
     for ((r = this._$AP) == null ? void 0 : r.call(this, !1, !0, t); e !== this._$AB; ) {
-      const i = tr(e).nextSibling;
-      tr(e).remove(), e = i;
+      const i = er(e).nextSibling;
+      er(e).remove(), e = i;
     }
   }
   setConnected(e) {
@@ -448,8 +448,8 @@ const nt = class nt {
   }
 };
 u(nt, "k");
-let Ge = nt;
-const Bt = class Bt {
+let Ve = nt;
+const zt = class zt {
   get tagName() {
     return this.element.tagName;
   }
@@ -457,52 +457,52 @@ const Bt = class Bt {
     return this._$AM._$AU;
   }
   constructor(e, t, r, i, s) {
-    this.type = 1, this._$AH = b, this._$AN = void 0, this.element = e, this.name = t, this._$AM = i, this.options = s, r.length > 2 || r[0] !== "" || r[1] !== "" ? (this._$AH = Array(r.length - 1).fill(new String()), this.strings = r) : this._$AH = b;
+    this.type = 1, this._$AH = m, this._$AN = void 0, this.element = e, this.name = t, this._$AM = i, this.options = s, r.length > 2 || r[0] !== "" || r[1] !== "" ? (this._$AH = Array(r.length - 1).fill(new String()), this.strings = r) : this._$AH = m;
   }
   _$AI(e, t = this, r, i) {
     const s = this.strings;
     let a = !1;
-    if (s === void 0) e = Ee(this, e, t, 0), a = !Ie(e) || e !== this._$AH && e !== ke, a && (this._$AH = e);
+    if (s === void 0) e = Ee(this, e, t, 0), a = !qe(e) || e !== this._$AH && e !== ke, a && (this._$AH = e);
     else {
       const o = e;
       let l, h;
-      for (e = s[0], l = 0; l < s.length - 1; l++) h = Ee(this, o[r + l], t, l), h === ke && (h = this._$AH[l]), a || (a = !Ie(h) || h !== this._$AH[l]), h === b ? e = b : e !== b && (e += (h ?? "") + s[l + 1]), this._$AH[l] = h;
+      for (e = s[0], l = 0; l < s.length - 1; l++) h = Ee(this, o[r + l], t, l), h === ke && (h = this._$AH[l]), a || (a = !qe(h) || h !== this._$AH[l]), h === m ? e = m : e !== m && (e += (h ?? "") + s[l + 1]), this._$AH[l] = h;
     }
     a && !i && this.j(e);
   }
   j(e) {
-    e === b ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+    e === m ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 };
-u(Bt, "H");
-let Re = Bt;
-const jt = class jt extends Re {
+u(zt, "H");
+let Re = zt;
+const Bt = class Bt extends Re {
   constructor() {
     super(...arguments), this.type = 3;
   }
   j(e) {
-    this.element[this.name] = e === b ? void 0 : e;
+    this.element[this.name] = e === m ? void 0 : e;
   }
 };
-u(jt, "I");
-let vt = jt;
+u(Bt, "I");
+let vt = Bt;
 const It = class It extends Re {
   constructor() {
     super(...arguments), this.type = 4;
   }
   j(e) {
-    this.element.toggleAttribute(this.name, !!e && e !== b);
+    this.element.toggleAttribute(this.name, !!e && e !== m);
   }
 };
 u(It, "L");
 let yt = It;
-const qt = class qt extends Re {
+const jt = class jt extends Re {
   constructor(e, t, r, i, s) {
     super(e, t, r, i, s), this.type = 5;
   }
   _$AI(e, t = this) {
-    if ((e = Ee(this, e, t, 0) ?? b) === ke) return;
-    const r = this._$AH, i = e === b && r !== b || e.capture !== r.capture || e.once !== r.once || e.passive !== r.passive, s = e !== b && (r === b || i);
+    if ((e = Ee(this, e, t, 0) ?? m) === ke) return;
+    const r = this._$AH, i = e === m && r !== m || e.capture !== r.capture || e.once !== r.once || e.passive !== r.passive, s = e !== m && (r === m || i);
     i && this.element.removeEventListener(this.name, this, r), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
   handleEvent(e) {
@@ -510,9 +510,9 @@ const qt = class qt extends Re {
     typeof this._$AH == "function" ? this._$AH.call(((t = this.options) == null ? void 0 : t.host) ?? this.element, e) : this._$AH.handleEvent(e);
   }
 };
-u(qt, "z");
-let $t = qt;
-const Gt = class Gt {
+u(jt, "z");
+let wt = jt;
+const qt = class qt {
   constructor(e, t, r) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = r;
   }
@@ -523,16 +523,16 @@ const Gt = class Gt {
     Ee(this, e);
   }
 };
-u(Gt, "Z");
-let wt = Gt;
-const ht = Be.litHtmlPolyfillSupport;
-ht == null || ht(qe, Ge), (Be.litHtmlVersions ?? (Be.litHtmlVersions = [])).push("3.3.2");
-const Yr = /* @__PURE__ */ u((n, e, t) => {
+u(qt, "Z");
+let $t = qt;
+const ht = Ie.litHtmlPolyfillSupport;
+ht == null || ht(Ge, Ve), (Ie.litHtmlVersions ?? (Ie.litHtmlVersions = [])).push("3.3.2");
+const Kr = /* @__PURE__ */ u((n, e, t) => {
   const r = (t == null ? void 0 : t.renderBefore) ?? e;
   let i = r._$litPart$;
   if (i === void 0) {
     const s = (t == null ? void 0 : t.renderBefore) ?? null;
-    r._$litPart$ = i = new Ge(e.insertBefore(je(), s), s, void 0, t ?? {});
+    r._$litPart$ = i = new Ve(e.insertBefore(je(), s), s, void 0, t ?? {});
   }
   return i._$AI(n), i;
 }, "D");
@@ -541,7 +541,7 @@ const Yr = /* @__PURE__ */ u((n, e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const re = globalThis, Vt = class Vt extends ue {
+const re = globalThis, Gt = class Gt extends ue {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -552,7 +552,7 @@ const re = globalThis, Vt = class Vt extends ue {
   }
   update(e) {
     const t = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Yr(t, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Kr(t, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     var e;
@@ -566,12 +566,12 @@ const re = globalThis, Vt = class Vt extends ue {
     return ke;
   }
 };
-u(Vt, "i");
-let k = Vt;
-var yr;
-k._$litElement$ = !0, k.finalized = !0, (yr = re.litElementHydrateSupport) == null || yr.call(re, { LitElement: k });
+u(Gt, "i");
+let P = Gt;
+var vr;
+P._$litElement$ = !0, P.finalized = !0, (vr = re.litElementHydrateSupport) == null || vr.call(re, { LitElement: P });
 const dt = re.litElementPolyfillSupport;
-dt == null || dt({ LitElement: k });
+dt == null || dt({ LitElement: P });
 (re.litElementVersions ?? (re.litElementVersions = [])).push("4.2.2");
 /**
  * @license
@@ -588,7 +588,7 @@ const D = /* @__PURE__ */ u((n) => (e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Xr = { attribute: !0, type: String, converter: it, reflect: !1, hasChanged: Mt }, Zr = /* @__PURE__ */ u((n = Xr, e, t) => {
+const Yr = { attribute: !0, type: String, converter: rt, reflect: !1, hasChanged: Ft }, Xr = /* @__PURE__ */ u((n = Yr, e, t) => {
   const { kind: r, metadata: i } = t;
   let s = globalThis.litPropertyMetadata.get(i);
   if (s === void 0 && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), r === "setter" && ((n = Object.create(n)).wrapped = !0), s.set(t.name, n), r === "accessor") {
@@ -610,7 +610,7 @@ const Xr = { attribute: !0, type: String, converter: it, reflect: !1, hasChanged
   throw Error("Unsupported decorator location: " + r);
 }, "r$1");
 function c(n) {
-  return (e, t) => typeof t == "object" ? Zr(n, e, t) : ((r, i, s) => {
+  return (e, t) => typeof t == "object" ? Xr(n, e, t) : ((r, i, s) => {
     const a = i.hasOwnProperty(s);
     return i.constructor.createProperty(s, r), a ? Object.getOwnPropertyDescriptor(i, s) : void 0;
   })(n, e, t);
@@ -625,7 +625,7 @@ function _(n) {
   return c({ ...n, state: !0, attribute: !1 });
 }
 u(_, "r");
-function P(n, e) {
+function E(n, e) {
   if (!e || e.trim() === "")
     return n;
   const r = e.replace(/\[(\d+)\]/g, ".$1").split(".");
@@ -637,12 +637,12 @@ function P(n, e) {
   }
   return i;
 }
-u(P, "getByPath");
-function Ai(n, e) {
-  return P(n, e) !== void 0;
+u(E, "getByPath");
+function Pi(n, e) {
+  return E(n, e) !== void 0;
 }
-u(Ai, "hasPath");
-function lr(n, e, t) {
+u(Pi, "hasPath");
+function or(n, e, t) {
   const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
   let s = n;
   for (let a = 0; a < i.length - 1; a++) {
@@ -651,9 +651,9 @@ function lr(n, e, t) {
   }
   s[i[i.length - 1]] = t;
 }
-u(lr, "setByPath");
+u(or, "setByPath");
 function ki(n, e, t) {
-  const r = P(n, e);
+  const r = E(n, e);
   return r !== void 0 ? r : t;
 }
 u(ki, "getByPathOrDefault");
@@ -661,7 +661,7 @@ function St(n) {
   return n ? String(n).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "";
 }
 u(St, "escapeHtml");
-function cr(n, e = !1) {
+function lr(n, e = !1) {
   if (typeof n == "number")
     return isNaN(n) ? e ? null : 0 : n;
   if (typeof n != "string")
@@ -678,18 +678,18 @@ function cr(n, e = !1) {
   const s = parseFloat(t);
   return isNaN(s) ? e ? null : 0 : s;
 }
-u(cr, "toNumber");
-function ei(n) {
+u(lr, "toNumber");
+function Zr(n) {
   if (typeof n != "string")
     return !1;
   const e = n.trim();
   return e === "" ? !1 : /^-?[\d\s]+([.,]\d+)?$/.test(e);
 }
-u(ei, "looksLikeNumber");
-function ti(n) {
+u(Zr, "looksLikeNumber");
+function ei(n) {
   return !n || typeof n != "string" || ["N/A", "null", "undefined", "00", ""].includes(n) ? !1 : !!(n === "2A" || n === "2B" || /^97[1-6]$/.test(n) || /^(0[1-9]|[1-8]\d|9[0-5])$/.test(n));
 }
-u(ti, "isValidDeptCode");
+u(ei, "isValidDeptCode");
 const Dt = "https://chartsbuilder.matge.com", pt = {
   baseUrl: Dt,
   endpoints: {
@@ -699,28 +699,28 @@ const Dt = "https://chartsbuilder.matge.com", pt = {
     tabular: "/tabular-proxy"
   }
 };
-function ri() {
+function ti() {
   return typeof window < "u" && window.location.hostname === "localhost" && window.location.port === "5173";
 }
-u(ri, "isViteDevMode");
-function ii() {
+u(ti, "isViteDevMode");
+function ri() {
   return typeof window < "u" && "__TAURI__" in window;
 }
-u(ii, "isTauriMode");
+u(ri, "isTauriMode");
 function Ar() {
   var r;
   const n = { ...pt.endpoints };
-  return ri() ? { baseUrl: "", endpoints: n } : ii() ? { baseUrl: pt.baseUrl, endpoints: n } : {
+  return ti() ? { baseUrl: "", endpoints: n } : ri() ? { baseUrl: pt.baseUrl, endpoints: n } : {
     baseUrl: ((r = import.meta.env) == null ? void 0 : r.VITE_PROXY_URL) || pt.baseUrl,
     endpoints: n
   };
 }
 u(Ar, "getProxyConfig");
-function si(n) {
+function ii(n) {
   const e = Ar();
   return n.includes("tabular-api.data.gouv.fr") ? n.replace("https://tabular-api.data.gouv.fr", `${e.baseUrl}${e.endpoints.tabular}`) : n.includes("docs.getgrist.com") ? n.replace("https://docs.getgrist.com", `${e.baseUrl}${e.endpoints.grist}`) : n.includes("grist.numerique.gouv.fr") ? n.replace("https://grist.numerique.gouv.fr", `${e.baseUrl}${e.endpoints.gristGouv}`) : n.includes("albert.api.etalab.gouv.fr") ? n.replace("https://albert.api.etalab.gouv.fr", `${e.baseUrl}${e.endpoints.albert}`) : n;
 }
-u(si, "getProxiedUrl");
+u(ii, "getProxiedUrl");
 const Qe = {
   FAVORITES: "gouv-widgets-favorites",
   DASHBOARDS: "gouv-widgets-dashboards",
@@ -736,27 +736,27 @@ function Ke(n, e) {
   }
 }
 u(Ke, "loadFromStorage");
-const ai = {
+const si = {
   user: null,
   isAuthenticated: !1,
   isLoading: !0
 };
-let Fe = { ...ai }, ce = null, Ye = null, kr = "";
+let Te = { ...si }, ce = null, Ye = null, Pr = "";
 const Ct = /* @__PURE__ */ new Set();
-function ni() {
+function ai() {
   for (const n of Ct)
     try {
-      n(Fe);
+      n(Te);
     } catch {
     }
 }
-u(ni, "notify");
+u(ai, "notify");
 function te(n) {
-  Fe = { ...Fe, ...n }, ni();
+  Te = { ...Te, ...n }, ai();
 }
 u(te, "setState");
-async function Ve(n, e) {
-  return fetch(`${kr}${n}`, {
+async function He(n, e) {
+  return fetch(`${Pr}${n}`, {
     ...e,
     credentials: "include",
     headers: {
@@ -765,12 +765,12 @@ async function Ve(n, e) {
     }
   });
 }
-u(Ve, "apiFetch");
-async function Er() {
+u(He, "apiFetch");
+async function kr() {
   if (ce !== null)
     return ce;
   try {
-    const n = await fetch(`${kr}/api/auth/me`, {
+    const n = await fetch(`${Pr}/api/auth/me`, {
       credentials: "include"
     });
     ce = n.status === 200 || n.status === 401;
@@ -779,16 +779,16 @@ async function Er() {
   }
   return ce && typeof window < "u" && (window.__gwDbMode = !0), ce;
 }
-u(Er, "isDbMode");
-async function oi() {
-  return Ye || (Ye = li(), Ye);
+u(kr, "isDbMode");
+async function ni() {
+  return Ye || (Ye = oi(), Ye);
 }
-u(oi, "checkAuth");
-async function li() {
-  if (!await Er())
-    return te({ user: null, isAuthenticated: !1, isLoading: !1 }), Fe;
+u(ni, "checkAuth");
+async function oi() {
+  if (!await kr())
+    return te({ user: null, isAuthenticated: !1, isLoading: !1 }), Te;
   try {
-    const e = await Ve("/api/auth/me");
+    const e = await He("/api/auth/me");
     if (e.ok) {
       const t = await e.json();
       te({ user: t.user, isAuthenticated: !0, isLoading: !1 });
@@ -797,59 +797,59 @@ async function li() {
   } catch {
     te({ user: null, isAuthenticated: !1, isLoading: !1 });
   }
-  return Fe;
+  return Te;
 }
-u(li, "_doCheckAuth");
-async function ci(n) {
+u(oi, "_doCheckAuth");
+async function li(n) {
   try {
-    const e = await Ve("/api/auth/login", {
+    const e = await He("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(n)
     });
     if (!e.ok)
       return { success: !1, error: (await e.json()).error || "Login failed" };
     const t = await e.json();
-    return te({ user: t.user, isAuthenticated: !0, isLoading: !1 }), await Rr(), { success: !0 };
+    return te({ user: t.user, isAuthenticated: !0, isLoading: !1 }), await Er(), { success: !0 };
   } catch {
     return { success: !1, error: "Network error" };
   }
 }
-u(ci, "login");
-async function ui(n) {
+u(li, "login");
+async function ci(n) {
   try {
-    const e = await Ve("/api/auth/register", {
+    const e = await He("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(n)
     });
     if (!e.ok)
       return { success: !1, error: (await e.json()).error || "Registration failed" };
     const t = await e.json();
-    return te({ user: t.user, isAuthenticated: !0, isLoading: !1 }), await Rr(), { success: !0 };
+    return te({ user: t.user, isAuthenticated: !0, isLoading: !1 }), await Er(), { success: !0 };
   } catch {
     return { success: !1, error: "Network error" };
   }
 }
-u(ui, "register");
-async function hi() {
+u(ci, "register");
+async function ui() {
   try {
-    await Ve("/api/auth/logout", { method: "POST" });
+    await He("/api/auth/logout", { method: "POST" });
   } catch {
   }
   te({ user: null, isAuthenticated: !1, isLoading: !1 });
 }
-u(hi, "logout");
-function di(n) {
+u(ui, "logout");
+function hi(n) {
   return Ct.add(n), () => {
     Ct.delete(n);
   };
 }
-u(di, "onAuthChange");
+u(hi, "onAuthChange");
 function Xe() {
-  return Fe.isAuthenticated;
+  return Te.isAuthenticated;
 }
 u(Xe, "isAuthenticated");
 const ft = "gw-migrated";
-async function Rr() {
+async function Er() {
   if (localStorage.getItem(ft))
     return;
   const n = Ke(Qe.SOURCES, []), e = Ke(Qe.CONNECTIONS, []), t = Ke(Qe.FAVORITES, []), r = Ke(Qe.DASHBOARDS, []);
@@ -858,7 +858,7 @@ async function Rr() {
     return;
   }
   try {
-    (await Ve("/api/migrate", {
+    (await He("/api/migrate", {
       method: "POST",
       body: JSON.stringify({ sources: n, connections: e, favorites: t, dashboards: r })
     })).ok && (localStorage.setItem(ft, "1"), console.info("[auth] localStorage data migrated to server"));
@@ -866,11 +866,11 @@ async function Rr() {
     console.warn("[auth] Migration failed, will retry on next login");
   }
 }
-u(Rr, "autoMigrateIfNeeded");
-const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
+u(Er, "autoMigrateIfNeeded");
+const cr = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Rr = {
   id: "opendatasoft",
   displayName: "OpenDataSoft",
-  urlPatterns: [ur],
+  urlPatterns: [cr],
   knownHosts: [],
   // any ODS domain is valid — no fixed host
   defaultBaseUrl: "https://data.opendatasoft.com",
@@ -911,7 +911,7 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     idFields: ["datasetId"],
     apiPathTemplate: "/api/explore/v2.1/catalog/datasets/{datasetId}/records",
     extractIds: /* @__PURE__ */ u((n) => {
-      const e = n.match(ur);
+      const e = n.match(cr);
       return e ? { datasetId: e[1] } : null;
     }, "extractIds")
   },
@@ -924,10 +924,10 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     dependencies: { dsfr: !0, dsfrChart: !0, gouvWidgets: !0 },
     v2: { usesGouvSource: !0, usesGouvQuery: !0, sourceApiType: "opendatasoft" }
   }
-}, hr = /tabular-api\.data\.gouv\.fr\/api\/resources\/([^/]+)/, Mr = {
+}, ur = /tabular-api\.data\.gouv\.fr\/api\/resources\/([^/]+)/, Tr = {
   id: "tabular",
   displayName: "Tabular (data.gouv.fr)",
-  urlPatterns: [hr],
+  urlPatterns: [ur],
   knownHosts: [
     { hostname: "tabular-api.data.gouv.fr", proxyEndpoint: "/tabular-proxy" }
   ],
@@ -987,7 +987,7 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     idFields: ["resourceId"],
     apiPathTemplate: "/api/resources/{resourceId}/data/",
     extractIds: /* @__PURE__ */ u((n) => {
-      const e = n.match(hr);
+      const e = n.match(ur);
       return e ? { resourceId: e[1] } : null;
     }, "extractIds")
   },
@@ -1000,10 +1000,10 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     dependencies: { dsfr: !0, dsfrChart: !0, gouvWidgets: !0 },
     v2: { usesGouvSource: !0, usesGouvQuery: !0, sourceApiType: "tabular" }
   }
-}, dr = /\/api\/docs\/([^/]+)\/tables\/([^/]+)/, Tr = {
+}, hr = /\/api\/docs\/([^/]+)\/tables\/([^/]+)/, Fr = {
   id: "grist",
   displayName: "Grist",
-  urlPatterns: [dr],
+  urlPatterns: [hr],
   knownHosts: [
     { hostname: "grist.numerique.gouv.fr", proxyEndpoint: "/grist-gouv-proxy" },
     { hostname: "docs.getgrist.com", proxyEndpoint: "/grist-proxy" }
@@ -1045,7 +1045,7 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     idFields: ["documentId", "tableId"],
     apiPathTemplate: "/api/docs/{documentId}/tables/{tableId}/records",
     extractIds: /* @__PURE__ */ u((n) => {
-      const e = n.match(dr);
+      const e = n.match(hr);
       return e ? { documentId: e[1], tableId: e[2] } : null;
     }, "extractIds")
   },
@@ -1058,7 +1058,7 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     dependencies: { dsfr: !0, dsfrChart: !0, gouvWidgets: !0 },
     v2: { usesGouvSource: !0, usesGouvQuery: !0, sourceApiType: "grist" }
   }
-}, Dr = {
+}, Mr = {
   id: "generic",
   displayName: "Generic REST",
   urlPatterns: [],
@@ -1111,19 +1111,19 @@ const ur = /\/api\/explore\/v2\.1\/catalog\/datasets\/([^/]+)/, Fr = {
     dependencies: { dsfr: !0, dsfrChart: !0, gouvWidgets: !0 },
     v2: { usesGouvSource: !0, usesGouvQuery: !0, sourceApiType: "generic" }
   }
-}, pi = /* @__PURE__ */ new Map();
+}, di = /* @__PURE__ */ new Map();
 function ot(n) {
-  pi.set(n.id, n);
+  di.set(n.id, n);
 }
 u(ot, "registerProvider");
+ot(Rr);
+ot(Tr);
 ot(Fr);
 ot(Mr);
-ot(Tr);
-ot(Dr);
-const pr = `${Dt}/beacon`, fr = /* @__PURE__ */ new Set();
-function W(n, e) {
+const dr = `${Dt}/beacon`, pr = /* @__PURE__ */ new Set();
+function H(n, e) {
   const t = `${n}:${e || ""}`;
-  if (fr.has(t) || (fr.add(t), typeof window > "u"))
+  if (pr.has(t) || (pr.add(t), typeof window > "u"))
     return;
   const r = window.location.hostname;
   if (r === "localhost" || r === "127.0.0.1" || r === new URL(Dt).hostname)
@@ -1141,19 +1141,19 @@ function W(n, e) {
           origin: window.location.origin
         })
       }).catch(() => {
-        new Image().src = `${pr}?${i.toString()}`;
+        new Image().src = `${dr}?${i.toString()}`;
       });
       return;
     } catch {
     }
-  const a = `${pr}?${i.toString()}`;
+  const a = `${dr}?${i.toString()}`;
   try {
     new Image().src = a;
   } catch {
   }
 }
-u(W, "sendWidgetBeacon");
-const Ht = class Ht {
+u(H, "sendWidgetBeacon");
+const Vt = class Vt {
   constructor() {
     this.type = "generic", this.capabilities = {
       serverFetch: !1,
@@ -1183,7 +1183,7 @@ const Ht = class Ht {
     return null;
   }
   getProviderConfig() {
-    return Dr;
+    return Mr;
   }
   buildFacetWhere(e, t) {
     const r = [];
@@ -1192,14 +1192,14 @@ const Ht = class Ht {
     return r.join(", ");
   }
 };
-u(Ht, "GenericAdapter");
-let Pt = Ht;
+u(Vt, "GenericAdapter");
+let xt = Vt;
 function gt(n, e) {
   const t = {};
   return e && (t.signal = e), n.headers && Object.keys(n.headers).length > 0 && (t.headers = n.headers), t;
 }
 u(gt, "buildFetchOptions$2");
-const Ze = 100, _t = 10, Wt = class Wt {
+const Ze = 100, _t = 10, Ht = class Ht {
   constructor() {
     this.type = "opendatasoft", this.capabilities = {
       serverFetch: !0,
@@ -1230,10 +1230,10 @@ const Ze = 100, _t = 10, Wt = class Wt {
       const f = this.buildUrl(e, Math.min(s, p), o), g = await fetch(f, gt(e, t));
       if (!g.ok)
         throw new Error(`HTTP ${g.status}: ${g.statusText}`);
-      const m = await g.json(), M = m.results || [];
-      if (a = a.concat(M), typeof m.total_count == "number" && (l = m.total_count), l >= 0 && a.length >= l || M.length < s)
+      const b = await g.json(), F = b.results || [];
+      if (a = a.concat(F), typeof b.total_count == "number" && (l = b.total_count), l >= 0 && a.length >= l || F.length < s)
         break;
-      o += M.length;
+      o += F.length;
     }
     return l >= 0 && a.length < l && a.length < i && console.warn(`gouv-query: pagination incomplete - ${a.length}/${l} resultats recuperes (limite de securite: ${_t} pages de ${Ze})`), {
       data: a,
@@ -1311,7 +1311,7 @@ const Ze = 100, _t = 10, Wt = class Wt {
     return 'search("{q}")';
   }
   getProviderConfig() {
-    return Fr;
+    return Rr;
   }
   buildFacetWhere(e, t) {
     const r = [];
@@ -1355,14 +1355,14 @@ const Ze = 100, _t = 10, Wt = class Wt {
     return r.join(", ");
   }
 };
-u(Wt, "OpenDataSoftAdapter");
-let xt = Wt;
-function gr(n, e) {
+u(Ht, "OpenDataSoftAdapter");
+let At = Ht;
+function fr(n, e) {
   const t = {};
   return e && (t.signal = e), n.headers && Object.keys(n.headers).length > 0 && (t.headers = n.headers), t;
 }
-u(gr, "buildFetchOptions$1");
-const et = 100, bt = 500, Jt = class Jt {
+u(fr, "buildFetchOptions$1");
+const et = 100, mt = 500, Wt = class Wt {
   constructor() {
     this.type = "tabular", this.capabilities = {
       serverFetch: !0,
@@ -1383,25 +1383,25 @@ const et = 100, bt = 500, Jt = class Jt {
    */
   async fetchAll(e, t) {
     var l;
-    const r = e.limit <= 0, i = r ? bt * et : e.limit;
+    const r = e.limit <= 0, i = r ? mt * et : e.limit;
     let s = [], a = -1, o = 1;
-    for (let h = 0; h < bt && !(i - s.length <= 0); h++) {
-      const f = this.buildUrl(e, et, o), g = await fetch(f, gr(e, t));
+    for (let h = 0; h < mt && !(i - s.length <= 0); h++) {
+      const f = this.buildUrl(e, et, o), g = await fetch(f, fr(e, t));
       if (!g.ok)
         throw new Error(`HTTP ${g.status}: ${g.statusText}`);
-      const m = await g.json(), M = m.data || [];
-      s = s.concat(M), m.meta && typeof m.meta.total == "number" && (a = m.meta.total);
+      const b = await g.json(), F = b.data || [];
+      s = s.concat(F), b.meta && typeof b.meta.total == "number" && (a = b.meta.total);
       let le = !1;
-      if ((l = m.links) != null && l.next)
+      if ((l = b.links) != null && l.next)
         try {
-          const I = new URL(m.links.next, "https://tabular-api.data.gouv.fr"), Kt = Number(I.searchParams.get("page"));
-          Kt > 0 && (o = Kt, le = !0);
+          const j = new URL(b.links.next, "https://tabular-api.data.gouv.fr"), Qt = Number(j.searchParams.get("page"));
+          Qt > 0 && (o = Qt, le = !0);
         } catch {
         }
-      if (!le || a >= 0 && s.length >= a || M.length < et)
+      if (!le || a >= 0 && s.length >= a || F.length < et)
         break;
     }
-    return !r && s.length > i && (s = s.slice(0, i)), a >= 0 && s.length < a && s.length < i && console.warn(`gouv-query: pagination incomplete - ${s.length}/${a} resultats recuperes (limite de securite: ${bt} pages de ${et})`), {
+    return !r && s.length > i && (s = s.slice(0, i)), a >= 0 && s.length < a && s.length < i && console.warn(`gouv-query: pagination incomplete - ${s.length}/${a} resultats recuperes (limite de securite: ${mt} pages de ${et})`), {
       data: s,
       totalCount: a >= 0 ? a : s.length,
       needsClientProcessing: !0
@@ -1412,7 +1412,7 @@ const et = 100, bt = 500, Jt = class Jt {
    */
   async fetchPage(e, t, r) {
     var h;
-    const i = this.buildServerSideUrl(e, t), s = await fetch(i, gr(e, r));
+    const i = this.buildServerSideUrl(e, t), s = await fetch(i, fr(e, r));
     if (!s.ok)
       throw new Error(`HTTP ${s.status}: ${s.statusText}`);
     const a = await s.json(), o = a.data || [], l = ((h = a.meta) == null ? void 0 : h.total) ?? 0;
@@ -1498,7 +1498,7 @@ const et = 100, bt = 500, Jt = class Jt {
     return null;
   }
   getProviderConfig() {
-    return Mr;
+    return Tr;
   }
   buildFacetWhere(e, t) {
     const r = [];
@@ -1516,14 +1516,14 @@ const et = 100, bt = 500, Jt = class Jt {
     return `${t.baseUrl}${t.endpoints.tabular}`;
   }
 };
-u(Jt, "TabularAdapter");
-let At = Jt;
-function fi(n, e) {
+u(Wt, "TabularAdapter");
+let Pt = Wt;
+function pi(n, e) {
   const t = {};
   return e && (t.signal = e), n.headers && Object.keys(n.headers).length > 0 && (t.headers = n.headers), t;
 }
-u(fi, "buildFetchOptions");
-const Qt = class Qt {
+u(pi, "buildFetchOptions");
+const Jt = class Jt {
   constructor() {
     this.type = "grist", this.capabilities = {
       serverFetch: !0,
@@ -1542,7 +1542,7 @@ const Qt = class Qt {
    * Retourne needsClientProcessing=true car tout le traitement est client-side.
    */
   async fetchAll(e, t) {
-    const r = this.buildUrl(e), i = await fetch(r, fi(e, t));
+    const r = this.buildUrl(e), i = await fetch(r, pi(e, t));
     if (!i.ok)
       throw new Error(`HTTP ${i.status}: ${i.statusText}`);
     const o = ((await i.json()).records || []).map((l) => {
@@ -1575,7 +1575,7 @@ const Qt = class Qt {
     return null;
   }
   getProviderConfig() {
-    return Tr;
+    return Fr;
   }
   buildFacetWhere(e, t) {
     const r = [];
@@ -1584,26 +1584,26 @@ const Qt = class Qt {
     return r.join(", ");
   }
 };
-u(Qt, "GristAdapter");
-let kt = Qt;
-const Or = /* @__PURE__ */ new Map([
-  ["generic", new Pt()],
-  ["opendatasoft", new xt()],
-  ["tabular", new At()],
+u(Jt, "GristAdapter");
+let kt = Jt;
+const Dr = /* @__PURE__ */ new Map([
+  ["generic", new xt()],
+  ["opendatasoft", new At()],
+  ["tabular", new Pt()],
   ["grist", new kt()]
 ]);
-function rt(n) {
-  const e = Or.get(n);
+function fi(n) {
+  const e = Dr.get(n);
   if (!e)
     throw new Error(`Type d'API non supporte: ${n}`);
   return e;
 }
-u(rt, "getAdapter");
+u(fi, "getAdapter");
 function Ei(n) {
-  Or.set(n.type, n);
+  Dr.set(n.type, n);
 }
 u(Ei, "registerAdapter");
-const L = {
+const U = {
   LOADED: "gouv-data-loaded",
   ERROR: "gouv-data-error",
   LOADING: "gouv-data-loading",
@@ -1613,64 +1613,64 @@ function gi(n, e) {
   Ot.set(n, e);
 }
 u(gi, "setDataCache");
-function Me(n) {
+function se(n) {
   return Ot.get(n);
 }
-u(Me, "getDataCache");
-function He(n) {
+u(se, "getDataCache");
+function Fe(n) {
   Ot.delete(n);
 }
-u(He, "clearDataCache");
-function se(n, e) {
+u(Fe, "clearDataCache");
+function Me(n, e) {
   Nt.set(n, e);
 }
-u(se, "setDataMeta");
-function Te(n) {
+u(Me, "setDataMeta");
+function De(n) {
   return Nt.get(n);
 }
-u(Te, "getDataMeta");
-function Ut(n) {
+u(De, "getDataMeta");
+function st(n) {
   Nt.delete(n);
 }
-u(Ut, "clearDataMeta");
-function O(n, e) {
+u(st, "clearDataMeta");
+function L(n, e) {
   gi(n, e);
-  const t = new CustomEvent(L.LOADED, {
+  const t = new CustomEvent(U.LOADED, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, data: e }
   });
   document.dispatchEvent(t);
 }
-u(O, "dispatchDataLoaded");
-function G(n, e) {
-  const t = new CustomEvent(L.ERROR, {
+u(L, "dispatchDataLoaded");
+function Q(n, e) {
+  const t = new CustomEvent(U.ERROR, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, error: e }
   });
   document.dispatchEvent(t);
 }
-u(G, "dispatchDataError");
-function V(n) {
-  const e = new CustomEvent(L.LOADING, {
+u(Q, "dispatchDataError");
+function K(n) {
+  const e = new CustomEvent(U.LOADING, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n }
   });
   document.dispatchEvent(e);
 }
-u(V, "dispatchDataLoading");
-function K(n, e) {
-  const t = new CustomEvent(L.SOURCE_COMMAND, {
+u(K, "dispatchDataLoading");
+function G(n, e) {
+  const t = new CustomEvent(U.SOURCE_COMMAND, {
     bubbles: !0,
     composed: !0,
     detail: { sourceId: n, ...e }
   });
   document.dispatchEvent(t);
 }
-u(K, "dispatchSourceCommand");
-function Lt(n, e) {
+u(G, "dispatchSourceCommand");
+function Ut(n, e) {
   const t = /* @__PURE__ */ u((r) => {
     const i = r;
     if (i.detail.sourceId === n) {
@@ -1678,9 +1678,9 @@ function Lt(n, e) {
       e(a);
     }
   }, "handler");
-  return document.addEventListener(L.SOURCE_COMMAND, t), () => document.removeEventListener(L.SOURCE_COMMAND, t);
+  return document.addEventListener(U.SOURCE_COMMAND, t), () => document.removeEventListener(U.SOURCE_COMMAND, t);
 }
-u(Lt, "subscribeToSourceCommands");
+u(Ut, "subscribeToSourceCommands");
 function We(n, e) {
   const t = /* @__PURE__ */ u((s) => {
     const a = s;
@@ -1691,18 +1691,18 @@ function We(n, e) {
   }, "handleError"), i = /* @__PURE__ */ u((s) => {
     s.detail.sourceId === n && e.onLoading && e.onLoading();
   }, "handleLoading");
-  return document.addEventListener(L.LOADED, t), document.addEventListener(L.ERROR, r), document.addEventListener(L.LOADING, i), () => {
-    document.removeEventListener(L.LOADED, t), document.removeEventListener(L.ERROR, r), document.removeEventListener(L.LOADING, i);
+  return document.addEventListener(U.LOADED, t), document.addEventListener(U.ERROR, r), document.addEventListener(U.LOADING, i), () => {
+    document.removeEventListener(U.LOADED, t), document.removeEventListener(U.ERROR, r), document.removeEventListener(U.LOADING, i);
   };
 }
 u(We, "subscribeToSource");
-var $ = function(n, e, t, r) {
+var w = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, pe;
-let v = (pe = class extends k {
+let v = (pe = class extends P {
   constructor() {
     super(...arguments), this.url = "", this.method = "GET", this.headers = "", this.params = "", this.refresh = 0, this.transform = "", this.paginate = !1, this.pageSize = 20, this.cacheTtl = 3600, this.apiType = "generic", this.baseUrl = "", this.datasetId = "", this.resource = "", this.where = "", this.select = "", this.groupBy = "", this.aggregate = "", this.orderBy = "", this.serverSide = !1, this.limit = 0, this._loading = !1, this._error = null, this._data = null, this._currentPage = 1, this._refreshInterval = null, this._abortController = null, this._unsubscribeCommands = null, this._whereOverlays = /* @__PURE__ */ new Map(), this._orderByOverlay = "", this._adapter = null;
   }
@@ -1713,10 +1713,10 @@ let v = (pe = class extends k {
     return d``;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-source", this._isAdapterMode() ? this.apiType : void 0), this._setupRefresh(), this._setupCommandListener();
+    super.connectedCallback(), H("gouv-source", this._isAdapterMode() ? this.apiType : void 0), this._setupRefresh(), this._setupCommandListener();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (He(this.id), Ut(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (Fe(this.id), st(this.id));
   }
   updated(e) {
     const t = e.has("url") || e.has("params") || e.has("transform"), r = e.has("apiType") || e.has("baseUrl") || e.has("datasetId") || e.has("resource") || e.has("where") || e.has("select") || e.has("groupBy") || e.has("aggregate") || e.has("orderBy") || e.has("limit");
@@ -1725,7 +1725,7 @@ let v = (pe = class extends k {
   // --- Public API ---
   /** Returns the adapter for this source (if in adapter mode) */
   getAdapter() {
-    return this._isAdapterMode() ? (this._adapter || (this._adapter = rt(this.apiType)), this._adapter) : null;
+    return this._isAdapterMode() ? (this._adapter || (this._adapter = fi(this.apiType)), this._adapter) : null;
   }
   /** Returns the effective WHERE clause (static + all dynamic overlays merged) */
   getEffectiveWhere(e) {
@@ -1761,7 +1761,7 @@ let v = (pe = class extends k {
     }, this.refresh * 1e3));
   }
   _setupCommandListener() {
-    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !(this.paginate || this.serverSide || this._isAdapterMode())) && (this._unsubscribeCommands = Lt(this.id, (t) => {
+    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !(this.paginate || this.serverSide || this._isAdapterMode())) && (this._unsubscribeCommands = Ut(this.id, (t) => {
       let r = !1;
       if (t.page !== void 0 && t.page !== this._currentPage && (this._currentPage = t.page, r = !0), t.where !== void 0) {
         const i = t.whereKey || "__default";
@@ -1780,20 +1780,20 @@ let v = (pe = class extends k {
         console.warn('gouv-source: attribut "id" requis pour identifier la source');
         return;
       }
-      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, V(this.id);
+      this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, K(this.id);
       try {
-        const e = si(this._buildUrl()), t = this._buildFetchOptions(), r = await fetch(e, {
+        const e = ii(this._buildUrl()), t = this._buildFetchOptions(), r = await fetch(e, {
           ...t,
           signal: this._abortController.signal
         });
         if (!r.ok)
           throw new Error(`HTTP ${r.status}: ${r.statusText}`);
         const i = await r.json();
-        this.paginate && i.meta && se(this.id, {
+        this.paginate && i.meta && Me(this.id, {
           page: i.meta.page ?? this._currentPage,
           pageSize: i.meta.page_size ?? this.pageSize,
           total: i.meta.total ?? 0
-        }), this.transform ? this._data = P(i, this.transform) : this.paginate && i.data && !this.transform ? this._data = i.data : this._data = i, O(this.id, this._data), this.cacheTtl > 0 && Xe() && this._putCache(this._data).catch(() => {
+        }), this.transform ? this._data = E(i, this.transform) : this.paginate && i.data && !this.transform ? this._data = i.data : this._data = i, L(this.id, this._data), this.cacheTtl > 0 && Xe() && this._putCache(this._data).catch(() => {
         });
       } catch (e) {
         if (e.name === "AbortError")
@@ -1801,11 +1801,11 @@ let v = (pe = class extends k {
         if (this.cacheTtl > 0 && Xe()) {
           const t = await this._getCache();
           if (t) {
-            this._data = t, O(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
+            this._data = t, L(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
             return;
           }
         }
-        this._error = e, G(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
+        this._error = e, Q(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
       } finally {
         this._loading = !1;
       }
@@ -1827,7 +1827,7 @@ let v = (pe = class extends k {
       console.warn(`gouv-source[${this.id}]: ${r}`);
       return;
     }
-    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, V(this.id);
+    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, K(this.id);
     try {
       let i;
       if (this.serverSide) {
@@ -1836,14 +1836,14 @@ let v = (pe = class extends k {
           effectiveWhere: this.getEffectiveWhere(),
           orderBy: this._orderByOverlay || this.orderBy
         };
-        i = await e.fetchPage(t, s, this._abortController.signal), se(this.id, {
+        i = await e.fetchPage(t, s, this._abortController.signal), Me(this.id, {
           page: this._currentPage,
           pageSize: this.pageSize,
           total: i.totalCount
         });
       } else
         i = await e.fetchAll(t, this._abortController.signal);
-      this._data = i.data, O(this.id, this._data), this.cacheTtl > 0 && Xe() && this._putCache(this._data).catch(() => {
+      this._data = i.data, L(this.id, this._data), this.cacheTtl > 0 && Xe() && this._putCache(this._data).catch(() => {
       });
     } catch (i) {
       if (i.name === "AbortError")
@@ -1851,11 +1851,11 @@ let v = (pe = class extends k {
       if (this.cacheTtl > 0 && Xe()) {
         const s = await this._getCache();
         if (s) {
-          this._data = s, O(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
+          this._data = s, L(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
           return;
         }
       }
-      this._error = i, G(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, i);
+      this._error = i, Q(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, i);
     } finally {
       this._loading = !1;
     }
@@ -1933,76 +1933,76 @@ let v = (pe = class extends k {
     }
   }
 }, u(pe, "GouvSource"), pe);
-$([
+w([
   c({ type: String })
 ], v.prototype, "url", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "method", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "headers", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "params", void 0);
-$([
+w([
   c({ type: Number })
 ], v.prototype, "refresh", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "transform", void 0);
-$([
+w([
   c({ type: Boolean })
 ], v.prototype, "paginate", void 0);
-$([
+w([
   c({ type: Number, attribute: "page-size" })
 ], v.prototype, "pageSize", void 0);
-$([
+w([
   c({ type: Number, attribute: "cache-ttl" })
 ], v.prototype, "cacheTtl", void 0);
-$([
+w([
   c({ type: String, attribute: "api-type" })
 ], v.prototype, "apiType", void 0);
-$([
+w([
   c({ type: String, attribute: "base-url" })
 ], v.prototype, "baseUrl", void 0);
-$([
+w([
   c({ type: String, attribute: "dataset-id" })
 ], v.prototype, "datasetId", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "resource", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "where", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "select", void 0);
-$([
+w([
   c({ type: String, attribute: "group-by" })
 ], v.prototype, "groupBy", void 0);
-$([
+w([
   c({ type: String })
 ], v.prototype, "aggregate", void 0);
-$([
+w([
   c({ type: String, attribute: "order-by" })
 ], v.prototype, "orderBy", void 0);
-$([
+w([
   c({ type: Boolean, attribute: "server-side" })
 ], v.prototype, "serverSide", void 0);
-$([
+w([
   c({ type: Number })
 ], v.prototype, "limit", void 0);
-$([
+w([
   _()
 ], v.prototype, "_loading", void 0);
-$([
+w([
   _()
 ], v.prototype, "_error", void 0);
-$([
+w([
   _()
 ], v.prototype, "_data", void 0);
-v = $([
+v = w([
   D("gouv-source")
 ], v);
 var x = function(n, e, t, r) {
@@ -2011,9 +2011,9 @@ var x = function(n, e, t, r) {
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, fe;
-let w = (fe = class extends k {
+let $ = (fe = class extends P {
   constructor() {
-    super(...arguments), this.apiType = "generic", this.source = "", this.baseUrl = "", this.datasetId = "", this.resource = "", this.select = "", this.where = "", this.filter = "", this.groupBy = "", this.aggregate = "", this.orderBy = "", this.limit = 0, this.transform = "", this.serverSide = !1, this.pageSize = 20, this.headers = "", this.refresh = 0, this._loading = !1, this._error = null, this._data = [], this._rawData = [], this._adapter = rt("generic"), this._refreshInterval = null, this._abortController = null, this._unsubscribe = null, this._unsubscribeCommands = null, this._serverPage = 1, this._serverWheres = /* @__PURE__ */ new Map(), this._serverOrderBy = "";
+    super(...arguments), this.apiType = "generic", this.source = "", this.baseUrl = "", this.datasetId = "", this.resource = "", this.select = "", this.where = "", this.filter = "", this.groupBy = "", this.aggregate = "", this.orderBy = "", this.limit = 0, this.transform = "", this.serverSide = !1, this.pageSize = 20, this.headers = "", this.refresh = 0, this._loading = !1, this._error = null, this._data = [], this._rawData = [], this._refreshInterval = null, this._unsubscribe = null, this._unsubscribeCommands = null, this._shadowSource = null, this._shadowSourceId = "";
   }
   // Pas de rendu - composant invisible
   createRenderRoot() {
@@ -2023,17 +2023,17 @@ let w = (fe = class extends k {
     return d``;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-query", this.apiType), this._adapter = rt(this.apiType), this._initialize();
+    super.connectedCallback(), H("gouv-query", this.apiType), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (He(this.id), Ut(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (Fe(this.id), st(this.id));
   }
   updated(e) {
     [
       "source",
       "apiType",
       "baseUrl",
-      "dataset",
+      "datasetId",
       "resource",
       "select",
       "where",
@@ -2045,25 +2045,10 @@ let w = (fe = class extends k {
       "transform",
       "serverSide",
       "pageSize"
-    ].some((r) => e.has(r)) && (e.has("apiType") && (this._adapter = rt(this.apiType)), this.serverSide && [
-      "source",
-      "apiType",
-      "baseUrl",
-      "dataset",
-      "resource",
-      "select",
-      "where",
-      "filter",
-      "groupBy",
-      "aggregate",
-      "orderBy",
-      "limit",
-      "transform",
-      "pageSize"
-    ].some((i) => e.has(i)) && (this._serverPage = 1, this._serverWheres.clear(), this._serverOrderBy = ""), this._initialize()), e.has("refresh") && this._setupRefresh();
+    ].some((r) => e.has(r)) && this._initialize(), e.has("refresh") && this._setupRefresh();
   }
   _cleanup() {
-    this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = null), this._abortController && (this._abortController.abort(), this._abortController = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null);
+    this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), this._destroyShadowSource();
   }
   _setupRefresh() {
     this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = null), this.refresh > 0 && (this._refreshInterval = window.setInterval(() => {
@@ -2075,44 +2060,77 @@ let w = (fe = class extends k {
       console.warn('gouv-query: attribut "id" requis pour identifier la requete');
       return;
     }
-    this._setupServerSideListener(), this.apiType === "generic" ? this._subscribeToSource() : this._fetchFromApi();
-  }
-  /**
-   * Mode generic: s'abonne a une source et traite les donnees cote client
-   */
-  _subscribeToSource() {
-    if (!this.source) {
+    if (this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), this.apiType !== "generic" && !this.source)
+      console.warn(`gouv-query[${this.id}]: <gouv-query api-type="${this.apiType}"> sans source est deprecie. Utilisez <gouv-source api-type="${this.apiType}" ...> + <gouv-query source="...">.`), this._createShadowSource(), this._subscribeToSourceData(this._shadowSourceId);
+    else if (this.source)
+      this._destroyShadowSource(), this._subscribeToSourceData(this.source);
+    else {
       console.warn('gouv-query: attribut "source" requis en mode generic');
       return;
     }
-    this._unsubscribe && this._unsubscribe();
-    const e = Me(this.source);
-    e !== void 0 && (this._rawData = Array.isArray(e) ? e : [e], this._processClientSide()), this._unsubscribe = We(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
-        this._rawData = Array.isArray(t) ? t : [t], this._processClientSide();
+    this._setupCommandForwarding();
+  }
+  // --- Shadow source management (backward compat) ---
+  _createShadowSource() {
+    this._destroyShadowSource(), this._shadowSourceId = `__gq_${this.id}_src`;
+    const e = document.createElement("gouv-source");
+    e.id = this._shadowSourceId, e.setAttribute("api-type", this.apiType), e.style.display = "none", this.baseUrl && e.setAttribute("base-url", this.baseUrl), this.datasetId && e.setAttribute("dataset-id", this.datasetId), this.resource && e.setAttribute("resource", this.resource), this.select && e.setAttribute("select", this.select), (this.where || this.filter) && e.setAttribute("where", this.where || this.filter), this.groupBy && e.setAttribute("group-by", this.groupBy), this.aggregate && e.setAttribute("aggregate", this.aggregate), this.orderBy && e.setAttribute("order-by", this.orderBy), this.limit > 0 && e.setAttribute("limit", String(this.limit)), this.serverSide && e.setAttribute("server-side", ""), this.pageSize !== 20 && e.setAttribute("page-size", String(this.pageSize)), this.headers && e.setAttribute("headers", this.headers), this.parentElement ? this.parentElement.insertBefore(e, this) : document.body.appendChild(e), this._shadowSource = e;
+  }
+  _destroyShadowSource() {
+    this._shadowSource && (this._shadowSourceId && (Fe(this._shadowSourceId), st(this._shadowSourceId)), this._shadowSource.remove(), this._shadowSource = null, this._shadowSourceId = "");
+  }
+  // --- Source subscription ---
+  _subscribeToSourceData(e) {
+    const t = se(e);
+    t !== void 0 && (this._rawData = Array.isArray(t) ? t : [t], this._handleSourceData()), this._unsubscribe = We(e, {
+      onLoaded: /* @__PURE__ */ u((r) => {
+        this._rawData = Array.isArray(r) ? r : [r], this._handleSourceData();
       }, "onLoaded"),
       onLoading: /* @__PURE__ */ u(() => {
-        this._loading = !0, V(this.id);
+        this._loading = !0, K(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        this._error = t, this._loading = !1, G(this.id, t);
+      onError: /* @__PURE__ */ u((r) => {
+        this._error = r, this._loading = !1, Q(this.id, r);
       }, "onError")
     });
   }
   /**
-   * Traitement cote client des donnees
+   * Handle data received from upstream source.
+   * In compat mode (shadow source), checks adapter capabilities to decide
+   * whether client-side processing is needed.
    */
-  _processClientSide() {
+  _handleSourceData() {
     try {
-      V(this.id), this._loading = !0;
-      let e = [...this._rawData];
-      const t = this.filter || this.where;
-      t && (e = this._applyFilters(e, t)), this.groupBy && (e = this._applyGroupByAndAggregate(e)), this.orderBy && (e = this._applySort(e)), this.limit > 0 && (e = e.slice(0, this.limit)), this._data = e, O(this.id, this._data);
+      if (K(this.id), this._loading = !0, this._shadowSource && this._serverHandlesGroupBy()) {
+        let e = [...this._rawData];
+        this.orderBy && (e = this._applySort(e)), this.limit > 0 && (e = e.slice(0, this.limit)), this._data = e, L(this.id, this._data);
+      } else
+        this._processClientSide();
     } catch (e) {
-      this._error = e, G(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
+      this._error = e, Q(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, e);
     } finally {
       this._loading = !1;
     }
+  }
+  /**
+   * Check if the shadow source's adapter handles group-by server-side.
+   * Used to avoid double-processing in backward compat mode.
+   */
+  _serverHandlesGroupBy() {
+    var t, r, i;
+    if (!this.groupBy)
+      return !1;
+    const e = (r = (t = this._shadowSource) == null ? void 0 : t.getAdapter) == null ? void 0 : r.call(t);
+    return ((i = e == null ? void 0 : e.capabilities) == null ? void 0 : i.serverGroupBy) === !0;
+  }
+  // --- Client-side processing ---
+  /**
+   * Traitement cote client des donnees
+   */
+  _processClientSide() {
+    let e = [...this._rawData];
+    const t = this.filter || this.where;
+    t && (e = this._applyFilters(e, t)), this.groupBy && (e = this._applyGroupByAndAggregate(e)), this.orderBy && (e = this._applySort(e)), this.limit > 0 && (e = e.slice(0, this.limit)), this._data = e, L(this.id, this._data);
   }
   /**
    * Parse et applique les filtres (format: "field:operator:value")
@@ -2144,7 +2162,7 @@ let w = (fe = class extends k {
     return e === "true" ? !0 : e === "false" ? !1 : !isNaN(Number(e)) && e !== "" ? Number(e) : e;
   }
   _matchesFilter(e, t) {
-    const r = P(e, t.field);
+    const r = E(e, t.field);
     switch (t.operator) {
       case "eq":
         return r == t.value;
@@ -2180,18 +2198,18 @@ let w = (fe = class extends k {
   _applyGroupByAndAggregate(e) {
     const t = this.groupBy.split(",").map((a) => a.trim()).filter(Boolean), r = this._parseAggregates(this.aggregate), i = /* @__PURE__ */ new Map();
     for (const a of e) {
-      const o = t.map((l) => String(P(a, l) ?? "")).join("|||");
+      const o = t.map((l) => String(E(a, l) ?? "")).join("|||");
       i.has(o) || i.set(o, []), i.get(o).push(a);
     }
     const s = [];
     for (const [a, o] of i) {
       const l = {}, h = a.split("|||");
       t.forEach((p, f) => {
-        lr(l, p, h[f]);
+        or(l, p, h[f]);
       });
       for (const p of r) {
         const f = p.alias || `${p.field}__${p.function}`;
-        lr(l, f, this._computeAggregate(o, p));
+        or(l, f, this._computeAggregate(o, p));
       }
       s.push(l);
     }
@@ -2212,7 +2230,7 @@ let w = (fe = class extends k {
     return t;
   }
   _computeAggregate(e, t) {
-    const r = e.map((i) => Number(P(i, t.field))).filter((i) => !isNaN(i));
+    const r = e.map((i) => Number(E(i, t.field))).filter((i) => !isNaN(i));
     switch (t.function) {
       case "count":
         return e.length;
@@ -2237,160 +2255,64 @@ let w = (fe = class extends k {
       return e;
     const r = t[0], i = (t[1] || "asc").toLowerCase();
     return [...e].sort((s, a) => {
-      const o = P(s, r), l = P(a, r), h = Number(o), p = Number(l);
+      const o = E(s, r), l = E(a, r), h = Number(o), p = Number(l);
       if (!isNaN(h) && !isNaN(p))
         return i === "desc" ? p - h : h - p;
       const f = String(o ?? ""), g = String(l ?? "");
       return i === "desc" ? g.localeCompare(f) : f.localeCompare(g);
     });
   }
-  // --- API fetch (delegue aux adapters) ---
+  // --- Command forwarding ---
   /**
-   * Mode API: fait une requete directe a l'API via l'adapter
+   * Forward commands from downstream components to the upstream source.
+   * In server-side mode, datalist/search/facets send commands to this query;
+   * we forward them to the actual gouv-source.
    */
-  async _fetchFromApi() {
-    const e = this._getAdapterParams(), t = this._adapter.validate(e);
-    if (t) {
-      console.warn(`gouv-query: ${t}`);
+  _setupCommandForwarding() {
+    if (this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !this.id || !this.serverSide)
       return;
-    }
-    this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, V(this.id);
-    try {
-      this.serverSide && this._adapter.capabilities.serverFetch ? await this._fetchServerSideDelegated() : this._adapter.capabilities.serverFetch ? await this._fetchAllDelegated() : await this._fetchSinglePage();
-    } catch (r) {
-      if (r.name === "AbortError")
-        return;
-      this._error = r, G(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de requete API`, r);
-    } finally {
-      this._loading = !1;
-    }
-  }
-  /**
-   * Fetch toutes les donnees avec pagination automatique via l'adapter.
-   */
-  async _fetchAllDelegated() {
-    const e = await this._adapter.fetchAll(this._getAdapterParams(), this._abortController.signal);
-    e.needsClientProcessing ? (this._rawData = e.data, this._processClientSide()) : (this._data = this.transform ? P(e.data, this.transform) : e.data, O(this.id, this._data));
-  }
-  /**
-   * Fetch une seule page en mode server-side via l'adapter.
-   */
-  async _fetchServerSideDelegated() {
-    const e = {
-      page: this._serverPage,
-      effectiveWhere: this.getEffectiveWhere(),
-      orderBy: this._serverOrderBy || this.orderBy
-    }, t = await this._adapter.fetchPage(this._getAdapterParams(), e, this._abortController.signal);
-    let r = t.data;
-    if (this.transform) {
-      const i = t.rawJson || r, s = P(i, this.transform);
-      r = Array.isArray(s) ? s : [s];
-    }
-    se(this.id, {
-      page: this._serverPage,
-      pageSize: this.pageSize,
-      total: t.totalCount
-    }), this._data = r, O(this.id, this._data);
-  }
-  /**
-   * Fetch single page fallback (mode non-pagine)
-   */
-  async _fetchSinglePage() {
-    const e = this._getAdapterParams(), t = this._adapter.buildUrl(e), r = { signal: this._abortController.signal };
-    e.headers && Object.keys(e.headers).length > 0 && (r.headers = e.headers);
-    const i = await fetch(t, r);
-    if (!i.ok)
-      throw new Error(`HTTP ${i.status}: ${i.statusText}`);
-    const s = await i.json();
-    let a = this.transform ? P(s, this.transform) : s;
-    Array.isArray(a) || (this._adapter.type === "tabular" && s.data ? a = s.data : a = [a]), this._data = a, O(this.id, this._data);
-  }
-  /**
-   * Parse le JSON de headers en objet.
-   */
-  _parseHeaders() {
-    if (this.headers)
-      try {
-        return JSON.parse(this.headers);
-      } catch (e) {
-        console.warn("gouv-query: headers invalides (JSON attendu)", e);
-        return;
-      }
-  }
-  /**
-   * Collecte les parametres pour l'adapter.
-   */
-  _getAdapterParams() {
-    return {
-      baseUrl: this.baseUrl,
-      datasetId: this.datasetId,
-      resource: this.resource,
-      select: this.select,
-      where: this.where,
-      filter: this.filter,
-      groupBy: this.groupBy,
-      aggregate: this.aggregate,
-      orderBy: this.orderBy,
-      limit: this.limit,
-      transform: this.transform,
-      pageSize: this.pageSize,
-      headers: this._parseHeaders()
-    };
-  }
-  // --- Server-side command handling ---
-  /**
-   * Configure l'ecoute des commandes pour le mode server-side.
-   * Les composants en aval (search, display, datalist) emettent des
-   * gouv-source-command avec page/where/orderBy que query recoit ici.
-   */
-  _setupServerSideListener() {
-    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.serverSide || !this.id) && (this._unsubscribeCommands = Lt(this.id, (e) => {
-      let t = !1;
-      if (e.page !== void 0 && e.page !== this._serverPage && (this._serverPage = e.page, t = !0), e.where !== void 0) {
-        const r = e.whereKey || "_default", i = this._getMergedWhere();
-        e.where ? this._serverWheres.set(r, e.where) : this._serverWheres.delete(r), this._getMergedWhere() !== i && (e.page === void 0 && (this._serverPage = 1), t = !0);
-      }
-      e.orderBy !== void 0 && e.orderBy !== this._serverOrderBy && (this._serverOrderBy = e.orderBy, e.page === void 0 && (this._serverPage = 1), t = !0), t && this._fetchFromApi();
+    const e = this._shadowSourceId || this.source;
+    e && (this._unsubscribeCommands = Ut(this.id, (t) => {
+      G(e, t);
     }));
-  }
-  /**
-   * Retourne le separateur de clauses WHERE selon le format de l'adapter.
-   * ODSQL: ' AND ', colon: ', '
-   */
-  _getWhereSeparator() {
-    return this._adapter.capabilities.whereFormat === "colon" ? ", " : " AND ";
-  }
-  /**
-   * Retourne le where dynamique fusionne de toutes les sources (search, facets, etc.)
-   */
-  _getMergedWhere() {
-    return [...this._serverWheres.values()].filter(Boolean).join(this._getWhereSeparator());
-  }
-  /**
-   * Retourne le where effectif complet (statique + dynamique),
-   * en excluant optionnellement une cle specifique.
-   * Utilise par gouv-facets server-facets pour construire l'URL facets API
-   * sans inclure ses propres filtres dans les compteurs.
-   */
-  getEffectiveWhere(e) {
-    const t = [], r = this.where || this.filter;
-    r && t.push(r);
-    for (const [i, s] of this._serverWheres)
-      e && i === e || s && t.push(s);
-    return t.join(this._getWhereSeparator());
   }
   // --- Public API ---
   /**
-   * Retourne l'adapter courant (pour les composants en aval)
+   * Retourne le where effectif complet (statique + dynamique).
+   * Delegue a la source amont si disponible.
+   */
+  getEffectiveWhere(e) {
+    const t = this._shadowSourceId || this.source;
+    if (t) {
+      const r = document.getElementById(t);
+      if (r && "getEffectiveWhere" in r)
+        return r.getEffectiveWhere(e);
+    }
+    return this.where || this.filter || "";
+  }
+  /**
+   * Retourne l'adapter courant (delegue a la source amont)
    */
   getAdapter() {
-    return this._adapter;
+    const e = this._shadowSourceId || this.source;
+    if (e) {
+      const t = document.getElementById(e);
+      if (t && "getAdapter" in t)
+        return t.getAdapter();
+    }
+    return null;
   }
   /**
    * Force le rechargement des donnees
    */
   reload() {
-    this._initialize();
+    var e, t;
+    if (this._shadowSource)
+      (t = (e = this._shadowSource).reload) == null || t.call(e);
+    else if (this.source) {
+      const r = se(this.source);
+      r !== void 0 && (this._rawData = Array.isArray(r) ? r : [r], this._handleSourceData());
+    }
   }
   /**
    * Retourne les donnees actuelles
@@ -2413,77 +2335,77 @@ let w = (fe = class extends k {
 }, u(fe, "GouvQuery"), fe);
 x([
   c({ type: String, attribute: "api-type" })
-], w.prototype, "apiType", void 0);
+], $.prototype, "apiType", void 0);
 x([
   c({ type: String })
-], w.prototype, "source", void 0);
+], $.prototype, "source", void 0);
 x([
   c({ type: String, attribute: "base-url" })
-], w.prototype, "baseUrl", void 0);
+], $.prototype, "baseUrl", void 0);
 x([
   c({ type: String, attribute: "dataset-id" })
-], w.prototype, "datasetId", void 0);
+], $.prototype, "datasetId", void 0);
 x([
   c({ type: String })
-], w.prototype, "resource", void 0);
+], $.prototype, "resource", void 0);
 x([
   c({ type: String })
-], w.prototype, "select", void 0);
+], $.prototype, "select", void 0);
 x([
   c({ type: String })
-], w.prototype, "where", void 0);
+], $.prototype, "where", void 0);
 x([
   c({ type: String })
-], w.prototype, "filter", void 0);
+], $.prototype, "filter", void 0);
 x([
   c({ type: String, attribute: "group-by" })
-], w.prototype, "groupBy", void 0);
+], $.prototype, "groupBy", void 0);
 x([
   c({ type: String })
-], w.prototype, "aggregate", void 0);
+], $.prototype, "aggregate", void 0);
 x([
   c({ type: String, attribute: "order-by" })
-], w.prototype, "orderBy", void 0);
+], $.prototype, "orderBy", void 0);
 x([
   c({ type: Number })
-], w.prototype, "limit", void 0);
+], $.prototype, "limit", void 0);
 x([
   c({ type: String })
-], w.prototype, "transform", void 0);
+], $.prototype, "transform", void 0);
 x([
   c({ type: Boolean, attribute: "server-side" })
-], w.prototype, "serverSide", void 0);
+], $.prototype, "serverSide", void 0);
 x([
   c({ type: Number, attribute: "page-size" })
-], w.prototype, "pageSize", void 0);
+], $.prototype, "pageSize", void 0);
 x([
   c({ type: String })
-], w.prototype, "headers", void 0);
+], $.prototype, "headers", void 0);
 x([
   c({ type: Number })
-], w.prototype, "refresh", void 0);
+], $.prototype, "refresh", void 0);
 x([
   _()
-], w.prototype, "_loading", void 0);
+], $.prototype, "_loading", void 0);
 x([
   _()
-], w.prototype, "_error", void 0);
+], $.prototype, "_error", void 0);
 x([
   _()
-], w.prototype, "_data", void 0);
+], $.prototype, "_data", void 0);
 x([
   _()
-], w.prototype, "_rawData", void 0);
-w = x([
+], $.prototype, "_rawData", void 0);
+$ = x([
   D("gouv-query")
-], w);
+], $);
 var q = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, ge;
-let B = (ge = class extends k {
+let B = (ge = class extends P {
   constructor() {
     super(...arguments), this.source = "", this.numeric = "", this.numericAuto = !1, this.rename = "", this.trim = !1, this.stripHtml = !1, this.replace = "", this.flatten = "", this.lowercaseKeys = !1, this._unsubscribe = null, this._unsubscribePageRequests = null;
   }
@@ -2494,10 +2416,10 @@ let B = (ge = class extends k {
     return d``;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-normalize"), this._initialize();
+    super.connectedCallback(), H("gouv-normalize"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (He(this.id), Ut(this.id));
+    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (Fe(this.id), st(this.id));
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
@@ -2505,7 +2427,7 @@ let B = (ge = class extends k {
       return;
     }
     if (["flatten", "numeric", "numericAuto", "rename", "trim", "stripHtml", "replace", "lowercaseKeys"].some((i) => e.has(i))) {
-      const i = this.source ? Me(this.source) : void 0;
+      const i = this.source ? se(this.source) : void 0;
       i !== void 0 && this._processData(i);
     }
   }
@@ -2519,32 +2441,32 @@ let B = (ge = class extends k {
       return;
     }
     this._unsubscribe && this._unsubscribe(), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null);
-    const e = Me(this.source);
+    const e = se(this.source);
     e !== void 0 && this._processData(e), this._unsubscribe = We(this.source, {
       onLoaded: /* @__PURE__ */ u((t) => {
         this._processData(t);
       }, "onLoaded"),
       onLoading: /* @__PURE__ */ u(() => {
-        V(this.id);
+        K(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ u((t) => {
-        G(this.id, t);
+        Q(this.id, t);
       }, "onError")
-    }), this._unsubscribePageRequests = Lt(this.id, (t) => {
-      K(this.source, t);
+    }), this._unsubscribePageRequests = Ut(this.id, (t) => {
+      G(this.source, t);
     });
   }
   _processData(e) {
     try {
-      V(this.id);
+      K(this.id);
       let t = Array.isArray(e) ? e : [e];
       this.flatten && (t = t.map((l) => l == null || typeof l != "object" || Array.isArray(l) ? l : this._flattenRow(l, this.flatten)));
       const r = this._parseNumericFields(), i = this._parsePipeMap(this.rename), s = this._parsePipeMap(this.replace), a = t.map((l) => l == null || typeof l != "object" ? l : this._normalizeRow(l, r, i, s));
-      O(this.id, a);
-      const o = Te(this.source);
-      o && se(this.id, o);
+      L(this.id, a);
+      const o = De(this.source);
+      o && Me(this.id, o);
     } catch (t) {
-      G(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
+      Q(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
     }
   }
   _normalizeRow(e, t, r, i) {
@@ -2553,16 +2475,16 @@ let B = (ge = class extends k {
       const l = this.trim ? a.trim() : a;
       let h = o;
       if (this.trim && typeof h == "string" && (h = h.trim()), this.stripHtml && typeof h == "string" && (h = h.replace(/<[^>]*>/g, "")), i.size > 0 && typeof h == "string") {
-        for (const [g, m] of i)
+        for (const [g, b] of i)
           if (h === g) {
-            h = m;
+            h = b;
             break;
           }
       }
       if (t.has(l))
-        h = cr(h);
-      else if (this.numericAuto && typeof h == "string" && ei(h)) {
-        const g = cr(h, !0);
+        h = lr(h);
+      else if (this.numericAuto && typeof h == "string" && Zr(h)) {
+        const g = lr(h, !0);
         g !== null && (h = g);
       }
       const p = r.get(l) ?? l, f = this.lowercaseKeys ? p.toLowerCase() : p;
@@ -2644,7 +2566,7 @@ var C = function(n, e, t, r) {
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, _e;
-let y = (_e = class extends k {
+let y = (_e = class extends P {
   constructor() {
     super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this.staticValues = "", this.hideCounts = !1, this.cols = "", this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (e) => {
       if (!this._openMultiselectField)
@@ -2661,12 +2583,12 @@ let y = (_e = class extends k {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-facets"), this._initialize(), document.addEventListener("click", this._onClickOutsideMultiselect), this.urlSync && (this._popstateHandler = () => {
+    super.connectedCallback(), H("gouv-facets"), this._initialize(), document.addEventListener("click", this._onClickOutsideMultiselect), this.urlSync && (this._popstateHandler = () => {
       this._applyUrlParams(), this._buildFacetGroups(), this._applyFilters();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && He(this.id);
+    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Fe(this.id);
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
@@ -2689,16 +2611,16 @@ let y = (_e = class extends k {
       return;
     }
     this._unsubscribe && this._unsubscribe(), this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {};
-    const e = Me(this.source);
+    const e = se(this.source);
     e !== void 0 && this._onData(e), this._unsubscribe = We(this.source, {
       onLoaded: /* @__PURE__ */ u((t) => {
         this._onData(t);
       }, "onLoaded"),
       onLoading: /* @__PURE__ */ u(() => {
-        V(this.id);
+        K(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ u((t) => {
-        G(this.id, t);
+        Q(this.id, t);
       }, "onError")
     });
   }
@@ -2711,13 +2633,13 @@ let y = (_e = class extends k {
     }
     if (this.serverFacets) {
       if (this._fetchServerFacets(), this.id) {
-        const r = Te(this.source);
-        r && se(this.id, r), O(this.id, this._rawData);
+        const r = De(this.source);
+        r && Me(this.id, r), L(this.id, this._rawData);
       }
     } else if (this.staticValues) {
       if (this._buildStaticFacetGroups(), this.id) {
-        const r = Te(this.source);
-        r && se(this.id, r), O(this.id, this._rawData);
+        const r = De(this.source);
+        r && Me(this.id, r), L(this.id, this._rawData);
       }
     } else
       this._buildFacetGroups(), this._applyFilters();
@@ -2741,7 +2663,7 @@ let y = (_e = class extends k {
   _buildStaticFacetGroups() {
     if (this.staticValues)
       try {
-        const e = JSON.parse(this.staticValues), t = this._parseLabels(), r = this.fields ? Le(this.fields) : Object.keys(e);
+        const e = JSON.parse(this.staticValues), t = this._parseLabels(), r = this.fields ? ze(this.fields) : Object.keys(e);
         this._facetGroups = r.filter((i) => e[i] && e[i].length > 0).map((i) => ({
           field: i,
           label: t.get(i) ?? i,
@@ -2751,12 +2673,19 @@ let y = (_e = class extends k {
         console.warn("gouv-facets: static-values invalide (JSON attendu)");
       }
   }
-  /** Build colon-syntax where clause for all active facet selections */
-  _buildColonFacetWhere() {
-    const e = [];
-    for (const [t, r] of Object.entries(this._activeSelections))
-      r.size !== 0 && (r.size === 1 ? e.push(`${t}:eq:${[...r][0]}`) : e.push(`${t}:in:${[...r].join("|")}`));
-    return e.join(", ");
+  /**
+   * Build facet WHERE clause, delegating to the upstream source's adapter.
+   * Falls back to colon syntax if no adapter is available.
+   */
+  _buildFacetWhere(e) {
+    var s;
+    const t = document.getElementById(this.source), r = (s = t == null ? void 0 : t.getAdapter) == null ? void 0 : s.call(t);
+    if (r != null && r.buildFacetWhere)
+      return r.buildFacetWhere(this._activeSelections, e);
+    const i = [];
+    for (const [a, o] of Object.entries(this._activeSelections))
+      a === e || o.size === 0 || (o.size === 1 ? i.push(`${a}:eq:${[...o][0]}`) : i.push(`${a}:in:${[...o].join("|")}`));
+    return i.join(", ");
   }
   /** Resolve a possibly dotted field path on a row (e.g. "fields.Region") */
   _resolveValue(e, t) {
@@ -2773,7 +2702,7 @@ let y = (_e = class extends k {
   }
   /** Get fields to use as facets — explicit or auto-detected */
   _getFields() {
-    return this.fields ? Le(this.fields) : this._autoDetectFields();
+    return this.fields ? ze(this.fields) : this._autoDetectFields();
   }
   /** Auto-detect categorical fields: string type, 2-50 unique values, not all unique (ID-like) */
   _autoDetectFields() {
@@ -2867,50 +2796,32 @@ let y = (_e = class extends k {
         s = JSON.parse(a);
       } catch {
       }
-    const o = Le(this.fields);
+    const o = ze(this.fields);
     if (o.length === 0)
       return;
     const l = this._parseLabels(), h = /* @__PURE__ */ new Map();
-    for (const m of o) {
-      const M = ((g = e.getEffectiveWhere) == null ? void 0 : g.call(e, this.id)) || "", le = this._buildFacetWhereExcluding(m), I = [M, le].filter(Boolean).join(" AND ");
-      h.has(I) || h.set(I, []), h.get(I).push(m);
+    for (const b of o) {
+      const F = ((g = e.getEffectiveWhere) == null ? void 0 : g.call(e, this.id)) || "", le = this._buildFacetWhere(b), j = [F, le].filter(Boolean).join(" AND ");
+      h.has(j) || h.set(j, []), h.get(j).push(b);
     }
     const p = [];
-    for (const [m, M] of h)
+    for (const [b, F] of h)
       try {
-        const le = await t.fetchFacets({ baseUrl: r, datasetId: i, headers: s }, M, m);
-        for (const I of le)
+        const le = await t.fetchFacets({ baseUrl: r, datasetId: i, headers: s }, F, b);
+        for (const j of le)
           p.push({
-            field: I.field,
-            label: l.get(I.field) ?? I.field,
-            values: this._sortValues(I.values)
+            field: j.field,
+            label: l.get(j.field) ?? j.field,
+            values: this._sortValues(j.values)
           });
       } catch {
       }
-    this._facetGroups = o.map((m) => p.find((M) => M.field === m)).filter((m) => !!m).filter((m) => !(this.hideEmpty && m.values.length <= 1));
-  }
-  /** Build ODSQL where clause for all active facet selections EXCEPT the given field */
-  _buildFacetWhereExcluding(e) {
-    const t = [];
-    for (const [r, i] of Object.entries(this._activeSelections))
-      if (!(r === e || i.size === 0))
-        if (i.size === 1) {
-          const s = [...i][0].replace(/"/g, '\\"');
-          t.push(`${r} = "${s}"`);
-        } else {
-          const s = [...i].map((a) => `"${a.replace(/"/g, '\\"')}"`).join(", ");
-          t.push(`${r} IN (${s})`);
-        }
-    return t.join(" AND ");
-  }
-  /** Build ODSQL where clause for ALL active facet selections */
-  _buildFullFacetWhere() {
-    return this._buildFacetWhereExcluding("");
+    this._facetGroups = o.map((b) => p.find((F) => F.field === b)).filter((b) => !!b).filter((b) => !(this.hideEmpty && b.values.length <= 1));
   }
   /** Dispatch facet where command to upstream gouv-query */
   _dispatchFacetCommand() {
-    const e = this.staticValues ? this._buildColonFacetWhere() : this._buildFullFacetWhere();
-    K(this.source, { where: e, whereKey: this.id });
+    const e = this._buildFacetWhere();
+    G(this.source, { where: e, whereKey: this.id });
   }
   // --- Filtering ---
   _applyFilters() {
@@ -2919,7 +2830,7 @@ let y = (_e = class extends k {
     e.length === 0 ? t = this._rawData : t = this._rawData.filter((r) => e.every((i) => {
       const s = this._activeSelections[i], a = this._resolveValue(r, i);
       return a == null ? !1 : s.has(String(a));
-    })), O(this.id, t);
+    })), L(this.id, t);
   }
   // --- Parsing helpers ---
   _parseLabels() {
@@ -2979,7 +2890,7 @@ let y = (_e = class extends k {
   }
   // --- User interaction ---
   _toggleValue(e, t) {
-    const r = { ...this._activeSelections }, i = new Set(r[e] ?? []), s = this._getDisplayMode(e), a = Le(this.disjunctive), o = s === "multiselect" || s === "checkbox" && a.includes(e);
+    const r = { ...this._activeSelections }, i = new Set(r[e] ?? []), s = this._getDisplayMode(e), a = ze(this.disjunctive), o = s === "multiselect" || s === "checkbox" && a.includes(e);
     i.has(t) ? i.delete(t) : (o || i.clear(), i.add(t)), i.size === 0 ? delete r[e] : r[e] = i, this._activeSelections = r, this._afterSelectionChange();
   }
   _handleSelectChange(e, t) {
@@ -3081,7 +2992,7 @@ let y = (_e = class extends k {
   // --- Rendering ---
   render() {
     if (this._rawData.length === 0 || this._facetGroups.length === 0)
-      return b;
+      return m;
     const e = Object.keys(this._activeSelections).some((r) => this._activeSelections[r].size > 0), t = !!this.cols;
     return d`
       <style>
@@ -3109,7 +3020,7 @@ let y = (_e = class extends k {
               Reinitialiser les filtres
             </button>
           </div>
-        ` : b}
+        ` : m}
         ${t ? d`
           <div class="fr-grid-row fr-grid-row--gutters">
             ${this._facetGroups.map((r) => d`
@@ -3139,7 +3050,7 @@ let y = (_e = class extends k {
     }
   }
   _renderCheckboxGroup(e) {
-    const r = Le(this.searchable).includes(e.field), i = (this._searchQueries[e.field] ?? "").toLowerCase(), s = this._expandedFacets.has(e.field), a = this._activeSelections[e.field] ?? /* @__PURE__ */ new Set();
+    const r = ze(this.searchable).includes(e.field), i = (this._searchQueries[e.field] ?? "").toLowerCase(), s = this._expandedFacets.has(e.field), a = this._activeSelections[e.field] ?? /* @__PURE__ */ new Set();
     let o = e.values;
     r && i && (o = o.filter((f) => f.value.toLowerCase().includes(i)));
     const l = s ? o : o.slice(0, this.maxValues), h = o.length > this.maxValues, p = `facet-${this.id}-${e.field}`;
@@ -3156,17 +3067,17 @@ let y = (_e = class extends k {
                 aria-label="Rechercher dans ${e.label}">
             </div>
           </div>
-        ` : b}
+        ` : m}
         ${l.map((f) => {
-      const g = `${p}-${f.value.replace(/[^a-zA-Z0-9]/g, "_")}`, m = a.has(f.value);
+      const g = `${p}-${f.value.replace(/[^a-zA-Z0-9]/g, "_")}`, b = a.has(f.value);
       return d`
             <div class="fr-fieldset__element">
               <div class="fr-checkbox-group fr-checkbox-group--sm">
                 <input type="checkbox" id="${g}"
-                  .checked="${m}"
+                  .checked="${b}"
                   @change="${() => this._toggleValue(e.field, f.value)}">
                 <label class="fr-label" for="${g}">
-                  ${f.value}${this._effectiveHideCounts ? b : d` <span class="gouv-facets__count">${f.count}</span>`}
+                  ${f.value}${this._effectiveHideCounts ? m : d` <span class="gouv-facets__count">${f.count}</span>`}
                 </label>
               </div>
             </div>
@@ -3179,7 +3090,7 @@ let y = (_e = class extends k {
               ${s ? "Voir moins" : `Voir plus (${o.length - this.maxValues})`}
             </button>
           </div>
-        ` : b}
+        ` : m}
       </fieldset>
     `;
   }
@@ -3252,7 +3163,7 @@ let y = (_e = class extends k {
                         .checked="${p}"
                         @change="${() => this._toggleValue(e.field, l.value)}">
                       <label class="fr-label" for="${h}">
-                        ${l.value}${this._effectiveHideCounts ? b : d` <span class="gouv-facets__count">${l.count}</span>`}
+                        ${l.value}${this._effectiveHideCounts ? m : d` <span class="gouv-facets__count">${l.count}</span>`}
                       </label>
                     </div>
                   </div>
@@ -3260,7 +3171,7 @@ let y = (_e = class extends k {
     })}
             </fieldset>
           </div>
-        ` : b}
+        ` : m}
       </div>
     `;
   }
@@ -3297,7 +3208,7 @@ let y = (_e = class extends k {
                 @click="${() => this._clearFieldSelections(e.field)}">
                 Reinitialiser
               </button>
-            ` : b}
+            ` : m}
             <div class="fr-search-bar" role="search">
               <label class="fr-label fr-sr-only" for="${t}-search">Rechercher dans ${e.label}</label>
               <input class="fr-input" type="search" id="${t}-search"
@@ -3318,7 +3229,7 @@ let y = (_e = class extends k {
                         .checked="${f}"
                         @change="${() => this._toggleValue(e.field, h.value)}">
                       <label class="fr-label" for="${p}">
-                        ${h.value}${this._effectiveHideCounts ? b : d` <span class="gouv-facets__count">${h.count}</span>`}
+                        ${h.value}${this._effectiveHideCounts ? m : d` <span class="gouv-facets__count">${h.count}</span>`}
                       </label>
                     </div>
                   </div>
@@ -3326,7 +3237,7 @@ let y = (_e = class extends k {
     })}
             </fieldset>
           </div>
-        ` : b}
+        ` : m}
       </div>
     `;
   }
@@ -3400,28 +3311,28 @@ C([
 y = C([
   D("gouv-facets")
 ], y);
-function Le(n) {
+function ze(n) {
   return n ? n.split(",").map((e) => e.trim()).filter(Boolean) : [];
 }
-u(Le, "_parseCSV");
-var F = function(n, e, t, r) {
+u(ze, "_parseCSV");
+var T = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
-}, be;
-let E = (be = class extends k {
+}, me;
+let k = (me = class extends P {
   constructor() {
-    super(...arguments), this.source = "", this.fields = "", this.placeholder = "Rechercher…", this.label = "Rechercher", this.debounce = 300, this.minLength = 0, this.highlight = !1, this.operator = "contains", this.srLabel = !1, this.count = !1, this.urlSearchParam = "", this.urlSync = !1, this.serverSearch = !1, this.searchTemplate = 'search("{q}")', this._allData = [], this._filteredData = [], this._term = "", this._resultCount = 0, this._debounceTimer = null, this._unsubscribe = null, this._urlParamApplied = !1;
+    super(...arguments), this.source = "", this.fields = "", this.placeholder = "Rechercher…", this.label = "Rechercher", this.debounce = 300, this.minLength = 0, this.highlight = !1, this.operator = "contains", this.srLabel = !1, this.count = !1, this.urlSearchParam = "", this.urlSync = !1, this.serverSearch = !1, this.searchTemplate = "", this._allData = [], this._filteredData = [], this._term = "", this._resultCount = 0, this._debounceTimer = null, this._unsubscribe = null, this._urlParamApplied = !1;
   }
   createRenderRoot() {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-search"), this._initialize();
+    super.connectedCallback(), H("gouv-search"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._debounceTimer !== null && (clearTimeout(this._debounceTimer), this._debounceTimer = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && He(this.id);
+    super.disconnectedCallback(), this._debounceTimer !== null && (clearTimeout(this._debounceTimer), this._debounceTimer = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && Fe(this.id);
   }
   updated(e) {
     if (super.updated(e), e.has("source")) {
@@ -3453,6 +3364,7 @@ let E = (be = class extends k {
   }
   // --- Private implementation ---
   _initialize() {
+    var t;
     if (!this.id) {
       console.warn('gouv-search: attribut "id" requis');
       return;
@@ -3461,17 +3373,20 @@ let E = (be = class extends k {
       console.warn('gouv-search: attribut "source" requis');
       return;
     }
-    this._unsubscribe && this._unsubscribe();
-    const e = Me(this.source);
+    if (this._unsubscribe && this._unsubscribe(), this.serverSearch && !this.searchTemplate) {
+      const r = document.getElementById(this.source), i = (t = r == null ? void 0 : r.getAdapter) == null ? void 0 : t.call(r);
+      i != null && i.getDefaultSearchTemplate && (this.searchTemplate = i.getDefaultSearchTemplate() || "");
+    }
+    const e = se(this.source);
     e !== void 0 && this._onData(e), this._unsubscribe = We(this.source, {
-      onLoaded: /* @__PURE__ */ u((t) => {
-        this._onData(t);
+      onLoaded: /* @__PURE__ */ u((r) => {
+        this._onData(r);
       }, "onLoaded"),
       onLoading: /* @__PURE__ */ u(() => {
-        V(this.id);
+        K(this.id);
       }, "onLoading"),
-      onError: /* @__PURE__ */ u((t) => {
-        G(this.id, t);
+      onError: /* @__PURE__ */ u((r) => {
+        Q(this.id, r);
       }, "onError")
     });
   }
@@ -3479,8 +3394,8 @@ let E = (be = class extends k {
     const t = Array.isArray(e) ? e : [];
     if (this.serverSearch) {
       this._allData = t, this._filteredData = t;
-      const r = Te(this.source);
-      this._resultCount = r ? r.total : t.length, this.id && (r && se(this.id, r), O(this.id, t)), this.urlSearchParam && !this._urlParamApplied && (this._applyUrlSearchParam(), this._urlParamApplied = !0, this._term && this._applyServerSearch());
+      const r = De(this.source);
+      this._resultCount = r ? r.total : t.length, this.id && (r && Me(this.id, r), L(this.id, t)), this.urlSearchParam && !this._urlParamApplied && (this._applyUrlSearchParam(), this._urlParamApplied = !0, this._term && this._applyServerSearch());
       return;
     }
     this._allData = t, this.urlSearchParam && !this._urlParamApplied && (this._applyUrlSearchParam(), this._urlParamApplied = !0), this._applyFilter();
@@ -3517,7 +3432,7 @@ let E = (be = class extends k {
       const r = e.replace(/"/g, '\\"');
       t = this.searchTemplate.replace(/\{q\}/g, r);
     }
-    K(this.source, { where: t, whereKey: this.id }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
+    G(this.source, { where: t, whereKey: this.id }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
       bubbles: !0,
       composed: !0,
       detail: {
@@ -3560,7 +3475,7 @@ let E = (be = class extends k {
     this._debounceTimer !== null && (clearTimeout(this._debounceTimer), this._debounceTimer = null), this._applyFilter();
   }
   _dispatch() {
-    this.id && (O(this.id, this._filteredData), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
+    this.id && (L(this.id, this._filteredData), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
       bubbles: !0,
       composed: !0,
       detail: {
@@ -3613,64 +3528,64 @@ let E = (be = class extends k {
       `}
     `;
   }
-}, u(be, "GouvSearch"), be);
-F([
+}, u(me, "GouvSearch"), me);
+T([
   c({ type: String })
-], E.prototype, "source", void 0);
-F([
+], k.prototype, "source", void 0);
+T([
   c({ type: String })
-], E.prototype, "fields", void 0);
-F([
+], k.prototype, "fields", void 0);
+T([
   c({ type: String })
-], E.prototype, "placeholder", void 0);
-F([
+], k.prototype, "placeholder", void 0);
+T([
   c({ type: String })
-], E.prototype, "label", void 0);
-F([
+], k.prototype, "label", void 0);
+T([
   c({ type: Number })
-], E.prototype, "debounce", void 0);
-F([
+], k.prototype, "debounce", void 0);
+T([
   c({ type: Number, attribute: "min-length" })
-], E.prototype, "minLength", void 0);
-F([
+], k.prototype, "minLength", void 0);
+T([
   c({ type: Boolean })
-], E.prototype, "highlight", void 0);
-F([
+], k.prototype, "highlight", void 0);
+T([
   c({ type: String })
-], E.prototype, "operator", void 0);
-F([
+], k.prototype, "operator", void 0);
+T([
   c({ type: Boolean, attribute: "sr-label" })
-], E.prototype, "srLabel", void 0);
-F([
+], k.prototype, "srLabel", void 0);
+T([
   c({ type: Boolean })
-], E.prototype, "count", void 0);
-F([
+], k.prototype, "count", void 0);
+T([
   c({ type: String, attribute: "url-search-param" })
-], E.prototype, "urlSearchParam", void 0);
-F([
+], k.prototype, "urlSearchParam", void 0);
+T([
   c({ type: Boolean, attribute: "url-sync" })
-], E.prototype, "urlSync", void 0);
-F([
+], k.prototype, "urlSync", void 0);
+T([
   c({ type: Boolean, attribute: "server-search" })
-], E.prototype, "serverSearch", void 0);
-F([
+], k.prototype, "serverSearch", void 0);
+T([
   c({ type: String, attribute: "search-template" })
-], E.prototype, "searchTemplate", void 0);
-F([
+], k.prototype, "searchTemplate", void 0);
+T([
   _()
-], E.prototype, "_allData", void 0);
-F([
+], k.prototype, "_allData", void 0);
+T([
   _()
-], E.prototype, "_filteredData", void 0);
-F([
+], k.prototype, "_filteredData", void 0);
+T([
   _()
-], E.prototype, "_term", void 0);
-F([
+], k.prototype, "_term", void 0);
+T([
   _()
-], E.prototype, "_resultCount", void 0);
-E = F([
+], k.prototype, "_resultCount", void 0);
+k = T([
   D("gouv-search")
-], E);
+], k);
 function lt(n) {
   const t = class t extends n {
     constructor() {
@@ -3696,7 +3611,7 @@ function lt(n) {
       const i = this.source;
       if (!i)
         return;
-      const s = Me(i);
+      const s = se(i);
       s !== void 0 && (this._sourceData = s, this.onSourceData(s)), this._unsubscribeSource = We(i, {
         onLoaded: /* @__PURE__ */ u((a) => {
           this._sourceData = a, this._sourceLoading = !1, this._sourceError = null, this.onSourceData(a), this.requestUpdate();
@@ -3718,7 +3633,7 @@ function lt(n) {
   return e;
 }
 u(lt, "SourceSubscriberMixin");
-function _r(n, e = "nombre") {
+function gr(n, e = "nombre") {
   if (n == null || n === "")
     return "—";
   const t = typeof n == "string" ? parseFloat(n) : n;
@@ -3726,24 +3641,24 @@ function _r(n, e = "nombre") {
     return "—";
   switch (e) {
     case "nombre":
-      return br(t);
+      return _r(t);
     case "pourcentage":
       return _i(t);
     case "euro":
-      return bi(t);
-    case "decimal":
       return mi(t);
+    case "decimal":
+      return bi(t);
     default:
-      return br(t);
+      return _r(t);
   }
 }
-u(_r, "formatValue");
-function br(n) {
+u(gr, "formatValue");
+function _r(n) {
   return new Intl.NumberFormat("fr-FR", {
     maximumFractionDigits: 0
   }).format(Math.round(n));
 }
-u(br, "formatNumber");
+u(_r, "formatNumber");
 function _i(n) {
   return new Intl.NumberFormat("fr-FR", {
     style: "percent",
@@ -3752,7 +3667,7 @@ function _i(n) {
   }).format(n / 100);
 }
 u(_i, "formatPercentage");
-function bi(n) {
+function mi(n) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
@@ -3760,14 +3675,14 @@ function bi(n) {
     maximumFractionDigits: 0
   }).format(n);
 }
-u(bi, "formatCurrency");
-function mi(n) {
+u(mi, "formatCurrency");
+function bi(n) {
   return new Intl.NumberFormat("fr-FR", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 2
   }).format(n);
 }
-u(mi, "formatDecimal");
+u(bi, "formatDecimal");
 function Ri(n) {
   const e = typeof n == "string" ? new Date(n) : n;
   return isNaN(e.getTime()) ? "—" : new Intl.DateTimeFormat("fr-FR", {
@@ -3827,20 +3742,20 @@ function mr(n, e) {
   }
 }
 u(mr, "computeAggregation");
-var j = function(n, e, t, r) {
+var I = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 };
-const vr = {
+const br = {
   vert: "gouv-kpi--success",
   orange: "gouv-kpi--warning",
   rouge: "gouv-kpi--error",
   bleu: "gouv-kpi--info"
 };
-var me;
-let N = (me = class extends lt(k) {
+var be;
+let O = (be = class extends lt(P) {
   constructor() {
     super(...arguments), this.source = "", this.valeur = "", this.label = "", this.description = "", this.icone = "", this.format = "nombre", this.tendance = "", this.couleur = "";
   }
@@ -3849,7 +3764,7 @@ let N = (me = class extends lt(k) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-kpi");
+    super.connectedCallback(), H("gouv-kpi");
   }
   _computeValue() {
     return !this._sourceData || !this.valeur ? null : mr(this._sourceData, this.valeur);
@@ -3872,7 +3787,7 @@ let N = (me = class extends lt(k) {
   _getAriaLabel() {
     if (this.description)
       return this.description;
-    const e = this._computeValue(), t = _r(e, this.format);
+    const e = this._computeValue(), t = gr(e, this.format);
     let r = `${this.label}: ${t}`;
     if (typeof e == "number" && (this.seuilVert !== void 0 || this.seuilOrange !== void 0)) {
       const i = this._getColor(), a = { vert: "bon", orange: "attention", rouge: "critique", bleu: "" }[i];
@@ -3881,7 +3796,7 @@ let N = (me = class extends lt(k) {
     return r;
   }
   render() {
-    const e = this._computeValue(), t = _r(e, this.format), r = vr[this._getColor()] || vr.bleu, i = this._getTendanceInfo();
+    const e = this._computeValue(), t = gr(e, this.format), r = br[this._getColor()] || br.bleu, i = this._getTendanceInfo();
     return d`
       <div
         class="gouv-kpi ${r}"
@@ -3948,48 +3863,48 @@ let N = (me = class extends lt(k) {
       </style>
     `;
   }
-}, u(me, "GouvKpi"), me);
-N.styles = wr``;
-j([
+}, u(be, "GouvKpi"), be);
+O.styles = wr``;
+I([
   c({ type: String })
-], N.prototype, "source", void 0);
-j([
+], O.prototype, "source", void 0);
+I([
   c({ type: String })
-], N.prototype, "valeur", void 0);
-j([
+], O.prototype, "valeur", void 0);
+I([
   c({ type: String })
-], N.prototype, "label", void 0);
-j([
+], O.prototype, "label", void 0);
+I([
   c({ type: String })
-], N.prototype, "description", void 0);
-j([
+], O.prototype, "description", void 0);
+I([
   c({ type: String })
-], N.prototype, "icone", void 0);
-j([
+], O.prototype, "icone", void 0);
+I([
   c({ type: String })
-], N.prototype, "format", void 0);
-j([
+], O.prototype, "format", void 0);
+I([
   c({ type: String })
-], N.prototype, "tendance", void 0);
-j([
+], O.prototype, "tendance", void 0);
+I([
   c({ type: Number, attribute: "seuil-vert" })
-], N.prototype, "seuilVert", void 0);
-j([
+], O.prototype, "seuilVert", void 0);
+I([
   c({ type: Number, attribute: "seuil-orange" })
-], N.prototype, "seuilOrange", void 0);
-j([
+], O.prototype, "seuilOrange", void 0);
+I([
   c({ type: String })
-], N.prototype, "couleur", void 0);
-N = j([
+], O.prototype, "couleur", void 0);
+O = I([
   D("gouv-kpi")
-], N);
-var T = function(n, e, t, r) {
+], O);
+var M = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, ve;
-let R = (ve = class extends lt(k) {
+let R = (ve = class extends lt(P) {
   constructor() {
     super(...arguments), this.source = "", this.colonnes = "", this.recherche = !1, this.filtres = "", this.tri = "", this.pagination = 0, this.export = "", this.urlSync = !1, this.urlPageParam = "page", this.serverTri = !1, this._data = [], this._searchQuery = "", this._activeFilters = {}, this._sort = null, this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._popstateHandler = null;
   }
@@ -3998,7 +3913,7 @@ let R = (ve = class extends lt(k) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-datalist"), this._initSort(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
+    super.connectedCallback(), H("gouv-datalist"), this._initSort(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
       this._applyUrlPage(), this.requestUpdate();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
@@ -4010,7 +3925,7 @@ let R = (ve = class extends lt(k) {
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [];
-    const t = this.source ? Te(this.source) : void 0;
+    const t = this.source ? De(this.source) : void 0;
     t && t.total > 0 ? (this._serverPagination = !0, this._serverTotal = t.total, this._serverPageSize = t.pageSize, this._currentPage = t.page) : (this._serverPagination = !1, this._currentPage = 1);
   }
   // --- Parsing ---
@@ -4077,7 +3992,7 @@ let R = (ve = class extends lt(k) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const r = parseInt(t, 10);
-      !isNaN(r) && r >= 1 && (this._currentPage = r, this._serverPagination && this.source && K(this.source, { page: r }));
+      !isNaN(r) && r >= 1 && (this._currentPage = r, this._serverPagination && this.source && G(this.source, { page: r }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -4095,12 +4010,12 @@ let R = (ve = class extends lt(k) {
   }
   _handleSort(e) {
     var t;
-    ((t = this._sort) == null ? void 0 : t.key) === e ? this._sort = { key: e, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: e, direction: "asc" }, this.serverTri && this.source && K(this.source, {
+    ((t = this._sort) == null ? void 0 : t.key) === e ? this._sort = { key: e, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: e, direction: "asc" }, this.serverTri && this.source && G(this.source, {
       orderBy: `${this._sort.key}:${this._sort.direction}`
     });
   }
   _handlePageChange(e) {
-    this._currentPage = e, this._serverPagination && this.source && K(this.source, { page: e }), this.urlSync && this._syncPageUrl();
+    this._currentPage = e, this._serverPagination && this.source && G(this.source, { page: e }), this.urlSync && this._syncPageUrl();
   }
   // --- Export ---
   _exportCsv() {
@@ -4378,55 +4293,55 @@ ${i}
   }
 }, u(ve, "GouvDatalist"), ve);
 R.styles = wr``;
-T([
+M([
   c({ type: String })
 ], R.prototype, "source", void 0);
-T([
+M([
   c({ type: String })
 ], R.prototype, "colonnes", void 0);
-T([
+M([
   c({ type: Boolean })
 ], R.prototype, "recherche", void 0);
-T([
+M([
   c({ type: String })
 ], R.prototype, "filtres", void 0);
-T([
+M([
   c({ type: String })
 ], R.prototype, "tri", void 0);
-T([
+M([
   c({ type: Number })
 ], R.prototype, "pagination", void 0);
-T([
+M([
   c({ type: String })
 ], R.prototype, "export", void 0);
-T([
+M([
   c({ type: Boolean, attribute: "url-sync" })
 ], R.prototype, "urlSync", void 0);
-T([
+M([
   c({ type: String, attribute: "url-page-param" })
 ], R.prototype, "urlPageParam", void 0);
-T([
+M([
   c({ type: Boolean, attribute: "server-tri" })
 ], R.prototype, "serverTri", void 0);
-T([
+M([
   _()
 ], R.prototype, "_data", void 0);
-T([
+M([
   _()
 ], R.prototype, "_searchQuery", void 0);
-T([
+M([
   _()
 ], R.prototype, "_activeFilters", void 0);
-T([
+M([
   _()
 ], R.prototype, "_sort", void 0);
-T([
+M([
   _()
 ], R.prototype, "_currentPage", void 0);
-T([
+M([
   _()
 ], R.prototype, "_serverPagination", void 0);
-R = T([
+R = M([
   D("gouv-datalist")
 ], R);
 var z = function(n, e, t, r) {
@@ -4435,7 +4350,7 @@ var z = function(n, e, t, r) {
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, ye;
-let U = (ye = class extends lt(k) {
+let N = (ye = class extends lt(P) {
   constructor() {
     super(...arguments), this.source = "", this.cols = 1, this.pagination = 0, this.empty = "Aucun resultat", this.gap = "fr-grid-row--gutters", this.uidField = "", this.urlSync = !1, this.urlPageParam = "page", this._data = [], this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._templateContent = "", this._hashScrollDone = !1, this._popstateHandler = null;
   }
@@ -4444,7 +4359,7 @@ let U = (ye = class extends lt(k) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-display"), this._captureTemplate(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
+    super.connectedCallback(), H("gouv-display"), this._captureTemplate(), this.urlSync && (this._applyUrlPage(), this._popstateHandler = () => {
       this._applyUrlPage(), this.requestUpdate();
     }, window.addEventListener("popstate", this._popstateHandler));
   }
@@ -4453,7 +4368,7 @@ let U = (ye = class extends lt(k) {
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [], this._hashScrollDone = !1;
-    const t = this.source ? Te(this.source) : void 0;
+    const t = this.source ? De(this.source) : void 0;
     t && t.total > 0 ? (this._serverPagination = !0, this._serverTotal = t.total, this._serverPageSize = t.pageSize, this._currentPage = t.page) : (this._serverPagination = !1, this._currentPage = 1);
   }
   updated(e) {
@@ -4489,7 +4404,7 @@ let U = (ye = class extends lt(k) {
     let i = t, s = "";
     const a = t.indexOf("|");
     a !== -1 && (i = t.substring(0, a).trim(), s = t.substring(a + 1).trim());
-    const o = P(e, i);
+    const o = E(e, i);
     return o == null ? s : String(o);
   }
   // --- Pagination ---
@@ -4509,7 +4424,7 @@ let U = (ye = class extends lt(k) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const r = parseInt(t, 10);
-      !isNaN(r) && r >= 1 && (this._currentPage = r, this._serverPagination && this.source && K(this.source, { page: r }));
+      !isNaN(r) && r >= 1 && (this._currentPage = r, this._serverPagination && this.source && G(this.source, { page: r }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -4520,7 +4435,7 @@ let U = (ye = class extends lt(k) {
     window.history.replaceState(null, "", r);
   }
   _handlePageChange(e) {
-    this._currentPage = e, this._serverPagination && this.source && K(this.source, { page: e }), this.urlSync && this._syncPageUrl();
+    this._currentPage = e, this._serverPagination && this.source && G(this.source, { page: e }), this.urlSync && this._syncPageUrl();
   }
   // --- Grid ---
   _getColClass() {
@@ -4531,7 +4446,7 @@ let U = (ye = class extends lt(k) {
   /** Generate the unique ID string for an item */
   _getItemUid(e, t) {
     if (this.uidField) {
-      const r = P(e, this.uidField);
+      const r = E(e, this.uidField);
       if (r != null && r !== "")
         return `item-${String(r).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
     }
@@ -4638,47 +4553,47 @@ let U = (ye = class extends lt(k) {
 }, u(ye, "GouvDisplay"), ye);
 z([
   c({ type: String })
-], U.prototype, "source", void 0);
+], N.prototype, "source", void 0);
 z([
   c({ type: Number })
-], U.prototype, "cols", void 0);
+], N.prototype, "cols", void 0);
 z([
   c({ type: Number })
-], U.prototype, "pagination", void 0);
+], N.prototype, "pagination", void 0);
 z([
   c({ type: String })
-], U.prototype, "empty", void 0);
+], N.prototype, "empty", void 0);
 z([
   c({ type: String })
-], U.prototype, "gap", void 0);
+], N.prototype, "gap", void 0);
 z([
   c({ type: String, attribute: "uid-field" })
-], U.prototype, "uidField", void 0);
+], N.prototype, "uidField", void 0);
 z([
   c({ type: Boolean, attribute: "url-sync" })
-], U.prototype, "urlSync", void 0);
+], N.prototype, "urlSync", void 0);
 z([
   c({ type: String, attribute: "url-page-param" })
-], U.prototype, "urlPageParam", void 0);
+], N.prototype, "urlPageParam", void 0);
 z([
   _()
-], U.prototype, "_data", void 0);
+], N.prototype, "_data", void 0);
 z([
   _()
-], U.prototype, "_currentPage", void 0);
+], N.prototype, "_currentPage", void 0);
 z([
   _()
-], U.prototype, "_serverPagination", void 0);
-U = z([
+], N.prototype, "_serverPagination", void 0);
+N = z([
   D("gouv-display")
-], U);
+], N);
 var A = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 };
-const $i = {
+const wi = {
   line: "line-chart",
   bar: "bar-chart",
   pie: "pie-chart",
@@ -4689,8 +4604,8 @@ const $i = {
   map: "map-chart",
   "map-reg": "map-chart-reg"
 };
-var $e;
-let S = ($e = class extends lt(k) {
+var we;
+let S = (we = class extends lt(P) {
   constructor() {
     super(...arguments), this.source = "", this.type = "bar", this.labelField = "", this.codeField = "", this.valueField = "", this.valueField2 = "", this.name = "", this.selectedPalette = "categorical", this.unitTooltip = "", this.unitTooltipBar = "", this.horizontal = !1, this.stacked = !1, this.fill = !1, this.highlightIndex = "", this.xMin = "", this.xMax = "", this.yMin = "", this.yMax = "", this.gaugeValue = null, this.mapHighlight = "", this._data = [];
   }
@@ -4699,7 +4614,7 @@ let S = ($e = class extends lt(k) {
     return this;
   }
   connectedCallback() {
-    super.connectedCallback(), W("gouv-dsfr-chart", this.type);
+    super.connectedCallback(), H("gouv-dsfr-chart", this.type);
   }
   onSourceData(e) {
     this._data = Array.isArray(e) ? e : [];
@@ -4710,7 +4625,7 @@ let S = ($e = class extends lt(k) {
       return { x: "[[]]", y: "[[]]", labels: [], values: [], values2: [] };
     const e = [], t = [], r = [];
     for (const i of this._data)
-      e.push(String(P(i, this.labelField) ?? "N/A")), t.push(Number(P(i, this.valueField)) || 0), this.valueField2 && r.push(Number(P(i, this.valueField2)) || 0);
+      e.push(String(E(i, this.labelField) ?? "N/A")), t.push(Number(E(i, this.valueField)) || 0), this.valueField2 && r.push(Number(E(i, this.valueField2)) || 0);
     return {
       x: JSON.stringify([e]),
       y: JSON.stringify([t]),
@@ -4727,10 +4642,10 @@ let S = ($e = class extends lt(k) {
       return "{}";
     const e = this.codeField || this.labelField, t = {};
     for (const r of this._data) {
-      let i = String(P(r, e) ?? "").trim();
+      let i = String(E(r, e) ?? "").trim();
       /^\d+$/.test(i) && i.length < 3 && (i = i.padStart(2, "0"));
-      const s = Number(P(r, this.valueField)) || 0;
-      (this.type === "map" ? ti(i) : i !== "") && (t[i] = Math.round(s * 100) / 100);
+      const s = Number(E(r, this.valueField)) || 0;
+      (this.type === "map" ? ei(i) : i !== "") && (t[i] = Math.round(s * 100) / 100);
     }
     return JSON.stringify(t);
   }
@@ -4753,7 +4668,7 @@ let S = ($e = class extends lt(k) {
     const { x: e, y: t, yMulti: r, labels: i, values: s, values2: a } = this._processData(), o = {}, l = {};
     switch (this.type) {
       case "gauge": {
-        const h = this.gaugeValue ?? (this._data.length > 0 && Number(P(this._data[0], this.valueField)) || 0);
+        const h = this.gaugeValue ?? (this._data.length > 0 && Number(E(this._data[0], this.valueField)) || 0);
         o.percent = String(Math.round(h)), o.init = "0", o.target = "100";
         break;
       }
@@ -4775,7 +4690,7 @@ let S = ($e = class extends lt(k) {
         if (o.data = this._processMapData(), this._data.length > 0) {
           let h = 0, p = 0;
           for (const f of this._data) {
-            const g = Number(P(f, this.valueField));
+            const g = Number(E(f, this.valueField));
             isNaN(g) || (h += g, p++);
           }
           if (p > 0) {
@@ -4821,7 +4736,7 @@ let S = ($e = class extends lt(k) {
     return s.className = "gouv-dsfr-chart__wrapper", s.setAttribute("role", "img"), s.setAttribute("aria-label", this._getAriaLabel()), s.appendChild(i), s;
   }
   _renderChart() {
-    const e = $i[this.type];
+    const e = wi[this.type];
     if (!e)
       return d`<p class="fr-text--sm fr-text--error">Type de graphique non supporté: ${this.type}</p>`;
     const { attrs: t, deferred: r } = this._getTypeSpecificAttributes(), i = {
@@ -4870,7 +4785,7 @@ let S = ($e = class extends lt(k) {
         </style>
       ` : this._renderChart();
   }
-}, u($e, "GouvDsfrChart"), $e);
+}, u(we, "GouvDsfrChart"), we);
 A([
   c({ type: String })
 ], S.prototype, "source", void 0);
@@ -4942,8 +4857,8 @@ var X = function(n, e, t, r) {
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
-}, we;
-let H = (we = class extends k {
+}, $e;
+let V = ($e = class extends P {
   constructor() {
     super(...arguments), this._open = !1, this._tab = "login", this._error = "", this._loading = !1, this._email = "", this._password = "", this._displayName = "";
   }
@@ -4961,7 +4876,7 @@ let H = (we = class extends k {
     e.preventDefault(), this._error = "", this._loading = !0;
     try {
       if (this._tab === "login") {
-        const t = await ci({ email: this._email, password: this._password });
+        const t = await li({ email: this._email, password: this._password });
         if (!t.success) {
           this._error = t.error || "Identifiants incorrects";
           return;
@@ -4971,7 +4886,7 @@ let H = (we = class extends k {
           this._error = "Le nom est requis";
           return;
         }
-        const t = await ui({
+        const t = await ci({
           email: this._email,
           password: this._password,
           displayName: this._displayName
@@ -4991,7 +4906,7 @@ let H = (we = class extends k {
   }
   render() {
     if (!this._open)
-      return b;
+      return m;
     const e = this._tab === "login";
     return d`
       <dialog class="fr-modal fr-modal--opened" role="dialog" aria-labelledby="auth-modal-title" aria-modal="true"
@@ -5035,10 +4950,10 @@ let H = (we = class extends k {
                     <div class="fr-alert fr-alert--error fr-alert--sm" style="margin-bottom:1rem">
                       <p>${this._error}</p>
                     </div>
-                  ` : b}
+                  ` : m}
 
                   <form @submit=${this._handleSubmit}>
-                    ${e ? b : d`
+                    ${e ? m : d`
                       <div class="fr-input-group">
                         <label class="fr-label" for="auth-name">Nom d'affichage</label>
                         <input class="fr-input" type="text" id="auth-name"
@@ -5070,7 +4985,7 @@ let H = (we = class extends k {
       this._password = t.target.value;
     }}
                              required>
-                      ${e ? b : d`<p class="fr-hint-text">6 caracteres minimum</p>`}
+                      ${e ? m : d`<p class="fr-hint-text">6 caracteres minimum</p>`}
                     </div>
 
                     <div class="fr-input-group" style="margin-top:1.5rem">
@@ -5088,38 +5003,38 @@ let H = (we = class extends k {
       </dialog>
     `;
   }
-}, u(we, "AuthModal"), we);
+}, u($e, "AuthModal"), $e);
 X([
   _()
-], H.prototype, "_open", void 0);
+], V.prototype, "_open", void 0);
 X([
   _()
-], H.prototype, "_tab", void 0);
+], V.prototype, "_tab", void 0);
 X([
   _()
-], H.prototype, "_error", void 0);
+], V.prototype, "_error", void 0);
 X([
   _()
-], H.prototype, "_loading", void 0);
+], V.prototype, "_loading", void 0);
 X([
   _()
-], H.prototype, "_email", void 0);
+], V.prototype, "_email", void 0);
 X([
   _()
-], H.prototype, "_password", void 0);
+], V.prototype, "_password", void 0);
 X([
   _()
-], H.prototype, "_displayName", void 0);
-H = X([
+], V.prototype, "_displayName", void 0);
+V = X([
   D("auth-modal")
-], H);
-var Oe = function(n, e, t, r) {
+], V);
+var Ne = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, Se;
-let ae = (Se = class extends k {
+let ae = (Se = class extends P {
   constructor() {
     super(...arguments), this.currentPage = "", this.basePath = "", this._favCount = 0, this._user = null, this._dbMode = !1;
   }
@@ -5151,8 +5066,8 @@ let ae = (Se = class extends k {
   }
   async _initAuth() {
     try {
-      const e = await oi();
-      this._dbMode = await Er(), this._user = e.user, this._unsubAuth = di((t) => {
+      const e = await ni();
+      this._dbMode = await kr(), this._user = e.user, this._unsubAuth = hi((t) => {
         this._user = t.user;
       });
     } catch {
@@ -5163,7 +5078,7 @@ let ae = (Se = class extends k {
     e == null || e.open("login");
   }
   async _handleLogout() {
-    await hi(), window.location.reload();
+    await ui(), window.location.reload();
   }
   _getNavItems() {
     return [
@@ -5197,7 +5112,7 @@ let ae = (Se = class extends k {
           Connexion
         </button>
       </li>
-    ` : b;
+    ` : m;
   }
   render() {
     const e = this._getNavItems();
@@ -5244,7 +5159,7 @@ let ae = (Se = class extends k {
                     </li>
                     <li>
                       <a class="fr-btn fr-btn--tertiary-no-outline fr-icon-star-fill" href="${this._base}apps/favorites/index.html">
-                        Favoris${this._favCount > 0 ? d` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : b}
+                        Favoris${this._favCount > 0 ? d` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : m}
                       </a>
                     </li>
                     ${this._renderAuthButton()}
@@ -5276,35 +5191,35 @@ let ae = (Se = class extends k {
           </div>
         </div>
       </header>
-      ${this._dbMode ? d`<auth-modal></auth-modal>` : b}
+      ${this._dbMode ? d`<auth-modal></auth-modal>` : m}
     `;
   }
 }, u(Se, "AppHeader"), Se);
-Oe([
+Ne([
   c({ type: String, attribute: "current-page" })
 ], ae.prototype, "currentPage", void 0);
-Oe([
+Ne([
   c({ type: String, attribute: "base-path" })
 ], ae.prototype, "basePath", void 0);
-Oe([
+Ne([
   _()
 ], ae.prototype, "_favCount", void 0);
-Oe([
+Ne([
   _()
 ], ae.prototype, "_user", void 0);
-Oe([
+Ne([
   _()
 ], ae.prototype, "_dbMode", void 0);
-ae = Oe([
+ae = Ne([
   D("app-header")
 ], ae);
-var Nr = function(n, e, t, r) {
+var Or = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
 }, Ce;
-let Et = (Ce = class extends k {
+let Et = (Ce = class extends P {
   constructor() {
     super(...arguments), this.basePath = "";
   }
@@ -5367,19 +5282,19 @@ let Et = (Ce = class extends k {
     `;
   }
 }, u(Ce, "AppFooter"), Ce);
-Nr([
+Or([
   c({ type: String, attribute: "base-path" })
 ], Et.prototype, "basePath", void 0);
-Et = Nr([
+Et = Or([
   D("app-footer")
 ], Et);
-var Ne = function(n, e, t, r) {
+var Ue = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
-}, Pe;
-let ne = (Pe = class extends k {
+}, xe;
+let ne = (xe = class extends P {
   constructor() {
     super(...arguments), this.leftRatio = 40, this.minLeftWidth = 280, this.minRightWidth = 300, this._isResizing = !1, this._currentLeftRatio = 40, this._leftContent = [], this._rightContent = [], this._contentMoved = !1, this._boundMouseMove = null, this._boundMouseUp = null;
   }
@@ -5524,23 +5439,23 @@ let ne = (Pe = class extends k {
       </style>
     `;
   }
-}, u(Pe, "AppLayoutBuilder"), Pe);
-Ne([
+}, u(xe, "AppLayoutBuilder"), xe);
+Ue([
   c({ type: Number, attribute: "left-ratio" })
 ], ne.prototype, "leftRatio", void 0);
-Ne([
+Ue([
   c({ type: Number, attribute: "min-left-width" })
 ], ne.prototype, "minLeftWidth", void 0);
-Ne([
+Ue([
   c({ type: Number, attribute: "min-right-width" })
 ], ne.prototype, "minRightWidth", void 0);
-Ne([
+Ue([
   _()
 ], ne.prototype, "_isResizing", void 0);
-Ne([
+Ue([
   _()
 ], ne.prototype, "_currentLeftRatio", void 0);
-ne = Ne([
+ne = Ue([
   D("app-layout-builder")
 ], ne);
 var Je = function(n, e, t, r) {
@@ -5548,8 +5463,8 @@ var Je = function(n, e, t, r) {
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
-}, xe;
-let De = (xe = class extends k {
+}, Ae;
+let Oe = (Ae = class extends P {
   constructor() {
     super(...arguments), this.title = "", this.icon = "", this.activePath = "", this.basePath = "", this._contentElements = [], this._contentMoved = !1;
   }
@@ -5783,29 +5698,29 @@ let De = (xe = class extends k {
       </style>
     `;
   }
-}, u(xe, "AppLayoutDemo"), xe);
+}, u(Ae, "AppLayoutDemo"), Ae);
 Je([
   c({ type: String })
-], De.prototype, "title", void 0);
+], Oe.prototype, "title", void 0);
 Je([
   c({ type: String })
-], De.prototype, "icon", void 0);
+], Oe.prototype, "icon", void 0);
 Je([
   c({ type: String, attribute: "active-path" })
-], De.prototype, "activePath", void 0);
+], Oe.prototype, "activePath", void 0);
 Je([
   c({ type: String, attribute: "base-path" })
-], De.prototype, "basePath", void 0);
-De = Je([
+], Oe.prototype, "basePath", void 0);
+Oe = Je([
   D("app-layout-demo")
-], De);
+], Oe);
 var oe = function(n, e, t, r) {
   var i = arguments.length, s = i < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") s = Reflect.decorate(n, e, t, r);
   else for (var o = n.length - 1; o >= 0; o--) (a = n[o]) && (s = (i < 3 ? a(s) : i > 3 ? a(e, t, s) : a(e, t)) || s);
   return i > 3 && s && Object.defineProperty(e, t, s), s;
-}, Ae;
-let Y = (Ae = class extends k {
+}, Pe;
+let Y = (Pe = class extends P {
   constructor() {
     super(...arguments), this.showDataTab = !1, this.showSaveButton = !1, this.showPlaygroundButton = !1, this.tabLabels = "Aperçu,Code,Données", this.activeTab = "preview", this._activeTab = "preview", this._previewContent = [], this._codeContent = [], this._dataContent = [], this._contentMoved = !1;
   }
@@ -5895,7 +5810,7 @@ let Y = (Ae = class extends k {
               @click="${() => this._handleTabClick("data")}">
               ${i || "Données"}
             </button>
-          ` : b}
+          ` : m}
           ${this.showPlaygroundButton ? d`
             <button
               class="preview-panel-action-btn"
@@ -5904,7 +5819,7 @@ let Y = (Ae = class extends k {
               <i class="ri-play-circle-line" aria-hidden="true"></i>
               <span>Playground</span>
             </button>
-          ` : b}
+          ` : m}
           ${this.showSaveButton ? d`
             <button
               class="preview-panel-action-btn preview-panel-save-btn"
@@ -5913,7 +5828,7 @@ let Y = (Ae = class extends k {
               <i class="ri-star-line" aria-hidden="true"></i>
               <span>Favoris</span>
             </button>
-          ` : b}
+          ` : m}
         </div>
 
         <!-- Contenu des onglets -->
@@ -6162,7 +6077,7 @@ let Y = (Ae = class extends k {
       </style>
     `;
   }
-}, u(Ae, "AppPreviewPanel"), Ae);
+}, u(Pe, "AppPreviewPanel"), Pe);
 oe([
   c({ type: Boolean, attribute: "show-data-tab" })
 ], Y.prototype, "showDataTab", void 0);
@@ -6184,13 +6099,13 @@ oe([
 Y = oe([
   D("app-preview-panel")
 ], Y);
-function wi(n, e, t) {
+function $i(n, e, t) {
   return n.map((r) => ({
-    label: String(P(r, e) ?? "N/A"),
-    value: Number(P(r, t)) || 0
+    label: String(E(r, e) ?? "N/A"),
+    value: Number(E(r, t)) || 0
   }));
 }
-u(wi, "extractLabelValues");
+u($i, "extractLabelValues");
 function Si(n, e) {
   if (e === "none")
     return n;
@@ -6222,55 +6137,55 @@ function Ci(n, e) {
   }
 }
 u(Ci, "computeGroupValue");
-function Pi(n, e) {
+function xi(n, e) {
   return e === "none" ? n : [...n].sort((t, r) => e === "desc" ? r.value - t.value : t.value - r.value);
 }
-u(Pi, "sortByValue");
-function Fi(n, e, t, r = "none", i = "none", s = 0) {
+u(xi, "sortByValue");
+function Ti(n, e, t, r = "none", i = "none", s = 0) {
   if (!n || n.length === 0)
     return { labels: [], values: [] };
-  let a = wi(n, e, t);
-  return a = Si(a, r), a = Pi(a, i), s > 0 && (a = a.slice(0, s)), {
+  let a = $i(n, e, t);
+  return a = Si(a, r), a = xi(a, i), s > 0 && (a = a.slice(0, s)), {
     labels: a.map((o) => o.label),
     values: a.map((o) => Math.round(o.value * 100) / 100)
   };
 }
-u(Fi, "processChartData");
+u(Ti, "processChartData");
 export {
   Et as AppFooter,
   ae as AppHeader,
   ne as AppLayoutBuilder,
-  De as AppLayoutDemo,
-  L as DATA_EVENTS,
+  Oe as AppLayoutDemo,
+  U as DATA_EVENTS,
   R as GouvDatalist,
-  U as GouvDisplay,
+  N as GouvDisplay,
   S as GouvDsfrChart,
   y as GouvFacets,
-  N as GouvKpi,
+  O as GouvKpi,
   B as GouvNormalize,
-  w as GouvQuery,
-  E as GouvSearch,
+  $ as GouvQuery,
+  k as GouvSearch,
   v as GouvSource,
   lt as SourceSubscriberMixin,
   Si as aggregateByLabel,
   mr as computeAggregation,
-  G as dispatchDataError,
-  O as dispatchDataLoaded,
-  V as dispatchDataLoading,
-  wi as extractLabelValues,
-  bi as formatCurrency,
+  Q as dispatchDataError,
+  L as dispatchDataLoaded,
+  K as dispatchDataLoading,
+  $i as extractLabelValues,
+  mi as formatCurrency,
   Ri as formatDate,
-  br as formatNumber,
+  _r as formatNumber,
   _i as formatPercentage,
-  _r as formatValue,
-  rt as getAdapter,
-  P as getByPath,
+  gr as formatValue,
+  fi as getAdapter,
+  E as getByPath,
   ki as getByPathOrDefault,
-  Me as getDataCache,
-  Ai as hasPath,
+  se as getDataCache,
+  Pi as hasPath,
   yi as parseExpression,
-  Fi as processChartData,
+  Ti as processChartData,
   Ei as registerAdapter,
-  Pi as sortByValue,
+  xi as sortByValue,
   We as subscribeToSource
 };

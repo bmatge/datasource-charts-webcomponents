@@ -68,7 +68,7 @@ Strategie : gouv-query garde son mode fetch autonome en interne mais marque comm
 
 ---
 
-## ETAPE 1 : Construire les nouvelles bases (sans casser l'existant)
+## ETAPE 1 : Construire les nouvelles bases (sans casser l'existant) ✅ COMPLETE
 
 > Principe : ajouter des capacites, exporter des utilitaires, enrichir les interfaces.
 > **Aucun composant existant n'est modifie dans cette etape.**
@@ -425,7 +425,7 @@ npm run build:all   # Tout compile
 
 ---
 
-## ETAPE 2 : Nettoyer le legacy et normaliser les composants
+## ETAPE 2 : Nettoyer le legacy et normaliser les composants ✅ COMPLETE
 
 > Principe : migrer les composants vers les nouvelles bases, supprimer le code duplique.
 > A la fin de cette etape, gouv-query ne fait plus aucun fetch HTTP.
@@ -874,16 +874,16 @@ Apres cet epic, ajouter CKAN necessite :
 ## Verification finale
 
 En fin d'epic, avant qu'il ne soit considere comme 'done', assure toi d'avoir relu tout l'epic et double-checke que :
-- [ ] gouv-source est le seul composant qui fait du fetch HTTP
-- [ ] gouv-query ne contient aucun `fetch()` ni import d'adapter
-- [ ] gouv-facets utilise `adapter.buildFacetWhere()` au lieu de builders inline
-- [ ] gouv-search lit `searchTemplate` depuis l'adapter
-- [ ] L'ancien pattern `<gouv-query api-type="...">` fonctionne (deprecated, warning console)
-- [ ] Les builders generent le nouveau pattern
-- [ ] Tous les tests unitaires passent (`npm run test:run`)
+- [x] gouv-source est le seul composant qui fait du fetch HTTP
+- [x] gouv-query ne contient aucun `fetch()` ni import d'adapter
+- [x] gouv-facets utilise `adapter.buildFacetWhere()` au lieu de builders inline
+- [x] gouv-search lit `searchTemplate` depuis l'adapter
+- [x] L'ancien pattern `<gouv-query api-type="...">` fonctionne (deprecated, warning console)
+- [x] Les builders generent le nouveau pattern
+- [x] Tous les tests unitaires passent (`npm run test:run`)
 - [ ] Tous les tests E2E passent (`npx playwright test`)
 - [ ] Toutes les apps buildent (`npm run build:all`)
-- [ ] Le guide contient des exemples a jour
-- [ ] CLAUDE.md est a jour
-- [ ] Les skills builder-IA sont a jour
+- [x] Le guide contient des exemples a jour
+- [x] CLAUDE.md est a jour
+- [x] Les skills builder-IA sont a jour
 - [ ] Les exemples playground sont migres

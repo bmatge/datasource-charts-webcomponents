@@ -88,18 +88,18 @@
 
         <!-- direct-display (server-side ODS) -->
         <h4>Cartes — Industrie du futur (pagination serveur)</h4>
-        <p>Grille de cartes DSFR avec pagination serveur via <code>gouv-query server-side</code>. Chaque page declenche un nouvel appel API.
+        <p>Grille de cartes DSFR avec pagination serveur via <code>gouv-source server-side</code>. Chaque page declenche un nouvel appel API.
           <a href="../apps/playground/index.html?example=direct-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-cards">Code source</button></h3>
           <div class="fr-collapse" id="code-disp-cards">
-<pre class="example-code">&lt;gouv-query id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="6"&gt;
-&lt;/gouv-query&gt;
+&lt;/gouv-source&gt;
 
 &lt;gouv-display source="q" cols="3" pagination="6"&gt;
   &lt;template&gt;
@@ -124,18 +124,18 @@
 
         <!-- query-display (server-side Tabular) -->
         <h4>Cartes — Communes de l'Ain (pagination serveur)</h4>
-        <p>Filtre les communes d'un departement avec <code>gouv-query server-side</code> (Tabular, filter server-side) puis affiche en cartes via <code>gouv-display</code>.
+        <p>Filtre les communes d'un departement avec <code>gouv-source server-side</code> (Tabular, where server-side) puis affiche en cartes via <code>gouv-display</code>.
           <a href="../apps/playground/index.html?example=query-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-disp-query">Code source</button></h3>
           <div class="fr-collapse" id="code-disp-query">
-<pre class="example-code">&lt;gouv-query id="q" api-type="tabular"
+<pre class="example-code">&lt;gouv-source id="q" api-type="tabular"
   resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
-  filter="DEP:eq:01"
+  where="DEP:eq:01"
   server-side page-size="8"&gt;
-&lt;/gouv-query&gt;
+&lt;/gouv-source&gt;
 
 &lt;gouv-display source="q" cols="4" pagination="8"&gt;
   &lt;template&gt;

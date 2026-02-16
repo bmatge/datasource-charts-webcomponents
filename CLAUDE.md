@@ -22,6 +22,8 @@ Architecture monorepo avec npm workspaces.
 ├── packages/
 │   └── shared/              # Utilitaires partages (@gouv-widgets/shared)
 ├── src/                     # Composants web gouv-widgets (Lit)
+│   ├── adapters/            # Adapters API (ODS, Tabular, Grist, Generic)
+│   └── components/          # Composants Lit (gouv-source, gouv-query, ...)
 ├── dist/                    # Build output (ESM + UMD)
 ├── specs/                   # Specifications des composants
 ├── guide/                   # Guide utilisateur et exemples
@@ -61,6 +63,72 @@ npm run dev --workspace=@gouv-widgets/app-favorites
 npm run dev --workspace=@gouv-widgets/app-monitoring
 ```
 
+## Architecture des composants data
+
+### Pipeline recommande
+
+```
+gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► donnees brutes
+     │                                                         │
+     │ adapters (ODS, Tabular, Grist, Generic)                 ▼
+     │                                               gouv-normalize (optionnel)
+     │                                                         │
+     │                                                         ▼
+     │                                               gouv-query [transform seulement]
+     │                                               filter, group-by, aggregate, sort
+     │                                                         │
+     │                                    ┌────────────────────┤
+     │                                    ▼                    ▼
+     │                              gouv-facets          gouv-search
+     │                                    │                    │
+     │◄── commandes (page, where, orderBy)┘                    │
+     │◄── commandes (where) ───────────────────────────────────┘
+     ▼
+  gouv-dsfr-chart / gouv-datalist / gouv-kpi / gouv-display
+```
+
+**Regles** :
+- **gouv-source** est le seul composant qui fait du fetch HTTP. Il supporte `api-type` pour ODS, Tabular, Grist et Generic.
+- **gouv-query** est un pur transformateur de donnees (filter, group-by, aggregate, sort). Il ne fait jamais de requete HTTP.
+- Les commandes (page, where, orderBy) remontent vers gouv-source via `gouv-source-command`.
+- gouv-facets et gouv-search delegent la construction des WHERE clauses aux adapters.
+
+### Pattern HTML
+
+```html
+<!-- Source (fetch) → Query (transform) → Chart (display) -->
+<gouv-source id="src" api-type="opendatasoft"
+  dataset-id="mon-dataset" base-url="https://data.economie.gouv.fr">
+</gouv-source>
+<gouv-query id="data" source="src"
+  group-by="region" aggregate="population:sum:total" order-by="total:desc">
+</gouv-query>
+<gouv-dsfr-chart source="data" type="bar"
+  label-field="region" value-field="total">
+</gouv-dsfr-chart>
+```
+
+Pour les cas sans transformation (datalist, display), gouv-query peut etre omis :
+
+```html
+<gouv-source id="src" api-type="tabular"
+  resource="..." server-side page-size="20">
+</gouv-source>
+<gouv-datalist source="src" colonnes="..." pagination="20">
+</gouv-datalist>
+```
+
+### Adapters et ProviderConfig
+
+- **Adapters** (`src/adapters/`) : construisent les URLs, parsent les reponses, gerent la pagination. Chaque API a son adapter (ODS, Tabular, Grist, Generic).
+- **ProviderConfig** (`packages/shared/src/providers/`) : configuration declarative par provider (pagination, response parsing, query syntax, code generation).
+- **Registre** (`src/adapters/adapter-registry.ts`) : `getAdapter(apiType)` retourne l'adapter pour un type donne.
+- Ajouter un nouveau provider (CKAN, INSEE...) = 1 ProviderConfig + 1 Adapter, zero modification dans les composants.
+
+### Retrocompatibilite
+
+`<gouv-query api-type="opendatasoft" ...>` sans gouv-source fonctionne toujours (mode compat avec shadow source interne), mais est **deprecie**. Les builders generent le nouveau pattern.
+
 ## Conventions de code
 
 - TypeScript strict mode
@@ -83,6 +151,8 @@ Utilitaires partages entre toutes les apps :
 - `openModal()`, `closeModal()` - Modales DSFR
 - `toastWarning()`, `toastSuccess()` - Notifications toast DSFR
 - `appHref()`, `navigateTo()` - Navigation inter-apps
+- `ProviderConfig`, `getProviderConfig()` - Configuration declarative des providers API
+- `detectProvider()` - Detection automatique du type de provider depuis une URL
 
 ## Skills builder-IA (alignement composants)
 
@@ -96,6 +166,8 @@ Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient aut
 - Chaque composant data a un skill correspondant
 
 Si un attribut est ajoute a un composant sans maj du skill, le test echouera.
+
+**Note** : gouv-source a les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `where`, `select`, `group-by`, `aggregate`, `order-by`, `server-side`, `page-size`, `headers`. Les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `select`, `headers` sur gouv-query sont deprecies (mode compat seulement).
 
 ## Release Tauri
 
