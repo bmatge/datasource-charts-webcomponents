@@ -18,6 +18,7 @@ const AUTH_STATE_DEFAULTS: AuthState = {
 
 let _state: AuthState = { ...AUTH_STATE_DEFAULTS };
 let _dbMode: boolean | null = null; // null = not yet detected
+let _checkAuthPromise: Promise<AuthState> | null = null;
 let _baseUrl = '';
 const _listeners: Set<AuthChangeCallback> = new Set();
 
@@ -83,8 +84,15 @@ export async function isDbMode(): Promise<boolean> {
 /**
  * Check current authentication state by calling GET /api/auth/me.
  * Should be called once on app startup.
+ * Caches the promise so concurrent callers (app + header) share one request.
  */
 export async function checkAuth(): Promise<AuthState> {
+  if (_checkAuthPromise) return _checkAuthPromise;
+  _checkAuthPromise = _doCheckAuth();
+  return _checkAuthPromise;
+}
+
+async function _doCheckAuth(): Promise<AuthState> {
   const dbAvailable = await isDbMode();
 
   if (!dbAvailable) {
@@ -243,6 +251,7 @@ async function autoMigrateIfNeeded(): Promise<void> {
 export function _resetAuthState(): void {
   _state = { ...AUTH_STATE_DEFAULTS };
   _dbMode = null;
+  _checkAuthPromise = null;
   _baseUrl = '';
   _listeners.clear();
 }

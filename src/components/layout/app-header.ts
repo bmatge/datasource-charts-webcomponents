@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getUser, logout, onAuthChange, isDbMode } from '@gouv-widgets/shared';
+import { checkAuth, logout, onAuthChange, isDbMode } from '@gouv-widgets/shared';
 import type { User } from '@gouv-widgets/shared';
 
 // Side-effect import: register <auth-modal> custom element
@@ -80,11 +80,9 @@ export class AppHeader extends LitElement {
 
   private async _initAuth(): Promise<void> {
     try {
-      const dbAvailable = await isDbMode();
-      this._dbMode = dbAvailable;
-      if (!dbAvailable) return;
-
-      this._user = getUser();
+      const authState = await checkAuth();
+      this._dbMode = await isDbMode(); // already cached, returns instantly
+      this._user = authState.user;
       this._unsubAuth = onAuthChange((state) => {
         this._user = state.user;
       });
