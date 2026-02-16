@@ -16,6 +16,8 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, ServerSideOverlay
 } from './api-adapter.js';
+import type { ProviderConfig } from '@gouv-widgets/shared';
+import { GRIST_CONFIG } from '@gouv-widgets/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -91,5 +93,30 @@ export class GristAdapter implements ApiAdapter {
 
   buildServerSideUrl(params: AdapterParams, _overlay: ServerSideOverlay): string {
     return this.buildUrl(params);
+  }
+
+  getDefaultSearchTemplate(): null {
+    return null;
+  }
+
+  getProviderConfig(): ProviderConfig {
+    return GRIST_CONFIG;
+  }
+
+  buildFacetWhere(
+    selections: Record<string, Set<string>>,
+    excludeField?: string
+  ): string {
+    // Grist uses colon syntax (same as Tabular)
+    const parts: string[] = [];
+    for (const [field, values] of Object.entries(selections)) {
+      if (field === excludeField || values.size === 0) continue;
+      if (values.size === 1) {
+        parts.push(`${field}:eq:${[...values][0]}`);
+      } else {
+        parts.push(`${field}:in:${[...values].join('|')}`);
+      }
+    }
+    return parts.join(', ');
   }
 }

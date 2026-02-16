@@ -42,6 +42,7 @@ export const GRIST_CONFIG: ProviderConfig = {
     whereFormat: 'colon',
     whereSeparator: ', ',
     aggregationSyntax: 'client-only',
+    searchTemplate: null,
   },
 
   facets: {

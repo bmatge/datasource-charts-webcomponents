@@ -135,3 +135,39 @@ describe('GristAdapter', () => {
     expect(adapter.buildServerSideUrl(params, overlay)).toBe(adapter.buildUrl(params));
   });
 });
+
+describe('getDefaultSearchTemplate', () => {
+  it('ODS returns search template', () => {
+    expect(getAdapter('opendatasoft').getDefaultSearchTemplate!()).toBe('search("{q}")');
+  });
+
+  it('Tabular returns null', () => {
+    expect(getAdapter('tabular').getDefaultSearchTemplate!()).toBeNull();
+  });
+
+  it('Grist returns null', () => {
+    expect(getAdapter('grist').getDefaultSearchTemplate!()).toBeNull();
+  });
+
+  it('Generic returns null', () => {
+    expect(getAdapter('generic').getDefaultSearchTemplate!()).toBeNull();
+  });
+});
+
+describe('getProviderConfig', () => {
+  it('each adapter returns its ProviderConfig', () => {
+    expect(getAdapter('opendatasoft').getProviderConfig!().id).toBe('opendatasoft');
+    expect(getAdapter('tabular').getProviderConfig!().id).toBe('tabular');
+    expect(getAdapter('grist').getProviderConfig!().id).toBe('grist');
+    expect(getAdapter('generic').getProviderConfig!().id).toBe('generic');
+  });
+});
+
+describe('buildFacetWhere is implemented on all adapters', () => {
+  for (const type of ['opendatasoft', 'tabular', 'grist', 'generic']) {
+    it(`${type} adapter has buildFacetWhere`, () => {
+      const adapter = getAdapter(type);
+      expect(typeof adapter.buildFacetWhere).toBe('function');
+    });
+  }
+});

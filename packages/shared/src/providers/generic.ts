@@ -37,6 +37,7 @@ export const GENERIC_CONFIG: ProviderConfig = {
     whereFormat: 'colon',
     whereSeparator: ', ',
     aggregationSyntax: 'client-only',
+    searchTemplate: null,
   },
 
   facets: {

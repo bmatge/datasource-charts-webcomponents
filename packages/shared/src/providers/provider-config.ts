@@ -85,6 +85,8 @@ export interface ProviderConfig {
     aggregationSyntax: 'odsql-select' | 'colon-attr' | 'client-only';
     /** Mapping of generic operators to native syntax */
     operatorMapping?: Record<string, string>;
+    /** Full-text search template. Use {q} as placeholder. null = no server search. */
+    searchTemplate?: string | null;
   };
 
   // --- Facets ---

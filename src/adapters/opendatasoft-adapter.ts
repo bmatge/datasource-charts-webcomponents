@@ -10,6 +10,8 @@ import type {
   FetchResult, ServerSideOverlay, FacetResult
 } from './api-adapter.js';
 import type { QueryAggregate } from '../components/gouv-query.js';
+import type { ProviderConfig } from '@gouv-widgets/shared';
+import { ODS_CONFIG } from '@gouv-widgets/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -252,6 +254,28 @@ export class OpenDataSoftAdapter implements ApiAdapter {
 
   getDefaultSearchTemplate(): string {
     return 'search("{q}")';
+  }
+
+  getProviderConfig(): ProviderConfig {
+    return ODS_CONFIG;
+  }
+
+  buildFacetWhere(
+    selections: Record<string, Set<string>>,
+    excludeField?: string
+  ): string {
+    const parts: string[] = [];
+    for (const [field, values] of Object.entries(selections)) {
+      if (field === excludeField || values.size === 0) continue;
+      if (values.size === 1) {
+        const val = [...values][0].replace(/"/g, '\\"');
+        parts.push(`${field} = "${val}"`);
+      } else {
+        const vals = [...values].map(v => `"${v.replace(/"/g, '\\"')}"`).join(', ');
+        parts.push(`${field} IN (${vals})`);
+      }
+    }
+    return parts.join(' AND ');
   }
 
   parseAggregates(aggExpr: string): QueryAggregate[] {

@@ -46,6 +46,12 @@ export const TABULAR_CONFIG: ProviderConfig = {
     whereFormat: 'colon',
     whereSeparator: ', ',
     aggregationSyntax: 'colon-attr',
+    searchTemplate: null,
+    operatorMapping: {
+      eq: 'exact', neq: 'differs', gt: 'strictly_greater', gte: 'greater',
+      lt: 'strictly_less', lte: 'less', contains: 'contains', notcontains: 'notcontains',
+      in: 'in', notin: 'notin', isnull: 'isnull', isnotnull: 'isnotnull',
+    },
   },
 
   facets: {

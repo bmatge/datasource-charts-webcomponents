@@ -9,7 +9,8 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, ServerSideOverlay
 } from './api-adapter.js';
-import { getProxyConfig } from '@gouv-widgets/shared';
+import type { ProviderConfig } from '@gouv-widgets/shared';
+import { getProxyConfig, TABULAR_CONFIG } from '@gouv-widgets/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -270,6 +271,30 @@ export class TabularAdapter implements ApiAdapter {
       'isnotnull': 'isnotnull',
     };
     return mapping[op] || op;
+  }
+
+  getDefaultSearchTemplate(): null {
+    return null;
+  }
+
+  getProviderConfig(): ProviderConfig {
+    return TABULAR_CONFIG;
+  }
+
+  buildFacetWhere(
+    selections: Record<string, Set<string>>,
+    excludeField?: string
+  ): string {
+    const parts: string[] = [];
+    for (const [field, values] of Object.entries(selections)) {
+      if (field === excludeField || values.size === 0) continue;
+      if (values.size === 1) {
+        parts.push(`${field}:eq:${[...values][0]}`);
+      } else {
+        parts.push(`${field}:in:${[...values].join('|')}`);
+      }
+    }
+    return parts.join(', ');
   }
 
   /**

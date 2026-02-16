@@ -7,6 +7,7 @@
  */
 
 import type { QueryAggregate } from '../components/gouv-query.js';
+import type { ProviderConfig } from '@gouv-widgets/shared';
 
 /**
  * Declare ce qu'un adapter peut faire cote serveur.
@@ -148,37 +149,22 @@ export interface ApiAdapter {
    * Partage entre le traitement client-side et la construction d'URL serveur.
    */
   parseAggregates?(aggExpr: string): QueryAggregate[];
+
+  /**
+   * Construit un WHERE clause a partir de selections de facettes.
+   * Utilise par gouv-facets pour generer les filtres dans la syntaxe du provider.
+   */
+  buildFacetWhere?(
+    selections: Record<string, Set<string>>,
+    excludeField?: string
+  ): string;
+
+  /**
+   * Retourne la config provider declarative associee a cet adapter.
+   */
+  getProviderConfig?(): ProviderConfig;
 }
 
-// --- Registre et factory ---
+// --- Registre et factory (re-exported from adapter-registry) ---
 
-import { GenericAdapter } from './generic-adapter.js';
-import { OpenDataSoftAdapter } from './opendatasoft-adapter.js';
-import { TabularAdapter } from './tabular-adapter.js';
-import { GristAdapter } from './grist-adapter.js';
-
-const ADAPTER_REGISTRY = new Map<string, ApiAdapter>([
-  ['generic', new GenericAdapter()],
-  ['opendatasoft', new OpenDataSoftAdapter()],
-  ['tabular', new TabularAdapter()],
-  ['grist', new GristAdapter()],
-]);
-
-/**
- * Retourne l'adapter pour un api-type donne.
- * Les adapters sont des singletons (stateless).
- */
-export function getAdapter(apiType: string): ApiAdapter {
-  const adapter = ADAPTER_REGISTRY.get(apiType);
-  if (!adapter) {
-    throw new Error(`Type d'API non supporte: ${apiType}`);
-  }
-  return adapter;
-}
-
-/**
- * Enregistre un adapter custom (pour extensibilite).
- */
-export function registerAdapter(adapter: ApiAdapter): void {
-  ADAPTER_REGISTRY.set(adapter.type, adapter);
-}
+export { getAdapter, registerAdapter } from './adapter-registry.js';

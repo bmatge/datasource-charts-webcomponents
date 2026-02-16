@@ -39,6 +39,7 @@ export const ODS_CONFIG: ProviderConfig = {
     whereFormat: 'odsql',
     whereSeparator: ' AND ',
     aggregationSyntax: 'odsql-select',
+    searchTemplate: 'search("{q}")',
   },
 
   facets: {
