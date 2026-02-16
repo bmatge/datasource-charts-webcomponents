@@ -882,8 +882,8 @@ En fin d'epic, avant qu'il ne soit considere comme 'done', assure toi d'avoir re
 - [x] Les builders generent le nouveau pattern
 - [x] Tous les tests unitaires passent (`npm run test:run`)
 - [ ] Tous les tests E2E passent (`npx playwright test`)
-- [ ] Toutes les apps buildent (`npm run build:all`)
+- [x] Toutes les apps buildent (`npm run build:all`)
 - [x] Le guide contient des exemples a jour
 - [x] CLAUDE.md est a jour
 - [x] Les skills builder-IA sont a jour
-- [ ] Les exemples playground sont migres
+- [x] Les exemples playground sont migres (15 exemples, 228 tests code generator)
