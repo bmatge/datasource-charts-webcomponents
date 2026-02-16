@@ -1452,3 +1452,7 @@ refactoring. Les phases 5 et 6 peuvent etre faites en parallele de la phase 4.
 | Ecarts playground/guide post-refactoring | Eleve | Valides par les 41 tests examples existants + tests manuels sur les 8 pages guide |
 | Skills desynchronises apres ajout provider | Moyen | Tests d'alignement skills.test.ts (introspection Lit) detectent automatiquement les ecarts |
 | MCP skills.json obsolete | Faible | Le build genere skills.json automatiquement ; versionne avec le code |
+
+## En fin d'epic, avant qu'il ne soit considéré comme "done"
+Assure toi d'avoir relu tout l'epic et double-checké que tout à été réalisé à 100%, documentation et tests inclus
+Si ce n'est pas le cas recomence et termine, et reboucle jusqu'à ce que tout ai été vérifié plusieurs fois. 
