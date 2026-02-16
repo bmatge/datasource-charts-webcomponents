@@ -155,11 +155,13 @@ export interface ApiAdapter {
 import { GenericAdapter } from './generic-adapter.js';
 import { OpenDataSoftAdapter } from './opendatasoft-adapter.js';
 import { TabularAdapter } from './tabular-adapter.js';
+import { GristAdapter } from './grist-adapter.js';
 
 const ADAPTER_REGISTRY = new Map<string, ApiAdapter>([
   ['generic', new GenericAdapter()],
   ['opendatasoft', new OpenDataSoftAdapter()],
   ['tabular', new TabularAdapter()],
+  ['grist', new GristAdapter()],
 ]);
 
 /**

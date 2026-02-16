@@ -150,10 +150,11 @@ describe('Grist config', () => {
     expect(GRIST_CONFIG.defaultAuthType).toBe('bearer');
   });
 
-  it('should use gouv-source + gouv-normalize in code gen', () => {
-    expect(GRIST_CONFIG.codeGen.usesGouvSource).toBe(true);
-    expect(GRIST_CONFIG.codeGen.usesGouvNormalize).toBe(true);
-    expect(GRIST_CONFIG.codeGen.fieldPrefix).toBe('fields.');
+  it('should use gouv-query api-type grist in code gen', () => {
+    expect(GRIST_CONFIG.codeGen.usesGouvSource).toBe(false);
+    expect(GRIST_CONFIG.codeGen.usesGouvNormalize).toBe(false);
+    expect(GRIST_CONFIG.codeGen.queryApiType).toBe('grist');
+    expect(GRIST_CONFIG.codeGen.fieldPrefix).toBe('');
   });
 
   it('should have client facets mode', () => {

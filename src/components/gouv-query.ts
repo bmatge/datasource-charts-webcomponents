@@ -19,7 +19,7 @@ import type { ApiAdapter, AdapterParams, ServerSideOverlay } from '../adapters/a
 /**
  * Types d'API supportes
  */
-export type ApiType = 'generic' | 'opendatasoft' | 'tabular';
+export type ApiType = 'generic' | 'opendatasoft' | 'tabular' | 'grist';
 
 /**
  * Operateurs de filtre supportes
@@ -105,7 +105,7 @@ export interface QuerySort {
 @customElement('gouv-query')
 export class GouvQuery extends LitElement {
   /**
-   * Type d'API : generic (client-side), opendatasoft, tabular
+   * Type d'API : generic (client-side), opendatasoft, tabular, grist
    */
   @property({ type: String, attribute: 'api-type' })
   apiType: ApiType = 'generic';
@@ -207,7 +207,7 @@ export class GouvQuery extends LitElement {
   /**
    * Headers HTTP en JSON (pour APIs privees/authentifiees)
    * Ex: '{"apikey":"abc123"}' ou '{"Authorization":"Bearer token"}'
-   * Utilise uniquement en mode opendatasoft/tabular (ignore en mode generic)
+   * Utilise en mode opendatasoft/tabular/grist (ignore en mode generic)
    */
   @property({ type: String })
   headers = '';

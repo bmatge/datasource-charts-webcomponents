@@ -13,6 +13,11 @@ describe('API Adapter Factory', () => {
     expect(adapter.type).toBe('tabular');
   });
 
+  it('returns grist adapter', () => {
+    const adapter = getAdapter('grist');
+    expect(adapter.type).toBe('grist');
+  });
+
   it('returns generic adapter', () => {
     const adapter = getAdapter('generic');
     expect(adapter.type).toBe('generic');
@@ -66,6 +71,16 @@ describe('Adapter Capabilities', () => {
     expect(caps.whereFormat).toBe('colon');
   });
 
+  it('grist has fetch-only server capabilities', () => {
+    const caps = getAdapter('grist').capabilities;
+    expect(caps.serverFetch).toBe(true);
+    expect(caps.serverFacets).toBe(false);
+    expect(caps.serverSearch).toBe(false);
+    expect(caps.serverGroupBy).toBe(false);
+    expect(caps.serverOrderBy).toBe(false);
+    expect(caps.whereFormat).toBe('colon');
+  });
+
   it('generic has no server capabilities', () => {
     const caps = getAdapter('generic').capabilities;
     expect(caps.serverFetch).toBe(false);
@@ -98,5 +113,25 @@ describe('GenericAdapter', () => {
 
   it('buildServerSideUrl throws', () => {
     expect(() => adapter.buildServerSideUrl({} as AdapterParams, {} as ServerSideOverlay)).toThrow();
+  });
+});
+
+describe('GristAdapter', () => {
+  const adapter = getAdapter('grist');
+
+  it('validate requires base-url', () => {
+    expect(adapter.validate({ baseUrl: '' } as AdapterParams)).toBe('attribut "base-url" requis pour les requetes Grist');
+    expect(adapter.validate({ baseUrl: 'https://example.com/api/docs/x/tables/y/records' } as AdapterParams)).toBeNull();
+  });
+
+  it('buildUrl returns base-url as-is', () => {
+    const url = adapter.buildUrl({ baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records' } as AdapterParams);
+    expect(url).toBe('https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records');
+  });
+
+  it('buildServerSideUrl returns same as buildUrl', () => {
+    const params = { baseUrl: 'https://example.com/api' } as AdapterParams;
+    const overlay = { page: 1, effectiveWhere: '', orderBy: '' } as ServerSideOverlay;
+    expect(adapter.buildServerSideUrl(params, overlay)).toBe(adapter.buildUrl(params));
   });
 });
