@@ -3,6 +3,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
 import { getProxiedUrl, isAuthenticated } from '@gouv-widgets/shared';
+import type { ApiAdapter, AdapterParams, ServerSideOverlay } from '../adapters/api-adapter.js';
+import { getAdapter } from '../adapters/adapter-registry.js';
 import {
   dispatchDataLoaded,
   dispatchDataError,
@@ -19,16 +21,26 @@ import {
  * Composant invisible qui se connecte a une API REST, recupere les donnees,
  * les normalise et les diffuse via des evenements custom.
  *
- * @example
- * <gouv-source
- *   id="sites"
- *   url="https://api.example.com/sites"
- *   transform="data.results"
- *   refresh="60">
+ * Deux modes de fonctionnement :
+ * 1. Mode URL brute (existant) : `url` pointe vers une API REST quelconque
+ * 2. Mode adapter (nouveau) : `api-type` active un adapter qui gere URL,
+ *    pagination, parsing specifiques au provider.
+ *
+ * @example Mode URL brute
+ * <gouv-source id="sites" url="https://api.example.com/sites"
+ *   transform="data.results" refresh="60">
+ * </gouv-source>
+ *
+ * @example Mode adapter
+ * <gouv-source id="src" api-type="opendatasoft"
+ *   base-url="https://data.iledefrance.fr" dataset-id="elus-regionaux"
+ *   select="count(*) as total, region" group-by="region">
  * </gouv-source>
  */
 @customElement('gouv-source')
 export class GouvSource extends LitElement {
+  // --- Mode URL brute (existant) ---
+
   @property({ type: String })
   url = '';
 
@@ -56,6 +68,54 @@ export class GouvSource extends LitElement {
   @property({ type: Number, attribute: 'cache-ttl' })
   cacheTtl = 3600;
 
+  // --- Mode adapter (nouveau) ---
+
+  /** Type d'API — active le mode adapter si != 'generic' et url est vide */
+  @property({ type: String, attribute: 'api-type' })
+  apiType = 'generic';
+
+  /** URL de base de l'API (pour ODS, Tabular) */
+  @property({ type: String, attribute: 'base-url' })
+  baseUrl = '';
+
+  /** ID du dataset (pour ODS) */
+  @property({ type: String, attribute: 'dataset-id' })
+  datasetId = '';
+
+  /** ID de la ressource (pour Tabular) */
+  @property({ type: String })
+  resource = '';
+
+  /** Clause WHERE statique */
+  @property({ type: String })
+  where = '';
+
+  /** Clause SELECT (pour ODS) */
+  @property({ type: String })
+  select = '';
+
+  /** Group-by (pour les APIs qui le supportent server-side) */
+  @property({ type: String, attribute: 'group-by' })
+  groupBy = '';
+
+  /** Agregation (pour les APIs qui le supportent server-side) */
+  @property({ type: String })
+  aggregate = '';
+
+  /** Order-by */
+  @property({ type: String, attribute: 'order-by' })
+  orderBy = '';
+
+  /** Mode pagination serveur (datalist, tableaux) */
+  @property({ type: Boolean, attribute: 'server-side' })
+  serverSide = false;
+
+  /** Limite du nombre de resultats */
+  @property({ type: Number })
+  limit = 0;
+
+  // --- Internal state ---
+
   @state()
   private _loading = false;
 
@@ -68,7 +128,15 @@ export class GouvSource extends LitElement {
   private _currentPage = 1;
   private _refreshInterval: number | null = null;
   private _abortController: AbortController | null = null;
-  private _unsubscribePageRequests: (() => void) | null = null;
+  private _unsubscribeCommands: (() => void) | null = null;
+
+  /** Dynamic WHERE overlays from gouv-facets, gouv-search, etc. */
+  private _whereOverlays = new Map<string, string>();
+  /** Dynamic orderBy overlay from gouv-datalist sort */
+  private _orderByOverlay = '';
+
+  /** Cached adapter instance */
+  private _adapter: ApiAdapter | null = null;
 
   createRenderRoot() {
     return this;
@@ -80,9 +148,9 @@ export class GouvSource extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    sendWidgetBeacon('gouv-source');
+    sendWidgetBeacon('gouv-source', this._isAdapterMode() ? this.apiType : undefined);
     this._setupRefresh();
-    this._setupPageRequestListener();
+    this._setupCommandListener();
   }
 
   disconnectedCallback() {
@@ -95,18 +163,79 @@ export class GouvSource extends LitElement {
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('url') || changedProperties.has('params') || changedProperties.has('transform')) {
-      if (this.paginate && (changedProperties.has('url') || changedProperties.has('params'))) {
+    // Detect changes that should trigger a re-fetch
+    const urlModeChanged = changedProperties.has('url') || changedProperties.has('params') || changedProperties.has('transform');
+    const adapterModeChanged = changedProperties.has('apiType') || changedProperties.has('baseUrl') ||
+      changedProperties.has('datasetId') || changedProperties.has('resource') ||
+      changedProperties.has('where') || changedProperties.has('select') ||
+      changedProperties.has('groupBy') || changedProperties.has('aggregate') ||
+      changedProperties.has('orderBy') || changedProperties.has('limit');
+
+    if (urlModeChanged || adapterModeChanged) {
+      if ((this.paginate || this.serverSide) &&
+        (changedProperties.has('url') || changedProperties.has('params') || adapterModeChanged)) {
         this._currentPage = 1;
+      }
+      // Invalidate adapter cache on api-type change
+      if (changedProperties.has('apiType')) {
+        this._adapter = null;
       }
       this._fetchData();
     }
+
     if (changedProperties.has('refresh')) {
       this._setupRefresh();
     }
-    if (changedProperties.has('paginate') || changedProperties.has('pageSize')) {
-      this._setupPageRequestListener();
+
+    if (changedProperties.has('paginate') || changedProperties.has('pageSize') ||
+      changedProperties.has('serverSide') || changedProperties.has('apiType')) {
+      this._setupCommandListener();
     }
+  }
+
+  // --- Public API ---
+
+  /** Returns the adapter for this source (if in adapter mode) */
+  public getAdapter(): ApiAdapter | null {
+    if (!this._isAdapterMode()) return null;
+    if (!this._adapter) {
+      this._adapter = getAdapter(this.apiType);
+    }
+    return this._adapter;
+  }
+
+  /** Returns the effective WHERE clause (static + all dynamic overlays merged) */
+  public getEffectiveWhere(excludeKey?: string): string {
+    const parts: string[] = [];
+    if (this.where) parts.push(this.where);
+    for (const [key, value] of this._whereOverlays) {
+      if (key !== excludeKey && value) parts.push(value);
+    }
+    const adapter = this.getAdapter();
+    const separator = adapter?.capabilities.whereFormat === 'odsql' ? ' AND ' : ', ';
+    return parts.join(separator);
+  }
+
+  public reload() {
+    this._fetchData();
+  }
+
+  public getData(): unknown {
+    return this._data;
+  }
+
+  public isLoading(): boolean {
+    return this._loading;
+  }
+
+  public getError(): Error | null {
+    return this._error;
+  }
+
+  // --- Private methods ---
+
+  private _isAdapterMode(): boolean {
+    return this.apiType !== 'generic' || (this.apiType === 'generic' && !this.url && this.baseUrl !== '');
   }
 
   private _cleanup() {
@@ -118,9 +247,9 @@ export class GouvSource extends LitElement {
       this._abortController.abort();
       this._abortController = null;
     }
-    if (this._unsubscribePageRequests) {
-      this._unsubscribePageRequests();
-      this._unsubscribePageRequests = null;
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
     }
   }
 
@@ -137,7 +266,58 @@ export class GouvSource extends LitElement {
     }
   }
 
+  private _setupCommandListener() {
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
+    }
+
+    if (!this.id) return;
+
+    const needsListener = this.paginate || this.serverSide || this._isAdapterMode();
+    if (!needsListener) return;
+
+    this._unsubscribeCommands = subscribeToSourceCommands(this.id, (cmd) => {
+      let needsFetch = false;
+
+      if (cmd.page !== undefined && cmd.page !== this._currentPage) {
+        this._currentPage = cmd.page;
+        needsFetch = true;
+      }
+
+      if (cmd.where !== undefined) {
+        const key = cmd.whereKey || '__default';
+        if (cmd.where) {
+          this._whereOverlays.set(key, cmd.where);
+        } else {
+          this._whereOverlays.delete(key);
+        }
+        // Reset to page 1 when filters change
+        this._currentPage = 1;
+        needsFetch = true;
+      }
+
+      if (cmd.orderBy !== undefined && cmd.orderBy !== this._orderByOverlay) {
+        this._orderByOverlay = cmd.orderBy;
+        needsFetch = true;
+      }
+
+      if (needsFetch) {
+        this._fetchData();
+      }
+    });
+  }
+
   private async _fetchData() {
+    if (this._isAdapterMode()) {
+      return this._fetchViaAdapter();
+    }
+    return this._fetchViaUrl();
+  }
+
+  // --- URL mode (legacy, unchanged behavior) ---
+
+  private async _fetchViaUrl() {
     if (!this.url) return;
 
     if (!this.id) {
@@ -215,6 +395,116 @@ export class GouvSource extends LitElement {
     }
   }
 
+  // --- Adapter mode (new) ---
+
+  private async _fetchViaAdapter() {
+    if (!this.id) {
+      console.warn('gouv-source: attribut "id" requis pour identifier la source');
+      return;
+    }
+
+    const adapter = this.getAdapter();
+    if (!adapter) {
+      console.warn(`gouv-source[${this.id}]: adapter introuvable pour api-type="${this.apiType}"`);
+      return;
+    }
+
+    // Validate params
+    const params = this._getAdapterParams();
+    const validationError = adapter.validate(params);
+    if (validationError) {
+      console.warn(`gouv-source[${this.id}]: ${validationError}`);
+      return;
+    }
+
+    if (this._abortController) {
+      this._abortController.abort();
+    }
+    this._abortController = new AbortController();
+
+    this._loading = true;
+    this._error = null;
+    dispatchDataLoading(this.id);
+
+    try {
+      let result;
+
+      if (this.serverSide) {
+        // Server-side pagination: fetch one page at a time
+        const overlay: ServerSideOverlay = {
+          page: this._currentPage,
+          effectiveWhere: this.getEffectiveWhere(),
+          orderBy: this._orderByOverlay || this.orderBy,
+        };
+        result = await adapter.fetchPage(params, overlay, this._abortController.signal);
+
+        // Publish pagination meta
+        setDataMeta(this.id, {
+          page: this._currentPage,
+          pageSize: this.pageSize,
+          total: result.totalCount,
+        });
+      } else {
+        // Fetch all with auto-pagination
+        result = await adapter.fetchAll(params, this._abortController.signal);
+      }
+
+      this._data = result.data;
+      dispatchDataLoaded(this.id, this._data);
+
+      // Cache data server-side in DB mode (fire-and-forget)
+      if (this.cacheTtl > 0 && isAuthenticated()) {
+        this._putCache(this._data).catch(() => {});
+      }
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        return;
+      }
+
+      // Try server cache fallback in DB mode
+      if (this.cacheTtl > 0 && isAuthenticated()) {
+        const cached = await this._getCache();
+        if (cached) {
+          this._data = cached;
+          dispatchDataLoaded(this.id, this._data);
+          this.dispatchEvent(new CustomEvent('cache-fallback', { detail: { sourceId: this.id } }));
+          return;
+        }
+      }
+
+      this._error = error as Error;
+      dispatchDataError(this.id, this._error);
+      console.error(`gouv-source[${this.id}]: Erreur de chargement`, error);
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  private _getAdapterParams(): AdapterParams {
+    let parsedHeaders: Record<string, string> | undefined;
+    if (this.headers) {
+      try { parsedHeaders = JSON.parse(this.headers); } catch { /* ignore */ }
+    }
+
+    return {
+      baseUrl: this.baseUrl,
+      datasetId: this.datasetId,
+      resource: this.resource,
+      select: this.select,
+      where: this.getEffectiveWhere(),
+      filter: '',
+      groupBy: this.groupBy,
+      aggregate: this.aggregate,
+      orderBy: this._orderByOverlay || this.orderBy,
+      limit: this.limit,
+      transform: this.transform,
+      pageSize: this.pageSize,
+      headers: parsedHeaders,
+    };
+  }
+
+  // --- URL building (legacy mode) ---
+
   private _buildUrl(): string {
     const base = window.location.origin !== 'null' ? window.location.origin : undefined;
     const url = new URL(this.url, base);
@@ -262,21 +552,7 @@ export class GouvSource extends LitElement {
     return options;
   }
 
-  private _setupPageRequestListener() {
-    if (this._unsubscribePageRequests) {
-      this._unsubscribePageRequests();
-      this._unsubscribePageRequests = null;
-    }
-
-    if (this.paginate && this.id) {
-      this._unsubscribePageRequests = subscribeToSourceCommands(this.id, (cmd) => {
-        if (cmd.page !== undefined && cmd.page !== this._currentPage) {
-          this._currentPage = cmd.page;
-          this._fetchData();
-        }
-      });
-    }
-  }
+  // --- Server cache (DB mode) ---
 
   private async _putCache(data: unknown): Promise<void> {
     const recordCount = Array.isArray(data) ? data.length : 1;
@@ -299,22 +575,6 @@ export class GouvSource extends LitElement {
     } catch {
       return null;
     }
-  }
-
-  public reload() {
-    this._fetchData();
-  }
-
-  public getData(): unknown {
-    return this._data;
-  }
-
-  public isLoading(): boolean {
-    return this._loading;
-  }
-
-  public getError(): Error | null {
-    return this._error;
   }
 }
 

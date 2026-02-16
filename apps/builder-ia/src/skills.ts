@@ -210,6 +210,17 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 | paginate | Boolean | \`false\` | non | Active la pagination serveur (injecte page/page_size dans l'URL, stocke la meta) |
 | page-size | Number | \`20\` | non | Taille de page pour la pagination serveur (nombre de records par page) |
 | cache-ttl | Number | \`3600\` | non | TTL du cache serveur en secondes (0 = pas de cache). Actif uniquement en mode database. |
+| api-type | String | \`"generic"\` | non | Type de provider (opendatasoft, tabular, grist, generic). Active le mode adapter. |
+| base-url | String | \`""\` | non | URL de base de l'API (mode adapter). Ex: \`"https://data.iledefrance.fr"\` |
+| dataset-id | String | \`""\` | non | ID du dataset (ODS). |
+| resource | String | \`""\` | non | ID de la ressource (Tabular). |
+| where | String | \`""\` | non | Clause WHERE statique (ODSQL ou colon syntax). |
+| select | String | \`""\` | non | Clause SELECT serveur (ODS). Ex: \`"count(*) as total, region"\` |
+| group-by | String | \`""\` | non | Group-by serveur (si supporte par le provider). |
+| aggregate | String | \`""\` | non | Agregation serveur. Ex: \`"population:sum"\` |
+| order-by | String | \`""\` | non | Tri serveur. Ex: \`"population:desc"\` |
+| server-side | Boolean | \`false\` | non | Active la pagination serveur page par page (datalist, tableaux). |
+| limit | Number | \`0\` | non | Limite du nombre de resultats (0 = pas de limite). |
 
 ### Evenements emis
 - \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)
@@ -256,10 +267,30 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 > Utilisez \`<gouv-normalize flatten="fields">\` pour les aplatir avant de les passer
 > aux facettes, datalist ou graphiques. Voir la doc de gouv-normalize.
 
-> **Limitation** : gouv-source ne recupere qu'une seule page de resultats.
-> Pour les datasets avec plus de 100 enregistrements sur une API ODS ou Tabular,
-> utilisez \`<gouv-query api-type="opendatasoft">\` ou \`<gouv-query api-type="tabular">\`
-> qui gerent la pagination automatiquement (respectivement max 1000 et 50000 records).`,
+> **Mode adapter** : avec \`api-type\`, gouv-source gere la pagination automatiquement.
+> ODS: max 1000 records, Tabular: max 50000 records, Grist: toutes les donnees.
+> Le mode adapter ecoute aussi les commandes \`gouv-source-command\` (page, where, orderBy)
+> emises par gouv-facets, gouv-search et gouv-datalist.
+
+### Exemples mode adapter
+\\\`\\\`\\\`html
+<!-- ODS avec aggregation serveur -->
+<gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.iledefrance.fr" dataset-id="elus-regionaux"
+  select="count(*) as total, region" group-by="region">
+</gouv-source>
+
+<!-- Tabular avec pagination serveur -->
+<gouv-source id="src" api-type="tabular"
+  resource="abc-123" server-side page-size="50">
+</gouv-source>
+
+<!-- Grist -->
+<gouv-source id="src" api-type="grist"
+  base-url="https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records"
+  headers='{"Authorization": "Bearer TOKEN"}'>
+</gouv-source>
+\\\`\\\`\\\``,
   },
 
   gouvQuery: {
