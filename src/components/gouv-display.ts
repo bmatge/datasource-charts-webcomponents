@@ -223,7 +223,9 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
       const page = parseInt(pageStr, 10);
       if (!isNaN(page) && page >= 1) {
         this._currentPage = page;
-        if (this._serverPagination && this.source) {
+        // Always send page command if source exists — gouv-query in server-side
+        // mode will use it; non-server sources harmlessly ignore it.
+        if (this.source) {
           dispatchSourceCommand(this.source, { page });
         }
       }

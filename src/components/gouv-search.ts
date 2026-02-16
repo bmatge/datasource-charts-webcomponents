@@ -202,6 +202,17 @@ export class GouvSearch extends LitElement {
       this._unsubscribe();
     }
 
+    // In server-search mode with URL param, read the param and send the
+    // command proactively BEFORE data arrives. This lets gouv-query (which
+    // defers its first fetch) include the search filter in the initial request.
+    if (this.serverSearch && this.urlSearchParam && !this._urlParamApplied) {
+      this._applyUrlSearchParam();
+      this._urlParamApplied = true;
+      if (this._term) {
+        this._applyServerSearch();
+      }
+    }
+
     const cachedData = getDataCache(this.source);
     if (cachedData !== undefined) {
       this._onData(cachedData);

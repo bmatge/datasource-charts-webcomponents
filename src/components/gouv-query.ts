@@ -241,6 +241,11 @@ export class GouvQuery extends LitElement {
   private _serverWheres = new Map<string, string>();
   private _serverOrderBy = '';
 
+  // True once the initial server-side fetch has been dispatched.
+  // Commands received before this are accumulated but don't trigger a fetch,
+  // because the deferred initial fetch will pick them up.
+  private _initialFetchDone = false;
+
   // Pas de rendu - composant invisible
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
@@ -340,8 +345,20 @@ export class GouvQuery extends LitElement {
     if (this.apiType === 'generic') {
       // Mode client-side: s'abonner a une source existante
       this._subscribeToSource();
+    } else if (this.serverSide) {
+      // Server-side mode: defer first fetch by one microtask so downstream
+      // components (gouv-search, gouv-facets, gouv-display) have time to
+      // read URL params and send their initial commands (where, page, orderBy).
+      // Commands received before the initial fetch are accumulated and picked
+      // up when the deferred fetch fires.
+      this._initialFetchDone = false;
+      queueMicrotask(() => {
+        this._initialFetchDone = true;
+        this._fetchFromApi();
+      });
     } else {
-      // Mode API: faire une requete API
+      // Non-server-side API mode: fetch immediately
+      this._initialFetchDone = true;
       this._fetchFromApi();
     }
   }
@@ -850,7 +867,11 @@ export class GouvQuery extends LitElement {
       }
 
       if (needsFetch) {
-        this._fetchFromApi();
+        // If the initial deferred fetch hasn't fired yet, just accumulate
+        // the command — it will be picked up when the microtask fires.
+        if (this._initialFetchDone) {
+          this._fetchFromApi();
+        }
       }
     });
   }
