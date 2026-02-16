@@ -11,6 +11,9 @@ const EXTERNAL_PROXY = 'https://chartsbuilder.matge.com';
  * Handles both docs.getgrist.com and grist.numerique.gouv.fr
  */
 export function getProxyUrl(gristUrl: string, endpoint: string): string {
+  if (!gristUrl) {
+    throw new Error('getProxyUrl: gristUrl is required');
+  }
   const config = getProxyConfig();
   const url = new URL(gristUrl);
 
@@ -32,6 +35,9 @@ export function getProxyUrl(gristUrl: string, endpoint: string): string {
  * Works in all environments: dev (Vite proxy), production, CodePen embeds, etc.
  */
 export function getProxiedUrl(url: string): string {
+  if (!url) {
+    throw new Error('getProxiedUrl: url is required');
+  }
   const config = getProxyConfig();
 
   if (url.includes('tabular-api.data.gouv.fr')) {

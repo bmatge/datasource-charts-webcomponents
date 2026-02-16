@@ -26,7 +26,11 @@ export async function gristFetch(endpoint: string): Promise<unknown> {
   }
 
   const conn = state.connections[state.selectedConnection];
-  const proxyUrl = getProxyUrl((conn as Record<string, unknown>).url as string, endpoint);
+  const connUrl = (conn as Record<string, unknown>).url as string | undefined;
+  if (!connUrl) {
+    throw new Error('URL du serveur Grist manquante dans la connexion');
+  }
+  const proxyUrl = getProxyUrl(connUrl, endpoint);
 
   const headers: Record<string, string> = {};
   if (!(conn as Record<string, unknown>).isPublic && (conn as Record<string, unknown>).apiKey) {

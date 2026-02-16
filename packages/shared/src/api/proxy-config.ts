@@ -26,9 +26,10 @@ export const DEFAULT_PROXY_CONFIG: ProxyConfig = {
 
 /** Detect if running in Vite dev server */
 export function isViteDevMode(): boolean {
-  return typeof window !== 'undefined'
-    && window.location.hostname === 'localhost'
-    && window.location.port === '5173';
+  if (typeof window === 'undefined') return false;
+  const { hostname, port } = window.location;
+  return (hostname === 'localhost' || hostname === '127.0.0.1')
+    && !!port && port !== '80' && port !== '443';
 }
 
 /** Detect if running inside Tauri desktop app */

@@ -38,11 +38,15 @@ export async function loadApiData(): Promise<void> {
       ? JSON.parse(conn.headers as string)
       : {};
 
+    const connApiUrl = (conn as Record<string, unknown>).apiUrl as string | undefined;
+    if (!connApiUrl) {
+      info.textContent = 'Erreur : URL API manquante dans la connexion';
+      return;
+    }
+
     // Fetch all pages if pagination is detected
     let allData: Record<string, unknown>[] = [];
-    let currentUrl: string | null = getProxiedUrl(
-      (conn as Record<string, unknown>).apiUrl as string,
-    );
+    let currentUrl: string | null = getProxiedUrl(connApiUrl);
     let pageCount = 0;
     let apiTotalCount = -1; // Total records reported by API (e.g. ODS total_count)
     const maxPages = 100; // Safety limit
