@@ -21,32 +21,35 @@ export const GRIST_CONFIG: ProviderConfig = {
   },
 
   pagination: {
-    type: 'none',
-    pageSize: 0,
+    type: 'offset',
+    pageSize: 100,
     maxPages: 0,
     maxRecords: 0,
-    params: {},
+    params: {
+      offset: 'offset',
+      limit: 'limit',
+    },
     nextPagePath: null,
   },
 
   capabilities: {
     serverFetch: true,
-    serverFacets: false,
+    serverFacets: true,
     serverSearch: false,
-    serverGroupBy: false,
-    serverOrderBy: false,
-    serverAggregation: false,
+    serverGroupBy: true,
+    serverOrderBy: true,
+    serverAggregation: true,
   },
 
   query: {
     whereFormat: 'colon',
     whereSeparator: ', ',
-    aggregationSyntax: 'client-only',
+    aggregationSyntax: 'sql',
     searchTemplate: null,
   },
 
   facets: {
-    defaultMode: 'client',
+    defaultMode: 'server',
   },
 
   resource: {

@@ -23,9 +23,14 @@ describe('buildPaginationParams', () => {
     expect(result).toEqual({ page: '3', page_size: '50' });
   });
 
-  it('Grist none: returns empty object', () => {
+  it('Grist offset: page=1 → offset=0, limit=100', () => {
     const result = buildPaginationParams(GRIST_CONFIG, 1, 100);
-    expect(result).toEqual({});
+    expect(result).toEqual({ offset: '0', limit: '100' });
+  });
+
+  it('Grist offset: page=3, pageSize=20 → offset=40, limit=20', () => {
+    const result = buildPaginationParams(GRIST_CONFIG, 3, 20);
+    expect(result).toEqual({ offset: '40', limit: '20' });
   });
 
   it('Generic none: returns empty object', () => {
@@ -63,10 +68,15 @@ describe('extractPaginationMeta', () => {
     });
   });
 
-  it('Grist: returns null (no pagination)', () => {
+  it('Grist: returns meta with totalCount 0 (no totalCountPath)', () => {
     const json = { records: [] };
     const meta = extractPaginationMeta(json, GRIST_CONFIG, 1, 100);
-    expect(meta).toBeNull();
+    expect(meta).toEqual({
+      currentPage: 1,
+      pageSize: 100,
+      totalCount: 0,
+      hasMore: false,
+    });
   });
 
   it('Generic: returns null (no pagination)', () => {

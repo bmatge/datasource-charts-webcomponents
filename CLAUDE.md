@@ -125,6 +125,16 @@ Pour les cas sans transformation (datalist, display), gouv-query peut etre omis 
 - **Registre** (`src/adapters/adapter-registry.ts`) : `getAdapter(apiType)` retourne l'adapter pour un type donne.
 - Ajouter un nouveau provider (CKAN, INSEE...) = 1 ProviderConfig + 1 Adapter, zero modification dans les composants.
 
+### Grist : mode Records vs SQL
+
+L'adapter Grist choisit automatiquement entre deux modes :
+- **Mode Records** (GET /records) : pour fetch simple, filter equality/IN (`?filter={"col":["v"]}`), sort (`?sort=-col`), pagination (`?limit=N&offset=M`)
+- **Mode SQL** (POST /sql) : pour group-by, aggregation, LIKE search, facettes DISTINCT via SQL parametre
+
+Le mode SQL est un fallback automatique — il est active seulement quand les capacites de l'endpoint Records sont insuffisantes (group-by, aggregate, operateurs avances comme contains/gt/lt). Si le endpoint SQL n'est pas disponible sur l'instance Grist, l'adapter revient au mode Records + client-side. La disponibilite SQL est cachee par hostname (`Map<string, boolean>`).
+
+L'adapter expose aussi `fetchColumns()` et `fetchTables()` pour l'introspection du schema Grist.
+
 ### Retrocompatibilite
 
 `<gouv-query api-type="opendatasoft" ...>` sans gouv-source fonctionne toujours (mode compat avec shadow source interne), mais est **deprecie**. Les builders generent le nouveau pattern.

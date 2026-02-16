@@ -82,7 +82,7 @@ export interface ProviderConfig {
     /** Separator for joining WHERE clauses */
     whereSeparator: string;
     /** Aggregation syntax for code generation */
-    aggregationSyntax: 'odsql-select' | 'colon-attr' | 'client-only';
+    aggregationSyntax: 'odsql-select' | 'colon-attr' | 'client-only' | 'sql';
     /** Mapping of generic operators to native syntax */
     operatorMapping?: Record<string, string>;
     /** Full-text search template. Use {q} as placeholder. null = no server search. */

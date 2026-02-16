@@ -4,7 +4,8 @@ import { examples } from '../../../apps/playground/src/examples/examples-data';
 describe('playground examples', () => {
   const directKeys = [
     'direct-bar', 'direct-line', 'direct-pie', 'direct-radar', 'direct-gauge',
-    'direct-scatter', 'direct-barline', 'direct-map', 'direct-kpi', 'direct-datalist'
+    'direct-scatter', 'direct-barline', 'direct-map', 'direct-kpi', 'direct-datalist',
+    'direct-worldmap'
   ];
 
   const serverPaginateKeys = [
@@ -55,8 +56,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 41 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(41);
+  it('should have 42 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(42);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -76,7 +77,7 @@ describe('playground examples', () => {
       const hasSource = examples[key].includes('gouv-source');
       const hasTabularQuery = examples[key].includes('api-type="tabular"');
       expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
-      if (!['direct-kpi', 'direct-datalist', 'direct-display'].includes(key)) {
+      if (!['direct-kpi', 'direct-datalist', 'direct-display', 'direct-worldmap'].includes(key)) {
         expect(examples[key], `${key} should use gouv-dsfr-chart`).toContain('gouv-dsfr-chart');
       }
     }

@@ -29,12 +29,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy vers le backend Express (mode database)
-      '/api': {
-        target: 'http://localhost:3002',
-        changeOrigin: true,
-        secure: false,
-      },
+      // Le proxy /api est gere par le plugin 'api-proxy-silent' ci-dessous
+      // pour eviter les logs ECONNREFUSED quand le backend ne tourne pas
       // Proxy pour Grist (docs.getgrist.com)
       '/grist-proxy': {
         target: 'https://docs.getgrist.com',
@@ -117,6 +113,37 @@ export default defineConfig({
     }
   },
   plugins: [
+    {
+      name: 'api-proxy-silent',
+      // Proxy vers le backend Express (mode database).
+      // Remplace le proxy Vite standard pour eviter les logs ECONNREFUSED
+      // quand le backend ne tourne pas (cas normal en dev sans BDD).
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (!req.url || !req.url.startsWith('/api/')) return next();
+
+          const proxyReq = httpRequest({
+            hostname: 'localhost',
+            port: 3002,
+            path: req.url,
+            method: req.method,
+            headers: { ...req.headers, host: 'localhost:3002' },
+          }, (proxyRes) => {
+            res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+            proxyRes.pipe(res);
+          });
+
+          proxyReq.on('error', () => {
+            if (!res.headersSent) {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Backend not running' }));
+            }
+          });
+
+          req.pipe(proxyReq);
+        });
+      },
+    },
     {
       name: 'gouv-widgets-umd',
       // Serve the UMD bundle for grist-widgets pages (test-local.html, chart/, datalist/)
