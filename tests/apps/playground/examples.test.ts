@@ -84,23 +84,15 @@ describe('playground examples', () => {
 
   it('display examples should use gouv-display', () => {
     for (const key of displayKeys) {
-      // Server-side display examples use gouv-query, others use gouv-source
-      if (examples[key].includes('server-side')) {
-        expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
-      } else if (!examples[key].includes('api-type="tabular"')) {
-        expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      }
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-display`).toContain('gouv-display');
       expect(examples[key], `${key} should use template`).toContain('<template>');
     }
   });
 
-  it('query examples should use gouv-source or tabular api-type, and gouv-query', () => {
+  it('query examples should use gouv-source and gouv-query', () => {
     for (const key of queryKeys) {
-      // Tabular mode examples use gouv-query directly without gouv-source
-      if (!examples[key].includes('api-type="tabular"')) {
-        expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      }
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
     }
   });
@@ -122,44 +114,40 @@ describe('playground examples', () => {
     }
   });
 
-  it('facets examples should use gouv-facets and gouv-normalize', () => {
+  it('facets examples should use gouv-source, gouv-facets and gouv-normalize', () => {
     for (const key of facetsKeys) {
-      const hasSource = examples[key].includes('gouv-source');
-      const hasTabularQuery = examples[key].includes('api-type="tabular"');
-      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
       expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
     }
   });
 
-  it('client-side search examples should use gouv-source or gouv-query, and gouv-search', () => {
+  it('client-side search examples should use gouv-source and gouv-search', () => {
     for (const key of searchClientKeys) {
-      const hasSource = examples[key].includes('gouv-source');
-      const hasTabularQuery = examples[key].includes('api-type="tabular"');
-      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
     }
   });
 
-  it('server-side search examples should use gouv-query server-side and gouv-search server-search', () => {
+  it('server-side search examples should use gouv-source server-side and gouv-search server-search', () => {
     for (const key of searchServerKeys) {
-      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
       expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
       expect(examples[key], `${key} should use server-search`).toContain('server-search');
     }
   });
 
-  it('server-side examples should use gouv-query with server-side', () => {
+  it('server-side examples should use gouv-source with server-side', () => {
     for (const key of serverSideKeys) {
-      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
     }
   });
 
-  it('server-facets examples should use gouv-query server-side and gouv-facets server-facets', () => {
+  it('server-facets examples should use gouv-source server-side and gouv-facets server-facets', () => {
     for (const key of serverFacetsKeys) {
-      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
       expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
       expect(examples[key], `${key} should use server-facets`).toContain('server-facets');

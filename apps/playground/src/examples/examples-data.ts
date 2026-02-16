@@ -288,9 +288,9 @@ export const examples: Record<string, string> = {
 
   'direct-datalist': `<!--
   Tableau — Maires de France (dataset complet)
-  Mode : gouv-query (api-type="tabular") → gouv-datalist
+  Mode : gouv-source (api-type="tabular") → gouv-datalist
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge automatiquement toutes les pages avant affichage
+  gouv-source charge automatiquement toutes les pages avant affichage
 -->
 
 <div class="fr-container fr-my-4w">
@@ -300,10 +300,10 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-query id="data"
+  <gouv-source id="data"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-datalist source="data"
     colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
@@ -397,7 +397,7 @@ export const examples: Record<string, string> = {
 
   'paginate-kpi-global': `<!--
   Pagination serveur + KPI globaux — Maires de France
-  Double source : gouv-source (paginate) pour navigation + gouv-query (tabular) pour KPI
+  Double source : gouv-source (paginate) pour navigation + gouv-source (tabular) + gouv-query pour KPI
   Source : Registre des maires (tabular-api) — 34 874 records
   La datalist navigue page par page, les KPI portent sur le dataset complet
 -->
@@ -416,15 +416,16 @@ export const examples: Record<string, string> = {
   </gouv-source>
 
   <!-- Source 2 : chargement complet pour les KPI globaux -->
-  <gouv-query id="global-stats"
+  <gouv-source id="elus"
     api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-source>
+
+  <gouv-query id="global-stats" source="elus"
     aggregate="Nom de l'\u00e9lu:count:total">
   </gouv-query>
 
-  <gouv-query id="global-femmes"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  <gouv-query id="global-femmes" source="elus"
     filter="Code sexe:eq:F"
     aggregate="Nom de l'\u00e9lu:count:total_femmes">
   </gouv-query>
@@ -453,8 +454,8 @@ export const examples: Record<string, string> = {
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
       <strong>Pattern double source :</strong> <code>gouv-source paginate</code> charge une page a la fois
-      pour la navigation (20 records). En parallele, <code>gouv-query api-type="tabular"</code>
-      charge et agrege le dataset complet (34 874 records) pour les KPI globaux.
+      pour la navigation (20 records). En parallele, <code>gouv-source api-type="tabular"</code>
+      charge le dataset complet (34 874 records) et <code>gouv-query</code> agrege pour les KPI globaux.
       Les deux sources fonctionnent independamment.
     </p>
   </div>
@@ -468,10 +469,10 @@ export const examples: Record<string, string> = {
 
   'query-tabular-pie': `<!--
   Camembert — Tous les maires par categorie (dataset complet, multi-page)
-  Mode requete : gouv-query (api-type="tabular") → gouv-dsfr-chart (pie)
+  Mode requete : gouv-source (api-type="tabular") → gouv-query → gouv-dsfr-chart (pie)
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge automatiquement TOUTES les pages (par tranches de 100)
-  puis compte par categorie socio-professionnelle.
+  gouv-source charge automatiquement TOUTES les pages (par tranches de 100)
+  puis gouv-query compte par categorie socio-professionnelle.
   Permet d'agreger sur l'ensemble d'un dataset, pas seulement les 100 premiers.
 -->
 
@@ -482,9 +483,12 @@ export const examples: Record<string, string> = {
     <br>Chargement multi-page automatique : toutes les pages sont recuperees avant aggregation
   </p>
 
-  <gouv-query id="q"
+  <gouv-source id="src"
     api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-source>
+
+  <gouv-query id="q" source="src"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Nom de l'élu:count:nombre"
     order-by="nombre:desc"
@@ -502,10 +506,10 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      Avec <code>api-type="tabular"</code>, <code>gouv-query</code> recupere automatiquement
+      Avec <code>api-type="tabular"</code>, <code>gouv-source</code> recupere automatiquement
       toutes les pages du dataset (100 records par page). Le chargement peut prendre quelques secondes
       pour les gros datasets. Les agregations (group-by, count, sum...) sont ensuite appliquees
-      sur l'ensemble des donnees.
+      par <code>gouv-query</code> sur l'ensemble des donnees.
     </p>
   </div>
 </div>`,
@@ -578,9 +582,9 @@ export const examples: Record<string, string> = {
 
   'query-pie': `<!--
   Camembert — Maires par categorie socio-professionnelle (dataset complet)
-  Mode requete : gouv-query (api-type="tabular") → gouv-dsfr-chart (pie)
+  Mode requete : gouv-source (api-type="tabular") → gouv-query → gouv-dsfr-chart (pie)
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge toutes les pages puis regroupe par categorie
+  gouv-source charge toutes les pages, gouv-query regroupe par categorie
 -->
 
 <div class="fr-container fr-my-4w">
@@ -590,9 +594,12 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-query id="q-pie"
+  <gouv-source id="src"
     api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  </gouv-source>
+
+  <gouv-query id="q-pie" source="src"
     group-by="Libellé de la catégorie socio-professionnelle"
     aggregate="Code sexe:count:nombre"
     order-by="nombre:desc"
@@ -776,7 +783,7 @@ export const examples: Record<string, string> = {
 
   'query-kpi': `<!--
   KPI — Statistiques des maires avec filtre (dataset complet)
-  Mode requete : gouv-query (api-type="tabular") → gouv-query (filtre) → gouv-kpi
+  Mode requete : gouv-source (api-type="tabular") → gouv-query (filtre) → gouv-kpi
   Source : Registre des maires (tabular-api) — 34 874 records
   Compare le total des maires au nombre de femmes maires
 -->
@@ -788,10 +795,10 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-query id="data"
+  <gouv-source id="data"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
 
   <!-- Filtre client-side : uniquement les femmes -->
   <gouv-query id="q-femmes" source="data"
@@ -823,9 +830,9 @@ export const examples: Record<string, string> = {
 
   'query-datalist': `<!--
   Tableau — Maires filtres par departement (dataset complet)
-  Mode requete : gouv-query (api-type="tabular") → gouv-query (filtre) → gouv-datalist
+  Mode requete : gouv-source (api-type="tabular") → gouv-query (filtre) → gouv-datalist
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge tout, puis filtre par departement
+  gouv-source charge tout, gouv-query filtre par departement
 -->
 
 <div class="fr-container fr-my-4w">
@@ -835,10 +842,10 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-query id="data"
+  <gouv-source id="data"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-query id="q-datalist" source="data"
     filter="Libellé du département:contains:Ain">
@@ -1043,23 +1050,23 @@ export const examples: Record<string, string> = {
 
   'facets-datalist': `<!--
   Tableau filtrable — Maires avec facettes (dataset complet)
-  Pipeline : gouv-query (api-type="tabular") → gouv-normalize → gouv-facets → gouv-datalist
+  Pipeline : gouv-source (api-type="tabular") → gouv-normalize → gouv-facets → gouv-datalist
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge automatiquement toutes les pages, les facettes couvrent l'ensemble du dataset
+  gouv-source charge automatiquement toutes les pages, les facettes couvrent l'ensemble du dataset
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires de France — exploration par facettes</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : <strong>gouv-query</strong> (auto-pagination) → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
+    <br>Pipeline : <strong>gouv-source</strong> (auto-pagination) → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
     <br>34 874 enregistrements charges automatiquement (pagination multi-page)
   </p>
 
-  <gouv-query id="raw"
+  <gouv-source id="raw"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
     rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
@@ -1138,7 +1145,7 @@ export const examples: Record<string, string> = {
 
   'direct-display': `<!--
   Cartes DSFR — Beneficiaires Industrie du futur (pagination serveur)
-  Pipeline : gouv-query (server-side) → gouv-display
+  Pipeline : gouv-source (server-side) → gouv-display
   Source : OpenDataSoft — Industrie du futur
   Pagination serveur : chaque page = un appel API
 -->
@@ -1147,14 +1154,14 @@ export const examples: Record<string, string> = {
   <h2>Beneficiaires Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-display
+    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-display
   </p>
 
-  <gouv-query id="q" api-type="opendatasoft"
+  <gouv-source id="q" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="6">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-display source="q" cols="3" pagination="6">
     <template>
@@ -1179,7 +1186,7 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Pagination serveur</strong> : <code>gouv-query server-side</code> ne charge qu'une page a la fois.
+      <strong>Pagination serveur</strong> : <code>gouv-source server-side</code> ne charge qu'une page a la fois.
       Chaque clic sur la pagination declenche un nouvel appel API.
       Le template <code>&lt;template&gt;</code> est repete pour chaque element de la page.
     </p>
@@ -1188,7 +1195,7 @@ export const examples: Record<string, string> = {
 
   'query-display': `<!--
   Cartes DSFR — Communes de l'Ain (pagination serveur)
-  Pipeline : gouv-query (server-side, Tabular) → gouv-display
+  Pipeline : gouv-source (server-side, Tabular) → gouv-display
   Source : Tabular API — Code officiel geographique (communes)
   Filtre server-side par departement, pagination serveur
 -->
@@ -1197,14 +1204,14 @@ export const examples: Record<string, string> = {
   <h2>Communes — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Code officiel geographique (communes)
-    <br>Pipeline : <strong>gouv-query server-side</strong> (Tabular, filter) → gouv-display
+    <br>Pipeline : <strong>gouv-source server-side</strong> (Tabular, where) → gouv-display
   </p>
 
-  <gouv-query id="q" api-type="tabular"
+  <gouv-source id="q" api-type="tabular"
     resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
-    filter="DEP:eq:01"
+    where="DEP:eq:01"
     server-side page-size="8">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-display source="q" cols="4" pagination="8">
     <template>
@@ -1291,7 +1298,7 @@ export const examples: Record<string, string> = {
 
   'search-datalist': `<!--
   Tableau filtrable — Rappels de produits avec recherche serveur
-  Pipeline : gouv-query (server-side) → gouv-search (server-search) → gouv-datalist (server-tri)
+  Pipeline : gouv-source (server-side) → gouv-search (server-search) → gouv-datalist (server-tri)
   Source : OpenDataSoft — RappelConso
   Recherche full-text deleguee au serveur, tri et pagination serveur
 -->
@@ -1300,15 +1307,15 @@ export const examples: Record<string, string> = {
   <h2>Recherche serveur — Rappels de produits</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — RappelConso
-    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-search server-search → gouv-datalist server-tri
+    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-search server-search → gouv-datalist server-tri
   </p>
 
-  <gouv-query id="q" api-type="opendatasoft"
+  <gouv-source id="q" api-type="opendatasoft"
     dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="20"
     order-by="date_publication:desc">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-search id="s" source="q"
     server-search
@@ -1326,7 +1333,7 @@ export const examples: Record<string, string> = {
 
   'search-display': `<!--
   Cartes avec recherche serveur — Industrie du futur
-  Pipeline : gouv-query (server-side) → gouv-search (server-search) → gouv-display
+  Pipeline : gouv-source (server-side) → gouv-search (server-search) → gouv-display
   Source : OpenDataSoft — Industrie du futur
   Recherche full-text deleguee au serveur, pagination serveur
 -->
@@ -1335,14 +1342,14 @@ export const examples: Record<string, string> = {
   <h2>Recherche serveur — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : <strong>gouv-query server-side</strong> → gouv-search server-search → gouv-display
+    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-search server-search → gouv-display
   </p>
 
-  <gouv-query id="q" api-type="opendatasoft"
+  <gouv-source id="q" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="9">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-search id="s" source="q"
     server-search
@@ -1374,23 +1381,23 @@ export const examples: Record<string, string> = {
 
   'search-facets-display': `<!--
   Recherche + facettes + cartes — Maires (dataset complet)
-  Pipeline : gouv-query (api-type="tabular") → gouv-normalize → gouv-search → gouv-facets → gouv-display
+  Pipeline : gouv-source (api-type="tabular") → gouv-normalize → gouv-search → gouv-facets → gouv-display
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-query charge toutes les pages, gouv-search et gouv-facets operent sur le dataset complet
+  gouv-source charge toutes les pages, gouv-search et gouv-facets operent sur le dataset complet
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Recherche + facettes — Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : <strong>gouv-query</strong> (auto-pagination) → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
+    <br>Pipeline : <strong>gouv-source</strong> (auto-pagination) → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
     <br>34 874 enregistrements charges automatiquement
   </p>
 
-  <gouv-query id="raw"
+  <gouv-source id="raw"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
     rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
@@ -1568,7 +1575,7 @@ export const examples: Record<string, string> = {
 
   'server-side-ods': `<!--
   Server-side ODS — Recherche + pagination serveur
-  Mode: gouv-query (server-side) -> gouv-search (server-search) -> gouv-display
+  Mode: gouv-source (server-side) -> gouv-search (server-search) -> gouv-display
   Source: OpenDataSoft - RappelConso (rappels de produits)
 -->
 
@@ -1578,12 +1585,12 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Mode server-side avec recherche full-text ODS
   </p>
 
-  <gouv-query id="q" api-type="opendatasoft"
+  <gouv-source id="q" api-type="opendatasoft"
     dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="10"
     order-by="date_publication:desc">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-search id="s" source="q"
     server-search
@@ -1611,7 +1618,7 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Mode server-side</strong> : gouv-query server-side ne charge qu'une page a la fois.
+      <strong>Mode server-side</strong> : gouv-source server-side ne charge qu'une page a la fois.
       La recherche est deleguee au serveur via <code>gouv-search server-search</code>.
       La pagination est geree par <code>gouv-display</code> via les metadonnees server.
     </p>
@@ -1620,7 +1627,7 @@ export const examples: Record<string, string> = {
 
   'server-side-tabular-tri': `<!--
   Server-side Tabular — Tri serveur
-  Mode: gouv-query (server-side tabular) -> gouv-datalist (server-tri)
+  Mode: gouv-source (server-side tabular) -> gouv-datalist (server-tri)
   Source: Tabular API data.gouv.fr - Base Sirene (etablissements)
 -->
 
@@ -1630,10 +1637,10 @@ export const examples: Record<string, string> = {
     Source : tabular-api.data.gouv.fr — Mode server-side avec tri par colonne
   </p>
 
-  <gouv-query id="q" api-type="tabular"
+  <gouv-source id="q" api-type="tabular"
     resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
     server-side page-size="20">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-datalist source="q"
     colonnes="COM:Code commune, LIBELLE:Commune, DEP:Departement, REG:Region"
@@ -1644,7 +1651,7 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Mode server-side + tri</strong> : gouv-query server-side charge une page,
+      <strong>Mode server-side + tri</strong> : gouv-source server-side charge une page,
       <code>gouv-datalist server-tri</code> delegue le tri au serveur.
       Chaque clic sur un en-tete de colonne declenche un re-fetch avec le bon \`orderBy\`.
     </p>
@@ -1653,7 +1660,7 @@ export const examples: Record<string, string> = {
 
   'server-facets-display': `<!--
   Server-facets ODS — Recherche + facettes + cartes
-  Mode: gouv-query (server-side ODS) + gouv-search (server-search) + gouv-facets (server-facets) -> gouv-display
+  Mode: gouv-source (server-side ODS) + gouv-search (server-search) + gouv-facets (server-facets) -> gouv-display
   Source: OpenDataSoft - Industrie du futur (data.economie.gouv.fr)
 -->
 
@@ -1663,11 +1670,11 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Facettes dynamiques + recherche full-text, pagination serveur
   </p>
 
-  <gouv-query id="q" server-side page-size="12"
+  <gouv-source id="q" server-side page-size="12"
     api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-query>
+  </gouv-source>
 
   <gouv-search source="q" server-search
     placeholder="Rechercher une entreprise..."
