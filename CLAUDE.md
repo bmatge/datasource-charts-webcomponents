@@ -162,6 +162,28 @@ Les builders et les favoris envoient du code au playground via `sessionStorage` 
 
 Le parametre `from` doit etre l'un de : `builder`, `builder-ia`, `favorites`.
 
+## Tests exhaustifs du Builder (Playwright E2E)
+
+Tests dans `tests/builder-e2e/` : verifient la generation de code pour toutes les
+combinaisons source x type de graphique x mode (embedded/dynamic/dynamic+facettes).
+
+**Pre-requis** : le serveur de dev principal doit tourner (port 5173) car les sources
+API (ODS, Tabular) ont besoin du proxy Vite. Playwright doit etre installe.
+
+```bash
+# 1. Lancer le serveur de dev (dans un terminal separe)
+npm run dev
+
+# 2. Lancer les tests exhaustifs du builder
+npx playwright test --config tests/builder-e2e/playwright.config.ts
+```
+
+- **110 tests** : 4 sources (locale, ODS, Tabular, Grist) x 11 types de graphique x modes
+- Resultats ecrits dans `tests/builder-e2e/RESULTS.md`
+- Screenshots par combinaison dans `tests/builder-e2e/screenshots/`
+- Sources de test : locale (donnees embarquees), ODS et Tabular (APIs distantes via proxy),
+  Grist (donnees embarquees, pas de proxy en dev)
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier
