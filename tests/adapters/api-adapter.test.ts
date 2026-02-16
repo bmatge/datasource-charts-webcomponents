@@ -61,23 +61,23 @@ describe('Adapter Capabilities', () => {
     expect(caps.whereFormat).toBe('odsql');
   });
 
-  it('tabular has limited server capabilities', () => {
+  it('tabular has server groupBy/aggregation and ordering', () => {
     const caps = getAdapter('tabular').capabilities;
     expect(caps.serverFetch).toBe(true);
     expect(caps.serverFacets).toBe(false);
     expect(caps.serverSearch).toBe(false);
-    expect(caps.serverGroupBy).toBe(false);
+    expect(caps.serverGroupBy).toBe(true);
     expect(caps.serverOrderBy).toBe(true);
     expect(caps.whereFormat).toBe('colon');
   });
 
-  it('grist has fetch-only server capabilities', () => {
+  it('grist has server capabilities (Records + SQL)', () => {
     const caps = getAdapter('grist').capabilities;
     expect(caps.serverFetch).toBe(true);
-    expect(caps.serverFacets).toBe(false);
+    expect(caps.serverFacets).toBe(true);
     expect(caps.serverSearch).toBe(false);
-    expect(caps.serverGroupBy).toBe(false);
-    expect(caps.serverOrderBy).toBe(false);
+    expect(caps.serverGroupBy).toBe(true);
+    expect(caps.serverOrderBy).toBe(true);
     expect(caps.whereFormat).toBe('colon');
   });
 
@@ -124,15 +124,57 @@ describe('GristAdapter', () => {
     expect(adapter.validate({ baseUrl: 'https://example.com/api/docs/x/tables/y/records' } as AdapterParams)).toBeNull();
   });
 
-  it('buildUrl returns base-url as-is', () => {
+  it('buildUrl returns base-url when no params', () => {
     const url = adapter.buildUrl({ baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records' } as AdapterParams);
     expect(url).toBe('https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records');
   });
 
-  it('buildServerSideUrl returns same as buildUrl', () => {
-    const params = { baseUrl: 'https://example.com/api' } as AdapterParams;
-    const overlay = { page: 1, effectiveWhere: '', orderBy: '' } as ServerSideOverlay;
-    expect(adapter.buildServerSideUrl(params, overlay)).toBe(adapter.buildUrl(params));
+  it('buildUrl adds filter param for where eq', () => {
+    const url = adapter.buildUrl({
+      baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records',
+      where: 'region:eq:Bretagne',
+    } as AdapterParams);
+    const parsed = new URL(url);
+    expect(JSON.parse(parsed.searchParams.get('filter')!)).toEqual({ region: ['Bretagne'] });
+  });
+
+  it('buildUrl adds filter param for where in', () => {
+    const url = adapter.buildUrl({
+      baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records',
+      where: 'region:in:Bretagne|Normandie',
+    } as AdapterParams);
+    const parsed = new URL(url);
+    expect(JSON.parse(parsed.searchParams.get('filter')!)).toEqual({ region: ['Bretagne', 'Normandie'] });
+  });
+
+  it('buildUrl adds sort param for orderBy', () => {
+    const url = adapter.buildUrl({
+      baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records',
+      orderBy: 'population:desc',
+    } as AdapterParams);
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('sort')).toBe('-population');
+  });
+
+  it('buildUrl adds limit param', () => {
+    const url = adapter.buildUrl({
+      baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records',
+      limit: 20,
+    } as AdapterParams);
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('limit')).toBe('20');
+  });
+
+  it('buildServerSideUrl adds pagination params', () => {
+    const params = {
+      baseUrl: 'https://proxy.example.com/grist-proxy/api/docs/x/tables/y/records',
+      pageSize: 20,
+    } as AdapterParams;
+    const overlay = { page: 3, effectiveWhere: '', orderBy: '' } as ServerSideOverlay;
+    const url = adapter.buildServerSideUrl(params, overlay);
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('limit')).toBe('20');
+    expect(parsed.searchParams.get('offset')).toBe('40');
   });
 });
 

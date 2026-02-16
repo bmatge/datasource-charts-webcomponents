@@ -103,7 +103,7 @@ describe('Tabular config', () => {
   it('should have page-based pagination', () => {
     expect(TABULAR_CONFIG.pagination.type).toBe('page');
     expect(TABULAR_CONFIG.pagination.maxPages).toBe(500);
-    expect(TABULAR_CONFIG.pagination.maxRecords).toBe(50000);
+    expect(TABULAR_CONFIG.pagination.maxRecords).toBe(25000);
   });
 
   it('should have server meta for pagination', () => {
@@ -111,9 +111,10 @@ describe('Tabular config', () => {
     expect(TABULAR_CONFIG.pagination.serverMeta?.totalPath).toBe('meta.total');
   });
 
-  it('should support server-side ordering but not aggregation', () => {
+  it('should support server-side ordering, groupBy and aggregation', () => {
     expect(TABULAR_CONFIG.capabilities.serverOrderBy).toBe(true);
-    expect(TABULAR_CONFIG.capabilities.serverAggregation).toBe(false);
+    expect(TABULAR_CONFIG.capabilities.serverGroupBy).toBe(true);
+    expect(TABULAR_CONFIG.capabilities.serverAggregation).toBe(true);
     expect(TABULAR_CONFIG.capabilities.serverFacets).toBe(false);
   });
 
@@ -131,8 +132,11 @@ describe('Tabular config', () => {
 // =========================================================================
 
 describe('Grist config', () => {
-  it('should have no pagination', () => {
-    expect(GRIST_CONFIG.pagination.type).toBe('none');
+  it('should have offset pagination', () => {
+    expect(GRIST_CONFIG.pagination.type).toBe('offset');
+    expect(GRIST_CONFIG.pagination.pageSize).toBe(100);
+    expect(GRIST_CONFIG.pagination.params.offset).toBe('offset');
+    expect(GRIST_CONFIG.pagination.params.limit).toBe('limit');
   });
 
   it('should require flatten', () => {
@@ -157,8 +161,8 @@ describe('Grist config', () => {
     expect(GRIST_CONFIG.codeGen.fieldPrefix).toBe('');
   });
 
-  it('should have client facets mode', () => {
-    expect(GRIST_CONFIG.facets.defaultMode).toBe('client');
+  it('should have server facets mode', () => {
+    expect(GRIST_CONFIG.facets.defaultMode).toBe('server');
   });
 
   it('should extract documentId and tableId', () => {
@@ -377,7 +381,7 @@ describe('ProviderConfig alignment', () => {
 
   it('all configs have valid aggregation syntax', () => {
     for (const config of ALL_CONFIGS) {
-      expect(['odsql-select', 'colon-attr', 'client-only']).toContain(config.query.aggregationSyntax);
+      expect(['odsql-select', 'colon-attr', 'client-only', 'sql']).toContain(config.query.aggregationSyntax);
     }
   });
 

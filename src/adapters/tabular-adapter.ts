@@ -22,8 +22,8 @@ function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: Abor
   return opts;
 }
 
-/** Nombre max de records par requete Tabular */
-const TABULAR_PAGE_SIZE = 100;
+/** Nombre max de records par requete Tabular (API max = 50) */
+const TABULAR_PAGE_SIZE = 50;
 
 /** Nombre max de pages a fetcher (limite de securite : 50K records) */
 const TABULAR_MAX_PAGES = 500;
@@ -35,7 +35,7 @@ export class TabularAdapter implements ApiAdapter {
     serverFetch: true,
     serverFacets: false,
     serverSearch: false,
-    serverGroupBy: false,
+    serverGroupBy: true,
     serverOrderBy: true,
     whereFormat: 'colon',
   };
@@ -49,8 +49,8 @@ export class TabularAdapter implements ApiAdapter {
 
   /**
    * Fetch toutes les donnees avec pagination automatique via links.next.
-   * Retourne needsClientProcessing=true car Tabular ne supporte pas
-   * group-by/aggregation cote serveur.
+   * Quand groupBy/aggregate sont presents, l'API Tabular les execute
+   * cote serveur et retourne les donnees deja agregees (needsClientProcessing=false).
    */
   async fetchAll(params: AdapterParams, signal: AbortSignal): Promise<FetchResult> {
     const fetchAllRecords = params.limit <= 0;
@@ -115,10 +115,13 @@ export class TabularAdapter implements ApiAdapter {
       );
     }
 
+    // Quand l'API a execute groupBy/aggregate, les donnees sont deja traitees
+    const serverHandled = !!(params.groupBy || params.aggregate);
+
     return {
       data: allResults,
       totalCount: totalCount >= 0 ? totalCount : allResults.length,
-      needsClientProcessing: true,
+      needsClientProcessing: !serverHandled,
     };
   }
 

@@ -21,9 +21,9 @@ export const TABULAR_CONFIG: ProviderConfig = {
 
   pagination: {
     type: 'page',
-    pageSize: 100,
+    pageSize: 50,
     maxPages: 500,
-    maxRecords: 50000,
+    maxRecords: 25000,
     params: { page: 'page', pageSize: 'page_size' },
     nextPagePath: 'next',
     serverMeta: {
@@ -37,9 +37,9 @@ export const TABULAR_CONFIG: ProviderConfig = {
     serverFetch: true,
     serverFacets: false,
     serverSearch: false,
-    serverGroupBy: false,
+    serverGroupBy: true,
     serverOrderBy: true,
-    serverAggregation: false,
+    serverAggregation: true,
   },
 
   query: {

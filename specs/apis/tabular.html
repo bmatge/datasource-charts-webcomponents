@@ -28,12 +28,13 @@
           Donne acces aux ressources tabulaires (CSV, Excel) hebergees sur la plateforme nationale d'open data.
         </p>
 
-        <div class="fr-callout fr-callout--blue-france">
-          <h4 class="fr-callout__title">Forte capacite de pagination</h4>
+        <div class="fr-callout fr-callout--green-emeraude">
+          <h4 class="fr-callout__title">Agregation et group-by serveur</h4>
           <p class="fr-callout__text">
-            Tabular supporte la <strong>pagination par page</strong> avec jusqu'a 50 000 enregistrements
-            (500 pages de 100). Le tri serveur est disponible, mais les agregations et le group-by sont
-            effectues <strong>cote client</strong> par <code>gouv-query</code>.
+            Tabular supporte la <strong>pagination par page</strong> (500 pages de 50, soit 25 000 enregistrements),
+            le <strong>tri serveur</strong>, et surtout le <strong>group-by et l'agregation cote serveur</strong>
+            (<code>sum</code>, <code>avg</code>, <code>count</code>, <code>min</code>, <code>max</code>).
+            La recherche full-text et les facettes restent cote client.
           </p>
         </div>
 
@@ -67,18 +68,18 @@
                 </tr>
                 <tr>
                   <td>Group-by serveur</td>
-                  <td class="capability-no">Non</td>
-                  <td>Group-by effectue cote client par <code>gouv-query</code></td>
+                  <td class="capability-yes">Oui</td>
+                  <td>Parametre <code>column__groupby</code></td>
                 </tr>
                 <tr>
                   <td>Tri serveur</td>
                   <td class="capability-yes">Oui</td>
-                  <td>Parametre <code>order_by</code> dans l'URL</td>
+                  <td>Parametre <code>column__sort=asc|desc</code></td>
                 </tr>
                 <tr>
                   <td>Agregation serveur</td>
-                  <td class="capability-no">Non</td>
-                  <td>Agregation effectuee cote client par <code>gouv-query</code></td>
+                  <td class="capability-yes">Oui</td>
+                  <td>Parametres <code>column__sum</code>, <code>__avg</code>, <code>__count</code>, <code>__min</code>, <code>__max</code></td>
                 </tr>
               </tbody>
             </table>
@@ -95,9 +96,9 @@
               </thead>
               <tbody>
                 <tr><td>Type</td><td><code>page</code> (par numero de page)</td></tr>
-                <tr><td>Taille de page</td><td>100 enregistrements</td></tr>
+                <tr><td>Taille de page</td><td>50 enregistrements (maximum API)</td></tr>
                 <tr><td>Pages max</td><td>500</td></tr>
-                <tr><td>Enregistrements max</td><td>50 000</td></tr>
+                <tr><td>Enregistrements max</td><td>25 000</td></tr>
                 <tr><td>Parametres URL</td><td><code>page</code>, <code>page_size</code></td></tr>
                 <tr><td>Page suivante</td><td>Champ <code>next</code> dans la reponse</td></tr>
               </tbody>
@@ -146,10 +147,42 @@
           <h3 class="fr-mt-2w">Separateur WHERE</h3>
           <p>Les clauses WHERE multiples sont jointes par <code>, </code> (virgule + espace).</p>
 
-          <h3 class="fr-mt-2w">Agregation</h3>
+          <h3 class="fr-mt-2w">Agregation serveur</h3>
           <p>
-            Syntaxe attribut colon : <code>field:sum</code>, <code>field:avg</code>, etc.
-            L'agregation est effectuee cote client par <code>gouv-query</code>.
+            L'API supporte l'agregation cote serveur via des parametres URL :
+          </p>
+          <div class="fr-table">
+            <table>
+              <thead>
+                <tr><th>Parametre URL</th><th>Description</th><th>Attribut gouv-query</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>column__groupby</code></td><td>Grouper par cette colonne</td><td><code>group-by="column"</code></td></tr>
+                <tr><td><code>column__sum</code></td><td>Somme</td><td><code>aggregate="column:sum"</code></td></tr>
+                <tr><td><code>column__avg</code></td><td>Moyenne</td><td><code>aggregate="column:avg"</code></td></tr>
+                <tr><td><code>column__count</code></td><td>Comptage</td><td><code>aggregate="column:count"</code></td></tr>
+                <tr><td><code>column__min</code></td><td>Minimum</td><td><code>aggregate="column:min"</code></td></tr>
+                <tr><td><code>column__max</code></td><td>Maximum</td><td><code>aggregate="column:max"</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="fr-highlight fr-mt-2w">
+            <p>
+              Les colonnes de resultat sont nommees <code>column__operator</code> (ex : <code>population__sum</code>).
+              Les filtres sont appliques <strong>avant</strong> l'agregation.
+            </p>
+          </div>
+        </section>
+
+        <!-- Selection de colonnes -->
+        <section class="fr-mt-4w">
+          <h2>Selection de colonnes</h2>
+          <p>
+            L'API supporte la selection de colonnes specifiques via le parametre <code>columns</code> :
+          </p>
+          <pre><code>?columns=nom,prenom,commune</code></pre>
+          <p class="fr-mt-1w">
+            Cela reduit la taille de la reponse en ne retournant que les colonnes demandees.
           </p>
         </section>
 
@@ -219,7 +252,7 @@
         <section class="fr-mt-4w">
           <h2>Exemple d'utilisation</h2>
 
-          <h3>Graphique avec agregation client</h3>
+          <h3>Graphique avec agregation</h3>
           <pre><code>&lt;gouv-source
   id="src"
   api-type="tabular"

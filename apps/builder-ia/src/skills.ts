@@ -268,7 +268,7 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 > aux facettes, datalist ou graphiques. Voir la doc de gouv-normalize.
 
 > **Mode adapter** : avec \`api-type\`, gouv-source gere la pagination automatiquement.
-> ODS: max 1000 records, Tabular: max 50000 records, Grist: toutes les donnees.
+> ODS: max 1000 records, Tabular: max 25000 records (500 pages de 50), Grist: toutes les donnees.
 > Le mode adapter ecoute aussi les commandes \`gouv-source-command\` (page, where, orderBy)
 > emises par gouv-facets, gouv-search et gouv-datalist.
 
@@ -1606,12 +1606,13 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 | Capacite | OpenDataSoft | Tabular (data.gouv.fr) | Grist | Generique |
 |----------|:---:|:---:|:---:|:---:|
 | Fetch serveur | oui | oui | oui | non (gouv-source) |
-| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages) | non (tout en 1 requete) | non |
-| Facettes serveur | oui | non | non | non |
+| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages, max 50/page) | non (tout en 1 requete) | non |
+| Facettes serveur | oui | non | oui (SQL) | non |
 | Recherche serveur | oui (full-text) | non | non | non |
-| Group-by serveur | oui | non | non | non |
-| Agregation serveur | oui (ODSQL) | non | non | non |
-| Tri serveur | oui | oui | non | non |
+| Group-by serveur | oui | oui (column__groupby) | oui (SQL) | non |
+| Agregation serveur | oui (ODSQL) | oui (column__sum, __avg, __count, __min, __max) | oui (SQL) | non |
+| Tri serveur | oui | oui | oui | non |
+| Pagination serveur | oui (offset) | oui (page) | oui (offset) | non |
 | Format filtre | ODSQL (SQL-like) | colon (champ:op:valeur) | colon | colon |
 
 ### Detection automatique du provider
@@ -1643,7 +1644,7 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 </gouv-query>
 \`\`\`
 
-**Tabular** (fetch serveur + agregation client) :
+**Tabular** (fetch serveur + agregation serveur) :
 \`\`\`html
 <gouv-query id="data" api-type="tabular"
   base-url="https://tabular-api.data.gouv.fr"
@@ -1654,16 +1655,19 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 </gouv-query>
 \`\`\`
 
-**Grist** (fetch serveur + auto-flatten + traitement client) :
+**Grist** (fetch serveur + auto-flatten, aggregation via SQL) :
 \`\`\`html
-<gouv-query id="data" api-type="grist"
+<gouv-source id="src" api-type="grist"
   base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
-  headers='{"Authorization":"Bearer API_KEY"}'
+  headers='{"Authorization":"Bearer API_KEY"}'>
+</gouv-source>
+<gouv-query id="data" source="src"
   group-by="region"
   aggregate="population:sum">
 </gouv-query>
 \`\`\`
 L'adapter Grist aplatit automatiquement \`records[].fields\` — pas besoin de gouv-normalize.
+L'adapter choisit automatiquement entre mode Records (filter/sort/pagination) et mode SQL (group-by, aggregation, facettes).
 
 **Generique** (gouv-source obligatoire) :
 \`\`\`html
