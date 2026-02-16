@@ -300,9 +300,23 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
     trigger: ['filtre', 'filtrer', 'grouper', 'agreger', 'trier', 'transformer', 'query', 'requete', 'top', 'moyenne', 'somme', 'compter', 'seulement', 'uniquement', 'plus de', 'moins de', 'departement', 'region', 'dans le', 'pour le'],
     content: `## <gouv-query> - Transformation de donnees
 
-Composant invisible intermediaire entre <gouv-source> et les visualisations.
-Filtre, groupe, agrege et trie les donnees de facon declarative.
+Composant invisible qui transforme les donnees recues d'une source (gouv-source
+ou gouv-normalize). Filtre, groupe, agrege et trie de facon declarative.
+Ne fait aucun fetch HTTP — les donnees transitent via le data-bridge.
 Peut s'enchainer : un gouv-query peut etre la source d'un autre gouv-query.
+
+### Pattern recommande : source -> query -> chart
+\`\`\`html
+<!-- 1. gouv-source recupere les donnees -->
+<gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.opendatasoft.com" dataset-id="mon-dataset"
+  select="sum(population) as total, region" group-by="region">
+</gouv-source>
+<!-- 2. gouv-query transforme (tri, limite) -->
+<gouv-query id="data" source="src" order-by="total:desc" limit="10"></gouv-query>
+<!-- 3. gouv-dsfr-chart affiche -->
+<gouv-dsfr-chart source="data" type="bar" label-field="region" value-field="total"></gouv-dsfr-chart>
+\`\`\`
 
 ### Format des donnees
 Entree : tableau d'objets plats (fourni par gouv-source ou un autre gouv-query).
@@ -310,52 +324,37 @@ Sortie : tableau d'objets plats, transforme selon les attributs.
 Apres agregation, les champs sont nommes automatiquement : \`champ__fonction\`
 (ex: \`population__sum\`, \`prix__avg\`).
 
-### 4 modes (attribut api-type)
-| Mode | Description | Source des donnees |
-|------|-------------|-------------------|
-| generic (defaut) | Traitement client-side | Attribut \`source\` -> ID d'une gouv-source ou gouv-query |
-| opendatasoft | Requete serveur ODSQL | Attributs \`base-url\` + \`dataset-id\` |
-| tabular | Requete serveur Tabular API | Attributs \`base-url\` + \`resource\` |
-| grist | Fetch Grist + auto-flatten | Attribut \`base-url\` (URL complete avec proxy) |
-
-**Mode tabular — Multi-page automatique** : en mode tabular avec \`resource\`,
-gouv-query recupere automatiquement **toutes les pages** du dataset (100 records par page)
-avant d'appliquer les agregations client-side. Cela permet d'agreger (group-by, count, sum...)
-sur des datasets de plusieurs dizaines de milliers d'enregistrements, pas seulement les 100 premiers.
-
 ### Attributs
 | Attribut | Type | Defaut | Requis | Description |
 |----------|------|--------|--------|-------------|
 | id | String | - | oui | Identifiant unique |
-| api-type | String | \`"generic"\` | non | Mode : generic, opendatasoft, tabular, grist |
-| source | String | \`""\` | mode generic | ID de la gouv-source ou gouv-query parente |
-| base-url | String | \`""\` | mode ods/tabular | URL de base de l'API |
-| dataset-id | String | \`""\` | mode ods | Identifiant du dataset OpenDataSoft |
-| resource | String | \`""\` | mode tabular | Identifiant de la ressource Tabular |
-| select | String | \`""\` | non | Clause SELECT ODSQL (mode opendatasoft) |
+| source | String | \`""\` | oui | ID de la gouv-source ou gouv-query parente |
 | where | String | \`""\` | non | Filtres (voir syntaxe ci-dessous) |
 | filter | String | \`""\` | non | Alias de where (compatibilite) |
 | group-by | String | \`""\` | non | Champs de groupement (separes par virgule) |
 | aggregate | String | \`""\` | non | Agregations : \`"champ:fonction"\` ou \`"champ:fonction:alias"\` |
 | order-by | String | \`""\` | non | Tri : \`"champ:asc"\` ou \`"champ:desc"\` |
 | limit | Number | \`0\` | non | Limite de resultats (0 = illimite) |
-| transform | String | \`""\` | non | Chemin JSONPath dans la reponse API |
+| transform | String | \`""\` | non | Chemin JSONPath dans les donnees recues |
 | refresh | Number | \`0\` | non | Rafraichissement en secondes (0 = desactive) |
-| headers | String | \`""\` | non | Headers HTTP en JSON (ex: \`'{"apikey":"xxx"}'\`) — modes ODS/Tabular uniquement |
-| server-side | Boolean | \`false\` | non | Active le mode server-side pilotable (ODS/Tabular uniquement) |
-| page-size | Number | \`20\` | non | Taille de page en mode server-side |
+| server-side | Boolean | \`false\` | non | Active le transfert de commandes vers la source (pagination, recherche, tri) |
+| page-size | Number | \`20\` | non | Taille de page (transmise a la source en mode server-side) |
 
-### Mode server-side pilotable
-Avec \`server-side\`, gouv-query ne fetche qu'UNE page a la fois et ecoute les commandes
-des composants en aval (pagination, recherche, tri). Utile pour les gros datasets
-ou la recherche full-text serveur. Necessite \`api-type="opendatasoft"\` ou \`api-type="tabular"\`.
+> **Attributs deprecies** : \`api-type\`, \`base-url\`, \`dataset-id\`, \`resource\`, \`select\`, \`headers\`.
+> Utilisez gouv-source pour le fetch et gouv-query uniquement pour transformer.
+> L'ancien mode (\`<gouv-query api-type="opendatasoft" ...>\`) fonctionne encore
+> via un gouv-source interne mais n'est plus recommande.
 
-Les composants en aval pointent directement sur le gouv-query :
-- \`gouv-display\` ou \`gouv-datalist\` envoient \`{ page }\` pour la pagination
+### Mode server-side
+Avec \`server-side\`, gouv-query transfere les commandes des composants en aval
+vers la source amont (gouv-source). Utile pour les gros datasets.
+
+Les composants en aval pointent sur le gouv-query :
+- \`gouv-datalist\` envoie \`{ page }\` pour la pagination
 - \`gouv-search server-search\` envoie \`{ where }\` pour la recherche
 - \`gouv-datalist server-tri\` envoie \`{ orderBy }\` pour le tri
 
-### Operateurs de filtre (mode generic/tabular)
+### Operateurs de filtre
 Format : \`"champ:operateur:valeur"\`
 Multiples filtres separes par virgule (logique ET) :
 \`where="population:gte:10000, region:in:IDF|OCC"\`
@@ -389,14 +388,14 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 
 ### Exemples
 \`\`\`html
-<!-- Mode generic : filtrer et trier -->
+<!-- Filtrer et trier -->
 <gouv-query id="filtered" source="raw-data"
   where="population:gt:5000"
   order-by="nom:asc"
   limit="10">
 </gouv-query>
 
-<!-- Mode generic : grouper et agreger -->
+<!-- Grouper et agreger -->
 <gouv-query id="stats" source="communes"
   group-by="region"
   aggregate="population:sum, population:count"
@@ -404,31 +403,36 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
   limit="10">
 </gouv-query>
 
-<!-- Mode opendatasoft : requete serveur ODSQL -->
-<gouv-query id="ods" api-type="opendatasoft"
+<!-- ODS : source + query + chart -->
+<gouv-source id="src" api-type="opendatasoft"
   dataset-id="mon-dataset"
   base-url="https://data.opendatasoft.com"
   select="sum(population) as total, region"
   where="population > 5000"
-  group-by="region"
-  order-by="total:desc"
-  limit="15">
+  group-by="region">
+</gouv-source>
+<gouv-query id="ods" source="src"
+  order-by="total:desc" limit="15">
 </gouv-query>
 
-<!-- Mode tabular : requete serveur data.gouv.fr -->
-<gouv-query id="tab" api-type="tabular"
-  resource="RESOURCE_ID"
+<!-- Tabular : source + query + chart -->
+<gouv-source id="src" api-type="tabular"
+  resource="RESOURCE_ID">
+</gouv-source>
+<gouv-query id="tab" source="src"
   group-by="departement"
   aggregate="population:sum"
   order-by="population__sum:desc">
 </gouv-query>
 
-<!-- Mode grist : fetch + auto-flatten records[].fields -->
-<gouv-query id="grist" api-type="grist"
+<!-- Grist : source + normalize + query -->
+<gouv-source id="src" api-type="grist"
   base-url="${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/DOC_ID/tables/TABLE/records"
-  headers='{"Authorization":"Bearer API_KEY"}'
-  group-by="region"
-  aggregate="population:sum"
+  headers='{"Authorization":"Bearer API_KEY"}'>
+</gouv-source>
+<gouv-normalize id="flat" source="src" flatten="fields"></gouv-normalize>
+<gouv-query id="data" source="flat"
+  group-by="region" aggregate="population:sum"
   order-by="population__sum:desc">
 </gouv-query>
 
@@ -436,21 +440,13 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
 <gouv-query id="actifs" source="raw" where="status:eq:active"></gouv-query>
 <gouv-query id="top5" source="actifs" group-by="region" aggregate="montant:sum" order-by="montant__sum:desc" limit="5"></gouv-query>
 
-<!-- Dataset prive ODS avec API key -->
-<gouv-query id="private" api-type="opendatasoft"
-  dataset-id="mon-dataset-prive"
-  base-url="https://mon-instance.opendatasoft.com"
-  headers='{"apikey":"abc123"}'
-  group-by="region"
-  aggregate="population:sum">
-</gouv-query>
-
-<!-- Mode server-side : recherche + pagination serveur ODS -->
-<gouv-query id="q" api-type="opendatasoft"
+<!-- Server-side : recherche + pagination serveur ODS -->
+<gouv-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso"
   base-url="https://data.economie.gouv.fr/api"
   server-side page-size="20">
-</gouv-query>
+</gouv-source>
+<gouv-query id="q" source="src" server-side></gouv-query>
 <gouv-search id="s" source="q" server-search count></gouv-search>
 <gouv-display source="q" pagination="20">
   <template><p>{{nom}}</p></template>

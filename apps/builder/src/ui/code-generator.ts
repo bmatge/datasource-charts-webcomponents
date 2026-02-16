@@ -832,15 +832,16 @@ export function generateOdsQueryCode(
   labelFieldPath: string,
   valueFieldPath: string
 ): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
-  const attrs: string[] = [];
-  attrs.push('api-type="opendatasoft"');
-  attrs.push(`base-url="${odsInfo.baseUrl}"`);
-  attrs.push(`dataset-id="${odsInfo.datasetId}"`);
+  // --- gouv-source attributes (fetch + server-side processing) ---
+  const srcAttrs: string[] = [];
+  srcAttrs.push('api-type="opendatasoft"');
+  srcAttrs.push(`base-url="${odsInfo.baseUrl}"`);
+  srcAttrs.push(`dataset-id="${odsInfo.datasetId}"`);
 
   // Group by
   const groupByField = state.advancedMode && state.queryGroupBy ? state.queryGroupBy : labelFieldPath;
   if (groupByField) {
-    attrs.push(`group-by="${groupByField}"`);
+    srcAttrs.push(`group-by="${groupByField}"`);
   }
 
   // Build ODSQL select clause with aggregation
@@ -883,28 +884,30 @@ export function generateOdsQueryCode(
       }
     }
   }
-  attrs.push(`select="${escapeHtml(selectParts.join(', '))}"`);
+  srcAttrs.push(`select="${escapeHtml(selectParts.join(', '))}"`);
 
-  // Where / filter
+  // Where / filter (static clause on source)
   if (state.advancedMode && state.queryFilter) {
     const odsql = filterToOdsql(state.queryFilter);
-    if (odsql) attrs.push(`where="${escapeHtml(odsql)}"`);
+    if (odsql) srcAttrs.push(`where="${escapeHtml(odsql)}"`);
   }
 
-  // Order by (ODSQL syntax: "field DESC")
+  // --- gouv-query attributes (client-side post-processing) ---
+  const qAttrs: string[] = [];
+  qAttrs.push('source="chart-src"');
   if (state.sortOrder && state.sortOrder !== 'none') {
-    attrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
+    qAttrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
   }
-
-  // No explicit limit: gouv-query api-type="opendatasoft" with limit=0
-  // (default) fetches ALL available records with automatic pagination
-  // (pages of 100, using total_count from API response to detect completion)
 
   const queryElement = `
-  <!-- Requete ODS avec agregation serveur et pagination automatique -->
+  <!-- Source ODS avec agregation serveur et pagination automatique -->
+  <gouv-source
+    id="chart-src"
+    ${srcAttrs.join('\n    ')}>
+  </gouv-source>
   <gouv-query
     id="query-data"
-    ${attrs.join('\n    ')}>
+    ${qAttrs.join('\n    ')}>
   </gouv-query>`;
 
   return {
@@ -917,24 +920,28 @@ export function generateOdsQueryCode(
 }
 
 /**
- * Generate a <gouv-query api-type="tabular"> element for Tabular API sources.
- * Uses automatic pagination (up to 50K records) with client-side aggregation,
- * bypassing gouv-source entirely.
+ * Generate <gouv-source> + <gouv-query> for Tabular API sources.
+ * Source handles pagination (up to 50K records), query handles client-side aggregation.
  */
 export function generateTabularQueryCode(
   tabularInfo: { baseUrl: string; resourceId: string },
   labelFieldPath: string,
   valueFieldPath: string
 ): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
-  const attrs: string[] = [];
-  attrs.push('api-type="tabular"');
-  attrs.push(`base-url="${tabularInfo.baseUrl}"`);
-  attrs.push(`resource="${tabularInfo.resourceId}"`);
+  // --- gouv-source attributes (fetch + auto-pagination) ---
+  const srcAttrs: string[] = [];
+  srcAttrs.push('api-type="tabular"');
+  srcAttrs.push(`base-url="${tabularInfo.baseUrl}"`);
+  srcAttrs.push(`resource="${tabularInfo.resourceId}"`);
+
+  // --- gouv-query attributes (client-side aggregation) ---
+  const qAttrs: string[] = [];
+  qAttrs.push('source="chart-src"');
 
   // Group by
   const groupByField = state.advancedMode && state.queryGroupBy ? state.queryGroupBy : labelFieldPath;
   if (groupByField) {
-    attrs.push(`group-by="${groupByField}"`);
+    qAttrs.push(`group-by="${groupByField}"`);
   }
 
   // Aggregation (colon syntax for client-side processing)
@@ -960,23 +967,28 @@ export function generateTabularQueryCode(
       resultValueField2 = `${valueField2Path}__${state.aggregation}`;
     }
   }
-  attrs.push(`aggregate="${escapeHtml(aggregateExpr)}"`);
+  qAttrs.push(`aggregate="${escapeHtml(aggregateExpr)}"`);
 
   // Filter (colon syntax)
   if (state.advancedMode && state.queryFilter) {
-    attrs.push(`filter="${escapeHtml(state.queryFilter)}"`);
+    qAttrs.push(`filter="${escapeHtml(state.queryFilter)}"`);
   }
 
   // Order by
   if (state.sortOrder && state.sortOrder !== 'none') {
-    attrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
+    qAttrs.push(`order-by="${resultValueField}:${state.sortOrder}"`);
   }
 
   const queryElement = `
-  <!-- Requete Tabular avec pagination automatique et agregation client-side -->
+  <!-- Source Tabular avec pagination automatique -->
+  <gouv-source
+    id="chart-src"
+    ${srcAttrs.join('\n    ')}>
+  </gouv-source>
+  <!-- Agregation client-side -->
   <gouv-query
     id="query-data"
-    ${attrs.join('\n    ')}>
+    ${qAttrs.join('\n    ')}>
   </gouv-query>`;
 
   return {

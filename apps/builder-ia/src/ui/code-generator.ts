@@ -663,7 +663,7 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
   const whereAttr = config.where
     ? `\n    where="${filterToOdsql(config.where)}"` : '';
   const orderAttr = config.sortOrder && config.labelField
-    ? `\n    order-by="${config.labelField}:${config.sortOrder}"` : '';
+    ? `\n    order-by="${resultField}:${config.sortOrder}"` : '';
   const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
   const horizontalAttr = config.type === 'horizontalBar' ? '\n    horizontal' : '';
 
@@ -682,13 +682,17 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="chart-data"
+  <gouv-source
+    id="chart-src"
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
     select="${selectExpr}"
-    group-by="${config.labelField}"${whereAttr}${orderAttr}>
+    group-by="${config.labelField}"${whereAttr}>
+  </gouv-source>
+  <gouv-query
+    id="chart-data"
+    source="chart-src"${orderAttr}>
   </gouv-query>
 
   <gouv-dsfr-chart
@@ -731,11 +735,15 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="chart-data"
+  <gouv-source
+    id="chart-src"
     api-type="tabular"
     base-url="${baseUrl}"
-    resource="${resourceId}"
+    resource="${resourceId}">
+  </gouv-source>
+  <gouv-query
+    id="chart-data"
+    source="chart-src"
     group-by="${config.labelField}"
     aggregate="${aggregateExpr}"${filterAttr}${orderAttr}>
   </gouv-query>

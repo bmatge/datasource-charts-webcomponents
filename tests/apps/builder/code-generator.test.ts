@@ -1462,7 +1462,7 @@ describe('generateDynamicCodeForApi', () => {
     state.generationMode = 'dynamic';
   });
 
-  it('should detect ODS source and generate gouv-query with api-type="opendatasoft"', () => {
+  it('should detect ODS source and generate gouv-source + gouv-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS Source', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus-regionaux/records',
@@ -1473,14 +1473,16 @@ describe('generateDynamicCodeForApi', () => {
     state.chartType = 'bar';
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="opendatasoft"');
     expect(code).toContain('base-url="https://data.iledefrance.fr"');
     expect(code).toContain('dataset-id="elus-regionaux"');
+    expect(code).toContain('<gouv-query');
+    expect(code).toContain('source="chart-src"');
     expect(code).toContain('<gouv-dsfr-chart');
-    expect(code).not.toContain('<gouv-source');
   });
 
-  it('should detect Tabular source and generate gouv-query with api-type="tabular"', () => {
+  it('should detect Tabular source and generate gouv-source + gouv-query', () => {
     state.savedSource = {
       id: '1', name: 'Tabular Source', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1491,10 +1493,12 @@ describe('generateDynamicCodeForApi', () => {
     state.chartType = 'bar';
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
+    expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="tabular"');
     expect(code).toContain('base-url="https://tabular-api.data.gouv.fr"');
     expect(code).toContain('resource="abc-123"');
-    expect(code).not.toContain('<gouv-source');
+    expect(code).toContain('<gouv-query');
+    expect(code).toContain('source="chart-src"');
   });
 
   it('should use gouv-source for generic API sources', () => {
