@@ -74,5 +74,6 @@ export const TABULAR_CONFIG: ProviderConfig = {
     queryApiType: 'tabular',
     fieldPrefix: '',
     dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
+    v2: { usesGouvSource: true, usesGouvQuery: true, sourceApiType: 'tabular' },
   },
 };

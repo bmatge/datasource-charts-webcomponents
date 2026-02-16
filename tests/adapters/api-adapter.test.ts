@@ -171,3 +171,15 @@ describe('buildFacetWhere is implemented on all adapters', () => {
     });
   }
 });
+
+describe('ProviderConfig.codeGen.v2', () => {
+  for (const type of ['opendatasoft', 'tabular', 'grist', 'generic'] as const) {
+    it(`${type} config has codeGen.v2 with sourceApiType`, () => {
+      const config = getAdapter(type).getProviderConfig!();
+      expect(config.codeGen.v2).toBeDefined();
+      expect(config.codeGen.v2!.usesGouvSource).toBe(true);
+      expect(config.codeGen.v2!.usesGouvQuery).toBe(true);
+      expect(config.codeGen.v2!.sourceApiType).toBe(type);
+    });
+  }
+});

@@ -125,5 +125,11 @@ export interface ProviderConfig {
       dsfrChart: boolean;
       gouvWidgets: boolean;
     };
+    /** New pattern for Stage 2: gouv-source as fetcher, gouv-query as transformer */
+    v2?: {
+      usesGouvSource: boolean;
+      usesGouvQuery: boolean;
+      sourceApiType: ProviderId;
+    };
   };
 }

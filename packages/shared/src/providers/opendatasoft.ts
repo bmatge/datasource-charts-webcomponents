@@ -63,5 +63,6 @@ export const ODS_CONFIG: ProviderConfig = {
     queryApiType: 'opendatasoft',
     fieldPrefix: '',
     dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
+    v2: { usesGouvSource: true, usesGouvQuery: true, sourceApiType: 'opendatasoft' },
   },
 };
