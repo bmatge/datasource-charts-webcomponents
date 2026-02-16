@@ -6,15 +6,13 @@ import {
   dispatchDataLoaded,
   dispatchDataError,
   dispatchDataLoading,
+  dispatchSourceCommand,
   clearDataCache,
   clearDataMeta,
-  setDataMeta,
   subscribeToSource,
   getDataCache,
   subscribeToSourceCommands
 } from '../utils/data-bridge.js';
-import { getAdapter } from '../adapters/api-adapter.js';
-import type { ApiAdapter, AdapterParams, ServerSideOverlay } from '../adapters/api-adapter.js';
 
 /**
  * Types d'API supportes
@@ -61,11 +59,23 @@ export interface QuerySort {
 }
 
 /**
- * <gouv-query> - Composant de requete avancee
+ * <gouv-query> - Composant de transformation de donnees
  *
- * Permet de transformer, filtrer, agreger et trier des donnees
- * provenant d'une source existante ou directement depuis une API
- * (OpenDataSoft, Tabular API data.gouv.fr).
+ * Transforme, filtre, agrege et trie des donnees provenant d'une source
+ * (gouv-source ou gouv-normalize).
+ *
+ * Ne fait aucun fetch HTTP : les donnees sont recues d'un composant amont
+ * via le data-bridge. Si api-type est defini sans source, un gouv-source
+ * interne est cree automatiquement (mode deprecie — backward compat).
+ *
+ * @example Source explicite (recommande)
+ * <gouv-source id="src" api-type="opendatasoft"
+ *   base-url="https://data.opendatasoft.com" dataset-id="communes-france"
+ *   select="sum(population) as total_pop, region" group-by="region">
+ * </gouv-source>
+ * <gouv-query id="stats" source="src"
+ *   order-by="total_pop:desc" limit="10">
+ * </gouv-query>
  *
  * @example Client-side (donnees d'une source existante)
  * <gouv-query
@@ -77,29 +87,16 @@ export interface QuerySort {
  *   limit="10">
  * </gouv-query>
  *
- * @example OpenDataSoft API (requete serveur)
+ * @example Backward compat (deprecie — preferez source explicite)
  * <gouv-query
  *   id="ods-stats"
  *   api-type="opendatasoft"
- *   dataset="communes-france"
+ *   dataset-id="communes-france"
  *   base-url="https://data.opendatasoft.com"
  *   select="sum(population) as total_pop, region"
- *   where="population > 5000"
  *   group-by="region"
  *   order-by="total_pop:desc"
  *   limit="20">
- * </gouv-query>
- *
- * @example Tabular API (requete serveur)
- * <gouv-query
- *   id="tabular-stats"
- *   api-type="tabular"
- *   dataset="dataset-id"
- *   resource="resource-id"
- *   group-by="departement"
- *   aggregate="population:sum"
- *   filter="annee:eq:2024"
- *   order-by="population__sum:desc">
  * </gouv-query>
  */
 @customElement('gouv-query')
@@ -191,9 +188,8 @@ export class GouvQuery extends LitElement {
 
   /**
    * Active le mode server-side pilotable.
-   * En mode server-side, gouv-query ne fetche qu'UNE page a la fois
+   * En mode server-side, la source amont ne fetche qu'UNE page a la fois
    * et ecoute les commandes (page, where, orderBy) des composants en aval.
-   * Necessite api-type="opendatasoft" ou api-type="tabular".
    */
   @property({ type: Boolean, attribute: 'server-side' })
   serverSide = false;
@@ -207,7 +203,7 @@ export class GouvQuery extends LitElement {
   /**
    * Headers HTTP en JSON (pour APIs privees/authentifiees)
    * Ex: '{"apikey":"abc123"}' ou '{"Authorization":"Bearer token"}'
-   * Utilise en mode opendatasoft/tabular/grist (ignore en mode generic)
+   * Passe au gouv-source interne en mode compat (ignore en mode generic)
    */
   @property({ type: String })
   headers = '';
@@ -230,16 +226,13 @@ export class GouvQuery extends LitElement {
   @state()
   private _rawData: unknown[] = [];
 
-  private _adapter: ApiAdapter = getAdapter('generic');
   private _refreshInterval: number | null = null;
-  private _abortController: AbortController | null = null;
   private _unsubscribe: (() => void) | null = null;
   private _unsubscribeCommands: (() => void) | null = null;
 
-  // Server-side overlay state (set by downstream components via gouv-source-command)
-  private _serverPage = 1;
-  private _serverWheres = new Map<string, string>();
-  private _serverOrderBy = '';
+  /** Shadow gouv-source element for backward compatibility */
+  private _shadowSource: HTMLElement | null = null;
+  private _shadowSourceId = '';
 
   // Pas de rendu - composant invisible
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -253,7 +246,6 @@ export class GouvQuery extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     sendWidgetBeacon('gouv-query', this.apiType);
-    this._adapter = getAdapter(this.apiType);
     this._initialize();
   }
 
@@ -267,27 +259,11 @@ export class GouvQuery extends LitElement {
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    const queryProps = ['source', 'apiType', 'baseUrl', 'dataset', 'resource',
+    const queryProps = ['source', 'apiType', 'baseUrl', 'datasetId', 'resource',
                         'select', 'where', 'filter', 'groupBy', 'aggregate',
                         'orderBy', 'limit', 'transform', 'serverSide', 'pageSize'];
 
     if (queryProps.some(prop => changedProperties.has(prop))) {
-      // Update adapter when apiType changes
-      if (changedProperties.has('apiType')) {
-        this._adapter = getAdapter(this.apiType);
-      }
-
-      // Reset server-side overlay when static config changes
-      if (this.serverSide) {
-        const staticProps = ['source', 'apiType', 'baseUrl', 'dataset', 'resource',
-                             'select', 'where', 'filter', 'groupBy', 'aggregate',
-                             'orderBy', 'limit', 'transform', 'pageSize'];
-        if (staticProps.some(prop => changedProperties.has(prop))) {
-          this._serverPage = 1;
-          this._serverWheres.clear();
-          this._serverOrderBy = '';
-        }
-      }
       this._initialize();
     }
 
@@ -301,10 +277,6 @@ export class GouvQuery extends LitElement {
       clearInterval(this._refreshInterval);
       this._refreshInterval = null;
     }
-    if (this._abortController) {
-      this._abortController.abort();
-      this._abortController = null;
-    }
     if (this._unsubscribe) {
       this._unsubscribe();
       this._unsubscribe = null;
@@ -313,6 +285,7 @@ export class GouvQuery extends LitElement {
       this._unsubscribeCommands();
       this._unsubscribeCommands = null;
     }
+    this._destroyShadowSource();
   }
 
   private _setupRefresh() {
@@ -334,45 +307,98 @@ export class GouvQuery extends LitElement {
       return;
     }
 
-    // Setup/teardown command listener for server-side mode
-    this._setupServerSideListener();
-
-    if (this.apiType === 'generic') {
-      // Mode client-side: s'abonner a une source existante
-      this._subscribeToSource();
-    } else {
-      // Mode API: faire une requete API
-      this._fetchFromApi();
+    // Unsubscribe from previous source
+    if (this._unsubscribe) {
+      this._unsubscribe();
+      this._unsubscribe = null;
     }
-  }
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
+    }
 
-  /**
-   * Mode generic: s'abonne a une source et traite les donnees cote client
-   */
-  private _subscribeToSource() {
-    if (!this.source) {
+    if (this.apiType !== 'generic' && !this.source) {
+      // Backward compat: create shadow gouv-source
+      console.warn(
+        `gouv-query[${this.id}]: <gouv-query api-type="${this.apiType}"> sans source est deprecie. ` +
+        `Utilisez <gouv-source api-type="${this.apiType}" ...> + <gouv-query source="...">.`
+      );
+      this._createShadowSource();
+      this._subscribeToSourceData(this._shadowSourceId);
+    } else if (this.source) {
+      // Normal mode: subscribe to existing source
+      this._destroyShadowSource();
+      this._subscribeToSourceData(this.source);
+    } else {
       console.warn('gouv-query: attribut "source" requis en mode generic');
       return;
     }
 
-    // Se desabonner de l'ancienne source
-    if (this._unsubscribe) {
-      this._unsubscribe();
+    // Forward commands from downstream to upstream source
+    this._setupCommandForwarding();
+  }
+
+  // --- Shadow source management (backward compat) ---
+
+  private _createShadowSource() {
+    this._destroyShadowSource();
+
+    this._shadowSourceId = `__gq_${this.id}_src`;
+
+    const el = document.createElement('gouv-source');
+    el.id = this._shadowSourceId;
+    el.setAttribute('api-type', this.apiType);
+    el.style.display = 'none';
+
+    if (this.baseUrl) el.setAttribute('base-url', this.baseUrl);
+    if (this.datasetId) el.setAttribute('dataset-id', this.datasetId);
+    if (this.resource) el.setAttribute('resource', this.resource);
+    if (this.select) el.setAttribute('select', this.select);
+    if (this.where || this.filter) el.setAttribute('where', this.where || this.filter);
+    if (this.groupBy) el.setAttribute('group-by', this.groupBy);
+    if (this.aggregate) el.setAttribute('aggregate', this.aggregate);
+    if (this.orderBy) el.setAttribute('order-by', this.orderBy);
+    if (this.limit > 0) el.setAttribute('limit', String(this.limit));
+    if (this.serverSide) el.setAttribute('server-side', '');
+    if (this.pageSize !== 20) el.setAttribute('page-size', String(this.pageSize));
+    if (this.headers) el.setAttribute('headers', this.headers);
+
+    // Insert as sibling before gouv-query
+    if (this.parentElement) {
+      this.parentElement.insertBefore(el, this);
+    } else {
+      document.body.appendChild(el);
     }
 
-    // Verifier le cache avant de s'abonner (evite une race condition
-    // si la source a deja emis ses donnees avant l'abonnement)
-    const cachedData = getDataCache(this.source);
+    this._shadowSource = el;
+  }
+
+  private _destroyShadowSource() {
+    if (this._shadowSource) {
+      if (this._shadowSourceId) {
+        clearDataCache(this._shadowSourceId);
+        clearDataMeta(this._shadowSourceId);
+      }
+      this._shadowSource.remove();
+      this._shadowSource = null;
+      this._shadowSourceId = '';
+    }
+  }
+
+  // --- Source subscription ---
+
+  private _subscribeToSourceData(sourceId: string) {
+    // Check cache first (avoids race condition if source already emitted)
+    const cachedData = getDataCache(sourceId);
     if (cachedData !== undefined) {
       this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];
-      this._processClientSide();
+      this._handleSourceData();
     }
 
-    // S'abonner a la nouvelle source
-    this._unsubscribe = subscribeToSource(this.source, {
+    this._unsubscribe = subscribeToSource(sourceId, {
       onLoaded: (data: unknown) => {
         this._rawData = Array.isArray(data) ? data : [data];
-        this._processClientSide();
+        this._handleSourceData();
       },
       onLoading: () => {
         this._loading = true;
@@ -387,38 +413,27 @@ export class GouvQuery extends LitElement {
   }
 
   /**
-   * Traitement cote client des donnees
+   * Handle data received from upstream source.
+   * In compat mode (shadow source), checks adapter capabilities to decide
+   * whether client-side processing is needed.
    */
-  private _processClientSide() {
+  private _handleSourceData() {
     try {
       dispatchDataLoading(this.id);
       this._loading = true;
 
-      let result = [...this._rawData] as Record<string, unknown>[];
-
-      // 1. Appliquer les filtres
-      const filterExpr = this.filter || this.where;
-      if (filterExpr) {
-        result = this._applyFilters(result, filterExpr);
+      if (this._shadowSource && this._serverHandlesGroupBy()) {
+        // Compat mode with server-side group-by (ODS): data is already processed.
+        // Only apply safe post-processing (sort is idempotent, limit is safe).
+        let result = [...this._rawData] as Record<string, unknown>[];
+        if (this.orderBy) result = this._applySort(result);
+        if (this.limit > 0) result = result.slice(0, this.limit);
+        this._data = result;
+        dispatchDataLoaded(this.id, this._data);
+      } else {
+        // Normal mode or compat without server group-by: full client-side processing
+        this._processClientSide();
       }
-
-      // 2. Appliquer le groupement et les agregations
-      if (this.groupBy) {
-        result = this._applyGroupByAndAggregate(result);
-      }
-
-      // 3. Appliquer le tri
-      if (this.orderBy) {
-        result = this._applySort(result);
-      }
-
-      // 4. Appliquer la limite
-      if (this.limit > 0) {
-        result = result.slice(0, this.limit);
-      }
-
-      this._data = result;
-      dispatchDataLoaded(this.id, this._data);
     } catch (error) {
       this._error = error as Error;
       dispatchDataError(this.id, this._error);
@@ -426,6 +441,49 @@ export class GouvQuery extends LitElement {
     } finally {
       this._loading = false;
     }
+  }
+
+  /**
+   * Check if the shadow source's adapter handles group-by server-side.
+   * Used to avoid double-processing in backward compat mode.
+   */
+  private _serverHandlesGroupBy(): boolean {
+    if (!this.groupBy) return false;
+    const adapter = (this._shadowSource as any)?.getAdapter?.();
+    return adapter?.capabilities?.serverGroupBy === true;
+  }
+
+  // --- Client-side processing ---
+
+  /**
+   * Traitement cote client des donnees
+   */
+  private _processClientSide() {
+    let result = [...this._rawData] as Record<string, unknown>[];
+
+    // 1. Appliquer les filtres
+    const filterExpr = this.filter || this.where;
+    if (filterExpr) {
+      result = this._applyFilters(result, filterExpr);
+    }
+
+    // 2. Appliquer le groupement et les agregations
+    if (this.groupBy) {
+      result = this._applyGroupByAndAggregate(result);
+    }
+
+    // 3. Appliquer le tri
+    if (this.orderBy) {
+      result = this._applySort(result);
+    }
+
+    // 4. Appliquer la limite
+    if (this.limit > 0) {
+      result = result.slice(0, this.limit);
+    }
+
+    this._data = result;
+    dispatchDataLoaded(this.id, this._data);
   }
 
   /**
@@ -629,278 +687,74 @@ export class GouvQuery extends LitElement {
     });
   }
 
-  // --- API fetch (delegue aux adapters) ---
+  // --- Command forwarding ---
 
   /**
-   * Mode API: fait une requete directe a l'API via l'adapter
+   * Forward commands from downstream components to the upstream source.
+   * In server-side mode, datalist/search/facets send commands to this query;
+   * we forward them to the actual gouv-source.
    */
-  private async _fetchFromApi() {
-    const params = this._getAdapterParams();
-    const error = this._adapter.validate(params);
-    if (error) {
-      console.warn(`gouv-query: ${error}`);
-      return;
-    }
-
-    if (this._abortController) {
-      this._abortController.abort();
-    }
-    this._abortController = new AbortController();
-
-    this._loading = true;
-    this._error = null;
-    dispatchDataLoading(this.id);
-
-    try {
-      if (this.serverSide && this._adapter.capabilities.serverFetch) {
-        await this._fetchServerSideDelegated();
-      } else if (this._adapter.capabilities.serverFetch) {
-        await this._fetchAllDelegated();
-      } else {
-        await this._fetchSinglePage();
-      }
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') {
-        return;
-      }
-
-      this._error = error as Error;
-      dispatchDataError(this.id, this._error);
-      console.error(`gouv-query[${this.id}]: Erreur de requete API`, error);
-    } finally {
-      this._loading = false;
-    }
-  }
-
-  /**
-   * Fetch toutes les donnees avec pagination automatique via l'adapter.
-   */
-  private async _fetchAllDelegated(): Promise<void> {
-    const result = await this._adapter.fetchAll(
-      this._getAdapterParams(),
-      this._abortController!.signal
-    );
-
-    if (result.needsClientProcessing) {
-      // Tabular: donnees brutes, traitement client-side (group-by, aggregate, sort, limit)
-      this._rawData = result.data as Record<string, unknown>[];
-      this._processClientSide();
-    } else {
-      // ODS: donnees deja traitees par le serveur
-      this._data = this.transform
-        ? getByPath(result.data, this.transform) as unknown[]
-        : result.data;
-      dispatchDataLoaded(this.id, this._data);
-    }
-  }
-
-  /**
-   * Fetch une seule page en mode server-side via l'adapter.
-   */
-  private async _fetchServerSideDelegated(): Promise<void> {
-    const overlay: ServerSideOverlay = {
-      page: this._serverPage,
-      effectiveWhere: this.getEffectiveWhere(),
-      orderBy: this._serverOrderBy || this.orderBy,
-    };
-
-    const result = await this._adapter.fetchPage(
-      this._getAdapterParams(),
-      overlay,
-      this._abortController!.signal
-    );
-
-    let data = result.data;
-
-    // Apply transform if specified
-    if (this.transform) {
-      // ODS: transform s'applique sur le json brut ; Tabular: sur data
-      const transformRoot = result.rawJson || data;
-      const transformed = getByPath(transformRoot, this.transform);
-      data = Array.isArray(transformed) ? transformed : [transformed];
-    }
-
-    // Store pagination meta for downstream display/datalist auto-detection
-    setDataMeta(this.id, {
-      page: this._serverPage,
-      pageSize: this.pageSize,
-      total: result.totalCount
-    });
-
-    this._data = data;
-    dispatchDataLoaded(this.id, this._data);
-  }
-
-  /**
-   * Fetch single page fallback (mode non-pagine)
-   */
-  private async _fetchSinglePage(): Promise<void> {
-    const params = this._getAdapterParams();
-    const url = this._adapter.buildUrl(params);
-
-    const fetchOpts: RequestInit = { signal: this._abortController!.signal };
-    if (params.headers && Object.keys(params.headers).length > 0) {
-      fetchOpts.headers = params.headers;
-    }
-
-    const response = await fetch(url, fetchOpts);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const json = await response.json();
-
-    let data = this.transform ? getByPath(json, this.transform) : json;
-
-    if (!Array.isArray(data)) {
-      if (this._adapter.type === 'tabular' && json.data) {
-        data = json.data;
-      } else {
-        data = [data];
-      }
-    }
-
-    this._data = data;
-    dispatchDataLoaded(this.id, this._data);
-  }
-
-  /**
-   * Parse le JSON de headers en objet.
-   */
-  private _parseHeaders(): Record<string, string> | undefined {
-    if (!this.headers) return undefined;
-    try {
-      return JSON.parse(this.headers);
-    } catch (e) {
-      console.warn('gouv-query: headers invalides (JSON attendu)', e);
-      return undefined;
-    }
-  }
-
-  /**
-   * Collecte les parametres pour l'adapter.
-   */
-  private _getAdapterParams(): AdapterParams {
-    return {
-      baseUrl: this.baseUrl,
-      datasetId: this.datasetId,
-      resource: this.resource,
-      select: this.select,
-      where: this.where,
-      filter: this.filter,
-      groupBy: this.groupBy,
-      aggregate: this.aggregate,
-      orderBy: this.orderBy,
-      limit: this.limit,
-      transform: this.transform,
-      pageSize: this.pageSize,
-      headers: this._parseHeaders(),
-    };
-  }
-
-  // --- Server-side command handling ---
-
-  /**
-   * Configure l'ecoute des commandes pour le mode server-side.
-   * Les composants en aval (search, display, datalist) emettent des
-   * gouv-source-command avec page/where/orderBy que query recoit ici.
-   */
-  private _setupServerSideListener() {
-    // Clean up previous listener
+  private _setupCommandForwarding() {
     if (this._unsubscribeCommands) {
       this._unsubscribeCommands();
       this._unsubscribeCommands = null;
     }
 
-    if (!this.serverSide || !this.id) return;
+    if (!this.id || !this.serverSide) return;
+
+    const upstreamId = this._shadowSourceId || this.source;
+    if (!upstreamId) return;
 
     this._unsubscribeCommands = subscribeToSourceCommands(this.id, (cmd) => {
-      let needsFetch = false;
-
-      if (cmd.page !== undefined && cmd.page !== this._serverPage) {
-        this._serverPage = cmd.page;
-        needsFetch = true;
-      }
-
-      if (cmd.where !== undefined) {
-        const key = cmd.whereKey || '_default';
-        const oldMerged = this._getMergedWhere();
-        if (cmd.where) {
-          this._serverWheres.set(key, cmd.where);
-        } else {
-          this._serverWheres.delete(key);
-        }
-        if (this._getMergedWhere() !== oldMerged) {
-          // Reset page when search/filter changes
-          if (cmd.page === undefined) {
-            this._serverPage = 1;
-          }
-          needsFetch = true;
-        }
-      }
-
-      if (cmd.orderBy !== undefined && cmd.orderBy !== this._serverOrderBy) {
-        this._serverOrderBy = cmd.orderBy;
-        // Reset page when sort changes
-        if (cmd.page === undefined) {
-          this._serverPage = 1;
-        }
-        needsFetch = true;
-      }
-
-      if (needsFetch) {
-        this._fetchFromApi();
-      }
+      dispatchSourceCommand(upstreamId, cmd);
     });
-  }
-
-  /**
-   * Retourne le separateur de clauses WHERE selon le format de l'adapter.
-   * ODSQL: ' AND ', colon: ', '
-   */
-  private _getWhereSeparator(): string {
-    return this._adapter.capabilities.whereFormat === 'colon' ? ', ' : ' AND ';
-  }
-
-  /**
-   * Retourne le where dynamique fusionne de toutes les sources (search, facets, etc.)
-   */
-  private _getMergedWhere(): string {
-    return [...this._serverWheres.values()].filter(Boolean).join(this._getWhereSeparator());
-  }
-
-  /**
-   * Retourne le where effectif complet (statique + dynamique),
-   * en excluant optionnellement une cle specifique.
-   * Utilise par gouv-facets server-facets pour construire l'URL facets API
-   * sans inclure ses propres filtres dans les compteurs.
-   */
-  getEffectiveWhere(excludeKey?: string): string {
-    const parts: string[] = [];
-    const staticWhere = this.where || this.filter;
-    if (staticWhere) parts.push(staticWhere);
-    for (const [key, w] of this._serverWheres) {
-      if (excludeKey && key === excludeKey) continue;
-      if (w) parts.push(w);
-    }
-    return parts.join(this._getWhereSeparator());
   }
 
   // --- Public API ---
 
   /**
-   * Retourne l'adapter courant (pour les composants en aval)
+   * Retourne le where effectif complet (statique + dynamique).
+   * Delegue a la source amont si disponible.
    */
-  public getAdapter(): ApiAdapter {
-    return this._adapter;
+  getEffectiveWhere(excludeKey?: string): string {
+    const sourceId = this._shadowSourceId || this.source;
+    if (sourceId) {
+      const sourceEl = document.getElementById(sourceId);
+      if (sourceEl && 'getEffectiveWhere' in sourceEl) {
+        return (sourceEl as any).getEffectiveWhere(excludeKey);
+      }
+    }
+    // Fallback: return static where
+    return this.where || this.filter || '';
+  }
+
+  /**
+   * Retourne l'adapter courant (delegue a la source amont)
+   */
+  public getAdapter(): any {
+    const sourceId = this._shadowSourceId || this.source;
+    if (sourceId) {
+      const sourceEl = document.getElementById(sourceId);
+      if (sourceEl && 'getAdapter' in sourceEl) {
+        return (sourceEl as any).getAdapter();
+      }
+    }
+    return null;
   }
 
   /**
    * Force le rechargement des donnees
    */
   public reload() {
-    this._initialize();
+    if (this._shadowSource) {
+      (this._shadowSource as any).reload?.();
+    } else if (this.source) {
+      const cachedData = getDataCache(this.source);
+      if (cachedData !== undefined) {
+        this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];
+        this._handleSourceData();
+      }
+    }
   }
 
   /**

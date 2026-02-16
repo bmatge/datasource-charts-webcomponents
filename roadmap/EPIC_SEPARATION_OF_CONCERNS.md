@@ -533,6 +533,47 @@ Quand gouv-query n'a aucune transformation (pas de filter/group-by/aggregate/sor
 <gouv-dsfr-chart source="src" ...></gouv-dsfr-chart>
 ```
 
+#### Simplification du code generator : unifier les 3 chemins en 1
+
+Aujourd'hui le code generator a 3 fonctions distinctes pour generer la partie fetch+query
+selon le provider. Apres l'epic, le pattern est le meme pour tous : `source + query`.
+Cela permet de **supprimer** les fonctions specifiques et de factoriser.
+
+**Supprimer** (~160 lignes) :
+- `generateOdsQueryCode()` (~90 lignes) -- genere `<gouv-query api-type="opendatasoft" ...>`
+- `generateTabularQueryCode()` (~70 lignes) -- genere `<gouv-query api-type="tabular" ...>`
+
+**Creer** (~40 lignes) :
+- `generateSourceElement(provider, resourceIds, options)` -- genere le `<gouv-source>` avec
+  les attributs adaptes au provider (api-type, base-url, dataset-id, resource, where, select,
+  order-by, server-side, page-size). Utilise `ProviderConfig.codeGen` pour determiner les
+  attributs pertinents.
+
+**Reutiliser** (inchange) :
+- `generateGouvQueryCode(sourceId, labelFieldPath, valueFieldPath)` -- genere le `<gouv-query>`
+  avec les transformations client (group-by, aggregate, filter, order-by). Cette fonction
+  existe deja et fait exactement ce qu'il faut : elle prend un `sourceId` et genere un
+  `<gouv-query source="...">`.
+
+**Simplifier** :
+- `generateDynamicCodeForApi()` : supprimer le branchement if/else ODS/Tabular/generic.
+  Le flux devient lineaire : `generateSourceElement()` + `generateGouvQueryCode()` pour
+  tous les providers.
+
+**Bilan** :
+```
+Avant (3 chemins, ~230 lignes) :
+  ODS       -> generateOdsQueryCode()      ~90 lignes
+  Tabular   -> generateTabularQueryCode()  ~70 lignes
+  Grist/Gen -> generateGouvQueryCode()     ~70 lignes
+
+Apres (1 chemin + 1 helper, ~110 lignes) :
+  Tous      -> generateSourceElement()     ~40 lignes (nouveau)
+            +  generateGouvQueryCode()     ~70 lignes (existant, inchange)
+```
+
+Resultat net : **~120 lignes en moins** dans le code generator.
+
 **Tests** : Mettre a jour les tests existants des code generators + tests d'alignement
 
 ### 2.5 Migrer les skills builder-IA
@@ -600,8 +641,8 @@ npm run test:coverage # Couverture stable ou en hausse
 | `src/components/gouv-facets.ts` | — | Utiliser adapter.buildFacetWhere |
 | `src/components/gouv-search.ts` | — | Lire searchTemplate depuis adapter |
 | `packages/shared/src/providers/*.ts` | +searchTemplate, +operatorMapping, +codeGen.v2 | Cleanup v2 |
-| `apps/builder/src/ui/code-generator.ts` | — | Nouveau pattern |
-| `apps/builder-ia/src/ui/code-generator.ts` | — | Nouveau pattern |
+| `apps/builder/src/ui/code-generator.ts` | — | Supprimer generateOds/TabularQueryCode, creer generateSourceElement (~120 lignes en moins) |
+| `apps/builder-ia/src/ui/code-generator.ts` | — | Idem builder (meme refactoring) |
 | `apps/builder-ia/src/skills.ts` | — | Mise a jour skills |
 | `apps/dashboard/src/ui/code-generator.ts` | — | Nouveau pattern |
 | `mcp-server/src/index.ts` | — | Mise a jour |

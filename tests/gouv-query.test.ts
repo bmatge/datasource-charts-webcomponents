@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 /**
  * Tests for GouvQuery component logic.
  *
- * Tests the client-side filtering, grouping, and aggregation logic.
+ * Tests the client-side filtering, grouping, and aggregation logic,
+ * as well as source subscription, shadow source compat mode, and command forwarding.
  */
 
 // Mock fetch globally
@@ -12,13 +13,11 @@ globalThis.fetch = mockFetch;
 
 // We need to import after setting up fetch mock
 import { GouvQuery } from '../src/components/gouv-query.js';
-import { getAdapter } from '../src/adapters/api-adapter.js';
 import {
   clearDataCache,
   clearDataMeta,
   dispatchDataLoaded,
   dispatchSourceCommand,
-  getDataMeta,
   subscribeToSourceCommands
 } from '../src/utils/data-bridge.js';
 
@@ -28,14 +27,20 @@ describe('GouvQuery', () => {
   beforeEach(() => {
     clearDataCache('test-query');
     clearDataCache('test-source');
+    clearDataCache('__gq_test-query_src');
     mockFetch.mockReset();
     query = new GouvQuery();
   });
 
   afterEach(() => {
+    // Always clean up listeners (even if query is not connected to DOM)
+    (query as any)._cleanup?.();
     if (query.isConnected) {
       query.disconnectedCallback();
     }
+    // Clean up any shadow sources
+    const shadows = document.querySelectorAll('[id^="__gq_"]');
+    shadows.forEach(el => el.remove());
   });
 
   describe('Filter parsing', () => {
@@ -305,82 +310,297 @@ describe('GouvQuery', () => {
     });
   });
 
-  describe('Adapter delegation', () => {
-    it('uses opendatasoft adapter when apiType is opendatasoft', () => {
-      query.apiType = 'opendatasoft';
-      (query as any)._adapter = getAdapter('opendatasoft');
-      expect(query.getAdapter().type).toBe('opendatasoft');
-    });
-
-    it('uses tabular adapter when apiType is tabular', () => {
-      query.apiType = 'tabular';
-      (query as any)._adapter = getAdapter('tabular');
-      expect(query.getAdapter().type).toBe('tabular');
-    });
-
-    it('uses generic adapter by default', () => {
-      expect(query.getAdapter().type).toBe('generic');
-    });
-
-    it('exposes adapter capabilities', () => {
-      (query as any)._adapter = getAdapter('opendatasoft');
-      const caps = query.getAdapter().capabilities;
-      expect(caps.serverFacets).toBe(true);
-      expect(caps.serverSearch).toBe(true);
-      expect(caps.whereFormat).toBe('odsql');
-    });
-
-    it('delegates ODS fetchAll to adapter', async () => {
-      query.id = 'ods-delegation-test';
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'test-dataset';
-      query.baseUrl = 'https://data.example.com';
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: [{ dep: '01', value: 10 }, { dep: '02', value: 20 }],
-          total_count: 2,
-        }),
-      });
-
-      (query as any)._adapter = getAdapter('opendatasoft');
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchAllDelegated();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(2);
-    });
-
-    it('delegates Tabular fetchAll with client processing', async () => {
-      query.id = 'tab-delegation-test';
-      query.apiType = 'tabular';
-      query.resource = 'resource-456';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+  describe('Source subscription', () => {
+    it('subscribes to source and processes data on event', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
       query.groupBy = 'region';
-      query.aggregate = 'value:sum:Total';
+      query.aggregate = 'value:sum';
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: [
-            { region: 'A', value: 10 },
-            { region: 'B', value: 20 },
-            { region: 'A', value: 30 },
-          ],
-          links: {},
-          meta: { page: 1, page_size: 100, total: 3 },
-        }),
-      });
+      (query as any)._subscribeToSourceData('test-source');
 
-      (query as any)._adapter = getAdapter('tabular');
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchAllDelegated();
+      // Simulate source emitting data
+      dispatchDataLoaded('test-source', [
+        { region: 'A', value: 10 },
+        { region: 'B', value: 20 },
+        { region: 'A', value: 30 },
+      ]);
 
       const data = query.getData() as Record<string, unknown>[];
       expect(data).toHaveLength(2);
       const regionA = data.find(d => d.region === 'A');
-      expect(regionA?.Total).toBe(40);
+      expect(regionA?.value__sum).toBe(40);
+    });
+
+    it('reads cached data on subscription', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.orderBy = 'value:desc';
+
+      // Pre-populate cache
+      dispatchDataLoaded('test-source', [
+        { name: 'A', value: 10 },
+        { name: 'B', value: 30 },
+      ]);
+
+      (query as any)._subscribeToSourceData('test-source');
+
+      const data = query.getData() as Record<string, unknown>[];
+      expect(data).toHaveLength(2);
+      expect(data[0].name).toBe('B'); // Sorted desc
+    });
+  });
+
+  describe('Shadow source (backward compat mode)', () => {
+    it('creates shadow source when api-type is set without source', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+
+      (query as any)._initialize();
+
+      expect((query as any)._shadowSource).not.toBeNull();
+      expect((query as any)._shadowSourceId).toBe('__gq_test-query_src');
+
+      // Should warn about deprecation
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('sans source est deprecie')
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('shadow source gets all relevant attributes', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'tabular';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.resource = 'resource-123';
+      query.where = 'field:eq:value';
+      query.groupBy = 'region';
+      query.aggregate = 'pop:sum';
+      query.orderBy = 'pop__sum:desc';
+      query.limit = 10;
+      query.serverSide = true;
+      query.pageSize = 50;
+      query.headers = '{"apikey":"test"}';
+
+      (query as any)._initialize();
+
+      const el = (query as any)._shadowSource as HTMLElement;
+      expect(el.getAttribute('api-type')).toBe('tabular');
+      expect(el.getAttribute('base-url')).toBe('https://tabular-api.data.gouv.fr');
+      expect(el.getAttribute('resource')).toBe('resource-123');
+      expect(el.getAttribute('where')).toBe('field:eq:value');
+      expect(el.getAttribute('group-by')).toBe('region');
+      expect(el.getAttribute('aggregate')).toBe('pop:sum');
+      expect(el.getAttribute('order-by')).toBe('pop__sum:desc');
+      expect(el.getAttribute('limit')).toBe('10');
+      expect(el.hasAttribute('server-side')).toBe(true);
+      expect(el.getAttribute('page-size')).toBe('50');
+      expect(el.getAttribute('headers')).toBe('{"apikey":"test"}');
+
+      warnSpy.mockRestore();
+    });
+
+    it('destroys shadow source when switching to source mode', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+
+      (query as any)._initialize();
+      expect((query as any)._shadowSource).not.toBeNull();
+
+      // Switch to source mode
+      query.source = 'external-source';
+      (query as any)._initialize();
+      expect((query as any)._shadowSource).toBeNull();
+
+      warnSpy.mockRestore();
+    });
+
+    it('does not create shadow source in generic mode', () => {
+      query.id = 'test-query';
+      query.apiType = 'generic';
+      query.source = 'test-source';
+
+      (query as any)._initialize();
+      expect((query as any)._shadowSource).toBeNull();
+    });
+
+    it('processes data from shadow source via data-bridge events', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'tabular';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.resource = 'resource-123';
+      query.groupBy = 'region';
+      query.aggregate = 'value:sum';
+
+      (query as any)._initialize();
+
+      // Simulate shadow source emitting data
+      dispatchDataLoaded('__gq_test-query_src', [
+        { region: 'A', value: 10 },
+        { region: 'B', value: 20 },
+        { region: 'A', value: 30 },
+      ]);
+
+      const data = query.getData() as Record<string, unknown>[];
+      expect(data).toHaveLength(2);
+      const regionA = data.find(d => d.region === 'A');
+      expect(regionA?.value__sum).toBe(40);
+
+      warnSpy.mockRestore();
+    });
+
+    it('cleanup removes shadow source', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+
+      (query as any)._initialize();
+      expect((query as any)._shadowSource).not.toBeNull();
+
+      (query as any)._cleanup();
+      expect((query as any)._shadowSource).toBeNull();
+      expect((query as any)._shadowSourceId).toBe('');
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('Command forwarding', () => {
+    it('forwards commands to upstream source in server-side mode', () => {
+      query.id = 'test-query';
+      query.source = 'upstream-source';
+      query.serverSide = true;
+
+      const received: any[] = [];
+      const unsub = subscribeToSourceCommands('upstream-source', (cmd) => {
+        received.push(cmd);
+      });
+
+      (query as any)._setupCommandForwarding();
+
+      dispatchSourceCommand('test-query', { page: 3 });
+      expect(received).toHaveLength(1);
+      expect(received[0].page).toBe(3);
+
+      dispatchSourceCommand('test-query', { where: 'search("test")', whereKey: 'search-1' });
+      expect(received).toHaveLength(2);
+      expect(received[1].where).toBe('search("test")');
+      expect(received[1].whereKey).toBe('search-1');
+
+      unsub();
+    });
+
+    it('does not forward when server-side is false', () => {
+      query.id = 'test-query';
+      query.source = 'upstream-source';
+      query.serverSide = false;
+
+      (query as any)._setupCommandForwarding();
+      expect((query as any)._unsubscribeCommands).toBeNull();
+    });
+
+    it('forwards to shadow source in compat mode', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+      query.serverSide = true;
+
+      (query as any)._initialize();
+
+      const received: any[] = [];
+      const unsub = subscribeToSourceCommands('__gq_test-query_src', (cmd) => {
+        received.push(cmd);
+      });
+
+      dispatchSourceCommand('test-query', { page: 2 });
+      expect(received).toHaveLength(1);
+      expect(received[0].page).toBe(2);
+
+      unsub();
+      warnSpy.mockRestore();
+    });
+
+    it('cleans up command listener on cleanup', () => {
+      query.id = 'test-query';
+      query.source = 'upstream-source';
+      query.serverSide = true;
+
+      (query as any)._setupCommandForwarding();
+      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
+
+      (query as any)._cleanup();
+      expect((query as any)._unsubscribeCommands).toBeNull();
+    });
+  });
+
+  describe('getEffectiveWhere delegation', () => {
+    it('delegates to source element when available', () => {
+      // Create mock source element
+      const mockSource = document.createElement('div');
+      mockSource.id = 'mock-source';
+      (mockSource as any).getEffectiveWhere = (excludeKey?: string) => {
+        if (excludeKey === 'facets') return 'search("test")';
+        return 'search("test") AND region = "IDF"';
+      };
+      document.body.appendChild(mockSource);
+
+      query.source = 'mock-source';
+
+      expect(query.getEffectiveWhere()).toBe('search("test") AND region = "IDF"');
+      expect(query.getEffectiveWhere('facets')).toBe('search("test")');
+
+      mockSource.remove();
+    });
+
+    it('returns static where as fallback', () => {
+      query.where = 'status:eq:active';
+      expect(query.getEffectiveWhere()).toBe('status:eq:active');
+    });
+
+    it('uses filter attribute as fallback', () => {
+      query.filter = 'DEP:eq:75';
+      expect(query.getEffectiveWhere()).toBe('DEP:eq:75');
+    });
+
+    it('returns empty string when nothing set', () => {
+      expect(query.getEffectiveWhere()).toBe('');
+    });
+  });
+
+  describe('getAdapter delegation', () => {
+    it('delegates to source element when available', () => {
+      const mockSource = document.createElement('div');
+      mockSource.id = 'mock-source';
+      (mockSource as any).getAdapter = () => ({
+        type: 'opendatasoft',
+        capabilities: { serverGroupBy: true, whereFormat: 'odsql' }
+      });
+      document.body.appendChild(mockSource);
+
+      query.source = 'mock-source';
+
+      const adapter = query.getAdapter();
+      expect(adapter.type).toBe('opendatasoft');
+      expect(adapter.capabilities.serverGroupBy).toBe(true);
+
+      mockSource.remove();
+    });
+
+    it('returns null when no source element', () => {
+      expect(query.getAdapter()).toBeNull();
     });
   });
 
@@ -399,354 +619,6 @@ describe('GouvQuery', () => {
       const error = new Error('Test error');
       (query as any)._error = error;
       expect(query.getError()).toBe(error);
-    });
-  });
-
-  describe('Server-side mode: where merging for URL', () => {
-    beforeEach(() => {
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'rappelconso';
-      query.baseUrl = 'https://data.example.com';
-      query.serverSide = true;
-      query.pageSize = 20;
-    });
-
-    it('merges static where with dynamic server where via AND', () => {
-      query.where = 'status="active"';
-      (query as any)._serverWheres.set('_default', 'search("test")');
-      expect(query.getEffectiveWhere()).toBe('status="active" AND search("test")');
-    });
-
-    it('uses only static where when server where is empty', () => {
-      query.where = 'status="active"';
-      expect(query.getEffectiveWhere()).toBe('status="active"');
-    });
-
-    it('uses only dynamic where when static where is empty', () => {
-      query.where = '';
-      (query as any)._serverWheres.set('_default', 'search("hello")');
-      expect(query.getEffectiveWhere()).toBe('search("hello")');
-    });
-
-    it('falls back to static orderBy when server orderBy is empty', () => {
-      query.orderBy = 'date:desc';
-      (query as any)._serverOrderBy = '';
-      // effectiveOrderBy should be the static one
-      expect((query as any)._serverOrderBy || query.orderBy).toBe('date:desc');
-    });
-  });
-
-  describe('Server-side mode: fetch via adapter', () => {
-    beforeEach(() => {
-      query.id = 'test-query';
-      query.serverSide = true;
-      query.pageSize = 20;
-      clearDataMeta('test-query');
-    });
-
-    afterEach(() => {
-      clearDataMeta('test-query');
-    });
-
-    it('fetches one ODS page and stores pagination meta', async () => {
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'rappelconso';
-      query.baseUrl = 'https://data.example.com';
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          results: Array.from({ length: 20 }, (_, i) => ({ id: i, nom: `item-${i}` })),
-          total_count: 500,
-        }),
-      });
-
-      (query as any)._adapter = getAdapter('opendatasoft');
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchServerSideDelegated();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(20);
-
-      const meta = getDataMeta('test-query');
-      expect(meta).toBeDefined();
-      expect(meta!.page).toBe(1);
-      expect(meta!.pageSize).toBe(20);
-      expect(meta!.total).toBe(500);
-    });
-
-    it('fetches one Tabular page and stores pagination meta', async () => {
-      query.apiType = 'tabular';
-      query.resource = 'resource-456';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          data: Array.from({ length: 20 }, (_, i) => ({ id: i })),
-          meta: { page: 1, page_size: 20, total: 300 },
-        }),
-      });
-
-      (query as any)._adapter = getAdapter('tabular');
-      (query as any)._abortController = new AbortController();
-      await (query as any)._fetchServerSideDelegated();
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(query.getData()).toHaveLength(20);
-
-      const meta = getDataMeta('test-query');
-      expect(meta).toBeDefined();
-      expect(meta!.total).toBe(300);
-    });
-  });
-
-  describe('Server-side mode: command handling', () => {
-    beforeEach(() => {
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'rappelconso';
-      query.baseUrl = 'https://data.example.com';
-      query.serverSide = true;
-      query.pageSize = 20;
-      clearDataMeta('test-query');
-    });
-
-    afterEach(() => {
-      clearDataMeta('test-query');
-    });
-
-    it('listens for source commands when server-side is enabled', () => {
-      (query as any)._setupServerSideListener();
-      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
-    });
-
-    it('does not listen when server-side is disabled', () => {
-      query.serverSide = false;
-      (query as any)._setupServerSideListener();
-      expect((query as any)._unsubscribeCommands).toBeNull();
-    });
-
-    it('updates _serverPage on page command', () => {
-      (query as any)._setupServerSideListener();
-
-      // Mock _fetchFromApi to avoid actual fetch
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { page: 3 });
-
-      expect((query as any)._serverPage).toBe(3);
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('updates _serverWheres on where command and resets page', () => {
-      (query as any)._setupServerSideListener();
-      (query as any)._serverPage = 5;
-
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'search("test")' });
-
-      expect((query as any)._serverWheres.get('_default')).toBe('search("test")');
-      expect((query as any)._serverPage).toBe(1); // Reset on search change
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('updates _serverOrderBy on orderBy command and resets page', () => {
-      (query as any)._setupServerSideListener();
-      (query as any)._serverPage = 3;
-
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { orderBy: 'nom:asc' });
-
-      expect((query as any)._serverOrderBy).toBe('nom:asc');
-      expect((query as any)._serverPage).toBe(1); // Reset on sort change
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('does not re-fetch when command has same values', () => {
-      (query as any)._setupServerSideListener();
-      (query as any)._serverPage = 3;
-      (query as any)._serverWheres.set('_default', 'search("test")');
-
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { page: 3 });
-      expect(fetchSpy).not.toHaveBeenCalled();
-
-      dispatchSourceCommand('test-query', { where: 'search("test")' });
-      expect(fetchSpy).not.toHaveBeenCalled();
-
-      fetchSpy.mockRestore();
-    });
-
-    it('ignores commands for other sources', () => {
-      (query as any)._setupServerSideListener();
-
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('other-query', { page: 5 });
-
-      expect((query as any)._serverPage).toBe(1);
-      expect(fetchSpy).not.toHaveBeenCalled();
-      fetchSpy.mockRestore();
-    });
-
-    it('handles combined page + where command', () => {
-      (query as any)._setupServerSideListener();
-
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { page: 2, where: 'search("hello")' });
-
-      expect((query as any)._serverPage).toBe(2);
-      expect((query as any)._serverWheres.get('_default')).toBe('search("hello")');
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('cleans up listener on cleanup', () => {
-      (query as any)._setupServerSideListener();
-      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
-
-      (query as any)._cleanup();
-      expect((query as any)._unsubscribeCommands).toBeNull();
-    });
-  });
-
-  describe('Server-side mode: whereKey support', () => {
-    beforeEach(() => {
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.datasetId = 'rappelconso';
-      query.baseUrl = 'https://data.example.com';
-      query.serverSide = true;
-      query.pageSize = 20;
-    });
-
-    it('stores where clauses by whereKey', () => {
-      (query as any)._setupServerSideListener();
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
-
-      expect((query as any)._serverWheres.get('search-1')).toBe('search("jouet")');
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('merges multiple where clauses from different whereKeys', () => {
-      (query as any)._setupServerSideListener();
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
-      dispatchSourceCommand('test-query', { where: 'region = "IDF"', whereKey: 'facets-1' });
-
-      expect((query as any)._getMergedWhere()).toBe('search("jouet") AND region = "IDF"');
-      expect(fetchSpy).toHaveBeenCalledTimes(2);
-      fetchSpy.mockRestore();
-    });
-
-    it('resets page when merged where changes', () => {
-      (query as any)._setupServerSideListener();
-      (query as any)._serverPage = 5;
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'region = "IDF"', whereKey: 'facets-1' });
-
-      expect((query as any)._serverPage).toBe(1);
-      fetchSpy.mockRestore();
-    });
-
-    it('does not re-fetch when same whereKey sends same value', () => {
-      (query as any)._setupServerSideListener();
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-
-      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
-      expect(fetchSpy).toHaveBeenCalledTimes(1); // No new fetch
-
-      fetchSpy.mockRestore();
-    });
-
-    it('removes whereKey when where is empty string', () => {
-      (query as any)._setupServerSideListener();
-      const fetchSpy = vi.spyOn(query as any, '_fetchFromApi').mockImplementation(() => {});
-
-      dispatchSourceCommand('test-query', { where: 'search("jouet")', whereKey: 'search-1' });
-      dispatchSourceCommand('test-query', { where: '', whereKey: 'search-1' });
-
-      expect((query as any)._serverWheres.has('search-1')).toBe(false);
-      expect((query as any)._getMergedWhere()).toBe('');
-      fetchSpy.mockRestore();
-    });
-
-    it('getEffectiveWhere returns static + dynamic wheres', () => {
-      query.where = 'status = "active"';
-      (query as any)._serverWheres.set('search-1', 'search("jouet")');
-      (query as any)._serverWheres.set('facets-1', 'region = "IDF"');
-
-      expect(query.getEffectiveWhere()).toBe('status = "active" AND search("jouet") AND region = "IDF"');
-    });
-
-    it('getEffectiveWhere excludes given key', () => {
-      query.where = 'status = "active"';
-      (query as any)._serverWheres.set('search-1', 'search("jouet")');
-      (query as any)._serverWheres.set('facets-1', 'region = "IDF"');
-
-      expect(query.getEffectiveWhere('facets-1')).toBe('status = "active" AND search("jouet")');
-    });
-
-    it('getEffectiveWhere returns empty string when nothing set', () => {
-      expect(query.getEffectiveWhere()).toBe('');
-    });
-
-    it('getEffectiveWhere uses filter attribute as fallback for static where', () => {
-      query.filter = 'DEP:eq:75';
-      (query as any)._serverWheres.set('s', 'search("x")');
-
-      expect(query.getEffectiveWhere()).toBe('DEP:eq:75 AND search("x")');
-    });
-  });
-
-  describe('Headers parsing', () => {
-    it('parses valid JSON headers', () => {
-      query.headers = '{"Authorization": "Bearer token123"}';
-      const parsed = (query as any)._parseHeaders();
-      expect(parsed).toEqual({ Authorization: 'Bearer token123' });
-    });
-
-    it('returns undefined for empty headers', () => {
-      query.headers = '';
-      expect((query as any)._parseHeaders()).toBeUndefined();
-    });
-
-    it('returns undefined for invalid JSON and warns', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.headers = 'not-json';
-      expect((query as any)._parseHeaders()).toBeUndefined();
-      expect(warnSpy).toHaveBeenCalledWith(
-        'gouv-query: headers invalides (JSON attendu)',
-        expect.any(Error)
-      );
-      warnSpy.mockRestore();
-    });
-
-    it('includes parsed headers in _getAdapterParams', () => {
-      query.headers = '{"apikey": "abc123"}';
-      const params = (query as any)._getAdapterParams();
-      expect(params.headers).toEqual({ apikey: 'abc123' });
-    });
-
-    it('_getAdapterParams headers is undefined when no headers set', () => {
-      const params = (query as any)._getAdapterParams();
-      expect(params.headers).toBeUndefined();
     });
   });
 });
