@@ -2,15 +2,10 @@
  * Application state for Builder IA
  */
 
-/** A data source object (from localStorage) */
-export interface Source {
-  id: string;
-  name: string;
-  type: 'api' | 'grist' | 'manual';
-  apiUrl?: string;
-  data?: Record<string, unknown>[];
-  recordCount?: number;
-}
+import type { Source } from '@gouv-widgets/shared';
+
+// Source is imported from @gouv-widgets/shared (unified interface)
+export type { Source } from '@gouv-widgets/shared';
 
 /** Analyzed field metadata */
 export interface Field {

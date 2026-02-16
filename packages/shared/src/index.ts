@@ -31,6 +31,18 @@ export {
 } from './auth/auth-service.js';
 export { initAuth } from './auth/init-auth.js';
 
+// Providers
+export type { ProviderConfig, ProviderId } from './providers/index.js';
+export {
+  ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG,
+  registerProvider, getProvider, getAllProviders,
+  detectProvider, extractResourceIds,
+} from './providers/index.js';
+
+// Types
+export type { Source } from './types/source.js';
+export { migrateSource } from './types/source.js';
+
 // UI
 export { openModal, closeModal, setupModalOverlayClose, confirmDialog } from './ui/modal.js';
 export { showToast, toastSuccess, toastError, toastWarning, toastInfo } from './ui/toast.js';

@@ -3,7 +3,8 @@
  * Contains interfaces, types, and the mutable singleton state object.
  */
 
-import { loadFromStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, migrateSource } from '@gouv-widgets/shared';
+import type { Source } from '@gouv-widgets/shared';
 
 // ============================================================
 // Types
@@ -55,23 +56,8 @@ export interface GristRecord {
   fields: Record<string, unknown>;
 }
 
-export interface Source {
-  id: string;
-  name: string;
-  type: 'grist' | 'api' | 'manual';
-  data?: Record<string, unknown>[];
-  rawRecords?: GristRecord[];
-  recordCount: number;
-  connectionId?: string;
-  documentId?: string;
-  tableId?: string;
-  apiUrl?: string;
-  apiKey?: string | null;
-  isPublic?: boolean;
-  method?: string;
-  headers?: string | null;
-  dataPath?: string | null;
-}
+// Source is imported from @gouv-widgets/shared (unified interface)
+export type { Source } from '@gouv-widgets/shared';
 
 export interface SourcesState {
   connections: StoredConnection[];
@@ -102,7 +88,7 @@ export const EXTERNAL_PROXY = 'https://chartsbuilder.matge.com';
 export function createInitialState(): SourcesState {
   return {
     connections: loadFromStorage<StoredConnection[]>(STORAGE_KEYS.CONNECTIONS, []),
-    sources: loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []),
+    sources: loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []).map(migrateSource),
     selectedConnection: null,
     selectedDocument: null,
     selectedTable: null,

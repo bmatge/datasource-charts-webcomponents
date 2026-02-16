@@ -3,6 +3,8 @@
  * Defines interfaces, types, and the singleton state object.
  */
 
+import type { Source } from '@gouv-widgets/shared';
+
 // Chart.js loaded via CDN - use global reference
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Chart = (window as any).Chart as unknown;
@@ -88,20 +90,8 @@ export interface Field {
   sample: unknown;
 }
 
-/** A saved data source */
-export interface Source {
-  id: string;
-  name: string;
-  type: 'grist' | 'manual' | 'api';
-  apiUrl?: string;
-  documentId?: string;
-  tableId?: string;
-  isPublic?: boolean;
-  data?: Record<string, unknown>[];
-  rawRecords?: Array<{ fields: Record<string, unknown> }>;
-  recordCount?: number;
-  dataPath?: string;
-}
+// Source is imported from @gouv-widgets/shared (unified interface)
+export type { Source } from '@gouv-widgets/shared';
 
 /** A single data record (aggregated result) */
 export interface DataRecord {

@@ -2,7 +2,7 @@
  * Data source loading, selection and field analysis
  */
 
-import { loadFromStorage, STORAGE_KEYS, escapeHtml, openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@gouv-widgets/shared';
 import { state } from './state.js';
 import type { Source, Field } from './state.js';
 import { addMessage } from './chat/chat.js';
@@ -14,8 +14,8 @@ export function loadSavedSources(): void {
   const select = document.getElementById('saved-source') as HTMLSelectElement;
   select.innerHTML = '<option value="">-- Choisir --</option>';
 
-  const sources = loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []);
-  const selectedSource = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+  const sources = loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []).map(migrateSource);
+  const selectedSource = (() => { const s = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null); return s ? migrateSource(s) : null; })();
 
   sources.forEach(source => {
     const option = document.createElement('option');

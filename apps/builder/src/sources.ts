@@ -4,7 +4,7 @@
  * and favorite state restoration.
  */
 
-import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage, escapeHtml, openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@gouv-widgets/shared';
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
@@ -19,8 +19,8 @@ export function loadSavedSources(): void {
   const panel = document.getElementById('source-panel-saved');
   if (!panel) return;
 
-  const sources = loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []);
-  const selectedSource = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+  const sources = loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []).map(migrateSource);
+  const selectedSource = (() => { const s = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null); return s ? migrateSource(s) : null; })();
 
   // Check if there are any sources
   const hasAnySources = sources.length > 0 ||
@@ -88,7 +88,8 @@ export function loadSavedSources(): void {
  * Auto-select source if one was pre-selected from sources.html
  */
 export function checkSelectedSource(): void {
-  const selectedSource = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+  const rawSelected = loadFromStorage<Source | null>(STORAGE_KEYS.SELECTED_SOURCE, null);
+  const selectedSource = rawSelected ? migrateSource(rawSelected) : null;
 
   if (selectedSource && selectedSource.data && selectedSource.data.length > 0) {
     // Select the source
