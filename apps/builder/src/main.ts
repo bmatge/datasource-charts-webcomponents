@@ -31,6 +31,9 @@ import { setupFacetsListeners } from './ui/facets-config.js';
 // Expose functions called from inline onclick in HTML
 (window as any).toggleSection = toggleSection;
 
+// Expose state for E2E tests
+(window as any).__BUILDER_STATE__ = state;
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
 
