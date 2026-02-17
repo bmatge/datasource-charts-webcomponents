@@ -7975,7 +7975,10 @@ let $s = (zt = class extends k {
                   <a href="${this._base}index.html" title="Accueil - Charts builder">
                     <p class="fr-header__service-title">Charts builder</p>
                   </a>
-                  <p class="fr-header__service-tagline">Création de visualisations dynamiques conformes DSFR</p>
+                  <p class="fr-header__service-tagline" style="display:flex;align-items:center;gap:0.5rem;">
+                    <span class="fr-badge fr-badge--sm fr-badge--warning fr-badge--no-icon">En developpement</span>
+                    Création de visualisations dynamiques conformes DSFR
+                  </p>
                 </div>
               </div>
               <div class="fr-header__tools">
