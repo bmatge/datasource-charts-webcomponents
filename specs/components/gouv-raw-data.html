@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-raw-data - Composants - gouv-widgets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css" integrity="sha384-YR4AxNhFVy1qsQ0Hp7Rosg06e4sj2m9dLxiYZrtqJ0boIOiDbD8XkIsIPMMkf0VL" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" integrity="sha384-6FSSi597BTd6QcnsBNoLclRKxTOyyYqkaucRjFgCNr8wHVCp0COLClSPY4Vy/bjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <!-- Sources de donnees -->
+  <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+
+  <!-- Header -->
+  <app-header current-page="composants" base-path="../../"></app-header>
+
+  <!-- Layout documentation avec sidemenu -->
+  <app-layout-demo
+    title="gouv-raw-data"
+    icon="ri-download-2-line"
+    active-path="components/gouv-raw-data"
+    base-path="../">
+    <div slot="content">
+        <p class="fr-text--lead">
+          Composant d'accessibilite qui propose un bouton de telechargement CSV des donnees
+          brutes associees a une visualisation. Via l'attribut <code>for</code>, il lie
+          automatiquement le bouton au composant cible via <code>aria-describedby</code>,
+          permettant aux utilisateurs de lecteur d'ecran de savoir qu'un telechargement
+          des donnees est disponible.
+        </p>
+
+        <div class="fr-callout fr-callout--green-emeraude fr-mb-4w">
+          <h3 class="fr-callout__title">
+            <span class="ri-accessibility-line fr-mr-1w" aria-hidden="true"></span>
+            Accessibilite
+          </h3>
+          <p class="fr-callout__text">
+            Les graphiques (canvas, SVG) sont difficilement accessibles aux lecteurs d'ecran.
+            <code>gouv-raw-data</code> offre une alternative en permettant de telecharger
+            les donnees brutes au format CSV. L'attribut <code>for</code> pose automatiquement
+            <code>aria-describedby</code> sur le graphique cible, creant un lien semantique.
+          </p>
+        </div>
+
+        <h2>Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>String</td><td>ID du <code>&lt;gouv-source&gt;</code> ou <code>&lt;gouv-query&gt;</code> (requis)</td></tr>
+            <tr><td><code>for</code></td><td>String</td><td>ID de l'element cible (graphique, tableau...) pour la liaison ARIA automatique</td></tr>
+            <tr><td><code>filename</code></td><td>String</td><td>Nom du fichier CSV telecharge (defaut : <code>donnees.csv</code>)</td></tr>
+            <tr><td><code>label</code></td><td>String</td><td>Libelle d'accessibilite (title + aria) du bouton (defaut : <code>Telecharger les donnees (CSV)</code>)</td></tr>
+            <tr><td><code>button-label</code></td><td>String</td><td>Texte visible dans le bouton. Si vide (defaut), bouton icone seul</td></tr>
+            <tr><td><code>no-auto-aria</code></td><td>Boolean</td><td>Desactive l'injection automatique d'<code>aria-describedby</code> sur la cible</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">Fonctionnement ARIA</h2>
+        <ol>
+          <li>Le composant genere automatiquement un <code>id</code> s'il n'en a pas</li>
+          <li>Si <code>for="mon-graph"</code> est defini, il pose <code>aria-describedby="gouv-raw-data-N"</code> sur l'element <code>#mon-graph</code></li>
+          <li>Un lecteur d'ecran annoncera la description du bouton en lisant le graphique</li>
+          <li>A la deconnexion du composant, l'attribut ARIA est nettoye</li>
+        </ol>
+
+        <h2 class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>1. Usage basique avec un graphique</h3>
+          <gouv-query id="data-chart" source="sites"
+            group-by="statut" aggregate="statut:count:total">
+          </gouv-query>
+          <gouv-dsfr-chart id="demo-chart" source="data-chart" type="bar"
+            label-field="statut" value-field="total" titre="Sites par statut">
+          </gouv-dsfr-chart>
+          <gouv-raw-data for="demo-chart" source="data-chart"></gouv-raw-data>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart id="mon-graph" source="data" type="bar"
+  label-field="statut" value-field="total"&gt;
+&lt;/gouv-dsfr-chart&gt;
+&lt;gouv-raw-data for="mon-graph" source="data"&gt;&lt;/gouv-raw-data&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>2. Avec texte visible dans le bouton</h3>
+          <gouv-raw-data for="demo-chart" source="data-chart"
+            filename="sites-statut.csv"
+            button-label="Exporter en CSV">
+          </gouv-raw-data>
+          <div class="code-block"><pre>&lt;gouv-raw-data for="mon-graph" source="data"
+  filename="sites-statut.csv"
+  button-label="Exporter en CSV"&gt;
+&lt;/gouv-raw-data&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>3. Mode manuel (no-auto-aria)</h3>
+          <p>Si vous gerez manuellement les attributs ARIA :</p>
+          <div class="code-block"><pre>&lt;gouv-dsfr-chart id="mon-graph"
+  aria-describedby="dl-custom"
+  source="data" type="pie"&gt;
+&lt;/gouv-dsfr-chart&gt;
+&lt;gouv-raw-data id="dl-custom" source="data"
+  no-auto-aria&gt;
+&lt;/gouv-raw-data&gt;</pre></div>
+        </section>
+    </div>
+  </app-layout-demo>
+
+  <app-footer base-path="../../"></app-footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

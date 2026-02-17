@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { nothing } from 'lit';
 import { GouvFacets, _parseCSV } from '../src/components/gouv-facets.js';
 import { clearDataCache, dispatchDataLoaded, getDataCache, setDataMeta, getDataMeta, clearDataMeta } from '../src/utils/data-bridge.js';
 
@@ -988,6 +989,555 @@ describe('GouvFacets', () => {
         facets.cols = 'region:4';
         expect(facets._getColClass('type')).toBe('fr-col-6');
       });
+    });
+  });
+
+  // --- Render and interaction methods ---
+
+  describe('createRenderRoot', () => {
+    it('returns this (no shadow DOM)', () => {
+      expect(facets.createRenderRoot()).toBe(facets);
+    });
+  });
+
+  describe('_resolveValue', () => {
+    it('resolves simple field path', () => {
+      const row = { region: 'IDF', nom: 'Paris' };
+      expect((facets as any)._resolveValue(row, 'region')).toBe('IDF');
+    });
+
+    it('resolves dotted field path', () => {
+      const row = { fields: { Region: 'IDF', Nom: 'Paris' } };
+      expect((facets as any)._resolveValue(row, 'fields.Region')).toBe('IDF');
+    });
+
+    it('returns undefined for missing dotted path', () => {
+      const row = { fields: { Region: 'IDF' } };
+      expect((facets as any)._resolveValue(row, 'fields.Missing')).toBeUndefined();
+    });
+
+    it('returns undefined when intermediate is null', () => {
+      const row = { fields: null };
+      expect((facets as any)._resolveValue(row, 'fields.Region')).toBeUndefined();
+    });
+
+    it('returns undefined when intermediate is primitive', () => {
+      const row = { fields: 'string' };
+      expect((facets as any)._resolveValue(row, 'fields.Region')).toBeUndefined();
+    });
+  });
+
+  describe('_toggleExpand', () => {
+    it('expands a facet field', () => {
+      (facets as any)._toggleExpand('region');
+      expect(facets._expandedFacets.has('region')).toBe(true);
+    });
+
+    it('collapses an already expanded field', () => {
+      (facets as any)._toggleExpand('region');
+      expect(facets._expandedFacets.has('region')).toBe(true);
+      (facets as any)._toggleExpand('region');
+      expect(facets._expandedFacets.has('region')).toBe(false);
+    });
+  });
+
+  describe('_handleSearch', () => {
+    it('stores search query for a field', () => {
+      const mockEvent = { target: { value: 'Par' } } as unknown as Event;
+      (facets as any)._handleSearch('region', mockEvent);
+      expect(facets._searchQueries['region']).toBe('Par');
+    });
+
+    it('overwrites previous search query', () => {
+      (facets as any)._handleSearch('region', { target: { value: 'Par' } } as unknown as Event);
+      (facets as any)._handleSearch('region', { target: { value: 'Lyon' } } as unknown as Event);
+      expect(facets._searchQueries['region']).toBe('Lyon');
+    });
+  });
+
+  describe('_clearAll', () => {
+    it('clears all selections and search queries', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type, region';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      facets._activeSelections = { type: new Set(['Commune']), region: new Set(['PACA']) };
+      facets._searchQueries = { type: 'Com' };
+
+      (facets as any)._clearAll();
+
+      expect(Object.keys(facets._activeSelections)).toHaveLength(0);
+      expect(Object.keys(facets._searchQueries)).toHaveLength(0);
+    });
+  });
+
+  describe('_selectAllValues', () => {
+    it('selects all values in a facet group', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      (facets as any)._selectAllValues('type');
+
+      expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+      expect(facets._activeSelections['type']?.has('Prefecture')).toBe(true);
+    });
+
+    it('does nothing for unknown field', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      (facets as any)._selectAllValues('unknown');
+      expect(facets._activeSelections['unknown']).toBeUndefined();
+    });
+  });
+
+  describe('_handleSelectChange', () => {
+    it('sets selection from select element value', () => {
+      const mockEvent = { target: { value: 'Commune' } } as unknown as Event;
+      (facets as any)._handleSelectChange('type', mockEvent);
+      expect(facets._activeSelections['type']?.has('Commune')).toBe(true);
+    });
+
+    it('clears selection when value is empty', () => {
+      facets._activeSelections = { type: new Set(['Commune']) };
+      const mockEvent = { target: { value: '' } } as unknown as Event;
+      (facets as any)._handleSelectChange('type', mockEvent);
+      expect(facets._activeSelections['type']).toBeUndefined();
+    });
+  });
+
+  describe('_syncUrl', () => {
+    it('writes selections to URL', () => {
+      facets._activeSelections = { type: new Set(['Commune']), region: new Set(['PACA']) };
+      (facets as any)._syncUrl();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('type')).toBe('Commune');
+      expect(params.get('region')).toBe('PACA');
+    });
+
+    it('uses url-param-map reverse mapping', () => {
+      facets.urlParamMap = 'r:region | t:type';
+      facets._activeSelections = { region: new Set(['PACA']), type: new Set(['Commune']) };
+      (facets as any)._syncUrl();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('r')).toBe('PACA');
+      expect(params.get('t')).toBe('Commune');
+    });
+
+    it('removes params when no selections', () => {
+      setUrlParams('type=Commune');
+      facets._activeSelections = {};
+      (facets as any)._syncUrl();
+
+      expect(window.location.search).toBe('');
+    });
+
+    it('joins multiple values with comma', () => {
+      facets._activeSelections = { region: new Set(['PACA', 'IDF']) };
+      (facets as any)._syncUrl();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('region')).toContain('PACA');
+      expect(params.get('region')).toContain('IDF');
+    });
+  });
+
+  describe('_toggleMultiselectDropdown', () => {
+    it('opens the dropdown', () => {
+      (facets as any)._toggleMultiselectDropdown('region');
+      expect(facets._openMultiselectField).toBe('region');
+    });
+
+    it('closes the dropdown when already open', () => {
+      (facets as any)._openMultiselectField = 'region';
+      (facets as any)._toggleMultiselectDropdown('region');
+      expect(facets._openMultiselectField).toBeNull();
+    });
+  });
+
+  describe('_handleMultiselectKeydown', () => {
+    it('closes dropdown on Escape', () => {
+      (facets as any)._openMultiselectField = 'region';
+      (facets as any)._handleMultiselectKeydown('region', new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(facets._openMultiselectField).toBeNull();
+    });
+
+    it('does nothing on other keys', () => {
+      (facets as any)._openMultiselectField = 'region';
+      (facets as any)._handleMultiselectKeydown('region', new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(facets._openMultiselectField).toBe('region');
+    });
+  });
+
+  describe('_onClickOutsideMultiselect', () => {
+    it('does nothing when no dropdown is open', () => {
+      (facets as any)._openMultiselectField = null;
+      (facets as any)._onClickOutsideMultiselect(new MouseEvent('click'));
+      expect(facets._openMultiselectField).toBeNull();
+    });
+  });
+
+  describe('render', () => {
+    it('returns nothing when no data', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      // No data loaded -> _rawData is empty
+      const result = facets.render();
+      expect(result).toBe(nothing);
+    });
+
+    it('returns nothing when no facet groups', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'nonexistent_field';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = facets.render();
+      expect(result).toBe(nothing);
+    });
+
+    it('renders template when data and groups exist', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = facets.render();
+      expect(result).not.toBe(nothing);
+    });
+
+    it('includes reset button when filters are active', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      facets._activeSelections = { type: new Set(['Commune']) };
+      const result = facets.render();
+      expect(result).not.toBe(nothing);
+    });
+
+    it('uses DSFR grid when cols is set', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.cols = '6';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const result = facets.render();
+      expect(result).not.toBe(nothing);
+    });
+  });
+
+  describe('_renderFacetGroup routing', () => {
+    beforeEach(() => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+    });
+
+    it('routes to checkbox by default', () => {
+      const group = facets._facetGroups[0];
+      const result = (facets as any)._renderFacetGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('routes to select mode', () => {
+      facets.display = 'type:select';
+      const group = facets._facetGroups[0];
+      const result = (facets as any)._renderFacetGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('routes to multiselect mode', () => {
+      facets.display = 'type:multiselect';
+      const group = facets._facetGroups[0];
+      const result = (facets as any)._renderFacetGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('routes to radio mode', () => {
+      facets.display = 'type:radio';
+      const group = facets._facetGroups[0];
+      const result = (facets as any)._renderFacetGroup(group);
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('_renderCheckboxGroup', () => {
+    beforeEach(() => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type, region';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+    });
+
+    it('renders checkbox group template', () => {
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderCheckboxGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders with search bar when searchable', () => {
+      facets.searchable = 'type';
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderCheckboxGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('filters values by search query', () => {
+      facets.searchable = 'region';
+      facets._searchQueries = { region: 'PA' };
+      // Rebuild groups to reflect current state
+      facets._buildFacetGroups();
+      const group = facets._facetGroups.find(g => g.field === 'region')!;
+      const result = (facets as any)._renderCheckboxGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('shows "Voir plus" when values exceed maxValues', () => {
+      facets.maxValues = 2;
+      const group = facets._facetGroups.find(g => g.field === 'region')!;
+      // region has 9 values, maxValues=2 -> should have "Voir plus"
+      const result = (facets as any)._renderCheckboxGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('shows all when expanded', () => {
+      facets.maxValues = 2;
+      facets._expandedFacets = new Set(['region']);
+      const group = facets._facetGroups.find(g => g.field === 'region')!;
+      const result = (facets as any)._renderCheckboxGroup(group);
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('_renderSelectGroup', () => {
+    it('renders select dropdown template', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:select';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderSelectGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders with active selection', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:select';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      facets._activeSelections = { type: new Set(['Commune']) };
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderSelectGroup(group);
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('_renderMultiselectGroup', () => {
+    it('renders multiselect template (closed)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:multiselect';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderMultiselectGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders multiselect template (open)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:multiselect';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      (facets as any)._openMultiselectField = 'type';
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderMultiselectGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders with selections label', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:multiselect';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      facets._activeSelections = { type: new Set(['Commune', 'Prefecture']) };
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderMultiselectGroup(group);
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('_renderRadioGroup', () => {
+    it('renders radio group template (closed)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:radio';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderRadioGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders radio group template (open with selection)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:radio';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      (facets as any)._openMultiselectField = 'type';
+      facets._activeSelections = { type: new Set(['Commune']) };
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderRadioGroup(group);
+      expect(result).toBeTruthy();
+    });
+
+    it('renders radio group template (open without selection)', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:radio';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      (facets as any)._openMultiselectField = 'type';
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderRadioGroup(group);
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('_buildStaticFacetGroups', () => {
+    it('warns on invalid JSON', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      facets.staticValues = 'not-json';
+      facets._buildStaticFacetGroups();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('static-values invalide'));
+      warnSpy.mockRestore();
+    });
+
+    it('uses field names from fields attribute', () => {
+      facets.fields = 'type';
+      facets.staticValues = JSON.stringify({ type: ['A', 'B'], region: ['X', 'Y'] });
+      facets._buildStaticFacetGroups();
+      expect(facets._facetGroups).toHaveLength(1);
+      expect(facets._facetGroups[0].field).toBe('type');
+    });
+
+    it('hides single-value groups when hide-empty', () => {
+      facets.hideEmpty = true;
+      facets.staticValues = JSON.stringify({ type: ['A'], region: ['X', 'Y'] });
+      facets._buildStaticFacetGroups();
+      expect(facets._facetGroups).toHaveLength(1);
+      expect(facets._facetGroups[0].field).toBe('region');
+    });
+  });
+
+  describe('_afterSelectionChange', () => {
+    it('dispatches command in server-facets mode', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.serverFacets = true;
+      facets.connectedCallback();
+
+      (facets as any)._fetchServerFacets = () => {};
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      facets._activeSelections = { type: new Set(['Commune']) };
+      (facets as any)._afterSelectionChange();
+      // Should not throw — dispatches command
+    });
+
+    it('syncs URL when urlSync is enabled', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.urlSync = true;
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      facets._activeSelections = { type: new Set(['Commune']) };
+      (facets as any)._afterSelectionChange();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('type')).toBe('Commune');
+    });
+  });
+
+  describe('_hasActiveSelections', () => {
+    it('returns false when no selections', () => {
+      facets._activeSelections = {};
+      expect((facets as any)._hasActiveSelections()).toBe(false);
+    });
+
+    it('returns false when all sets are empty', () => {
+      facets._activeSelections = { type: new Set() };
+      expect((facets as any)._hasActiveSelections()).toBe(false);
+    });
+
+    it('returns true when selections exist', () => {
+      facets._activeSelections = { type: new Set(['Commune']) };
+      expect((facets as any)._hasActiveSelections()).toBe(true);
+    });
+  });
+
+  describe('_initialize edge cases', () => {
+    it('warns when id is missing', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      facets.id = '';
+      facets.source = 'test-source';
+      (facets as any)._initialize();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('id'));
+      warnSpy.mockRestore();
+    });
+
+    it('warns when source is missing', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      facets.id = 'test-facets';
+      facets.source = '';
+      (facets as any)._initialize();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('source'));
+      warnSpy.mockRestore();
     });
   });
 });

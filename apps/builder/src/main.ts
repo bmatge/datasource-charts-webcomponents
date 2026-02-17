@@ -113,6 +113,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Raw data (CSV download) toggle
+  const rawDataToggle = document.getElementById('raw-data-toggle') as HTMLInputElement | null;
+  if (rawDataToggle) {
+    rawDataToggle.addEventListener('change', (e) => {
+      state.rawDataEnabled = (e.target as HTMLInputElement).checked;
+    });
+  }
+
   // Advanced mode toggle
   const advancedToggle = document.getElementById('advanced-mode-toggle') as HTMLInputElement | null;
   if (advancedToggle) {

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as shared from '@gouv-widgets/shared';
 
 /**
  * Tests for GouvSource component logic.
@@ -700,6 +701,332 @@ describe('GouvSource', () => {
 
       // reload triggers _fetchData which calls fetch
       expect(mockFetch).toHaveBeenCalled();
+    });
+  });
+
+  describe('server cache (_putCache / _getCache)', () => {
+    it('_putCache sends PUT request with data and TTL', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+
+      source.id = 'test-source';
+      source.cacheTtl = 7200;
+      const data = [{ id: 1 }, { id: 2 }];
+
+      await (source as any)._putCache(data);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/cache/test-source',
+        expect.objectContaining({
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        })
+      );
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.data).toEqual(data);
+      expect(body.recordCount).toBe(2);
+      expect(body.ttlSeconds).toBe(7200);
+    });
+
+    it('_putCache sends recordCount=1 for non-array data', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+
+      await (source as any)._putCache({ key: 'value' });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.recordCount).toBe(1);
+    });
+
+    it('_putCache encodes source ID in URL', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+
+      source.id = 'source with spaces';
+      source.cacheTtl = 3600;
+
+      await (source as any)._putCache([]);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/cache/source%20with%20spaces',
+        expect.anything()
+      );
+    });
+
+    it('_getCache returns cached data on success', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: [{ id: 1 }] }),
+      });
+
+      source.id = 'test-source';
+      const result = await (source as any)._getCache();
+
+      expect(result).toEqual([{ id: 1 }]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/cache/test-source',
+        expect.objectContaining({ credentials: 'include' })
+      );
+    });
+
+    it('_getCache returns null on HTTP error', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
+
+      source.id = 'test-source';
+      const result = await (source as any)._getCache();
+
+      expect(result).toBeNull();
+    });
+
+    it('_getCache returns null on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      source.id = 'test-source';
+      const result = await (source as any)._getCache();
+
+      expect(result).toBeNull();
+    });
+
+    it('_getCache returns null when response has no data field', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      source.id = 'test-source';
+      const result = await (source as any)._getCache();
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('cache integration with fetch', () => {
+    let isAuthSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      isAuthSpy = vi.spyOn(shared, 'isAuthenticated').mockReturnValue(true);
+    });
+
+    afterEach(() => {
+      isAuthSpy.mockRestore();
+    });
+
+    it('saves to cache after successful URL fetch when authenticated', async () => {
+      const testData = { results: [1, 2, 3] };
+      // First call: fetch data; Second call: put cache
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(testData),
+        })
+        .mockResolvedValueOnce({ ok: true });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+      source.transform = '';
+
+      await (source as any)._fetchViaUrl();
+
+      // Second call should be cache PUT
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch.mock.calls[1][0]).toBe('/api/cache/test-source');
+      expect(mockFetch.mock.calls[1][1].method).toBe('PUT');
+    });
+
+    it('falls back to cache on URL fetch error when authenticated', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const cachedData = [{ id: 'cached' }];
+
+      // First call: fetch fails; Second call: cache GET succeeds
+      mockFetch
+        .mockRejectedValueOnce(new Error('Server down'))
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: cachedData }),
+        });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+
+      await (source as any)._fetchViaUrl();
+
+      expect(source.getData()).toEqual(cachedData);
+      expect(getDataCache('test-source')).toEqual(cachedData);
+      errorSpy.mockRestore();
+    });
+
+    it('dispatches cache-fallback event on cache hit', async () => {
+      const cachedData = [{ id: 'cached' }];
+      const eventSpy = vi.fn();
+      source.addEventListener('cache-fallback', eventSpy);
+
+      mockFetch
+        .mockRejectedValueOnce(new Error('Server down'))
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: cachedData }),
+        });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+
+      await (source as any)._fetchViaUrl();
+
+      expect(eventSpy).toHaveBeenCalled();
+      source.removeEventListener('cache-fallback', eventSpy);
+    });
+
+    it('sets error when both fetch and cache fail', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      mockFetch
+        .mockRejectedValueOnce(new Error('Server down'))
+        .mockResolvedValueOnce({ ok: false, status: 404 });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+
+      await (source as any)._fetchViaUrl();
+
+      expect(source.getError()?.message).toBe('Server down');
+      errorSpy.mockRestore();
+    });
+
+    it('saves to cache after successful adapter fetch when authenticated', async () => {
+      const testData = {
+        results: [{ dep: '75', value: 100 }],
+        total_count: 1,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(testData),
+        })
+        .mockResolvedValueOnce({ ok: true });
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+      source.cacheTtl = 3600;
+
+      await (source as any)._fetchViaAdapter();
+
+      // Second call should be cache PUT
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch.mock.calls[1][0]).toBe('/api/cache/test-source');
+    });
+
+    it('falls back to cache on adapter fetch error when authenticated', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const cachedData = [{ id: 'cached' }];
+
+      mockFetch
+        .mockRejectedValueOnce(new Error('API error'))
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: cachedData }),
+        });
+
+      source.apiType = 'opendatasoft';
+      source.id = 'test-source';
+      source.baseUrl = 'https://data.example.com';
+      source.datasetId = 'test-dataset';
+      source.cacheTtl = 3600;
+
+      await (source as any)._fetchViaAdapter();
+
+      expect(source.getData()).toEqual(cachedData);
+      errorSpy.mockRestore();
+    });
+
+    it('skips cache when cacheTtl is 0', async () => {
+      const testData = { results: [1, 2, 3] };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 0;
+      source.transform = '';
+
+      await (source as any)._fetchViaUrl();
+
+      // Only one fetch call (no cache PUT)
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips cache when not authenticated', async () => {
+      isAuthSpy.mockReturnValue(false);
+      const testData = { results: [1, 2, 3] };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      source.url = 'https://api.example.com/data';
+      source.id = 'test-source';
+      source.cacheTtl = 3600;
+      source.transform = '';
+
+      await (source as any)._fetchViaUrl();
+
+      // Only one fetch call (no cache PUT)
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('command listener', () => {
+    it('does not set up listener when no pagination and not adapter mode', () => {
+      source.id = 'test-source';
+      source.url = 'https://api.example.com/data';
+      source.apiType = 'generic';
+      source.paginate = false;
+      source.serverSide = false;
+
+      (source as any)._setupCommandListener();
+      expect((source as any)._unsubscribeCommands).toBeNull();
+    });
+
+    it('sets up listener when paginate=true', () => {
+      source.id = 'test-source';
+      source.paginate = true;
+
+      (source as any)._setupCommandListener();
+      expect((source as any)._unsubscribeCommands).toBeTruthy();
+      (source as any)._cleanup();
+    });
+
+    it('sets up listener in adapter mode', () => {
+      source.id = 'test-source';
+      source.apiType = 'opendatasoft';
+
+      (source as any)._setupCommandListener();
+      expect((source as any)._unsubscribeCommands).toBeTruthy();
+      (source as any)._cleanup();
+    });
+
+    it('does not set up listener when id is empty', () => {
+      source.id = '';
+      source.paginate = true;
+
+      (source as any)._setupCommandListener();
+      expect((source as any)._unsubscribeCommands).toBeNull();
+    });
+  });
+
+  describe('createRenderRoot', () => {
+    it('returns this (no shadow DOM)', () => {
+      expect(source.createRenderRoot()).toBe(source);
     });
   });
 });

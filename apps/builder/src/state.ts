@@ -143,6 +143,7 @@ export interface BuilderState {
   datalistColumns: DatalistColumn[];
   normalizeConfig: NormalizeConfig;
   facetsConfig: FacetsConfig;
+  rawDataEnabled: boolean;
 }
 
 /** The singleton application state */
@@ -195,4 +196,5 @@ export const state: BuilderState = {
     sort: 'count',
     hideEmpty: false,
   },
+  rawDataEnabled: false,
 };

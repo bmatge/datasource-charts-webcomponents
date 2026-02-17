@@ -466,5 +466,135 @@ describe('TabularAdapter', () => {
         )
       ).rejects.toThrow('HTTP 500');
     });
+
+    it('handles missing meta.total gracefully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [{ id: 1 }],
+          meta: {},
+        }),
+      });
+
+      const result = await adapter.fetchPage(
+        makeParams(),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      );
+
+      expect(result.totalCount).toBe(0);
+    });
+
+    it('passes signal to fetch', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          data: [],
+          meta: { total: 0 },
+        }),
+      });
+
+      const controller = new AbortController();
+      await adapter.fetchPage(
+        makeParams(),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        controller.signal
+      );
+
+      const fetchOpts = mockFetch.mock.calls[0][1] as RequestInit;
+      expect(fetchOpts.signal).toBe(controller.signal);
+    });
+  });
+
+  describe('buildFacetWhere', () => {
+    it('builds colon syntax for single value', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set(['IDF']) }))
+        .toBe('region:eq:IDF');
+    });
+
+    it('builds colon syntax IN for multiple values', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set(['IDF', 'PACA']) }))
+        .toBe('region:in:IDF|PACA');
+    });
+
+    it('joins multiple fields with comma', () => {
+      const result = adapter.buildFacetWhere!({
+        region: new Set(['IDF']),
+        type: new Set(['A']),
+      });
+      expect(result).toBe('region:eq:IDF, type:eq:A');
+    });
+
+    it('excludes specified field', () => {
+      expect(adapter.buildFacetWhere!(
+        { region: new Set(['IDF']), type: new Set(['A']) },
+        'region'
+      )).toBe('type:eq:A');
+    });
+
+    it('returns empty string for empty selections', () => {
+      expect(adapter.buildFacetWhere!({})).toBe('');
+    });
+
+    it('skips fields with empty sets', () => {
+      expect(adapter.buildFacetWhere!({ region: new Set() })).toBe('');
+    });
+  });
+
+  describe('getProviderConfig', () => {
+    it('returns tabular config', () => {
+      const config = adapter.getProviderConfig!();
+      expect(config.id).toBe('tabular');
+    });
+  });
+
+  describe('getDefaultSearchTemplate', () => {
+    it('returns null', () => {
+      expect(adapter.getDefaultSearchTemplate!()).toBeNull();
+    });
+  });
+
+  describe('Server-side URL — orderBy and filter', () => {
+    const overlay = (overrides: Partial<ServerSideOverlay> = {}): ServerSideOverlay => ({
+      page: 1,
+      effectiveWhere: '',
+      orderBy: '',
+      ...overrides,
+    });
+
+    it('handles orderBy without direction (defaults to asc)', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams(),
+        overlay({ orderBy: 'nom' })
+      );
+      expect(url).toContain('nom__sort=asc');
+    });
+
+    it('does not apply orderBy when overlay.orderBy is empty', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ orderBy: 'population:desc' }),
+        overlay()
+      );
+      // Only overlay.orderBy is used, no fallback to params.orderBy
+      expect(url).not.toContain('__sort');
+    });
+
+    it('uses params.filter as fallback when effectiveWhere is empty', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ filter: 'statut:eq:actif' }),
+        overlay()
+      );
+      expect(url).toContain('statut__exact=actif');
+    });
+
+    it('effectiveWhere takes priority over params.filter', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ filter: 'statut:eq:actif' }),
+        overlay({ effectiveWhere: 'region:eq:IDF' })
+      );
+      expect(url).toContain('region__exact=IDF');
+      // effectiveWhere takes priority, filter is not applied
+      expect(url).not.toContain('statut__exact=actif');
+    });
   });
 });

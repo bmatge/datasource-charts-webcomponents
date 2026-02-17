@@ -1237,6 +1237,16 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 </gouv-dsfr-chart>
 \`\`\`
 
+### Accessibilite : ajouter gouv-raw-data
+Pour ameliorer l'accessibilite, ajoutez \`gouv-raw-data\` apres chaque visualisation :
+\`\`\`html
+<gouv-dsfr-chart id="mon-graph" source="top10" type="bar"
+  label-field="region" value-field="population__sum">
+</gouv-dsfr-chart>
+<gouv-raw-data for="mon-graph" source="top10"></gouv-raw-data>
+\`\`\`
+L'attribut \`for\` pose automatiquement \`aria-describedby\` sur le graphique cible.
+
 ### Pipeline simplifie : Source -> Visualisation (sans transformation)
 \`\`\`html
 <gouv-source id="data" url="https://api.fr/records" transform="results"></gouv-source>
@@ -1698,6 +1708,71 @@ Les URLs Grist connues sont automatiquement proxifiees :
 - \`grist.numerique.gouv.fr\` -> \`${PROXY_BASE_URL}/grist-gouv-proxy\`
 - \`docs.getgrist.com\` -> \`${PROXY_BASE_URL}/grist-proxy\`
 - \`tabular-api.data.gouv.fr\` -> \`${PROXY_BASE_URL}/tabular-proxy\``,
+  },
+
+  // ---------------------------------------------------------------------------
+  // gouv-raw-data : accessibilite et telechargement CSV
+  // ---------------------------------------------------------------------------
+
+  gouvRawData: {
+    id: 'gouvRawData',
+    name: 'gouv-raw-data',
+    description: 'Composant accessibilite : telechargement CSV des donnees associees a une visualisation',
+    trigger: ['raw-data', 'telecharger', 'download', 'csv', 'accessibilite', 'a11y', 'lecteur ecran', 'screen reader', 'aria'],
+    content: `## gouv-raw-data — Telechargement CSV accessible
+
+Composant companion qui propose un bouton de telechargement des donnees brutes (CSV)
+associees a un composant de visualisation. Il ameliore l'accessibilite en offrant une
+alternative textuelle aux graphiques pour les utilisateurs de lecteur d'ecran.
+
+### Attributs
+
+| Attribut | Type | Defaut | Description |
+|----------|------|--------|-------------|
+| source | String | \`""\` | ID du gouv-source ou gouv-query dont les donnees seront exportees |
+| for | String | \`""\` | ID de l'element cible (graphique, tableau...) pour la liaison ARIA automatique |
+| filename | String | \`"donnees.csv"\` | Nom du fichier CSV telecharge |
+| label | String | \`"Telecharger les donnees (CSV)"\` | Libelle d'accessibilite du bouton (title + aria) |
+| button-label | String | \`""\` | Texte visible dans le bouton. Si vide, bouton icone seul |
+| no-auto-aria | Boolean | \`false\` | Desactive l'injection automatique d'aria-describedby |
+
+### Fonctionnement ARIA (attribut \`for\`)
+
+Quand \`for="mon-graph"\` est defini :
+1. Le composant genere automatiquement un \`id\` s'il n'en a pas
+2. Il pose \`aria-describedby="gouv-raw-data-N"\` sur l'element \`#mon-graph\`
+3. Le lecteur d'ecran annonce la description du bouton en lisant le graphique
+4. A la deconnexion, l'attribut ARIA est nettoye
+
+### Exemple basique
+\`\`\`html
+<gouv-dsfr-chart id="mon-graph" source="data" type="bar"
+  label-field="region" value-field="total">
+</gouv-dsfr-chart>
+<gouv-raw-data for="mon-graph" source="data"></gouv-raw-data>
+\`\`\`
+
+### Avec texte visible et nom de fichier personnalise
+\`\`\`html
+<gouv-raw-data for="mon-graph" source="data"
+  filename="export-regions.csv"
+  button-label="Exporter en CSV">
+</gouv-raw-data>
+\`\`\`
+
+### Mode manuel (sans ARIA automatique)
+\`\`\`html
+<gouv-dsfr-chart id="mon-graph" aria-describedby="dl-custom"
+  source="data" type="pie">
+</gouv-dsfr-chart>
+<gouv-raw-data id="dl-custom" source="data" no-auto-aria></gouv-raw-data>
+\`\`\`
+
+### Notes
+- Le bouton est desactive tant que les donnees ne sont pas chargees
+- Le CSV utilise le separateur \`;\` (standard francais)
+- Toutes les colonnes des donnees sont exportees automatiquement
+- Compatible avec tous les composants de rendu (chart, datalist, display, kpi)`,
   },
 
   // ---------------------------------------------------------------------------

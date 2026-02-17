@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GouvSearch } from '../src/components/gouv-search.js';
 import {
   clearDataCache,
   clearDataMeta,
   dispatchDataLoaded,
+  dispatchDataLoading,
+  dispatchDataError,
   getDataCache,
   getDataMeta,
   setDataMeta,
@@ -36,9 +38,14 @@ describe('GouvSearch', () => {
   });
 
   afterEach(() => {
-    if (search.isConnected) {
-      search.disconnectedCallback();
+    // Always clean up subscription (even if not connected to DOM)
+    (search as any)._unsubscribe?.();
+    (search as any)._unsubscribe = null;
+    if (search._debounceTimer !== null) {
+      clearTimeout(search._debounceTimer);
+      (search as any)._debounceTimer = null;
     }
+    if (search.id) clearDataCache(search.id);
     setUrlParams('');
   });
 
@@ -807,6 +814,382 @@ describe('GouvSearch', () => {
 
       search.connectedCallback();
       expect(search.searchTemplate).toBe('');
+    });
+
+    it('reads URL param and sends server search on first _onData', () => {
+      // Simulate the case where _initialize does NOT apply URL param
+      // (because serverSearch + urlSearchParam but _urlParamApplied was
+      //  already true from _initialize). We need to test the _onData path
+      //  (lines 202-208) where URL param is applied during _onData.
+      //
+      // To trigger the _onData path, we set serverSearch=true and
+      // urlSearchParam, but set _urlParamApplied=false just before _onData.
+      setUrlParams('q=hello');
+
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      // Don't connect — manually call _onData to test the _onData URL path.
+      // First, mock the adapter so searchTemplate is set:
+      search.searchTemplate = 'search("{q}")';
+      search.serverSearch = true;
+      search.urlSearchParam = 'q';
+      search.id = 'test-search';
+      search.source = 'test-source';
+      // Ensure _urlParamApplied is false so _onData branch runs
+      (search as any)._urlParamApplied = false;
+
+      (search as any)._onData(SAMPLE_DATA);
+
+      expect(search._term).toBe('hello');
+      expect(receivedCmd).not.toBeNull();
+      expect(receivedCmd.where).toBe('search("hello")');
+
+      unsub();
+    });
+
+    it('syncs URL in server-search mode when urlSync is enabled', () => {
+      setUrlParams('');
+      search.urlSync = true;
+      search.urlSearchParam = 'q';
+
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('test-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = 'test-sync';
+      search._applyFilter();
+
+      // URL should be synced
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('q')).toBe('test-sync');
+      expect(receivedCmd).not.toBeNull();
+
+      unsub();
+    });
+
+    it('dispatches gouv-search-change in server-search mode', () => {
+      let eventDetail: any = null;
+      const handler = (e: Event) => {
+        eventDetail = (e as CustomEvent).detail;
+      };
+      document.addEventListener('gouv-search-change', handler);
+
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      search._term = 'test-event';
+      search._applyFilter();
+
+      document.removeEventListener('gouv-search-change', handler);
+
+      expect(eventDetail).not.toBeNull();
+      expect(eventDetail.sourceId).toBe('test-search');
+      expect(eventDetail.term).toBe('test-event');
+    });
+  });
+
+  // --- _onInput debounce ---
+
+  describe('_onInput debounce', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.debounce = 200;
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('delays filter execution by debounce interval', () => {
+      (search as any)._onInput('net');
+
+      // Before debounce fires, data should still be all
+      const before = getDataCache('test-search') as Record<string, unknown>[];
+      expect(before).toHaveLength(SAMPLE_DATA.length);
+
+      vi.advanceTimersByTime(200);
+
+      const after = getDataCache('test-search') as Record<string, unknown>[];
+      expect(after).toHaveLength(3); // NetCommerce, NetPoint, Internet Plus
+    });
+
+    it('resets timer on consecutive inputs', () => {
+      (search as any)._onInput('n');
+      vi.advanceTimersByTime(100);
+      (search as any)._onInput('ne');
+      vi.advanceTimersByTime(100);
+      (search as any)._onInput('net');
+
+      // Only 100ms passed since last input — not yet triggered
+      vi.advanceTimersByTime(100);
+      const mid = getDataCache('test-search') as Record<string, unknown>[];
+      expect(mid).toHaveLength(SAMPLE_DATA.length);
+
+      // Now complete the 200ms from last input
+      vi.advanceTimersByTime(100);
+      const after = getDataCache('test-search') as Record<string, unknown>[];
+      expect(after).toHaveLength(3);
+    });
+  });
+
+  // --- _onSubmit ---
+
+  describe('_onSubmit', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.debounce = 500;
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('cancels pending debounce and applies immediately', () => {
+      (search as any)._onInput('net');
+      // Debounce is pending — submit should cancel it and apply now
+      (search as any)._onSubmit();
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(3);
+    });
+
+    it('applies filter even without pending debounce', () => {
+      search._term = 'campus';
+      (search as any)._onSubmit();
+
+      const result = getDataCache('test-search') as Record<string, unknown>[];
+      expect(result).toHaveLength(1);
+      expect(result[0].Nom).toBe('Campus Online');
+    });
+  });
+
+  // --- URL sync (_syncUrl / _dispatch with urlSync) ---
+
+  describe('url-sync', () => {
+    beforeEach(() => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.fields = 'Nom';
+      search.urlSync = true;
+      search.urlSearchParam = 'q';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+    });
+
+    it('writes search term to URL on filter', () => {
+      search._term = 'net';
+      search._applyFilter();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('q')).toBe('net');
+    });
+
+    it('removes param from URL when term is empty', () => {
+      // First set a term
+      search._term = 'net';
+      search._applyFilter();
+      expect(new URLSearchParams(window.location.search).get('q')).toBe('net');
+
+      // Clear
+      search._term = '';
+      search._applyFilter();
+      expect(new URLSearchParams(window.location.search).has('q')).toBe(false);
+    });
+
+    it('preserves existing URL params', () => {
+      setUrlParams('page=3&tab=results');
+      search._term = 'net';
+      search._applyFilter();
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('q')).toBe('net');
+      expect(params.get('page')).toBe('3');
+      expect(params.get('tab')).toBe('results');
+    });
+
+    it('does not sync when urlSync is false', () => {
+      search.urlSync = false;
+      search._term = 'net';
+      search._applyFilter();
+
+      expect(new URLSearchParams(window.location.search).has('q')).toBe(false);
+    });
+
+    it('does not sync when urlSearchParam is empty', () => {
+      search.urlSearchParam = '';
+      search._term = 'net';
+      search._applyFilter();
+
+      expect(window.location.search).toBe('');
+    });
+  });
+
+  // --- onLoading / onError callbacks ---
+
+  describe('onLoading / onError forwarding', () => {
+    it('forwards loading state from upstream source', () => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.connectedCallback();
+
+      // Simulate loading event from source
+      dispatchDataLoading('test-source');
+
+      // No crash - loading is forwarded via dispatchDataLoading
+    });
+
+    it('forwards error state from upstream source', () => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.connectedCallback();
+
+      // Simulate error event from source
+      dispatchDataError('test-source', new Error('upstream failure'));
+
+      // No crash - error is forwarded via dispatchDataError
+    });
+  });
+
+  // --- createRenderRoot ---
+
+  describe('createRenderRoot', () => {
+    it('returns this (no shadow DOM)', () => {
+      expect(search.createRenderRoot()).toBe(search);
+    });
+  });
+
+  // --- render ---
+
+  describe('render', () => {
+    it('returns a TemplateResult', () => {
+      search.id = 'test-search';
+      const result = search.render();
+      expect(result).toBeDefined();
+    });
+
+    it('uses sr-only class when srLabel is true', () => {
+      search.srLabel = true;
+      const result = search.render();
+      // The template contains 'sr-only'
+      const str = JSON.stringify(result);
+      expect(str).toContain('sr-only');
+    });
+  });
+
+  // --- _initialize edge cases ---
+
+  describe('_initialize edge cases', () => {
+    it('warns and returns if no id', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      search.source = 'test-source';
+      search.connectedCallback();
+
+      expect(warnSpy).toHaveBeenCalledWith('gouv-search: attribut "id" requis');
+      warnSpy.mockRestore();
+    });
+
+    it('warns and returns if no source', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      search.id = 'test-search';
+      search.connectedCallback();
+
+      expect(warnSpy).toHaveBeenCalledWith('gouv-search: attribut "source" requis');
+      warnSpy.mockRestore();
+    });
+
+    it('unsubscribes from previous source on re-initialization', () => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.connectedCallback();
+
+      // Store old unsubscribe
+      const oldUnsub = (search as any)._unsubscribe;
+      expect(oldUnsub).toBeTypeOf('function');
+
+      // Re-initialize
+      (search as any)._initialize();
+      // New unsubscribe should be created
+      expect((search as any)._unsubscribe).toBeTypeOf('function');
+    });
+
+    it('server-search in _initialize sends command when URL param is set', () => {
+      const mockSource = document.createElement('div');
+      mockSource.id = 'ss-source';
+      (mockSource as any).getAdapter = () => ({
+        getDefaultSearchTemplate: () => 'search("{q}")',
+      });
+      document.body.appendChild(mockSource);
+
+      setUrlParams('q=preloaded');
+
+      let receivedCmd: any = null;
+      const unsub = subscribeToSourceCommands('ss-source', (cmd) => {
+        receivedCmd = cmd;
+      });
+
+      search.id = 'test-search';
+      search.source = 'ss-source';
+      search.serverSearch = true;
+      search.urlSearchParam = 'q';
+      search.connectedCallback();
+
+      expect(search._term).toBe('preloaded');
+      expect(receivedCmd).not.toBeNull();
+      expect(receivedCmd.where).toBe('search("preloaded")');
+
+      unsub();
+      mockSource.remove();
+    });
+  });
+
+  // --- disconnectedCallback ---
+
+  describe('disconnectedCallback', () => {
+    it('clears debounce timer', () => {
+      vi.useFakeTimers();
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      (search as any)._onInput('net');
+      // Timer is pending
+      expect((search as any)._debounceTimer).not.toBeNull();
+
+      search.disconnectedCallback();
+      expect((search as any)._debounceTimer).toBeNull();
+
+      vi.useRealTimers();
+    });
+  });
+
+  // --- setData edge case ---
+
+  describe('setData edge cases', () => {
+    it('treats non-array input as empty', () => {
+      search.id = 'test-search';
+      search.source = 'test-source';
+      search.connectedCallback();
+
+      search.setData('not an array' as any);
+      expect(search.getData()).toEqual([]);
     });
   });
 });

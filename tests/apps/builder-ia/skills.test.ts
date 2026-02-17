@@ -16,6 +16,7 @@ import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
 import { GouvFacets } from '../../../src/components/gouv-facets.js';
 import { GouvDisplay } from '../../../src/components/gouv-display.js';
 import { GouvSearch } from '../../../src/components/gouv-search.js';
+import { GouvRawData } from '../../../src/components/gouv-raw-data.js';
 
 // Type/constant imports for alignment checks
 import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
@@ -43,8 +44,8 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 19 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(19);
+  it('should have 20 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(20);
   });
 
   it('should have expected skill IDs', () => {
@@ -66,6 +67,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('chartTypes');
     expect(SKILLS).toHaveProperty('dsfrColors');
     expect(SKILLS).toHaveProperty('apiProviders');
+    expect(SKILLS).toHaveProperty('gouvRawData');
     expect(SKILLS).toHaveProperty('troubleshooting');
   });
 
@@ -243,6 +245,10 @@ describe('builder-ia skills', () => {
 
       it('gouvDisplay skill covers all <gouv-display> attributes', () => {
         assertAttributesCovered(GouvDisplay as unknown as typeof GouvSource, 'gouvDisplay', 'gouv-display');
+      });
+
+      it('gouvRawData skill covers all <gouv-raw-data> attributes', () => {
+        assertAttributesCovered(GouvRawData as unknown as typeof GouvSource, 'gouvRawData', 'gouv-raw-data');
       });
     });
 

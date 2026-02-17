@@ -26,6 +26,12 @@ import { updateAccessibleTable } from './accessible-table.js';
 const ODS_PAGE_SIZE = 100;
 const ODS_MAX_PAGES = 10;
 
+/** Generate optional gouv-raw-data element for CSV download accessibility */
+function generateRawDataElement(sourceId: string, chartId: string): string {
+  if (!state.rawDataEnabled) return '';
+  return `\n  <gouv-raw-data for="${chartId}" source="${sourceId}"></gouv-raw-data>`;
+}
+
 /**
  * Fetch all results from an ODS API URL, handling pagination automatically.
  * ODS APIs cap at 100 records per request. When the URL requests more,
@@ -124,11 +130,16 @@ async function fetchAllODS(apiUrl) {
 }`;
 
 /**
- * Generate an inline <script> that re-applies DSFR Chart element attributes
- * after Vue mount. DSFR Chart Vue components overwrite certain attributes
- * (value, date) with defaults during mount.
+ * DSFR Chart Vue components map-chart and map-chart-reg overwrite `value`
+ * and `date` attributes with defaults during Vue mount. This inline script
+ * re-applies all attributes after 500ms to work around that.
+ * Only needed for map-chart / map-chart-reg — other chart types (bar, line,
+ * pie, radar, scatter) do NOT overwrite their attributes.
  */
+const DEFERRED_TAGS = new Set(['map-chart', 'map-chart-reg']);
+
 function dsfrDeferredScript(tagName: string): string {
+  if (!DEFERRED_TAGS.has(tagName)) return '';
   return `
 <script>
 (function(){var c=document.querySelector('${tagName}');if(!c)return;var s={};[].forEach.call(c.attributes,function(a){s[a.name]=a.value});customElements.whenDefined('${tagName}').then(function(){setTimeout(function(){Object.keys(s).forEach(function(k){c.setAttribute(k,s[k])})},500)})})();
@@ -1208,13 +1219,14 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 ${middlewareHtml}${queryElement}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
+    id="chart"
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
     label-field="${queryLabelField}"
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>
+  </gouv-dsfr-chart>${generateRawDataElement(chartSource, 'chart')}
 </div>`;
 
   codeEl.textContent = code;
@@ -1461,13 +1473,14 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 ${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
   <gouv-dsfr-chart
+    id="chart"
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
     label-field="${queryLabelField}"
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>
+  </gouv-dsfr-chart>${generateRawDataElement(chartSource, 'chart')}
 </div>`;
 
   codeEl.textContent = code;

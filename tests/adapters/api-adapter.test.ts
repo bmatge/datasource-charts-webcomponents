@@ -224,3 +224,40 @@ describe('ProviderConfig.codeGen.sourceApiType', () => {
     });
   }
 });
+
+describe('GenericAdapter — buildFacetWhere', () => {
+  const adapter = getAdapter('generic');
+
+  it('builds colon syntax for single value', () => {
+    expect(adapter.buildFacetWhere!({ region: new Set(['IDF']) }))
+      .toBe('region:eq:IDF');
+  });
+
+  it('builds colon syntax IN for multiple values', () => {
+    expect(adapter.buildFacetWhere!({ region: new Set(['IDF', 'PACA']) }))
+      .toBe('region:in:IDF|PACA');
+  });
+
+  it('joins multiple fields with comma', () => {
+    const result = adapter.buildFacetWhere!({
+      region: new Set(['IDF']),
+      type: new Set(['A']),
+    });
+    expect(result).toBe('region:eq:IDF, type:eq:A');
+  });
+
+  it('excludes specified field', () => {
+    expect(adapter.buildFacetWhere!(
+      { region: new Set(['IDF']), type: new Set(['A']) },
+      'region'
+    )).toBe('type:eq:A');
+  });
+
+  it('returns empty string for empty selections', () => {
+    expect(adapter.buildFacetWhere!({})).toBe('');
+  });
+
+  it('skips fields with empty sets', () => {
+    expect(adapter.buildFacetWhere!({ region: new Set() })).toBe('');
+  });
+});

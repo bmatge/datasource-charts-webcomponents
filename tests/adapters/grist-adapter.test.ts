@@ -985,3 +985,169 @@ describe('GristAdapter — SQL fallback on error', () => {
     ).rejects.toThrow('Grist SQL HTTP 500');
   });
 });
+
+describe('GristAdapter — SQL detection utilities', () => {
+  const adapter = new GristAdapter();
+
+  describe('_hasAdvancedOperators', () => {
+    it('detects gt operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('age:gt:18')).toBe(true);
+    });
+
+    it('detects contains operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('nom:contains:Paris')).toBe(true);
+    });
+
+    it('detects isnull operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('email:isnull:')).toBe(true);
+    });
+
+    it('returns false for eq operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('region:eq:IDF')).toBe(false);
+    });
+
+    it('returns false for in operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('region:in:IDF|OCC')).toBe(false);
+    });
+
+    it('detects advanced op among multiple clauses', () => {
+      expect((adapter as any)._hasAdvancedOperators('region:eq:IDF, age:gte:18')).toBe(true);
+    });
+
+    it('detects lte operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('price:lte:100')).toBe(true);
+    });
+
+    it('detects notcontains operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('nom:notcontains:test')).toBe(true);
+    });
+
+    it('detects notin operator', () => {
+      expect((adapter as any)._hasAdvancedOperators('region:notin:IDF|OCC')).toBe(true);
+    });
+  });
+
+  describe('_mergeWhere', () => {
+    it('returns overlay when no static where', () => {
+      expect((adapter as any)._mergeWhere('', 'dept:eq:75')).toBe('dept:eq:75');
+    });
+
+    it('returns static where when no overlay', () => {
+      expect((adapter as any)._mergeWhere('region:eq:IDF', '')).toBe('region:eq:IDF');
+    });
+
+    it('merges both with comma separator', () => {
+      expect((adapter as any)._mergeWhere('region:eq:IDF', 'dept:eq:75'))
+        .toBe('region:eq:IDF, dept:eq:75');
+    });
+
+    it('returns empty string when both empty', () => {
+      expect((adapter as any)._mergeWhere('', '')).toBe('');
+    });
+
+    it('returns empty string when both undefined', () => {
+      expect((adapter as any)._mergeWhere(undefined, undefined)).toBe('');
+    });
+  });
+
+  describe('_needsSqlMode', () => {
+    it('returns true when groupBy is set', () => {
+      expect((adapter as any)._needsSqlMode({ groupBy: 'region' })).toBe(true);
+    });
+
+    it('returns true when aggregate is set', () => {
+      expect((adapter as any)._needsSqlMode({ aggregate: 'pop:sum' })).toBe(true);
+    });
+
+    it('returns true when where has advanced operators', () => {
+      expect((adapter as any)._needsSqlMode({ where: 'age:gt:18' })).toBe(true);
+    });
+
+    it('returns false for simple eq where', () => {
+      expect((adapter as any)._needsSqlMode({ where: 'region:eq:IDF' })).toBe(false);
+    });
+
+    it('returns false when no params', () => {
+      expect((adapter as any)._needsSqlMode({})).toBe(false);
+    });
+
+    it('uses overlay effectiveWhere for detection', () => {
+      expect((adapter as any)._needsSqlMode(
+        { where: 'region:eq:IDF' },
+        { effectiveWhere: 'age:gt:18' }
+      )).toBe(true);
+    });
+  });
+
+  describe('_extractHostname', () => {
+    it('extracts hostname from URL', () => {
+      expect((adapter as any)._extractHostname('https://grist.example.com/api/docs/x/tables/y/records'))
+        .toBe('grist.example.com');
+    });
+
+    it('returns input for invalid URL', () => {
+      expect((adapter as any)._extractHostname('not-a-url')).toBe('not-a-url');
+    });
+  });
+
+  describe('_flattenRecords', () => {
+    it('flattens records with fields property', () => {
+      const result = (adapter as any)._flattenRecords([
+        { id: 1, fields: { nom: 'Paris', pop: 2000000 } },
+      ]);
+      expect(result).toEqual([{ nom: 'Paris', pop: 2000000 }]);
+    });
+
+    it('returns record as-is when no fields property', () => {
+      const result = (adapter as any)._flattenRecords([
+        { nom: 'Paris', pop: 2000000 },
+      ]);
+      expect(result).toEqual([{ nom: 'Paris', pop: 2000000 }]);
+    });
+
+    it('handles empty records array', () => {
+      expect((adapter as any)._flattenRecords([])).toEqual([]);
+    });
+  });
+
+  describe('_toNumberOrString', () => {
+    it('converts numeric string to number', () => {
+      expect((adapter as any)._toNumberOrString('42')).toBe(42);
+    });
+
+    it('converts decimal string to number', () => {
+      expect((adapter as any)._toNumberOrString('3.14')).toBe(3.14);
+    });
+
+    it('keeps non-numeric string as string', () => {
+      expect((adapter as any)._toNumberOrString('Paris')).toBe('Paris');
+    });
+
+    it('keeps empty string as string', () => {
+      expect((adapter as any)._toNumberOrString('')).toBe('');
+    });
+
+    it('converts negative number', () => {
+      expect((adapter as any)._toNumberOrString('-5')).toBe(-5);
+    });
+  });
+
+  describe('_orderByToGristSort', () => {
+    it('converts desc to minus prefix', () => {
+      expect(adapter._orderByToGristSort('population:desc')).toBe('-population');
+    });
+
+    it('converts asc to plain field', () => {
+      expect(adapter._orderByToGristSort('nom:asc')).toBe('nom');
+    });
+
+    it('handles multiple sort fields', () => {
+      expect(adapter._orderByToGristSort('region:asc, population:desc'))
+        .toBe('region,-population');
+    });
+
+    it('defaults to asc when no direction', () => {
+      expect(adapter._orderByToGristSort('nom')).toBe('nom');
+    });
+  });
+});

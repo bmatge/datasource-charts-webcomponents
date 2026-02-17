@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gouv-raw-data — Exemples - Guide - gouv-widgets</title>
+  <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
+  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <style>
+    .guide-layout { display: flex; gap: 2rem; }
+    .guide-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .guide-content { flex: 1; min-width: 0; }
+    @media (max-width: 992px) {
+      .guide-layout { flex-direction: column; }
+      .guide-sidemenu { position: static; flex: none; max-height: none; }
+    }
+    .guide-content h2 { padding-top: 2rem; border-top: 1px solid var(--border-default-grey); margin-top: 3rem; }
+    .guide-content h2:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .guide-content h3 { margin-top: 2rem; }
+    .guide-content h4 { margin-top: 1.5rem; }
+    .guide-content pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; margin: 0; }
+    .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
+    .guide-content li { margin-bottom: 0.25rem; }
+    .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
+    .example-container { border: 1px solid var(--border-default-grey); border-radius: 4px; padding: 1rem; background: white; min-height: 100px; }
+  </style>
+</head>
+<body>
+  <app-header current-page="guide" base-path="../"></app-header>
+
+  <!-- Source de donnees demo -->
+  <gouv-source id="sites" url="/mock-api/data.json" transform="sites"></gouv-source>
+  <gouv-query id="sites-par-statut" source="sites"
+    group-by="statut" aggregate="statut:count:total">
+  </gouv-query>
+
+  <main class="fr-container fr-py-4w" id="main-content">
+    <div class="guide-layout">
+
+      <nav class="fr-sidemenu guide-sidemenu" role="navigation" aria-labelledby="guide-sidemenu-title">
+        <div class="fr-sidemenu__inner">
+          <button class="fr-sidemenu__btn" hidden aria-controls="guide-sidemenu-wrapper" aria-expanded="true">Menu</button>
+          <div class="fr-collapse" id="guide-sidemenu-wrapper">
+            <div class="fr-sidemenu__title" id="guide-sidemenu-title">Guide utilisateur</div>
+            <ul class="fr-sidemenu__list">
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide.html">Vue d'ensemble</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-parcours.html">Parcours utilisateur</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-source.html">gouv-source</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-normalize.html">gouv-normalize</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-query.html">gouv-query</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-search.html">gouv-search</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-facets.html">gouv-facets</a>
+              </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-display.html">gouv-display</a>
+              </li>
+              <li class="fr-sidemenu__item fr-sidemenu__item--active">
+                <a class="fr-sidemenu__link" href="guide-exemples-raw-data.html" aria-current="true">gouv-raw-data</a>
+              </li>
+            </ul>
+            <div class="fr-sidemenu__title fr-mt-1w" id="guide-sidemenu-title-advanced">Exemples avances</div>
+            <ul class="fr-sidemenu__list">
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-avances.html">Recherche et facettes multizone</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="guide-content">
+
+        <h1><i class="ri-download-2-line fr-mr-1w"></i>gouv-raw-data</h1>
+        <p class="fr-text--lead">
+          <code>gouv-raw-data</code> propose un bouton de telechargement CSV des donnees
+          associees a une visualisation. Il ameliore l'accessibilite en offrant une alternative
+          textuelle aux graphiques pour les utilisateurs de lecteur d'ecran.
+        </p>
+
+        <!-- Principe d'accessibilite -->
+        <h2>Pourquoi ce composant ?</h2>
+        <p>
+          Les graphiques (canvas, SVG) sont difficilement interpretables par les lecteurs d'ecran.
+          <code>gouv-raw-data</code> resout ce probleme en :
+        </p>
+        <ol>
+          <li>Proposant un <strong>bouton de telechargement CSV</strong> des donnees brutes</li>
+          <li>Creant un <strong>lien ARIA automatique</strong> entre le graphique et le bouton via <code>aria-describedby</code></li>
+          <li>Permettant au lecteur d'ecran d'<strong>annoncer la disponibilite du telechargement</strong> quand il lit le graphique</li>
+        </ol>
+
+        <!-- Usage basique -->
+        <h2>Usage basique</h2>
+        <p>Placez <code>gouv-raw-data</code> juste apres votre composant de visualisation.
+          L'attribut <code>for</code> cree automatiquement la liaison ARIA.</p>
+
+        <div class="example-container">
+          <gouv-dsfr-chart id="guide-chart" source="sites-par-statut" type="bar"
+            label-field="statut" value-field="total" titre="Sites par statut">
+          </gouv-dsfr-chart>
+          <gouv-raw-data for="guide-chart" source="sites-par-statut"></gouv-raw-data>
+        </div>
+
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-basic">Code source</button></h3>
+          <div class="fr-collapse" id="code-basic">
+<pre>&lt;gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr"
+  dataset-id="mon-dataset"&gt;
+&lt;/gouv-source&gt;
+&lt;gouv-query id="data" source="src"
+  group-by="region" aggregate="population:sum:total"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart id="mon-graph" source="data" type="bar"
+  label-field="region" value-field="total"&gt;
+&lt;/gouv-dsfr-chart&gt;
+&lt;gouv-raw-data for="mon-graph" source="data"&gt;&lt;/gouv-raw-data&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Personnalisation -->
+        <h2>Personnalisation</h2>
+        <p>Par defaut, le bouton est icone seul. Ajoutez <code>button-label</code> pour afficher un texte visible :</p>
+
+        <div class="example-container">
+          <gouv-raw-data for="guide-chart" source="sites-par-statut"
+            filename="sites-statut-export.csv"
+            button-label="Exporter en CSV">
+          </gouv-raw-data>
+        </div>
+
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-custom">Code source</button></h3>
+          <div class="fr-collapse" id="code-custom">
+<pre>&lt;gouv-raw-data for="mon-graph" source="data"
+  filename="export-regions.csv"
+  button-label="Exporter en CSV"&gt;
+&lt;/gouv-raw-data&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Mode manuel -->
+        <h2>Mode manuel (no-auto-aria)</h2>
+        <p>
+          Si vous gerez les attributs ARIA manuellement, ajoutez <code>no-auto-aria</code>
+          pour desactiver l'injection automatique :
+        </p>
+
+        <section class="fr-accordion fr-mt-1w">
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-manual">Code source</button></h3>
+          <div class="fr-collapse" id="code-manual">
+<pre>&lt;gouv-dsfr-chart id="mon-graph"
+  aria-describedby="dl-custom"
+  source="data" type="pie"&gt;
+&lt;/gouv-dsfr-chart&gt;
+
+&lt;gouv-raw-data id="dl-custom" source="data"
+  no-auto-aria&gt;
+&lt;/gouv-raw-data&gt;</pre>
+          </div>
+        </section>
+
+        <!-- Attributs -->
+        <h2>Attributs</h2>
+        <table class="fr-table fr-table--bordered">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Defaut</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>String</td><td><code>""</code></td><td>ID du composant source de donnees</td></tr>
+            <tr><td><code>for</code></td><td>String</td><td><code>""</code></td><td>ID de l'element cible pour liaison ARIA</td></tr>
+            <tr><td><code>filename</code></td><td>String</td><td><code>"donnees.csv"</code></td><td>Nom du fichier telecharge</td></tr>
+            <tr><td><code>label</code></td><td>String</td><td><code>"Telecharger les donnees (CSV)"</code></td><td>Libelle d'accessibilite (title + aria)</td></tr>
+            <tr><td><code>button-label</code></td><td>String</td><td><code>""</code></td><td>Texte visible dans le bouton. Si vide, bouton icone seul</td></tr>
+            <tr><td><code>no-auto-aria</code></td><td>Boolean</td><td><code>false</code></td><td>Desactive l'injection ARIA automatique</td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </main>
+
+  <app-footer base-path="../"></app-footer>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.module.min.js"></script>
+</body>
+</html>

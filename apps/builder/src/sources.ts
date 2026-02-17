@@ -220,6 +220,12 @@ export function loadFieldsFromLocalData(): void {
   } else {
     if (generationModeSection) generationModeSection.style.display = 'none';
   }
+
+  // Show/hide raw-data option (available for dynamic sources)
+  const rawDataSection = document.getElementById('section-raw-data') as HTMLElement | null;
+  if (rawDataSection) {
+    rawDataSection.style.display = (source?.type === 'grist' || source?.type === 'api') ? 'block' : 'none';
+  }
   updateMiddlewareSections();
 
   showDataPreviewButton();

@@ -15,6 +15,7 @@ export { GouvDatalist } from './components/gouv-datalist.js';
 export { GouvDisplay } from './components/gouv-display.js';
 export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
 export { GouvWorldMap } from './components/gouv-world-map.js';
+export { GouvRawData } from './components/gouv-raw-data.js';
 
 // Composants de layout
 export { AppHeader, AppFooter, AppLayoutBuilder, AppLayoutDemo } from './components/layout/index.js';

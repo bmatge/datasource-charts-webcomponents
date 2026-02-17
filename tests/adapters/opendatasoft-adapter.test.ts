@@ -616,4 +616,190 @@ describe('OpenDataSoftAdapter', () => {
       ).rejects.toThrow('HTTP 429');
     });
   });
+
+  describe('fetchPage (server-side)', () => {
+    it('fetches one page and returns data with totalCount', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 20 }, (_, i) => ({ id: i })),
+          total_count: 500,
+        }),
+      });
+
+      const result = await adapter.fetchPage(
+        makeParams({ pageSize: 20 }),
+        { page: 1, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      );
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.data).toHaveLength(20);
+      expect(result.totalCount).toBe(500);
+      expect(result.needsClientProcessing).toBe(false);
+      expect(result.rawJson).toBeDefined();
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      await expect(
+        adapter.fetchPage(
+          makeParams(),
+          { page: 1, effectiveWhere: '', orderBy: '' },
+          new AbortController().signal
+        )
+      ).rejects.toThrow('HTTP 503');
+    });
+
+    it('handles page 3 with offset', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: [{ id: 1 }],
+          total_count: 50,
+        }),
+      });
+
+      await adapter.fetchPage(
+        makeParams({ pageSize: 20 }),
+        { page: 3, effectiveWhere: '', orderBy: '' },
+        new AbortController().signal
+      );
+
+      const callUrl = mockFetch.mock.calls[0][0] as string;
+      expect(callUrl).toContain('limit=20');
+      expect(callUrl).toContain('offset=40');
+    });
+  });
+
+  describe('buildServerSideUrl', () => {
+    it('builds URL with page and offset', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ pageSize: 20 }),
+        { page: 3, effectiveWhere: '', orderBy: '' }
+      );
+      expect(url).toContain('limit=20');
+      expect(url).toContain('offset=40');
+    });
+
+    it('does not include offset for page 1', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ pageSize: 20 }),
+        { page: 1, effectiveWhere: '', orderBy: '' }
+      );
+      expect(url).toContain('limit=20');
+      expect(url).not.toContain('offset=');
+    });
+
+    it('includes effectiveWhere as where param', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams(),
+        { page: 1, effectiveWhere: 'region = "IDF"', orderBy: '' }
+      );
+      expect(url).toContain('where=');
+    });
+
+    it('includes orderBy from overlay', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams(),
+        { page: 1, effectiveWhere: '', orderBy: 'population:desc' }
+      );
+      expect(url).toContain('order_by=');
+    });
+
+    it('includes select from params', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ select: 'nom, count(*) as total' }),
+        { page: 1, effectiveWhere: '', orderBy: '' }
+      );
+      expect(url).toContain('select=');
+    });
+
+    it('includes groupBy from params', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ groupBy: 'region' }),
+        { page: 1, effectiveWhere: '', orderBy: '' }
+      );
+      expect(url).toContain('group_by=region');
+    });
+
+    it('builds select from aggregate when no explicit select', () => {
+      const url = adapter.buildServerSideUrl(
+        makeParams({ groupBy: 'region', aggregate: 'population:sum:total' }),
+        { page: 1, effectiveWhere: '', orderBy: '' }
+      );
+      expect(url).toContain('select=');
+      expect(url).toContain('group_by=region');
+    });
+  });
+
+  describe('fetchAll pagination', () => {
+    it('fetches multiple pages via offset', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 100 }, (_, i) => ({ id: i })),
+          total_count: 150,
+        }),
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 50 }, (_, i) => ({ id: 100 + i })),
+          total_count: 150,
+        }),
+      });
+
+      const result = await adapter.fetchAll(
+        makeParams({ limit: 0 }),
+        new AbortController().signal
+      );
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result.data).toHaveLength(150);
+      expect(result.totalCount).toBe(150);
+    });
+
+    it('stops at requested limit', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 50 }, (_, i) => ({ id: i })),
+          total_count: 200,
+        }),
+      });
+
+      const result = await adapter.fetchAll(
+        makeParams({ limit: 50 }),
+        new AbortController().signal
+      );
+
+      expect(result.data).toHaveLength(50);
+    });
+
+    it('warns on incomplete pagination', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          results: Array.from({ length: 50 }, (_, i) => ({ id: i })),
+          total_count: 2000,
+        }),
+      });
+
+      await adapter.fetchAll(
+        makeParams({ limit: 200 }),
+        new AbortController().signal
+      );
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('pagination incomplete'));
+      warnSpy.mockRestore();
+    });
+  });
 });

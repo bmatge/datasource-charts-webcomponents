@@ -747,4 +747,176 @@ describe('GouvDatalist component', () => {
       expect(result[2].score).toBe(60);
     });
   });
+
+  describe('Render methods', () => {
+    it('_renderTable with empty data returns template', () => {
+      datalist.colonnes = 'name:Nom, score:Score';
+      const columns = datalist.parseColumns();
+      const result = (datalist as any)._renderTable(columns, []);
+      expect(result).toBeDefined();
+      expect(result.strings).toBeDefined();
+    });
+
+    it('_renderTable with data returns template', () => {
+      datalist.colonnes = 'name:Nom, score:Score';
+      const columns = datalist.parseColumns();
+      const data = [
+        { name: 'Alpha', score: 80 },
+        { name: 'Beta', score: 60 },
+      ];
+      const result = (datalist as any)._renderTable(columns, data);
+      expect(result).toBeDefined();
+      expect(result.strings).toBeDefined();
+    });
+
+    it('_renderTable with sorted column', () => {
+      datalist.colonnes = 'name:Nom, score:Score';
+      (datalist as any)._sort = { key: 'score', direction: 'asc' };
+      const columns = datalist.parseColumns();
+      const result = (datalist as any)._renderTable(columns, [{ name: 'A', score: 10 }]);
+      expect(result).toBeDefined();
+    });
+
+    it('_renderTable with desc sorted column', () => {
+      datalist.colonnes = 'name:Nom, score:Score';
+      (datalist as any)._sort = { key: 'score', direction: 'desc' };
+      const columns = datalist.parseColumns();
+      const result = (datalist as any)._renderTable(columns, [{ name: 'A', score: 10 }]);
+      expect(result).toBeDefined();
+    });
+
+    it('_renderPagination returns empty for single page', () => {
+      datalist.pagination = 10;
+      const result = (datalist as any)._renderPagination(1);
+      expect(result).toBe('');
+    });
+
+    it('_renderPagination returns empty when pagination is 0', () => {
+      datalist.pagination = 0;
+      const result = (datalist as any)._renderPagination(5);
+      expect(result).toBe('');
+    });
+
+    it('_renderPagination returns template for multiple pages', () => {
+      datalist.pagination = 10;
+      (datalist as any)._currentPage = 1;
+      const result = (datalist as any)._renderPagination(5);
+      expect(result).toBeDefined();
+      expect(result.strings).toBeDefined();
+    });
+
+    it('_renderToolbar returns empty when no search or export', () => {
+      datalist.recherche = false;
+      datalist.export = '';
+      const result = (datalist as any)._renderToolbar();
+      expect(result).toBe('');
+    });
+
+    it('_renderToolbar returns template when search is enabled', () => {
+      datalist.recherche = true;
+      datalist.source = 'test-dl-src';
+      const result = (datalist as any)._renderToolbar();
+      expect(result).toBeDefined();
+      expect(result.strings).toBeDefined();
+    });
+
+    it('_renderToolbar with csv export', () => {
+      datalist.export = 'csv';
+      const result = (datalist as any)._renderToolbar();
+      expect(result).toBeDefined();
+    });
+
+    it('_renderToolbar with html export', () => {
+      datalist.export = 'html';
+      const result = (datalist as any)._renderToolbar();
+      expect(result).toBeDefined();
+    });
+
+    it('_renderFilters returns empty when no filterable columns', () => {
+      const columns = [{ key: 'name', label: 'Nom' }];
+      const result = (datalist as any)._renderFilters(columns, []);
+      expect(result).toBe('');
+    });
+
+    it('_renderFilters returns template with filterable columns', () => {
+      datalist.onSourceData([
+        { name: 'Alpha', ministere: 'Education' },
+        { name: 'Beta', ministere: 'Sante' },
+      ]);
+      const columns = [{ key: 'ministere', label: 'Ministere' }];
+      const result = (datalist as any)._renderFilters(columns, ['ministere']);
+      expect(result).toBeDefined();
+      expect(result.strings).toBeDefined();
+    });
+
+    it('render shows loading state', () => {
+      datalist.source = 'test-dl-src';
+      datalist.colonnes = 'name:Nom';
+      (datalist as any)._sourceLoading = true;
+      const result = datalist.render();
+      expect(result).toBeDefined();
+    });
+
+    it('render shows error state', () => {
+      datalist.source = 'test-dl-src';
+      datalist.colonnes = 'name:Nom';
+      (datalist as any)._sourceError = new Error('Test error');
+      const result = datalist.render();
+      expect(result).toBeDefined();
+    });
+
+    it('render shows table when data is available', () => {
+      datalist.source = 'test-dl-src';
+      datalist.colonnes = 'name:Nom, score:Score';
+      datalist.onSourceData([
+        { name: 'Alpha', score: 80 },
+        { name: 'Beta', score: 60 },
+      ]);
+      const result = datalist.render();
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('_getUniqueValues', () => {
+    it('returns unique values for a key', () => {
+      datalist.onSourceData([
+        { type: 'A' },
+        { type: 'B' },
+        { type: 'A' },
+      ]);
+      const values = (datalist as any)._getUniqueValues('type');
+      expect(values).toContain('A');
+      expect(values).toContain('B');
+      expect(new Set(values).size).toBe(values.length);
+    });
+  });
+
+  describe('_handleFilter', () => {
+    it('sets active filter from select change', () => {
+      const mockEvent = { target: { value: 'Education' } };
+      (datalist as any)._handleFilter('ministere', mockEvent);
+      expect((datalist as any)._activeFilters.ministere).toBe('Education');
+    });
+
+    it('sets filter to empty string when value is cleared (ignored during filtering)', () => {
+      (datalist as any)._activeFilters = { ministere: 'Education' };
+      const mockEvent = { target: { value: '' } };
+      (datalist as any)._handleFilter('ministere', mockEvent);
+      expect((datalist as any)._activeFilters.ministere).toBe('');
+    });
+  });
+
+  describe('_handleSearch', () => {
+    it('sets search query from input', () => {
+      const mockEvent = { target: { value: 'alpha' } };
+      (datalist as any)._handleSearch(mockEvent);
+      expect((datalist as any)._searchQuery).toBe('alpha');
+    });
+  });
+
+  describe('createRenderRoot', () => {
+    it('returns this (light DOM)', () => {
+      expect(datalist.createRenderRoot()).toBe(datalist);
+    });
+  });
 });

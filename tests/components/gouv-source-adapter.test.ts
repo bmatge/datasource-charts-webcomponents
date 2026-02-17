@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getAdapter } from '../../src/adapters/adapter-registry.js';
 
 // Test the GouvSource class logic without full Lit rendering
 // We import the class and test its public API and adapter integration
@@ -10,13 +11,11 @@ describe('GouvSource adapter mode detection', () => {
   it('apiType != generic activates adapter mode', () => {
     // When apiType is 'opendatasoft', the source should use adapter mode
     // Tested indirectly: getAdapter() should return a valid adapter
-    const { getAdapter } = require('../../src/adapters/adapter-registry');
     const adapter = getAdapter('opendatasoft');
     expect(adapter.type).toBe('opendatasoft');
   });
 
   it('apiType = generic with url uses URL mode', () => {
-    const { getAdapter } = require('../../src/adapters/adapter-registry');
     const adapter = getAdapter('generic');
     expect(adapter.capabilities.serverFetch).toBe(false);
   });
@@ -210,7 +209,6 @@ describe('GouvSource command handling', () => {
 
 describe('GouvSource adapter validation', () => {
   it('ODS adapter validates dataset-id', () => {
-    const { getAdapter } = require('../../src/adapters/adapter-registry');
     const adapter = getAdapter('opendatasoft');
     expect(adapter.validate({
       baseUrl: 'https://data.example.com',
@@ -222,7 +220,6 @@ describe('GouvSource adapter validation', () => {
   });
 
   it('Tabular adapter validates resource', () => {
-    const { getAdapter } = require('../../src/adapters/adapter-registry');
     const adapter = getAdapter('tabular');
     expect(adapter.validate({
       baseUrl: '', datasetId: '', resource: '',
@@ -233,7 +230,6 @@ describe('GouvSource adapter validation', () => {
   });
 
   it('Grist adapter validates base-url', () => {
-    const { getAdapter } = require('../../src/adapters/adapter-registry');
     const adapter = getAdapter('grist');
     expect(adapter.validate({
       baseUrl: '', datasetId: '', resource: '',

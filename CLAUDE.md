@@ -85,6 +85,8 @@ gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► don
      │◄── commandes (where) ───────────────────────────────────┘
      ▼
   gouv-dsfr-chart / gouv-datalist / gouv-kpi / gouv-display
+         │
+         └──► gouv-raw-data (companion optionnel, telechargement CSV + ARIA)
 ```
 
 **Regles** :
@@ -103,9 +105,11 @@ gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► don
 <gouv-query id="data" source="src"
   group-by="region" aggregate="population:sum:total" order-by="total:desc">
 </gouv-query>
-<gouv-dsfr-chart source="data" type="bar"
+<gouv-dsfr-chart id="mon-graph" source="data" type="bar"
   label-field="region" value-field="total">
 </gouv-dsfr-chart>
+<!-- Optionnel : telechargement CSV accessible -->
+<gouv-raw-data for="mon-graph" source="data"></gouv-raw-data>
 ```
 
 Pour les cas sans transformation (datalist, display), gouv-query peut etre omis :
