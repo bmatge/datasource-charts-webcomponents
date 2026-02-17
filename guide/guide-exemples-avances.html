@@ -77,6 +77,9 @@
               <li class="fr-sidemenu__item fr-sidemenu__item--active">
                 <a class="fr-sidemenu__link" href="guide-exemples-avances.html" aria-current="true">Recherche et facettes multizone</a>
               </li>
+              <li class="fr-sidemenu__item">
+                <a class="fr-sidemenu__link" href="guide-exemples-insee-erfs.html">Dashboard INSEE ERFS</a>
+              </li>
             </ul>
           </div>
         </div>
@@ -101,7 +104,8 @@
 
         <p class="fr-mt-2w">
           La source <code>gouv-source</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
-          La recherche et les facettes envoient chacune un <code>where</code> a la source (merge via <code>whereKey</code>).
+          La recherche (avec <code>where-key="search"</code>) et les facettes envoient chacune un <code>where</code> a la source,
+          qui sont automatiquement merges grace aux <code>whereKey</code> distincts.
           Les donnees filtrees sont re-emises par <code>gouv-facets</code> sous l'id <code>"filtered"</code>,
           puis splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
         </p>
@@ -122,6 +126,7 @@
         </gouv-source>
 
         <gouv-search source="q" server-search
+          where-key="search"
           placeholder="Rechercher un produit, une marque, un numero de fiche..."
           count>
         </gouv-search>
@@ -273,6 +278,7 @@
 
 &lt;!-- Recherche server-side --&gt;
 &lt;gouv-search source="q" server-search
+  where-key="search"
   placeholder="Rechercher un produit, une marque, un numero de fiche..."
   count&gt;
 &lt;/gouv-search&gt;
@@ -406,8 +412,8 @@
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>1 seule source serveur</strong> : <code>gouv-query server-side</code> charge 100 resultats depuis l'API ODS.</li>
-          <li><strong>Recherche + facettes</strong> : <code>gouv-search server-search</code> et <code>gouv-facets server-facets</code> envoient chacun un <code>where</code> au query, merges via <code>whereKey</code>.</li>
+          <li><strong>1 seule source serveur</strong> : <code>gouv-source server-side</code> charge 100 resultats depuis l'API ODS.</li>
+          <li><strong>Recherche + facettes</strong> : <code>gouv-search server-search where-key="search"</code> et <code>gouv-facets server-facets</code> envoient chacun un <code>where</code> a la source, merges via <code>whereKey</code> distincts.</li>
           <li><strong>Split client-side</strong> : deux <code>gouv-query</code> filtrent localement les donnees re-emises par les facettes (alimentation vs autres).</li>
           <li><strong>3 zones d'affichage</strong> : les 3 derniers rappels alimentaires, les 3 derniers autres, et la liste complete paginee.</li>
           <li><strong>Cross-facet</strong> : les compteurs de chaque facette tiennent compte des selections des autres facettes.</li>
