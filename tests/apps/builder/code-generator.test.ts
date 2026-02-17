@@ -1594,7 +1594,10 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
+    // Must use new pattern: gouv-source + gouv-query (NOT deprecated gouv-query api-type)
+    expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="opendatasoft"');
+    expect(code).toContain('<gouv-query');
     expect(code).toContain('<gouv-datalist');
     expect(code).not.toContain('<gouv-dsfr-chart');
     expect(code).toContain('server-side');
@@ -1613,7 +1616,10 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
+    // Must use new pattern: gouv-source + gouv-query (NOT deprecated gouv-query api-type)
+    expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="tabular"');
+    expect(code).toContain('<gouv-query');
     expect(code).toContain('<gouv-datalist');
     expect(code).toContain('server-side');
     expect(code).toContain('page-size="20"');
@@ -1850,6 +1856,138 @@ describe('regression tests', () => {
     // After flatten, map should use flat codeField path
     expect(code).toContain('group-by="code_dept"');
     expect(code).not.toContain('group-by="fields.code_dept"');
+  });
+});
+
+// =====================================================================
+// Regression: deprecated <gouv-query api-type="..."> pattern must NOT be generated
+// =====================================================================
+describe('regression: no deprecated gouv-query api-type pattern', () => {
+  beforeEach(() => {
+    resetState();
+    document.body.innerHTML = `
+      <div id="generated-code"></div>
+      <div id="raw-data"></div>
+      <select id="kpi-variant"><option value="">Default</option></select>
+      <input id="kpi-unit" value="">
+    `;
+    state.generationMode = 'dynamic';
+  });
+
+  /**
+   * Verify that api-type appears on <gouv-source>, NOT on <gouv-query>.
+   * The deprecated pattern <gouv-query api-type="..."> creates a shadow source
+   * internally and should never be emitted by code generators.
+   */
+  function assertNoDeprecatedPattern(code: string) {
+    // api-type must NOT appear on gouv-query
+    expect(code).not.toMatch(/<gouv-query[^>]*api-type=/);
+    // api-type must appear on gouv-source (if present at all)
+    if (code.includes('api-type=')) {
+      expect(code).toMatch(/<gouv-source[^>]*api-type=/);
+    }
+  }
+
+  it('ODS bar chart should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'ODS', type: 'api',
+      apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
+    };
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('Tabular bar chart should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'Tabular', type: 'api',
+      apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
+    };
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('ODS datalist should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'ODS', type: 'api',
+      apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
+    };
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('Tabular datalist should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'Tabular', type: 'api',
+      apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
+    };
+    state.chartType = 'datalist';
+    state.labelField = 'region';
+    state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('ODS map should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'ODS', type: 'api',
+      apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
+    };
+    state.chartType = 'map';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.codeField = 'code_dept';
+    state.aggregation = 'sum';
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('Tabular map should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'Tabular', type: 'api',
+      apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
+    };
+    state.chartType = 'map';
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.codeField = 'code_dept';
+    state.aggregation = 'sum';
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
+  });
+
+  it('ODS chart with facets should use gouv-source for api-type, not gouv-query', () => {
+    state.savedSource = {
+      id: '1', name: 'ODS', type: 'api',
+      apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
+    };
+    state.labelField = 'region';
+    state.valueField = 'population';
+    state.aggregation = 'sum';
+    state.chartType = 'bar';
+    state.facetsConfig.enabled = true;
+    state.facetsConfig.fields = [
+      { field: 'dept', label: 'Departement', display: 'checkbox', searchable: false, disjunctive: false },
+    ];
+    generateDynamicCodeForApi();
+    const code = document.getElementById('generated-code')!.textContent!;
+    assertNoDeprecatedPattern(code);
   });
 });
 

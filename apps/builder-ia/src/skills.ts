@@ -221,6 +221,7 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 | order-by | String | \`""\` | non | Tri serveur. Ex: \`"population:desc"\` |
 | server-side | Boolean | \`false\` | non | Active la pagination serveur page par page (datalist, tableaux). |
 | limit | Number | \`0\` | non | Limite du nombre de resultats (0 = pas de limite). |
+| data | String | \`""\` | non | Donnees JSON inline (pas de fetch). Ex: \`data='[{"x":1},{"x":2}]'\` |
 
 ### Evenements emis
 - \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)
@@ -671,9 +672,11 @@ champs de type string avec 2 a 50 valeurs uniques (exclut les champs ID-like).
 </gouv-facets>
 
 <!-- Facettes serveur ODS (server-facets) -->
-<gouv-query id="q" server-side page-size="20"
-  api-type="opendatasoft" dataset-id="mon-dataset" base-url="https://data.example.com">
-</gouv-query>
+<gouv-source id="src" api-type="opendatasoft"
+  dataset-id="mon-dataset" base-url="https://data.example.com"
+  server-side page-size="20">
+</gouv-source>
+<gouv-query id="q" source="src" server-side></gouv-query>
 <gouv-search source="q" server-search placeholder="Rechercher..." count></gouv-search>
 <gouv-facets id="filtered" source="q" server-facets
   fields="region, categorie"

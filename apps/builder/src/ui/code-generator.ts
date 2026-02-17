@@ -1276,8 +1276,8 @@ export function generateDynamicCodeForApi(): void {
       const whereAttr = state.advancedMode && state.queryFilter
         ? `\n    where="${escapeHtml(filterToOdsql(state.queryFilter))}"` : '';
       // Facettes serveur ODS (fetch depuis l'API /facets)
-      const facets = generateFacetsElement('table-data', { serverFacets: true });
-      const datalistSource = facets.element ? facets.finalSourceId : 'table-data';
+      const facets = generateFacetsElement('table-query', { serverFacets: true });
+      const datalistSource = facets.element ? facets.finalSourceId : 'table-query';
       const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
@@ -1292,13 +1292,18 @@ export function generateDynamicCodeForApi(): void {
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-query
+  <gouv-source
     id="table-data"
     api-type="opendatasoft"
     base-url="${apiBaseUrl}"
     dataset-id="${resourceIds!.datasetId}"${whereAttr}
     server-side
     page-size="20">
+  </gouv-source>
+  <gouv-query
+    id="table-query"
+    source="table-data"
+    server-side>
   </gouv-query>
 ${facets.element}
   <gouv-datalist
@@ -1314,11 +1319,11 @@ ${facets.element}
 
     if (provider.id === 'tabular' && resourceIds?.resourceId) {
       const filterAttr = state.advancedMode && state.queryFilter
-        ? `\n    filter="${escapeHtml(state.queryFilter)}"` : '';
+        ? `\n    where="${escapeHtml(state.queryFilter)}"` : '';
       // Facettes pre-calculees (Tabular ne supporte pas les facettes serveur)
       const staticVals = computeStaticFacetValues();
-      const facets = generateFacetsElement('table-data', staticVals ? { staticValues: staticVals } : undefined);
-      const datalistSource = facets.element ? facets.finalSourceId : 'table-data';
+      const facets = generateFacetsElement('table-query', staticVals ? { staticValues: staticVals } : undefined);
+      const datalistSource = facets.element ? facets.finalSourceId : 'table-query';
       const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
@@ -1333,13 +1338,18 @@ ${facets.element}
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-query
+  <gouv-source
     id="table-data"
     api-type="tabular"
     base-url="${apiBaseUrl}"
     resource="${resourceIds!.resourceId}"${filterAttr}
     server-side
     page-size="20">
+  </gouv-source>
+  <gouv-query
+    id="table-query"
+    source="table-data"
+    server-side>
   </gouv-query>
 ${facets.element}
   <gouv-datalist
