@@ -1571,17 +1571,22 @@ describe('generateDynamicCodeForApi', () => {
     expect(code).toContain('code-field="code_dept"');
   });
 
-  it('should fallback to embedded for KPI type', () => {
+  it('should generate gouv-source + gouv-kpi for ODS KPI type', () => {
     state.savedSource = {
       id: '1', name: 'ODS Source', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
     };
     state.chartType = 'kpi';
+    state.valueField = 'population';
+    state.aggregation = 'avg';
     state.data = [{ value: 99 }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).not.toContain('<gouv-source');
-    expect(code).toContain('kpi');
+    expect(code).toContain('<gouv-source');
+    expect(code).toContain('api-type="opendatasoft"');
+    expect(code).toContain('select="avg(population) as value"');
+    expect(code).toContain('<gouv-kpi');
+    expect(code).toContain('valeur="value"');
   });
 
   it('should generate datalist for ODS source with server-side pagination', () => {

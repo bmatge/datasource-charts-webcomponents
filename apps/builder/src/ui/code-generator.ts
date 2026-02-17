@@ -400,7 +400,10 @@ export async function generateChart(): Promise<void> {
   }
 
   // Check if using local data
-  if (state.sourceType === 'saved' && state.localData && state.localData.length > 0) {
+  // For API sources with an apiUrl, prefer server-side aggregation (more accurate
+  // than client-side aggregation on the limited local data sample)
+  const isApiSource = state.savedSource?.type === 'api' && state.apiUrl;
+  if (state.sourceType === 'saved' && state.localData && state.localData.length > 0 && !isApiSource) {
     generateChartFromLocalData();
     return;
   }
@@ -458,8 +461,12 @@ export async function generateChart(): Promise<void> {
     // Render chart or KPI
     renderChart();
 
-    // Generate code
-    generateCode(apiUrl);
+    // Generate code: dynamic mode uses gouv-source components, embedded uses inline JS
+    if (state.generationMode === 'dynamic' && state.savedSource?.type === 'api') {
+      generateDynamicCodeForApi();
+    } else {
+      generateCode(apiUrl);
+    }
 
     // Update accessible table (only for charts)
     if (!isKPI) {
@@ -1259,8 +1266,47 @@ export function generateDynamicCodeForApi(): void {
   // Handle data path transform
   const transformAttr = source.dataPath ? `\n    transform="${source.dataPath}"` : '';
 
-  // Handle KPI type (no DSFR Chart equivalent, fallback to embedded)
+  // Handle KPI type: use gouv-source + gouv-kpi for ODS/Tabular, fallback to embedded otherwise
   if (state.chartType === 'kpi') {
+    if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
+      const selectExpr = state.aggregation === 'count'
+        ? 'count(*) as value'
+        : `${state.aggregation}(${valueFieldPath}) as value`;
+      const whereAttr = state.advancedMode && state.queryFilter
+        ? `\n    where="${escapeHtml(filterToOdsql(state.queryFilter))}"` : '';
+      const unitInput = document.getElementById('kpi-unit') as HTMLInputElement | null;
+      const unit = unitInput?.value || '';
+      const formatAttr = unit === '%' ? ' format="pourcentage"'
+        : (unit === '\u20ac' || unit === 'EUR') ? ' format="euro"'
+        : unit ? ' format="nombre"' : '';
+      const code = `<!-- KPI dynamique genere avec gouv-widgets Builder -->
+<!-- Source : ${escapeHtml(source.name)} (agregation serveur) -->
+
+<!-- Dependances CSS (DSFR) -->
+<link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
+<link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
+
+<!-- Dependances JS -->
+<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+
+<div class="fr-container fr-my-4w">
+  <gouv-source
+    id="kpi-src"
+    api-type="opendatasoft"
+    base-url="${apiBaseUrl}"
+    dataset-id="${resourceIds.datasetId}"
+    select="${escapeHtml(selectExpr)}"${whereAttr}${refreshAttr}>
+  </gouv-source>
+  <gouv-kpi
+    source="kpi-src"
+    valeur="value"
+    label="${escapeHtml(state.title)}"${formatAttr}>
+  </gouv-kpi>
+</div>`;
+      codeEl.textContent = code;
+      return;
+    }
+    // Non-ODS: fallback to embedded code with current data
     generateCodeForLocalData();
     return;
   }

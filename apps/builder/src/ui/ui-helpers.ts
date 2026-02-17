@@ -8,6 +8,40 @@ import { loadFromStorage, saveToStorage, toastWarning, toastSuccess, navigateTo 
 import type { Favorite } from '../state.js';
 
 /**
+ * Build a serializable snapshot of the current builder state.
+ * Used for favorites and for round-trip to playground.
+ */
+export function getBuilderStateToSave(): Record<string, unknown> {
+  return {
+    chartType: state.chartType,
+    labelField: state.labelField,
+    valueField: state.valueField,
+    valueField2: state.valueField2,
+    codeField: state.codeField,
+    aggregation: state.aggregation,
+    sortOrder: state.sortOrder,
+    title: state.title,
+    subtitle: state.subtitle,
+    palette: state.palette,
+    color2: state.color2,
+    fields: state.fields,
+    data: state.data,
+    localData: state.localData,
+    savedSource: state.savedSource,
+    generationMode: state.generationMode,
+    refreshInterval: state.refreshInterval,
+    advancedMode: state.advancedMode,
+    queryFilter: state.queryFilter,
+    queryGroupBy: state.queryGroupBy,
+    queryAggregate: state.queryAggregate,
+    datalistColumns: state.datalistColumns,
+    normalizeConfig: state.normalizeConfig,
+    facetsConfig: state.facetsConfig,
+    rawDataEnabled: state.rawDataEnabled,
+  };
+}
+
+/**
  * Open the current generated code in the playground.
  */
 export function openInPlayground(): void {
@@ -17,6 +51,13 @@ export function openInPlayground(): void {
   if (!code || code === '// Le code sera g\u00e9n\u00e9r\u00e9 ici...' || code.startsWith('//')) {
     toastWarning('G\u00e9n\u00e9rez d\'abord un graphique avant de l\'ouvrir dans le Playground.');
     return;
+  }
+
+  // Store builder state so we can restore it on round-trip back
+  try {
+    sessionStorage.setItem('builder-state', JSON.stringify(getBuilderStateToSave()));
+  } catch {
+    // QuotaExceededError — proceed without state backup
   }
 
   // Store the code in sessionStorage
@@ -42,32 +83,6 @@ export function saveFavorite(): void {
 
   const favorites = loadFromStorage<Favorite[]>(FAVORITES_KEY, []);
 
-  // Save complete state (without Chart instance)
-  const stateToSave = {
-    chartType: state.chartType,
-    labelField: state.labelField,
-    valueField: state.valueField,
-    valueField2: state.valueField2,
-    codeField: state.codeField,
-    aggregation: state.aggregation,
-    sortOrder: state.sortOrder,
-    title: state.title,
-    subtitle: state.subtitle,
-    palette: state.palette,
-    color2: state.color2,
-    fields: state.fields,
-    data: state.data,
-    localData: state.localData,
-    savedSource: state.savedSource,
-    generationMode: state.generationMode,
-    refreshInterval: state.refreshInterval,
-    // Advanced mode (gouv-query)
-    advancedMode: state.advancedMode,
-    queryFilter: state.queryFilter,
-    queryGroupBy: state.queryGroupBy,
-    queryAggregate: state.queryAggregate,
-  };
-
   const favorite: Favorite = {
     id: 'fav-' + Date.now(),
     name: name,
@@ -75,7 +90,7 @@ export function saveFavorite(): void {
     chartType: state.chartType,
     source: 'builder',
     createdAt: new Date().toISOString(),
-    builderState: stateToSave,
+    builderState: getBuilderStateToSave(),
   };
 
   favorites.unshift(favorite);

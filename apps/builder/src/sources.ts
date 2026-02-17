@@ -140,6 +140,13 @@ export function handleSavedSourceChange(): void {
     `;
   }
 
+  // Set apiUrl for API sources (used by generateChart for server-side aggregation)
+  if (source.type === 'api' && source.apiUrl) {
+    state.apiUrl = source.apiUrl;
+  } else {
+    state.apiUrl = '';
+  }
+
   // If it has local data, load fields directly
   if (source.data && source.data.length > 0) {
     state.localData = source.data;
@@ -292,11 +299,13 @@ export async function loadFields(): Promise<void> {
 }
 
 /**
- * Restore state from sessionStorage when coming back from favorites page.
+ * Restore builder state from sessionStorage.
+ * Works when coming back from favorites (from=favorites) or playground (from=playground).
  */
 export function loadFavoriteState(): void {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('from') !== 'favorites') return;
+  const from = urlParams.get('from');
+  if (from !== 'favorites' && from !== 'playground') return;
 
   const savedState = sessionStorage.getItem('builder-state');
   if (!savedState) return;
@@ -307,6 +316,38 @@ export function loadFavoriteState(): void {
 
     // Restore state
     Object.assign(state, favoriteState);
+
+    // Restore source dropdown selection
+    if (state.savedSource) {
+      const sourceSelect = document.getElementById('saved-source') as HTMLSelectElement | null;
+      if (sourceSelect) {
+        let found = false;
+        for (const option of Array.from(sourceSelect.options)) {
+          if (option.value === state.savedSource.id) {
+            option.selected = true;
+            found = true;
+            break;
+          }
+        }
+        // If source not in dropdown, add it
+        if (!found && state.savedSource.id) {
+          const option = document.createElement('option');
+          option.value = state.savedSource.id;
+          option.textContent = state.savedSource.name || state.savedSource.id;
+          option.dataset.source = JSON.stringify(state.savedSource);
+          option.selected = true;
+          sourceSelect.appendChild(option);
+        }
+        // Update source info display
+        const infoEl = document.getElementById('saved-source-info');
+        if (infoEl) {
+          const source = state.savedSource;
+          const badge = source.type === 'grist' ? 'source-badge-grist' : source.type === 'manual' ? 'source-badge-manual' : 'source-badge-api';
+          const badgeText = source.type === 'grist' ? 'Grist' : source.type === 'manual' ? 'Manuel' : 'API';
+          infoEl.innerHTML = `<span class="source-badge ${badge}">${badgeText}</span> ${source.recordCount || '?'} enregistrements`;
+        }
+      }
+    }
 
     // Update UI
     selectChartType(state.chartType);
@@ -323,20 +364,36 @@ export function loadFavoriteState(): void {
     if (previewSubtitle) previewSubtitle.textContent = state.subtitle || '';
     if (paletteSelect) paletteSelect.value = state.palette || 'categorical';
 
+    // Restore generation mode
+    const generationRadio = document.querySelector(`input[name="generation-mode"][value="${state.generationMode}"]`) as HTMLInputElement | null;
+    if (generationRadio) {
+      generationRadio.checked = true;
+      const dynamicOptions = document.getElementById('dynamic-options') as HTMLElement | null;
+      if (dynamicOptions) dynamicOptions.style.display = state.generationMode === 'dynamic' ? 'block' : 'none';
+    }
+    const refreshInput = document.getElementById('refresh-interval') as HTMLInputElement | null;
+    if (refreshInput && state.refreshInterval) refreshInput.value = String(state.refreshInterval);
+
+    // Restore raw data toggle
+    const rawDataToggle = document.getElementById('raw-data-toggle') as HTMLInputElement | null;
+    if (rawDataToggle) rawDataToggle.checked = state.rawDataEnabled || false;
+
     // Update fields if available
     if (state.fields && state.fields.length > 0) {
       populateFieldSelects();
 
-      // Select saved fields
+      // Select saved fields (after DOM update)
       setTimeout(() => {
         const labelSelect = document.getElementById('label-field') as HTMLSelectElement | null;
         const valueSelect = document.getElementById('value-field') as HTMLSelectElement | null;
+        const valueSelect2 = document.getElementById('value-field-2') as HTMLSelectElement | null;
         const codeSelect = document.getElementById('code-field') as HTMLSelectElement | null;
         const aggSelect = document.getElementById('aggregation') as HTMLSelectElement | null;
         const sortSelect = document.getElementById('sort-order') as HTMLSelectElement | null;
 
         if (state.labelField && labelSelect) labelSelect.value = state.labelField;
         if (state.valueField && valueSelect) valueSelect.value = state.valueField;
+        if (state.valueField2 && valueSelect2) valueSelect2.value = state.valueField2;
         if (state.codeField && codeSelect) codeSelect.value = state.codeField;
         if (state.aggregation && aggSelect) aggSelect.value = state.aggregation;
         if (state.sortOrder && sortSelect) sortSelect.value = state.sortOrder;
@@ -375,7 +432,7 @@ export function loadFavoriteState(): void {
       }, 100);
     }
   } catch (e) {
-    console.error('Erreur restauration favori:', e);
+    console.error('Erreur restauration etat builder:', e);
   }
 }
 

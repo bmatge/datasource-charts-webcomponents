@@ -151,9 +151,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Show back link if navigated from another app
   const fromApp = new URLSearchParams(window.location.search).get('from');
   if (fromApp) {
+    // When going back to builder, pass from=playground so builder can restore its state
+    const backHref = (fromApp === 'builder' || fromApp === 'builder-ia')
+      ? appHref(fromApp as any, { from: 'playground' })
+      : appHref(fromApp as any);
+    const backLabel = fromApp === 'builder' ? 'Builder' : fromApp === 'builder-ia' ? 'Builder IA' : fromApp;
     const backBar = document.createElement('div');
     backBar.className = 'fr-mb-1w';
-    backBar.innerHTML = `<a href="${appHref(fromApp as any)}" class="fr-link fr-icon-arrow-left-line fr-link--icon-left">Retour au ${fromApp === 'builder' ? 'Builder' : fromApp === 'builder-ia' ? 'Builder IA' : fromApp}</a>`;
+    backBar.innerHTML = `<a href="${backHref}" class="fr-link fr-icon-arrow-left-line fr-link--icon-left">Retour au ${backLabel}</a>`;
     const main = document.querySelector('main .fr-container') || document.querySelector('main');
     if (main) main.prepend(backBar);
   }
