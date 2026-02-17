@@ -1594,7 +1594,7 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    // Must use new pattern: gouv-source + gouv-query (NOT deprecated gouv-query api-type)
+    // Must use gouv-source + gouv-query pattern
     expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="opendatasoft"');
     expect(code).toContain('<gouv-query');
@@ -1616,7 +1616,7 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    // Must use new pattern: gouv-source + gouv-query (NOT deprecated gouv-query api-type)
+    // Must use gouv-source + gouv-query pattern
     expect(code).toContain('<gouv-source');
     expect(code).toContain('api-type="tabular"');
     expect(code).toContain('<gouv-query');
@@ -1860,9 +1860,9 @@ describe('regression tests', () => {
 });
 
 // =====================================================================
-// Regression: deprecated <gouv-query api-type="..."> pattern must NOT be generated
+// Regression: api-type must be on gouv-source, never on gouv-query
 // =====================================================================
-describe('regression: no deprecated gouv-query api-type pattern', () => {
+describe('regression: api-type on gouv-source not gouv-query', () => {
   beforeEach(() => {
     resetState();
     document.body.innerHTML = `
@@ -1876,8 +1876,6 @@ describe('regression: no deprecated gouv-query api-type pattern', () => {
 
   /**
    * Verify that api-type appears on <gouv-source>, NOT on <gouv-query>.
-   * The deprecated pattern <gouv-query api-type="..."> creates a shadow source
-   * internally and should never be emitted by code generators.
    */
   function assertNoDeprecatedPattern(code: string) {
     // api-type must NOT appear on gouv-query

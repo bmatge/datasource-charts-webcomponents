@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * Tests for GouvQuery component logic.
  *
  * Tests the client-side filtering, grouping, and aggregation logic,
- * as well as source subscription, shadow source compat mode, and command forwarding.
+ * as well as source subscription and command forwarding.
  */
 
 // Mock fetch globally
@@ -670,7 +670,7 @@ describe('GouvQuery', () => {
       expect(data2[0].value).toBe(50);
     });
 
-    it('does nothing when no cached data and no shadow source', () => {
+    it('does nothing when no cached data', () => {
       query.id = 'test-query';
       query.source = 'non-existent-source';
       clearDataCache('non-existent-source');

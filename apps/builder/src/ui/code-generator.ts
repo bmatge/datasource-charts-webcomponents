@@ -834,9 +834,8 @@ datalist.onSourceData(data);
 
 
 /**
- * Generate a <gouv-query api-type="opendatasoft"> element for ODS sources.
- * Uses server-side aggregation (ODSQL) with automatic pagination,
- * bypassing gouv-source entirely.
+ * Generate <gouv-source> + <gouv-query> for ODS sources.
+ * Uses server-side aggregation (ODSQL) with automatic pagination.
  */
 export function generateOdsQueryCode(
   odsInfo: { baseUrl: string; datasetId: string },
@@ -1408,7 +1407,7 @@ ${middlewareHtml}
   let facetsHtml = '';
 
   if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
-    // ODS source: use gouv-query with api-type="opendatasoft" for
+    // ODS source: use gouv-source + gouv-query for
     // server-side aggregation and automatic pagination (limit > 100)
     const odsInfo = { baseUrl: apiBaseUrl, datasetId: resourceIds.datasetId };
     const result = generateOdsQueryCode(odsInfo, groupByPath, valueFieldPath);
@@ -1422,7 +1421,7 @@ ${middlewareHtml}
     const facets = generateFacetsElement(chartSource);
     if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
   } else if (provider.id === 'tabular' && resourceIds?.resourceId) {
-    // Tabular source: use gouv-query with api-type="tabular" for
+    // Tabular source: use gouv-source + gouv-query for
     // automatic pagination (up to 50K records) and client-side aggregation
     const tabularInfo = { baseUrl: apiBaseUrl, resourceId: resourceIds.resourceId };
     const result = generateTabularQueryCode(tabularInfo, groupByPath, valueFieldPath);

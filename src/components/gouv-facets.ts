@@ -95,7 +95,7 @@ export class GouvFacets extends LitElement {
   /**
    * Active le mode facettes serveur ODS.
    * Fetch les valeurs de facettes depuis l'API ODS /facets au lieu de les calculer localement.
-   * Requiert source pointant vers un gouv-query avec api-type="opendatasoft" et server-side.
+   * Requiert source pointant vers un gouv-source avec api-type="opendatasoft" et server-side.
    * En mode server-facets, l'attribut fields est obligatoire (pas d'auto-detection).
    */
   @property({ type: Boolean, attribute: 'server-facets' })
