@@ -312,7 +312,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
     if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
-      // ODS source: use gouv-query with api-type="opendatasoft" for automatic pagination
+      // ODS source: use gouv-source + gouv-query for automatic pagination
       const baseUrl = apiBaseUrl;
       const datasetId = resourceIds.datasetId;
       const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, codeField!);
@@ -334,13 +334,17 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="map-data"
+  <gouv-source
+    id="map-src"
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
     select="${selectExpr}"
     group-by="${codeField}"${whereAttr}>
+  </gouv-source>
+  <gouv-query
+    id="map-data"
+    source="map-src">
   </gouv-query>
 
   <gouv-dsfr-chart
@@ -354,7 +358,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 </div>`;
     }
 
-    // Tabular source with pagination needed: use gouv-query with api-type="tabular"
+    // Tabular source with pagination needed: use gouv-source + gouv-query
     if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
       const aggregateExpr = config.aggregation === 'count'
         ? `${codeField}:count`
@@ -380,11 +384,15 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="map-data"
+  <gouv-source
+    id="map-src"
     api-type="tabular"
     base-url="${apiBaseUrl}"
-    resource="${resourceIds.resourceId}"
+    resource="${resourceIds.resourceId}">
+  </gouv-source>
+  <gouv-query
+    id="map-data"
+    source="map-src"
     group-by="${codeField}"
     aggregate="${aggregateExpr}"${filterAttr}>
   </gouv-query>
@@ -486,12 +494,12 @@ function generateDatalistCode(config: ChartConfig): string {
     const resourceIds = extractResourceIds(state.source.apiUrl, provider);
     const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
-    // ODS with pagination: use gouv-query for auto-pagination
+    // ODS with pagination: use gouv-source + gouv-query for server-side pagination
     if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
       const whereAttr = whereOds ? `\n    where="${whereOds}"` : '';
 
       return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
-<!-- Source API dynamique avec pagination automatique -->
+<!-- Source API dynamique avec pagination serveur -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -504,29 +512,37 @@ function generateDatalistCode(config: ChartConfig): string {
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="table-data"
+  <gouv-source
+    id="table-src"
     api-type="opendatasoft"
     base-url="${apiBaseUrl}"
-    dataset-id="${resourceIds.datasetId}"${whereAttr}>
+    dataset-id="${resourceIds.datasetId}"${whereAttr}
+    server-side
+    page-size="${pagination}">
+  </gouv-source>
+  <gouv-query
+    id="table-data"
+    source="table-src"
+    server-side>
   </gouv-query>
 
   <gouv-datalist
     source="table-data"
     colonnes="${colonnes}"
-    recherche${triAttr}
+    recherche
+    server-tri${triAttr}
     pagination="${pagination}"
     export="csv">
   </gouv-datalist>
 </div>`;
     }
 
-    // Tabular with pagination: use gouv-query for auto-pagination
+    // Tabular with pagination: use gouv-source + gouv-query for server-side pagination
     if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
-      const filterAttr = config.where ? `\n    filter="${config.where}"` : '';
+      const whereAttr = config.where ? `\n    where="${config.where}"` : '';
 
       return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
-<!-- Source API Tabular avec pagination automatique -->
+<!-- Source API Tabular avec pagination serveur -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -539,17 +555,25 @@ function generateDatalistCode(config: ChartConfig): string {
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-query
-    id="table-data"
+  <gouv-source
+    id="table-src"
     api-type="tabular"
     base-url="${apiBaseUrl}"
-    resource="${resourceIds.resourceId}"${filterAttr}>
+    resource="${resourceIds.resourceId}"${whereAttr}
+    server-side
+    page-size="${pagination}">
+  </gouv-source>
+  <gouv-query
+    id="table-data"
+    source="table-src"
+    server-side>
   </gouv-query>
 
   <gouv-datalist
     source="table-data"
     colonnes="${colonnes}"
-    recherche${triAttr}
+    recherche
+    server-tri${triAttr}
     pagination="${pagination}"
     export="csv">
   </gouv-datalist>

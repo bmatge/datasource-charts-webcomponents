@@ -700,7 +700,10 @@ const pi = "https://chartsbuilder.matge.com", _e = {
   }
 };
 function vr() {
-  return typeof window < "u" && window.location.hostname === "localhost" && window.location.port === "5173";
+  if (typeof window > "u")
+    return !1;
+  const { hostname: r, port: s } = window.location;
+  return (r === "localhost" || r === "127.0.0.1") && !!s && s !== "80" && s !== "443";
 }
 a(vr, "isViteDevMode");
 function _r() {
@@ -717,6 +720,8 @@ function JM() {
 }
 a(JM, "getProxyConfig");
 function Ur(r) {
+  if (!r)
+    throw new Error("getProxiedUrl: url is required");
   const s = JM();
   return r.includes("tabular-api.data.gouv.fr") ? r.replace("https://tabular-api.data.gouv.fr", `${s.baseUrl}${s.endpoints.tabular}`) : r.includes("docs.getgrist.com") ? r.replace("https://docs.getgrist.com", `${s.baseUrl}${s.endpoints.grist}`) : r.includes("grist.numerique.gouv.fr") ? r.replace("https://grist.numerique.gouv.fr", `${s.baseUrl}${s.endpoints.gristGouv}`) : r.includes("albert.api.etalab.gouv.fr") ? r.replace("https://albert.api.etalab.gouv.fr", `${s.baseUrl}${s.endpoints.albert}`) : r;
 }
@@ -7969,11 +7974,11 @@ let $s = (zt = class extends k {
     return [
       { id: "accueil", label: "Accueil", href: "index.html" },
       { id: "composants", label: "Composants", href: "specs/index.html" },
+      { id: "sources", label: "Sources", href: "apps/sources/index.html" },
       { id: "builder", label: "Builder", href: "apps/builder/index.html" },
       { id: "builder-ia", label: "Builder IA", href: "apps/builder-ia/index.html" },
       { id: "playground", label: "Playground", href: "apps/playground/index.html" },
       { id: "dashboard", label: "Dashboard", href: "apps/dashboard/index.html" },
-      { id: "sources", label: "Sources", href: "apps/sources/index.html" },
       { id: "monitoring", label: "Monitoring", href: "apps/monitoring/index.html" }
     ];
   }
