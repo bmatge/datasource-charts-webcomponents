@@ -106,6 +106,7 @@ export class AppLayoutDemo extends LitElement {
           { id: 'apis/opendatasoft', label: 'OpenDataSoft', href: 'apis/opendatasoft.html' },
           { id: 'apis/tabular', label: 'Tabular', href: 'apis/tabular.html' },
           { id: 'apis/grist', label: 'Grist', href: 'apis/grist.html' },
+          { id: 'apis/insee', label: 'INSEE (Melodi)', href: 'apis/insee.html' },
           { id: 'apis/generic', label: 'Generique (REST)', href: 'apis/generic.html' },
         ]
       },

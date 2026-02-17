@@ -45,7 +45,7 @@ export { initAuth } from './auth/init-auth.js';
 // Providers
 export type { ProviderConfig, ProviderId } from './providers/index.js';
 export {
-  ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG,
+  ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, INSEE_CONFIG, GENERIC_CONFIG,
   registerProvider, getProvider, getAllProviders,
   detectProvider, extractResourceIds,
 } from './providers/index.js';

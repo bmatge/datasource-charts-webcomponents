@@ -1608,24 +1608,24 @@ Utiliser value-field-2 pour une seconde serie. Definir les noms avec \`name='["S
     id: 'apiProviders',
     name: 'Providers API',
     description: 'Fournisseurs de donnees supportes et leurs capacites',
-    trigger: ['provider', 'fournisseur', 'opendatasoft', 'tabular', 'data.gouv', 'grist', 'api-type', 'source de donnees', 'quel api', 'quelle source'],
+    trigger: ['provider', 'fournisseur', 'opendatasoft', 'tabular', 'data.gouv', 'grist', 'insee', 'melodi', 'api-type', 'source de donnees', 'quel api', 'quelle source'],
     content: `## Providers API supportes
 
 gouv-widgets detecte automatiquement le provider a partir de l'URL de l'API.
 Chaque provider a des capacites differentes pour la pagination, l'agregation et les facettes.
 
 ### Matrice des capacites
-| Capacite | OpenDataSoft | Tabular (data.gouv.fr) | Grist | Generique |
-|----------|:---:|:---:|:---:|:---:|
-| Fetch serveur | oui | oui | oui | non (gouv-source) |
-| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages, max 50/page) | oui (offset, 100/page) | non |
-| Facettes serveur | oui | non | oui (SQL) | non |
-| Recherche serveur | oui (full-text) | non | non | non |
-| Group-by serveur | oui | oui (column__groupby) | oui (SQL) | non |
-| Agregation serveur | oui (ODSQL) | oui (column__sum, __avg, __count, __min, __max) | oui (SQL) | non |
-| Tri serveur | oui | oui | oui | non |
-| Pagination serveur | oui (offset) | oui (page) | oui (offset) | non |
-| Format filtre | ODSQL (SQL-like) | colon (champ:op:valeur) | colon | colon |
+| Capacite | OpenDataSoft | Tabular (data.gouv.fr) | Grist | INSEE (Melodi) | Generique |
+|----------|:---:|:---:|:---:|:---:|:---:|
+| Fetch serveur | oui | oui | oui | oui | non (gouv-source) |
+| Pagination auto | oui (offset, 10 pages) | oui (page, 500 pages, max 50/page) | oui (offset, 100/page) | oui (page, 1000/page, 100k max) | non |
+| Facettes serveur | oui | non | oui (SQL) | non | non |
+| Recherche serveur | oui (full-text) | non | non | non | non |
+| Group-by serveur | oui | oui (column__groupby) | oui (SQL) | non | non |
+| Agregation serveur | oui (ODSQL) | oui (column__sum, __avg, __count, __min, __max) | oui (SQL) | non | non |
+| Tri serveur | oui | oui | oui | non | non |
+| Pagination serveur | oui (offset) | oui (page) | oui (offset) | oui (page) | non |
+| Format filtre | ODSQL (SQL-like) | colon (champ:op:valeur) | colon | colon (dimension:eq:valeur) | colon |
 
 ### Detection automatique du provider
 | Provider | Pattern URL |
@@ -1633,6 +1633,7 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 | OpenDataSoft | \`/api/explore/v2.1/catalog/datasets/{datasetId}\` |
 | Tabular | \`tabular-api.data.gouv.fr/api/resources/{resourceId}\` |
 | Grist | \`/api/docs/{documentId}/tables/{tableId}\` |
+| INSEE (Melodi) | \`melodi/data/{datasetId}\` |
 | Generique | Tout autre URL (fallback) |
 
 ### Usage dans gouv-source (attribut api-type)
@@ -1641,6 +1642,7 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 | \`"opendatasoft"\` | OpenDataSoft | \`base-url\` + \`dataset-id\` |
 | \`"tabular"\` | Tabular | \`base-url\` + \`resource\` |
 | \`"grist"\` | Grist | \`base-url\` (URL complete avec proxy) |
+| \`"insee"\` | INSEE (Melodi) | \`base-url\` + \`dataset-id\` |
 | \`"generic"\` (defaut) | Generique | \`url\` + \`transform\` |
 
 ### Pipeline par provider
@@ -1685,6 +1687,21 @@ Chaque provider a des capacites differentes pour la pagination, l'agregation et 
 L'adapter Grist aplatit automatiquement \`records[].fields\` — pas besoin de gouv-normalize.
 L'adapter choisit automatiquement entre mode Records (filter/sort/pagination) et mode SQL (group-by, aggregation, facettes).
 
+**INSEE Melodi** (fetch serveur + filtrage par dimensions, tout le reste client-side) :
+\`\`\`html
+<gouv-source id="src" api-type="insee"
+  base-url="https://api.insee.fr/melodi"
+  dataset-id="DS_POPULATIONS_REFERENCE"
+  where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023">
+</gouv-source>
+<gouv-query id="data" source="src"
+  filter="GEO:contains:DEP"
+  order-by="OBS_VALUE:desc" limit="20">
+</gouv-query>
+\`\`\`
+L'adapter INSEE aplatit automatiquement les observations (dimensions + measures + attributes) en objets plats.
+\`OBS_VALUE_NIVEAU.value\` devient \`OBS_VALUE\`. Pas de proxy necessaire (CORS actif). 30 req/min max.
+
 **Generique** (gouv-source obligatoire) :
 \`\`\`html
 <gouv-source id="raw" url="https://api.exemple.fr/data" transform="results"></gouv-source>
@@ -1700,14 +1717,19 @@ L'adapter choisit automatiquement entre mode Records (filter/sort/pagination) et
 | OpenDataSoft | API Key | \`headers='{"apikey":"KEY"}'\` |
 | Tabular | Aucune | Acces public uniquement |
 | Grist | Bearer token | \`headers='{"Authorization":"Bearer KEY"}'\` |
+| INSEE (Melodi) | Aucune | Acces anonyme (30 req/min) |
 | Generique | Variable | Via \`headers\` sur gouv-source |
 
 ### Proxy CORS
-Les APIs externes necessitent un proxy CORS en production.
-Les URLs Grist connues sont automatiquement proxifiees :
+Certaines APIs externes necessitent un proxy CORS en production.
+Les URLs connues sont automatiquement proxifiees :
 - \`grist.numerique.gouv.fr\` -> \`${PROXY_BASE_URL}/grist-gouv-proxy\`
 - \`docs.getgrist.com\` -> \`${PROXY_BASE_URL}/grist-proxy\`
-- \`tabular-api.data.gouv.fr\` -> \`${PROXY_BASE_URL}/tabular-proxy\``,
+- \`tabular-api.data.gouv.fr\` -> \`${PROXY_BASE_URL}/tabular-proxy\`
+
+APIs avec CORS natif (pas de proxy necessaire) :
+- OpenDataSoft (\`*.opendatasoft.com\` et portails publics)
+- INSEE Melodi (\`api.insee.fr\`)`,
   },
 
   // ---------------------------------------------------------------------------

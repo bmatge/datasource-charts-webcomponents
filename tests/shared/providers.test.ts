@@ -7,6 +7,7 @@ import {
   ODS_CONFIG,
   TABULAR_CONFIG,
   GRIST_CONFIG,
+  INSEE_CONFIG,
   GENERIC_CONFIG,
 } from '../../packages/shared/src/providers/index.js';
 import type { ProviderId, ProviderConfig } from '../../packages/shared/src/providers/index.js';
@@ -18,10 +19,10 @@ import type { Source } from '../../packages/shared/src/types/source.js';
 // =========================================================================
 
 describe('ProviderConfig definitions', () => {
-  const ALL_CONFIGS = [ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG];
+  const ALL_CONFIGS = [ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, INSEE_CONFIG, GENERIC_CONFIG];
 
-  it('should have 4 registered providers', () => {
-    expect(getAllProviders()).toHaveLength(4);
+  it('should have 5 registered providers', () => {
+    expect(getAllProviders()).toHaveLength(5);
   });
 
   it('each config should have a unique id', () => {
@@ -51,6 +52,7 @@ describe('ProviderConfig definitions', () => {
     expect(getProvider('opendatasoft')).toBe(ODS_CONFIG);
     expect(getProvider('tabular')).toBe(TABULAR_CONFIG);
     expect(getProvider('grist')).toBe(GRIST_CONFIG);
+    expect(getProvider('insee')).toBe(INSEE_CONFIG);
     expect(getProvider('generic')).toBe(GENERIC_CONFIG);
   });
 
@@ -171,6 +173,65 @@ describe('Grist config', () => {
 });
 
 // =========================================================================
+// INSEE config specifics
+// =========================================================================
+
+describe('INSEE config', () => {
+  it('should have page-based pagination', () => {
+    expect(INSEE_CONFIG.pagination.type).toBe('page');
+    expect(INSEE_CONFIG.pagination.pageSize).toBe(1000);
+    expect(INSEE_CONFIG.pagination.maxPages).toBe(100);
+    expect(INSEE_CONFIG.pagination.maxRecords).toBe(100000);
+  });
+
+  it('should use page and maxResult params', () => {
+    expect(INSEE_CONFIG.pagination.params.page).toBe('page');
+    expect(INSEE_CONFIG.pagination.params.pageSize).toBe('maxResult');
+  });
+
+  it('should only support server fetch', () => {
+    expect(INSEE_CONFIG.capabilities.serverFetch).toBe(true);
+    expect(INSEE_CONFIG.capabilities.serverFacets).toBe(false);
+    expect(INSEE_CONFIG.capabilities.serverSearch).toBe(false);
+    expect(INSEE_CONFIG.capabilities.serverGroupBy).toBe(false);
+    expect(INSEE_CONFIG.capabilities.serverOrderBy).toBe(false);
+    expect(INSEE_CONFIG.capabilities.serverAggregation).toBe(false);
+  });
+
+  it('should require flatten for nested observations', () => {
+    expect(INSEE_CONFIG.response.requiresFlatten).toBe(true);
+    expect(INSEE_CONFIG.response.dataPath).toBe('observations');
+  });
+
+  it('should use colon where format with client-only aggregation', () => {
+    expect(INSEE_CONFIG.query.whereFormat).toBe('colon');
+    expect(INSEE_CONFIG.query.aggregationSyntax).toBe('client-only');
+  });
+
+  it('should have no authentication', () => {
+    expect(INSEE_CONFIG.defaultAuthType).toBe('none');
+  });
+
+  it('should have no known hosts (CORS works)', () => {
+    expect(INSEE_CONFIG.knownHosts).toHaveLength(0);
+  });
+
+  it('should have client facets mode', () => {
+    expect(INSEE_CONFIG.facets.defaultMode).toBe('client');
+  });
+
+  it('should use gouv-source api-type insee', () => {
+    expect(INSEE_CONFIG.codeGen.usesGouvSource).toBe(true);
+    expect(INSEE_CONFIG.codeGen.usesGouvNormalize).toBe(false);
+    expect(INSEE_CONFIG.codeGen.sourceApiType).toBe('insee');
+  });
+
+  it('should extract datasetId', () => {
+    expect(INSEE_CONFIG.resource.idFields).toEqual(['datasetId']);
+  });
+});
+
+// =========================================================================
 // detectProvider
 // =========================================================================
 
@@ -211,6 +272,17 @@ describe('detectProvider', () => {
   it('detects Grist from any domain with /api/docs/ pattern', () => {
     const url = 'https://custom-grist.example.com/api/docs/doc1/tables/t1/records';
     expect(detectProvider(url).id).toBe('grist');
+  });
+
+  // INSEE URLs
+  it('detects INSEE from api.insee.fr Melodi URL', () => {
+    const url = 'https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?maxResult=10';
+    expect(detectProvider(url).id).toBe('insee');
+  });
+
+  it('detects INSEE from Melodi URL without query params', () => {
+    const url = 'https://api.insee.fr/melodi/data/DD_CNA_AGREGATS';
+    expect(detectProvider(url).id).toBe('insee');
   });
 
   // Generic
@@ -260,6 +332,12 @@ describe('extractResourceIds', () => {
     const url = 'https://grist.numerique.gouv.fr/api/docs/abc123/tables/Table1/records';
     const ids = extractResourceIds(url);
     expect(ids).toEqual({ documentId: 'abc123', tableId: 'Table1' });
+  });
+
+  it('extracts datasetId from INSEE Melodi URL', () => {
+    const url = 'https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?maxResult=10';
+    const ids = extractResourceIds(url);
+    expect(ids).toEqual({ datasetId: 'DS_POPULATIONS_REFERENCE' });
   });
 
   it('returns null for generic URLs', () => {
@@ -359,7 +437,7 @@ describe('migrateSource', () => {
 // =========================================================================
 
 describe('ProviderConfig alignment', () => {
-  const ALL_CONFIGS: ProviderConfig[] = [ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG];
+  const ALL_CONFIGS: ProviderConfig[] = [ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, INSEE_CONFIG, GENERIC_CONFIG];
 
   it('all configs have valid whereFormat', () => {
     for (const config of ALL_CONFIGS) {

@@ -10,12 +10,14 @@ export { ODS_CONFIG } from './opendatasoft.js';
 export { TABULAR_CONFIG } from './tabular.js';
 export { GRIST_CONFIG } from './grist.js';
 export { GENERIC_CONFIG } from './generic.js';
+export { INSEE_CONFIG } from './insee.js';
 
 import type { ProviderConfig, ProviderId } from './provider-config.js';
 import { ODS_CONFIG } from './opendatasoft.js';
 import { TABULAR_CONFIG } from './tabular.js';
 import { GRIST_CONFIG } from './grist.js';
 import { GENERIC_CONFIG } from './generic.js';
+import { INSEE_CONFIG } from './insee.js';
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -39,6 +41,7 @@ export function getAllProviders(): ProviderConfig[] {
 registerProvider(ODS_CONFIG);
 registerProvider(TABULAR_CONFIG);
 registerProvider(GRIST_CONFIG);
+registerProvider(INSEE_CONFIG);
 registerProvider(GENERIC_CONFIG);
 
 // ---------------------------------------------------------------------------

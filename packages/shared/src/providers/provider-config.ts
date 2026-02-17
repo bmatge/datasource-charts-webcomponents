@@ -10,7 +10,7 @@
 // Provider ID
 // ---------------------------------------------------------------------------
 
-export type ProviderId = 'opendatasoft' | 'tabular' | 'grist' | 'generic';
+export type ProviderId = 'opendatasoft' | 'tabular' | 'grist' | 'insee' | 'generic';
 
 // ---------------------------------------------------------------------------
 // ProviderConfig interface

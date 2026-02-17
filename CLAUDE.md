@@ -127,18 +127,18 @@ Pour les cas sans transformation (datalist, display), gouv-query peut etre omis 
 - **Adapters** (`src/adapters/`) : construisent les URLs, parsent les reponses, gerent la pagination. Chaque API a son adapter (ODS, Tabular, Grist, Generic).
 - **ProviderConfig** (`packages/shared/src/providers/`) : configuration declarative par provider (pagination, response parsing, query syntax, code generation).
 - **Registre** (`src/adapters/adapter-registry.ts`) : `getAdapter(apiType)` retourne l'adapter pour un type donne.
-- Ajouter un nouveau provider (CKAN, INSEE...) = 1 ProviderConfig + 1 Adapter, zero modification dans les composants.
+- Ajouter un nouveau provider (CKAN...) = 1 ProviderConfig + 1 Adapter, zero modification dans les composants.
 
 ### Capacites des adapters
 
-| Capacite | OpenDataSoft | Tabular | Grist | Generic |
-|----------|:---:|:---:|:---:|:---:|
-| serverFetch | oui | oui | oui | non |
-| serverFacets | oui | non | oui | non |
-| serverSearch | oui | non | non | non |
-| serverGroupBy | oui | oui | oui | non |
-| serverOrderBy | oui | oui | oui | non |
-| whereFormat | odsql | colon | colon | odsql |
+| Capacite | OpenDataSoft | Tabular | Grist | INSEE (Melodi) | Generic |
+|----------|:---:|:---:|:---:|:---:|:---:|
+| serverFetch | oui | oui | oui | oui | non |
+| serverFacets | oui | non | oui | non | non |
+| serverSearch | oui | non | non | non | non |
+| serverGroupBy | oui | oui | oui | non | non |
+| serverOrderBy | oui | oui | oui | non | non |
+| whereFormat | odsql | colon | colon | colon | odsql |
 
 **Formats WHERE** :
 - **ODSQL** (OpenDataSoft) : syntaxe SQL-like — `population > 5000 AND status = 'active'`
@@ -217,6 +217,7 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 - Albert IA : albert.api.etalab.gouv.fr
 - OpenDataSoft : *.opendatasoft.com
 - Tabular API : tabular-api.data.gouv.fr
+- INSEE Melodi : api.insee.fr/melodi (catalogue-donnees.insee.fr)
 
 ## Proxy
 
