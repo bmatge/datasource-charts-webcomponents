@@ -48,15 +48,20 @@ Une suite d'outils web pour **generer le code HTML du volet 1 sans le connaitre*
 | `gouv-normalize` | Normalisation : conversion numerique, renommage de colonnes, trim, remplacement |
 | `gouv-query` | Requetage : filtre, tri, regroupement et agregation des donnees |
 | `gouv-facets` | Filtres a facettes interactifs sur les donnees d'une source |
+| `gouv-search` | Barre de recherche textuelle avec filtrage client ou server-side |
+| `gouv-dsfr-chart` | Wrapper graphique : connecte les graphiques DSFR Chart au systeme de donnees dynamiques |
 | `gouv-datalist` | Tableau avec recherche, filtres, tri, pagination et export CSV |
 | `gouv-kpi` | Indicateur chiffre cle avec formatage, couleurs conditionnelles et icones |
-| `gouv-dsfr-chart` | Wrapper graphique : connecte les graphiques DSFR Chart au systeme de donnees dynamiques |
+| `gouv-display` | Affichage libre de donnees via template HTML personnalise |
+| `gouv-world-map` | Carte du monde coloree par valeurs (choropleth) |
+| `gouv-raw-data` | Bouton de telechargement CSV des donnees (companion accessibilite) |
 
 Les composants se chainent de facon declarative :
 
 ```
-gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart / gouv-kpi / gouv-datalist
-                                           → gouv-facets (filtres interactifs)
+gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart / gouv-kpi / gouv-datalist / gouv-display / gouv-world-map
+                                           → gouv-facets / gouv-search (filtres interactifs)
+                                           → gouv-raw-data (telechargement CSV accessible)
 ```
 
 ## Utilisation
@@ -116,8 +121,8 @@ Le projet inclut sept applications web pour creer et gerer des visualisations :
 | **Builder IA** | Generateur de graphiques par conversation avec l'IA Albert |
 | **Playground** | Editeur de code interactif avec apercu temps reel |
 | **Dashboard** | Editeur visuel de tableaux de bord multi-widgets |
-| **Favorites** | Gestion des graphiques favoris |
-| **Monitoring** | Suivi des deployements de widgets en production |
+| **Favoris** | Gestion des graphiques favoris |
+| **Monitoring** | Suivi des deploiements de widgets en production |
 
 ## Structure du monorepo
 

@@ -129,6 +129,29 @@ Pour les cas sans transformation (datalist, display), gouv-query peut etre omis 
 - **Registre** (`src/adapters/adapter-registry.ts`) : `getAdapter(apiType)` retourne l'adapter pour un type donne.
 - Ajouter un nouveau provider (CKAN, INSEE...) = 1 ProviderConfig + 1 Adapter, zero modification dans les composants.
 
+### Capacites des adapters
+
+| Capacite | OpenDataSoft | Tabular | Grist | Generic |
+|----------|:---:|:---:|:---:|:---:|
+| serverFetch | oui | oui | oui | non |
+| serverFacets | oui | non | oui | non |
+| serverSearch | oui | non | non | non |
+| serverGroupBy | oui | oui | oui | non |
+| serverOrderBy | oui | oui | oui | non |
+| whereFormat | odsql | colon | colon | odsql |
+
+**Formats WHERE** :
+- **ODSQL** (OpenDataSoft) : syntaxe SQL-like — `population > 5000 AND status = 'active'`
+- **Colon** (Tabular, Grist) : syntaxe structuree — `field:operator:value, field2:operator:value2`
+
+### Attributs gouv-source
+
+gouv-source fonctionne en deux modes :
+
+**Mode URL (fetch direct)** : `url`, `method`, `headers`, `params`, `refresh`, `transform`, `paginate`, `page-size`, `cache-ttl`, `data` (inline JSON)
+
+**Mode adapter** (api-type != generic ou base-url fourni) : `api-type`, `base-url`, `dataset-id`, `resource`, `where`, `select`, `group-by`, `aggregate`, `order-by`, `server-side`, `page-size`, `limit`
+
 ### Grist : mode Records vs SQL
 
 L'adapter Grist choisit automatiquement entre deux modes :
@@ -181,7 +204,7 @@ Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient aut
 
 Si un attribut est ajoute a un composant sans maj du skill, le test echouera.
 
-**Note** : gouv-source a les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `where`, `select`, `group-by`, `aggregate`, `order-by`, `server-side`, `page-size`, `headers`. Les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `select`, `headers` sur gouv-query sont deprecies (mode compat seulement).
+**Note** : gouv-source a deux modes (voir "Attributs gouv-source" ci-dessus). Les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `select`, `headers` sur gouv-query sont deprecies (mode compat seulement).
 
 ## Release Tauri
 

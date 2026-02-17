@@ -25,7 +25,8 @@
     <div slot="content">
         <p class="fr-text--lead">
           Composant invisible de connexion aux donnees. Recupere des donnees depuis une API REST
-          et les distribue aux autres composants via le systeme d'evenements.
+          (URL brute ou via un adapter specialise) et les distribue aux autres composants via
+          le systeme d'evenements. Supporte aussi les donnees JSON inline.
         </p>
 
         <div class="fr-callout fr-callout--blue-france">
@@ -38,36 +39,187 @@
         <div class="fr-callout fr-callout--green-emeraude fr-mb-3w">
           <h4 class="fr-callout__title">gouv-source vs gouv-query</h4>
           <p class="fr-callout__text">
-            <strong><code>gouv-source</code></strong> est un connecteur HTTP generique : il recupere du JSON
-            depuis n'importe quelle API REST (avec <code>headers</code>, <code>method</code>, <code>params</code>)
-            et le redistribue <strong>tel quel</strong> aux composants en aval.<br><br>
-            <strong><code>gouv-query</code></strong> est une couche de transformation : il filtre, groupe, agrege
-            et trie les donnees. En mode <code>opendatasoft</code> ou <code>tabular</code>, il fetche
-            directement les APIs connues (sans <code>gouv-source</code>).
-            En mode <code>generic</code>, il ecoute un <code>gouv-source</code> existant et traite les donnees cote client.
+            <strong><code>gouv-source</code></strong> se connecte a une API, recupere les donnees et les
+            redistribue. En mode adapter, il gere la pagination automatique, les filtres server-side
+            et la pagination pilotable (server-side).<br><br>
+            <strong><code>gouv-query</code></strong> est une couche de transformation client-side : il filtre, groupe,
+            agrege et trie les donnees. Il ecoute un <code>gouv-source</code> via l'attribut
+            <code>source</code> et traite les donnees cote client.<br><br>
+            <strong>Pattern recommande :</strong> <code>&lt;gouv-source api-type="..."&gt;</code> +
+            <code>&lt;gouv-query source="..."&gt;</code> pour combiner fetch serveur et
+            transformation client.
           </p>
         </div>
 
-        <h2>Attributs</h2>
+        <h2 id="modes">Modes de fonctionnement</h2>
+        <p>Le composant supporte trois modes :</p>
         <table class="attr-table">
-          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <thead><tr><th>Mode</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><code>id</code></td><td>String</td><td>Identifiant unique (requis). Les autres composants l'utilisent pour s'abonner.</td></tr>
-            <tr><td><code>url</code></td><td>String</td><td>URL de l'API (relative ou absolue)</td></tr>
-            <tr><td><code>method</code></td><td>String</td><td>Methode HTTP : <code>GET</code> ou <code>POST</code></td></tr>
-            <tr><td><code>headers</code></td><td>String</td><td>En-tetes HTTP en JSON : <code>{"Authorization": "Bearer xxx"}</code></td></tr>
-            <tr><td><code>params</code></td><td>String</td><td>Parametres de requete ou body POST en JSON</td></tr>
-            <tr><td><code>transform</code></td><td>String</td><td>Chemin JSON pour extraire les donnees : <code>"data.items"</code></td></tr>
-            <tr><td><code>refresh</code></td><td>Number</td><td>Intervalle de rafraichissement en secondes (0 = pas de refresh)</td></tr>
-            <tr><td><code>paginate</code></td><td>Boolean</td><td>Active la pagination serveur. Injecte <code>page</code> et <code>page_size</code> dans l'URL. Auto-extrait <code>json.data</code> quand aucun <code>transform</code> n'est defini.</td></tr>
-            <tr><td><code>page-size</code></td><td>Number</td><td>Taille de page pour la pagination serveur (defaut : 20)</td></tr>
+            <tr>
+              <td><strong>URL brute</strong></td>
+              <td>Appel HTTP generique via l'attribut <code>url</code>. Supporte GET/POST, headers,
+                params JSON, extraction via <code>transform</code> et pagination manuelle via <code>paginate</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Adapter</strong></td>
+              <td>Active via <code>api-type</code> (sans <code>url</code>). L'adapter gere la construction d'URL,
+                la pagination automatique, les filtres et le parsing specifiques au provider
+                (OpenDataSoft, Tabular, Grist).</td>
+            </tr>
+            <tr>
+              <td><strong>Inline data</strong></td>
+              <td>Donnees JSON passees directement via l'attribut <code>data</code>. Pas de fetch HTTP.</td>
+            </tr>
           </tbody>
         </table>
 
-        <h2 class="fr-mt-4w">Exemples</h2>
+        <h3 class="fr-mt-3w">Types d'adapter</h3>
+        <p>En mode adapter, l'attribut <code>api-type</code> selectionne le provider :</p>
+        <table class="attr-table">
+          <thead><tr><th>api-type</th><th>API</th><th>Identifiant requis</th><th>Pagination</th><th>Max records</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>opendatasoft</code></td>
+              <td>OpenDataSoft (v2.1)</td>
+              <td><code>dataset-id</code></td>
+              <td>offset, 100/page, max 10 pages</td>
+              <td>1 000</td>
+            </tr>
+            <tr>
+              <td><code>tabular</code></td>
+              <td>Tabular API (data.gouv.fr)</td>
+              <td><code>resource</code></td>
+              <td>page, 50/page, max 500 pages</td>
+              <td>25 000</td>
+            </tr>
+            <tr>
+              <td><code>grist</code></td>
+              <td>Grist (numerique.gouv.fr, getgrist.com)</td>
+              <td><code>base-url</code></td>
+              <td>offset, 100/page, illimitee</td>
+              <td>Illimite</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="attributs" class="fr-mt-4w">Attributs</h2>
+
+        <h3>Attributs communs</h3>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Format / Valeurs</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>String</td><td><code>id="ma-source"</code></td><td>Identifiant unique (requis). Les composants en aval l'utilisent pour s'abonner aux donnees.</td></tr>
+            <tr><td><code>refresh</code></td><td>Number</td><td>Entier en secondes. <code>0</code> = off</td><td>Intervalle de rafraichissement automatique</td></tr>
+            <tr><td><code>transform</code></td><td>String</td><td><code>"results"</code>, <code>"data.items"</code></td><td>Chemin JSON pour extraire les donnees de la reponse API</td></tr>
+            <tr><td><code>headers</code></td><td>String</td><td><code>'{"apikey":"abc123"}'</code></td><td>Headers HTTP en JSON (API key, Bearer token, etc.)</td></tr>
+            <tr><td><code>cache-ttl</code></td><td>Number</td><td>Entier en secondes. Defaut : <code>3600</code></td><td>Duree de cache serveur en mode DB (0 = pas de cache)</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="fr-mt-3w">Attributs mode URL brute</h3>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Format / Valeurs</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>url</code></td><td>String</td><td>URL relative ou absolue</td><td>URL de l'API REST a appeler</td></tr>
+            <tr><td><code>method</code></td><td>String</td><td><code>GET</code> | <code>POST</code></td><td>Methode HTTP. Defaut : <code>GET</code></td></tr>
+            <tr><td><code>params</code></td><td>String</td><td><code>'{"limit": 100}'</code></td><td>GET : ajoutes a l'URL comme query params. POST : envoyes comme body JSON.</td></tr>
+            <tr><td><code>paginate</code></td><td>Boolean</td><td>Presence = <code>true</code></td><td>Active la pagination manuelle. Injecte <code>page</code> et <code>page_size</code> dans l'URL.
+              Auto-extrait <code>json.data</code> si aucun <code>transform</code> n'est defini.</td></tr>
+            <tr><td><code>page-size</code></td><td>Number</td><td>Entier positif. Defaut : <code>20</code></td><td>Taille de page pour la pagination manuelle</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="fr-mt-3w">Attributs mode adapter</h3>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Format / Valeurs</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>api-type</code></td><td>String</td><td><code>opendatasoft</code> | <code>tabular</code> | <code>grist</code></td><td>Type de provider. Active le mode adapter (ne pas combiner avec <code>url</code>).</td></tr>
+            <tr><td><code>base-url</code></td><td>String</td><td><code>"https://data.iledefrance.fr"</code></td><td>URL de base de l'API. Requis pour Grist, optionnel pour ODS/Tabular (defauts fournis).</td></tr>
+            <tr><td><code>dataset-id</code></td><td>String</td><td><code>"mon-dataset-2024"</code></td><td>Identifiant (slug) du dataset. Mode <code>opendatasoft</code> uniquement.</td></tr>
+            <tr><td><code>resource</code></td><td>String</td><td><code>"2876a346-d50c-..."</code> (UUID)</td><td>Identifiant de la ressource. Mode <code>tabular</code> uniquement.</td></tr>
+            <tr><td><code>where</code></td><td>String</td><td>Colon : <code>"champ:op:val"</code><br>ODS : ODSQL libre</td><td>Clause WHERE statique. Format depend du provider (voir section Filtres).</td></tr>
+            <tr><td><code>select</code></td><td>String</td><td><code>"sum(pop) as total, region"</code></td><td>Clause SELECT en syntaxe ODSQL. Mode <code>opendatasoft</code> uniquement.</td></tr>
+            <tr><td><code>group-by</code></td><td>String</td><td><code>"champ1, champ2"</code></td><td>Champs de regroupement. Delegue au serveur si le provider le supporte.</td></tr>
+            <tr><td><code>aggregate</code></td><td>String</td><td><code>"champ:fn"</code> ou <code>"champ:fn:alias"</code></td><td>Agregations server-side. Fonctions : <code>count</code> <code>sum</code> <code>avg</code> <code>min</code> <code>max</code>.</td></tr>
+            <tr><td><code>order-by</code></td><td>String</td><td><code>"champ:asc"</code> ou <code>"champ:desc"</code></td><td>Tri des resultats. Peut etre surcharge dynamiquement par un <code>gouv-datalist</code>.</td></tr>
+            <tr><td><code>limit</code></td><td>Number</td><td>Entier positif. <code>0</code> = illimite</td><td>Nombre maximum de resultats</td></tr>
+            <tr><td><code>server-side</code></td><td>Boolean</td><td>Presence = <code>true</code></td><td>Mode pagination pilotable : charge une page a la fois, ecoute les commandes
+              des composants en aval (<code>gouv-datalist</code>, <code>gouv-facets</code>, <code>gouv-search</code>).</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="fr-mt-3w">Attribut mode inline</h3>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Format / Valeurs</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>data</code></td><td>String</td><td>JSON valide (tableau ou objet)</td><td>Donnees inline. Pas de fetch HTTP, les donnees sont parsees et emises directement.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="filtres" class="fr-mt-4w">Filtres et WHERE dynamique</h2>
 
         <section class="demo-section">
-          <h3>Connexion simple a une API OpenDataSoft</h3>
+          <h3>WHERE statique</h3>
+          <p>L'attribut <code>where</code> definit un filtre permanent sur la source.</p>
+          <p>En mode <strong>Tabular / Grist</strong>, format colon <code>champ:operateur:valeur</code> :</p>
+          <div class="code-block"><pre>where="population:gt:5000"
+where="population:gt:5000, region:in:IDF|OCC|BRE"
+where="email:isnull"</pre></div>
+          <p>En mode <strong>OpenDataSoft</strong>, syntaxe ODSQL libre :</p>
+          <div class="code-block"><pre>where="population > 5000 AND status = 'active'"</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>WHERE dynamique (overlays)</h3>
+          <p>
+            Les composants en aval (<code>gouv-facets</code>, <code>gouv-search</code>) peuvent ajouter
+            des filtres dynamiques via le systeme de commandes. Ces filtres sont <strong>fusionnes</strong>
+            avec le <code>where</code> statique a chaque requete.
+          </p>
+          <p>
+            Chaque composant envoie un overlay identifie par une cle unique (<code>whereKey</code>).
+            Les overlays sont combines en <strong>ET logique</strong>. La methode <code>getEffectiveWhere()</code>
+            retourne la clause WHERE fusionnee.
+          </p>
+          <div class="code-block"><pre>&lt;!-- WHERE statique + overlays dynamiques des facettes et recherche --&gt;
+&lt;gouv-source id="src" api-type="tabular"
+  resource="2876a346-d50c-..."
+  where="status:eq:active"
+  server-side page-size="20"&gt;
+&lt;/gouv-source&gt;
+
+&lt;!-- La recherche ajoute un overlay WHERE via server-search --&gt;
+&lt;gouv-search id="search" source="src"
+  server-search search-template='nom__contains={q}'&gt;
+&lt;/gouv-search&gt;
+
+&lt;!-- Les facettes ajoutent des overlays WHERE --&gt;
+&lt;gouv-facets id="facets" source="src"
+  fields="region, departement" server-facets&gt;
+&lt;/gouv-facets&gt;</pre></div>
+        </section>
+
+        <h2 id="server-side" class="fr-mt-4w">Mode server-side</h2>
+        <p>
+          Avec <code>server-side</code>, <code>gouv-source</code> charge <strong>une seule page</strong>
+          a la fois et ecoute les commandes des composants en aval pour naviguer entre les pages.
+          Cela permet d'afficher des datasets de milliers d'enregistrements sans tout charger en memoire.
+        </p>
+        <p>Le composant reagit a trois types de commandes :</p>
+        <table class="attr-table">
+          <thead><tr><th>Commande</th><th>Source</th><th>Effet</th></tr></thead>
+          <tbody>
+            <tr><td><code>{ page }</code></td><td><code>gouv-datalist</code></td><td>Change la page courante et re-fetche</td></tr>
+            <tr><td><code>{ where, whereKey }</code></td><td><code>gouv-facets</code>, <code>gouv-search</code></td><td>Ajoute/supprime un overlay WHERE et reset a la page 1</td></tr>
+            <tr><td><code>{ orderBy }</code></td><td><code>gouv-datalist</code></td><td>Change le tri et re-fetche</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="exemples" class="fr-mt-4w">Exemples</h2>
+
+        <section class="demo-section">
+          <h3>Mode URL brute : API REST generique</h3>
           <div class="code-block"><pre>&lt;gouv-source
   id="prix-ct"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-controle-technique/records"
@@ -76,7 +228,7 @@
         </section>
 
         <section class="demo-section">
-          <h3>Avec parametres et en-tetes</h3>
+          <h3>Mode URL brute : POST avec headers et params</h3>
           <div class="code-block"><pre>&lt;gouv-source
   id="api-privee"
   url="https://mon-api.gouv.fr/data"
@@ -89,11 +241,10 @@
         </section>
 
         <section class="demo-section">
-          <h3>Pagination serveur (API Tabular)</h3>
+          <h3>Mode URL brute : pagination manuelle (API Tabular)</h3>
           <p>
             Avec <code>paginate</code>, chaque changement de page dans un <code>gouv-datalist</code>
-            ou <code>gouv-display</code> en aval declenche un nouvel appel API avec <code>?page=N&amp;page_size=M</code>.
-            Permet de naviguer dans des datasets de dizaines de milliers d'enregistrements sans tout charger.
+            en aval declenche un nouvel appel API avec <code>?page=N&amp;page_size=M</code>.
           </p>
           <div class="code-block"><pre>&lt;gouv-source
   id="maires"
@@ -102,7 +253,6 @@
   page-size="20"
 &gt;&lt;/gouv-source&gt;
 
-&lt;!-- Le datalist detecte automatiquement la pagination serveur --&gt;
 &lt;gouv-datalist source="maires"
   colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle du departement:Departement"
   pagination="20"&gt;
@@ -117,14 +267,187 @@
         </section>
 
         <section class="demo-section">
-          <h3>Evenements</h3>
-          <p>Le composant emet des evenements personnalises que les autres composants peuvent ecouter :</p>
-          <ul>
-            <li><code>gouv-data-loaded</code> : Donnees chargees avec succes</li>
-            <li><code>gouv-data-loading</code> : Chargement en cours</li>
-            <li><code>gouv-data-error</code> : Erreur de chargement</li>
-          </ul>
+          <h3>Mode adapter : OpenDataSoft</h3>
+          <p>
+            L'adapter gere automatiquement la construction d'URL, la pagination et le parsing.
+            Pagination automatique (toutes les pages en une seule requete) jusqu'a 1 000 records.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="elus"
+  api-type="opendatasoft"
+  base-url="https://data.iledefrance.fr"
+  dataset-id="elus-regionaux"
+  where="sexe = 'F'"
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="stats" source="elus"
+  group-by="groupe_politique"
+  aggregate="nom:count:nb"
+  order-by="nb:desc"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="stats" type="bar"
+  label-field="groupe_politique" value-field="nb"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
         </section>
+
+        <section class="demo-section">
+          <h3>Mode adapter : Tabular API (data.gouv.fr)</h3>
+          <p>
+            L'adapter Tabular gere la pagination par pages (50 records/page, max 25 000 records)
+            et supporte le groupement et l'agregation server-side.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="maires"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-query id="top-dept" source="maires"
+  group-by="Libelle du departement"
+  aggregate="Code sexe:count:nb"
+  order-by="nb:desc"
+  limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;gouv-dsfr-chart source="top-dept" type="bar"
+  label-field="Libelle du departement" value-field="nb"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode adapter : Grist</h3>
+          <p>
+            L'adapter Grist se connecte aux instances Grist (numerique.gouv.fr ou getgrist.com).
+            Il detecte automatiquement si la requete necessite le mode SQL (groupement, agregation,
+            operateurs avances) ou le mode Records standard.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="grist-data"
+  api-type="grist"
+  base-url="https://grist.numerique.gouv.fr/api/docs/DOC_ID/tables/TABLE_ID/records"
+  headers='{"Authorization": "Bearer TOKEN"}'
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-normalize id="clean" source="grist-data" flatten&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-dsfr-chart source="clean" type="bar"
+  label-field="nom" value-field="valeur"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+          <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Flatten requis :</strong> Grist retourne les champs imbriques dans un objet <code>fields</code>.
+              Utilisez <code>&lt;gouv-normalize flatten&gt;</code> pour aplatir les donnees avant de les exploiter.
+            </p>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode adapter : server-side avec datalist</h3>
+          <p>
+            Avec <code>server-side</code>, la source charge une page a la fois.
+            Le <code>gouv-datalist</code> en aval pilote la navigation entre les pages.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="src"
+  api-type="tabular"
+  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  server-side
+  page-size="20"
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-datalist source="src"
+  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom"
+  pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode inline data</h3>
+          <p>
+            L'attribut <code>data</code> permet de passer des donnees JSON directement,
+            sans aucun appel HTTP. Utile pour les exemples, prototypes ou donnees statiques.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="inline"
+  data='[{"nom":"Paris","pop":2161000},{"nom":"Lyon","pop":516092},{"nom":"Marseille","pop":870731}]'
+&gt;&lt;/gouv-source&gt;
+
+&lt;gouv-dsfr-chart source="inline" type="bar"
+  label-field="nom" value-field="pop"&gt;
+&lt;/gouv-dsfr-chart&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Rafraichissement automatique</h3>
+          <p>
+            L'attribut <code>refresh</code> re-execute la requete a intervalles reguliers (en secondes).
+            Fonctionne dans les deux modes (URL brute et adapter).
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="live"
+  api-type="opendatasoft"
+  base-url="https://data.opendatasoft.com"
+  dataset-id="mon-dataset"
+  refresh="30"
+&gt;&lt;/gouv-source&gt;</pre></div>
+        </section>
+
+        <h2 id="evenements" class="fr-mt-4w">Evenements</h2>
+        <p>Le composant emet des evenements personnalises via le systeme data-bridge :</p>
+        <ul>
+          <li><code>gouv-data-loaded</code> : Donnees chargees avec succes (detail : tableau de records)</li>
+          <li><code>gouv-data-loading</code> : Chargement en cours</li>
+          <li><code>gouv-data-error</code> : Erreur de chargement (detail : objet Error)</li>
+          <li><code>cache-fallback</code> : Les donnees proviennent du cache serveur suite a une erreur API (mode DB uniquement)</li>
+        </ul>
+
+        <h2 id="methodes" class="fr-mt-4w">Methodes publiques</h2>
+        <table class="attr-table">
+          <thead><tr><th>Methode</th><th>Retour</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>reload()</code></td><td>void</td><td>Force le rechargement des donnees</td></tr>
+            <tr><td><code>getData()</code></td><td>unknown</td><td>Retourne les donnees actuelles</td></tr>
+            <tr><td><code>isLoading()</code></td><td>Boolean</td><td>Indique si un chargement est en cours</td></tr>
+            <tr><td><code>getError()</code></td><td>Error | null</td><td>Retourne l'erreur eventuelle</td></tr>
+            <tr><td><code>getAdapter()</code></td><td>ApiAdapter | null</td><td>Retourne l'adapter actif (mode adapter uniquement, <code>null</code> en mode URL brute)</td></tr>
+            <tr><td><code>getEffectiveWhere(excludeKey?)</code></td><td>String</td><td>Retourne la clause WHERE fusionnee (statique + tous les overlays dynamiques).
+              Le parametre <code>excludeKey</code> permet d'exclure un overlay specifique (utilise par les facettes).</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="conseils" class="fr-mt-4w">Conseils d'utilisation</h2>
+        <div class="fr-callout">
+          <p class="fr-callout__text">
+            <strong>Choisir le bon mode :</strong> Utilisez le mode <strong>URL brute</strong> pour vous connecter a
+            n'importe quelle API REST. Utilisez le mode <strong>adapter</strong> pour les APIs connues (ODS, Tabular, Grist)
+            afin de beneficier de la pagination automatique, des filtres server-side et de la construction d'URL geree.
+          </p>
+        </div>
+        <div class="fr-callout fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>server-side vs pagination automatique :</strong> Sans <code>server-side</code>, l'adapter
+            charge <em>toutes</em> les donnees (multi-pages) en une seule operation. Avec <code>server-side</code>,
+            il charge une seule page et attend les commandes des composants en aval. Utilisez
+            <code>server-side</code> pour les grands datasets avec un <code>gouv-datalist</code> pagine.
+          </p>
+        </div>
+        <div class="fr-callout fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>Pipeline de donnees :</strong> <code>gouv-source</code> s'integre dans un pipeline :
+            <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &rarr;
+            <code>gouv-query</code> / <code>gouv-search</code> / <code>gouv-facets</code> &rarr;
+            composants de visualisation.
+          </p>
+        </div>
+        <div class="fr-callout fr-mt-2w">
+          <p class="fr-callout__text">
+            <strong>Securite :</strong> les headers et tokens sont visibles dans le code source HTML.
+            Ne les utilisez que pour des cles a acces restreint (lecture seule)
+            ou dans des contextes proteges (intranet, applications internes).
+          </p>
+        </div>
     </div>
   </app-layout-demo>
 
