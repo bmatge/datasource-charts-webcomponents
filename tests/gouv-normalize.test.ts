@@ -57,6 +57,34 @@ describe('GouvNormalize', () => {
       expect(map.size).toBe(1);
       expect(map.get('key')).toBe('value');
     });
+
+    it('parses replace-fields format correctly', () => {
+      const map = normalize._parseReplaceFields('AGE:Y30T39:30-39 ans | PCS:3:Cadres');
+      expect(map.get('AGE')?.get('Y30T39')).toBe('30-39 ans');
+      expect(map.get('PCS')?.get('3')).toBe('Cadres');
+    });
+
+    it('groups multiple patterns for the same field', () => {
+      const map = normalize._parseReplaceFields('AGE:Y30T39:30-39 | AGE:Y_LT30:<30');
+      expect(map.get('AGE')?.size).toBe(2);
+      expect(map.get('AGE')?.get('Y30T39')).toBe('30-39');
+      expect(map.get('AGE')?.get('Y_LT30')).toBe('<30');
+    });
+
+    it('returns empty map for empty replace-fields', () => {
+      const map = normalize._parseReplaceFields('');
+      expect(map.size).toBe(0);
+    });
+
+    it('skips replace-fields entries with fewer than 2 colons', () => {
+      const map = normalize._parseReplaceFields('nofield | one:only');
+      expect(map.size).toBe(0);
+    });
+
+    it('preserves colons in replace-fields replacement value', () => {
+      const map = normalize._parseReplaceFields('time:code1:10:30:00');
+      expect(map.get('time')?.get('code1')).toBe('10:30:00');
+    });
   });
 
   describe('Numeric conversion', () => {
@@ -309,6 +337,156 @@ describe('GouvNormalize', () => {
 
       const result = getDataCache('test-normalize') as Record<string, unknown>[];
       expect(result[0].a).toBe('contient N/A dans le texte');
+    });
+  });
+
+  describe('Field-specific value replacement', () => {
+    it('replaces only in the targeted field', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'AGE:Y30T39:30-39 ans';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { AGE: 'Y30T39', PCS: '3', OBS_VALUE: 'Y30T39' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].AGE).toBe('30-39 ans');
+      expect(result[0].PCS).toBe('3');
+      expect(result[0].OBS_VALUE).toBe('Y30T39');
+    });
+
+    it('handles multiple fields and multiple replacements', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'AGE:Y30T39:30-39 ans | AGE:Y_LT30:Moins de 30 ans | PCS:3:Cadres';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { AGE: 'Y30T39', PCS: '3' },
+        { AGE: 'Y_LT30', PCS: '1' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].AGE).toBe('30-39 ans');
+      expect(result[0].PCS).toBe('Cadres');
+      expect(result[1].AGE).toBe('Moins de 30 ans');
+      expect(result[1].PCS).toBe('1');
+    });
+
+    it('leaves value untouched when no match', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'AGE:Y30T39:30-39 ans';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { AGE: 'Y40T49', PCS: '3' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].AGE).toBe('Y40T49');
+      expect(result[0].PCS).toBe('3');
+    });
+
+    it('allows empty replacement (deletion)', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'status:N/A:';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { status: 'N/A', name: 'test' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].status).toBe('');
+      expect(result[0].name).toBe('test');
+    });
+
+    it('preserves colons in replacement value', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'time:code1:10:30:00';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ time: 'code1' }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].time).toBe('10:30:00');
+    });
+
+    it('combines replace-fields and global replace', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'PCS:3:Cadres';
+      normalize.replace = 'N/A:';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { PCS: '3', status: 'N/A', other: 'N/A' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].PCS).toBe('Cadres');
+      expect(result[0].status).toBe('');
+      expect(result[0].other).toBe('');
+    });
+
+    it('field-specific runs before global replace', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'code:A:B';
+      normalize.replace = 'B:C';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { code: 'A', other: 'B' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].code).toBe('C');
+      expect(result[0].other).toBe('C');
+    });
+
+    it('does not affect non-string values', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'count:3:Three';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ count: 3 }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].count).toBe(3);
+    });
+
+    it('works with trim (trimmed key used for field lookup)', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'AGE:Y30T39:30-39 ans';
+      normalize.trim = true;
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { ' AGE ': ' Y30T39 ' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0]['AGE']).toBe('30-39 ans');
+    });
+
+    it('gracefully skips malformed entries', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.replaceFields = 'badentry | also_bad:onlyone | AGE:Y30T39:30-39 ans';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [{ AGE: 'Y30T39' }]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].AGE).toBe('30-39 ans');
     });
   });
 

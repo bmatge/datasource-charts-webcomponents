@@ -68,6 +68,10 @@ export class GouvNormalize extends LitElement {
   @property({ type: String })
   replace = '';
 
+  /** Remplacement cible par champ. Format: "CHAMP:pattern:remplacement | CHAMP2:p:r" */
+  @property({ type: String, attribute: 'replace-fields' })
+  replaceFields = '';
+
   /** Cle du sous-objet a aplatir au premier niveau. Supporte la dot notation (ex: "data.attributes"). */
   @property({ type: String })
   flatten = '';
@@ -119,7 +123,7 @@ export class GouvNormalize extends LitElement {
     }
 
     // Re-traiter si les regles de normalisation changent
-    const normalizationAttrs = ['flatten', 'numeric', 'numericAuto', 'rename', 'trim', 'stripHtml', 'replace', 'lowercaseKeys'];
+    const normalizationAttrs = ['flatten', 'numeric', 'numericAuto', 'rename', 'trim', 'stripHtml', 'replace', 'replaceFields', 'lowercaseKeys'];
     const hasNormalizationChange = normalizationAttrs.some(attr => changedProperties.has(attr));
     if (hasNormalizationChange) {
       const cachedData = this.source ? getDataCache(this.source) : undefined;
@@ -194,12 +198,13 @@ export class GouvNormalize extends LitElement {
       const numericFields = this._parseNumericFields();
       const renameMap = this._parsePipeMap(this.rename);
       const replaceMap = this._parsePipeMap(this.replace);
+      const replaceFieldsMap = this._parseReplaceFields(this.replaceFields);
 
       const result = rows.map(row => {
         if (row === null || row === undefined || typeof row !== 'object') {
           return row;
         }
-        return this._normalizeRow(row as Record<string, unknown>, numericFields, renameMap, replaceMap);
+        return this._normalizeRow(row as Record<string, unknown>, numericFields, renameMap, replaceMap, replaceFieldsMap);
       });
 
       dispatchDataLoaded(this.id, result);
@@ -219,7 +224,8 @@ export class GouvNormalize extends LitElement {
     row: Record<string, unknown>,
     numericFields: Set<string>,
     renameMap: Map<string, string>,
-    replaceMap: Map<string, string>
+    replaceMap: Map<string, string>,
+    replaceFieldsMap: Map<string, Map<string, string>>
   ): Record<string, unknown> {
     const result: Record<string, unknown> = {};
 
@@ -238,7 +244,20 @@ export class GouvNormalize extends LitElement {
         normalizedValue = (normalizedValue as string).replace(/<[^>]*>/g, '');
       }
 
-      // 3. Replace
+      // 3a. Field-specific replace (replace-fields)
+      if (replaceFieldsMap.size > 0 && typeof normalizedValue === 'string') {
+        const fieldReplacements = replaceFieldsMap.get(key);
+        if (fieldReplacements) {
+          for (const [pattern, replacement] of fieldReplacements) {
+            if (normalizedValue === pattern) {
+              normalizedValue = replacement;
+              break;
+            }
+          }
+        }
+      }
+
+      // 3b. Global replace
       if (replaceMap.size > 0 && typeof normalizedValue === 'string') {
         for (const [pattern, replacement] of replaceMap) {
           if (normalizedValue === pattern) {
@@ -304,6 +323,33 @@ export class GouvNormalize extends LitElement {
     return new Set(
       this.numeric.split(',').map(f => f.trim()).filter(Boolean)
     );
+  }
+
+  /** Parse l'attribut replace-fields en Map<champ, Map<pattern, remplacement>> */
+  _parseReplaceFields(attr: string): Map<string, Map<string, string>> {
+    const result = new Map<string, Map<string, string>>();
+    if (!attr) return result;
+
+    const entries = attr.split('|');
+    for (const entry of entries) {
+      const trimmed = entry.trim();
+      const firstColon = trimmed.indexOf(':');
+      if (firstColon === -1) continue;
+      const secondColon = trimmed.indexOf(':', firstColon + 1);
+      if (secondColon === -1) continue;
+
+      const field = trimmed.substring(0, firstColon).trim();
+      const pattern = trimmed.substring(firstColon + 1, secondColon).trim();
+      const replacement = trimmed.substring(secondColon + 1).trim();
+
+      if (!field || !pattern) continue;
+
+      if (!result.has(field)) {
+        result.set(field, new Map());
+      }
+      result.get(field)!.set(pattern, replacement);
+    }
+    return result;
   }
 
   /** Parse un attribut pipe-separe en Map cle:valeur */

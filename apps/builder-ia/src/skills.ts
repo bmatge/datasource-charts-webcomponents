@@ -456,7 +456,7 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
     id: 'gouvNormalize',
     name: 'gouv-normalize',
     description: 'Nettoyage et normalisation des donnees avant traitement',
-    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation', 'grist', 'airtable', 'flatten', 'aplatir', 'nested', 'ods v1', 'records.fields'],
+    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation', 'grist', 'airtable', 'flatten', 'aplatir', 'nested', 'ods v1', 'records.fields', 'replace-fields', 'dimension codee', 'code insee'],
     content: `## <gouv-normalize> - Normalisation de donnees
 
 Composant invisible intermediaire qui nettoie et normalise les donnees avant traitement.
@@ -483,22 +483,25 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 | rename | String | \`""\` | non | Renommage : \`"ancien:nouveau | ancien2:nouveau2"\` (pipe-separe) |
 | trim | Boolean | \`false\` | non | Supprime les espaces en debut/fin des cles ET valeurs string |
 | strip-html | Boolean | \`false\` | non | Supprime les balises HTML des valeurs string |
-| replace | String | \`""\` | non | Remplace des valeurs : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
+| replace | String | \`""\` | non | Remplace des valeurs globalement : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
+| replace-fields | String | \`""\` | non | Remplacement cible par champ : \`"CHAMP:ancien:nouveau | CHAMP2:a:n"\` (pipe-separe). Ne remplace que dans le champ specifie. |
 | lowercase-keys | Boolean | \`false\` | non | Met toutes les cles en minuscules |
 
 ### Ordre d'execution des transformations
 1. **flatten** — aplatit le sous-objet designe
-2. rename — renomme les cles
-3. replace — remplace les valeurs
-4. trim — nettoie les espaces
-5. strip-html — supprime le HTML
-6. numeric / numeric-auto — conversion en nombres
+2. trim — nettoie les espaces (cles et valeurs)
+3. strip-html — supprime le HTML
+4a. **replace-fields** — remplace les valeurs dans les champs specifies
+4b. replace — remplace les valeurs globalement (tous les champs)
+5. numeric / numeric-auto — conversion en nombres
+6. rename — renomme les cles
 7. lowercase-keys — cles en minuscules
 
 ### Separateurs
 - \`numeric\` : champs separes par virgule
 - \`rename\` et \`replace\` : paires separees par \`|\`, cle et valeur separees par \`:\`
   Le \`:\` separe le pattern de sa valeur de remplacement (valeur vide = suppression).
+- \`replace-fields\` : paires separees par \`|\`, format \`CHAMP:pattern:remplacement\` (les 2 premiers \`:\` sont des delimiteurs, le remplacement peut contenir des \`:\`).
 
 ### Aplatir des donnees imbriquees (Grist, ODS v1, Airtable)
 
@@ -560,6 +563,15 @@ rendant les donnees compatibles avec tous les composants (facettes, datalist, gr
 
 <!-- Normalisation des cles en minuscules -->
 <gouv-normalize id="lower" source="raw" lowercase-keys></gouv-normalize>
+
+<!-- INSEE Melodi : decoder les dimensions codees par champ -->
+<gouv-source id="raw" api-type="insee" base-url="https://api.insee.fr/melodi"
+  dataset-id="DS_POPULATIONS_REFERENCE"
+  where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023"></gouv-source>
+<gouv-normalize id="decoded" source="raw"
+  replace-fields="AGE:Y30T39:30-39 ans | AGE:Y_LT30:Moins de 30 ans | PCS:3:Cadres | PCS:5:Employes"
+  replace="N/A:">
+</gouv-normalize>
 \`\`\``,
   },
 
