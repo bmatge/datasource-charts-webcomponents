@@ -14,9 +14,6 @@ import {
   subscribeToSourceCommands
 } from '../utils/data-bridge.js';
 
-/** @deprecated Use ProviderId from @gouv-widgets/shared instead */
-type ApiType = string;
-
 /**
  * Operateurs de filtre supportes
  */
@@ -63,10 +60,9 @@ export interface QuerySort {
  * (gouv-source ou gouv-normalize).
  *
  * Ne fait aucun fetch HTTP : les donnees sont recues d'un composant amont
- * via le data-bridge. Si api-type est defini sans source, un gouv-source
- * interne est cree automatiquement (mode deprecie — backward compat).
+ * (gouv-source ou gouv-normalize) via le data-bridge.
  *
- * @example Source explicite (recommande)
+ * @example Source explicite
  * <gouv-source id="src" api-type="opendatasoft"
  *   base-url="https://data.opendatasoft.com" dataset-id="communes-france"
  *   select="sum(population) as total_pop, region" group-by="region">
@@ -84,57 +80,14 @@ export interface QuerySort {
  *   order-by="population__sum:desc"
  *   limit="10">
  * </gouv-query>
- *
- * @example Backward compat (deprecie — preferez source explicite)
- * <gouv-query
- *   id="ods-stats"
- *   api-type="opendatasoft"
- *   dataset-id="communes-france"
- *   base-url="https://data.opendatasoft.com"
- *   select="sum(population) as total_pop, region"
- *   group-by="region"
- *   order-by="total_pop:desc"
- *   limit="20">
- * </gouv-query>
  */
 @customElement('gouv-query')
 export class GouvQuery extends LitElement {
   /**
-   * Type d'API : generic (client-side), opendatasoft, tabular, grist
-   */
-  @property({ type: String, attribute: 'api-type' })
-  apiType: ApiType = 'generic';
-
-  /**
-   * ID de la source de donnees (pour mode generic)
+   * ID de la source de donnees (gouv-source ou gouv-normalize)
    */
   @property({ type: String })
   source = '';
-
-  /**
-   * URL de base de l'API (pour opendatasoft/tabular)
-   */
-  @property({ type: String, attribute: 'base-url' })
-  baseUrl = '';
-
-  /**
-   * ID du dataset (pour opendatasoft/tabular)
-   */
-  @property({ type: String, attribute: 'dataset-id' })
-  datasetId = '';
-
-  /**
-   * ID de la ressource (pour tabular)
-   */
-  @property({ type: String })
-  resource = '';
-
-  /**
-   * Clause SELECT avec agregations (syntaxe ODSQL pour opendatasoft)
-   * Ex: "sum(population) as total, region"
-   */
-  @property({ type: String })
-  select = '';
 
   /**
    * Clause WHERE / Filtres
@@ -199,14 +152,6 @@ export class GouvQuery extends LitElement {
   pageSize = 20;
 
   /**
-   * Headers HTTP en JSON (pour APIs privees/authentifiees)
-   * Ex: '{"apikey":"abc123"}' ou '{"Authorization":"Bearer token"}'
-   * Passe au gouv-source interne en mode compat (ignore en mode generic)
-   */
-  @property({ type: String })
-  headers = '';
-
-  /**
    * Intervalle de rafraichissement en secondes
    */
   @property({ type: Number })
@@ -228,10 +173,6 @@ export class GouvQuery extends LitElement {
   private _unsubscribe: (() => void) | null = null;
   private _unsubscribeCommands: (() => void) | null = null;
 
-  /** Shadow gouv-source element for backward compatibility */
-  private _shadowSource: HTMLElement | null = null;
-  private _shadowSourceId = '';
-
   // Pas de rendu - composant invisible
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
@@ -243,7 +184,7 @@ export class GouvQuery extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    sendWidgetBeacon('gouv-query', this.apiType);
+    sendWidgetBeacon('gouv-query');
     this._initialize();
   }
 
@@ -257,8 +198,7 @@ export class GouvQuery extends LitElement {
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    const queryProps = ['source', 'apiType', 'baseUrl', 'datasetId', 'resource',
-                        'select', 'where', 'filter', 'groupBy', 'aggregate',
+    const queryProps = ['source', 'where', 'filter', 'groupBy', 'aggregate',
                         'orderBy', 'limit', 'transform', 'serverSide', 'pageSize'];
 
     if (queryProps.some(prop => changedProperties.has(prop))) {
@@ -283,7 +223,6 @@ export class GouvQuery extends LitElement {
       this._unsubscribeCommands();
       this._unsubscribeCommands = null;
     }
-    this._destroyShadowSource();
   }
 
   private _setupRefresh() {
@@ -315,72 +254,15 @@ export class GouvQuery extends LitElement {
       this._unsubscribeCommands = null;
     }
 
-    if (this.apiType !== 'generic' && !this.source) {
-      // Backward compat: create shadow gouv-source
-      console.warn(
-        `gouv-query[${this.id}]: <gouv-query api-type="${this.apiType}"> sans source est deprecie. ` +
-        `Utilisez <gouv-source api-type="${this.apiType}" ...> + <gouv-query source="...">.`
-      );
-      this._createShadowSource();
-      this._subscribeToSourceData(this._shadowSourceId);
-    } else if (this.source) {
-      // Normal mode: subscribe to existing source
-      this._destroyShadowSource();
-      this._subscribeToSourceData(this.source);
-    } else {
-      console.warn('gouv-query: attribut "source" requis en mode generic');
+    if (!this.source) {
+      console.warn(`gouv-query[${this.id}]: attribut "source" requis`);
       return;
     }
 
+    this._subscribeToSourceData(this.source);
+
     // Forward commands from downstream to upstream source
     this._setupCommandForwarding();
-  }
-
-  // --- Shadow source management (backward compat) ---
-
-  private _createShadowSource() {
-    this._destroyShadowSource();
-
-    this._shadowSourceId = `__gq_${this.id}_src`;
-
-    const el = document.createElement('gouv-source');
-    el.id = this._shadowSourceId;
-    el.setAttribute('api-type', this.apiType);
-    el.style.display = 'none';
-
-    if (this.baseUrl) el.setAttribute('base-url', this.baseUrl);
-    if (this.datasetId) el.setAttribute('dataset-id', this.datasetId);
-    if (this.resource) el.setAttribute('resource', this.resource);
-    if (this.select) el.setAttribute('select', this.select);
-    if (this.where || this.filter) el.setAttribute('where', this.where || this.filter);
-    if (this.groupBy) el.setAttribute('group-by', this.groupBy);
-    if (this.aggregate) el.setAttribute('aggregate', this.aggregate);
-    if (this.orderBy) el.setAttribute('order-by', this.orderBy);
-    if (this.limit > 0) el.setAttribute('limit', String(this.limit));
-    if (this.serverSide) el.setAttribute('server-side', '');
-    if (this.pageSize !== 20) el.setAttribute('page-size', String(this.pageSize));
-    if (this.headers) el.setAttribute('headers', this.headers);
-
-    // Insert as sibling before gouv-query
-    if (this.parentElement) {
-      this.parentElement.insertBefore(el, this);
-    } else {
-      document.body.appendChild(el);
-    }
-
-    this._shadowSource = el;
-  }
-
-  private _destroyShadowSource() {
-    if (this._shadowSource) {
-      if (this._shadowSourceId) {
-        clearDataCache(this._shadowSourceId);
-        clearDataMeta(this._shadowSourceId);
-      }
-      this._shadowSource.remove();
-      this._shadowSource = null;
-      this._shadowSourceId = '';
-    }
   }
 
   // --- Source subscription ---
@@ -412,26 +294,12 @@ export class GouvQuery extends LitElement {
 
   /**
    * Handle data received from upstream source.
-   * In compat mode (shadow source), checks adapter capabilities to decide
-   * whether client-side processing is needed.
    */
   private _handleSourceData() {
     try {
       dispatchDataLoading(this.id);
       this._loading = true;
-
-      if (this._shadowSource && this._serverHandlesGroupBy()) {
-        // Compat mode with server-side group-by (ODS): data is already processed.
-        // Only apply safe post-processing (sort is idempotent, limit is safe).
-        let result = [...this._rawData] as Record<string, unknown>[];
-        if (this.orderBy) result = this._applySort(result);
-        if (this.limit > 0) result = result.slice(0, this.limit);
-        this._data = result;
-        dispatchDataLoaded(this.id, this._data);
-      } else {
-        // Normal mode or compat without server group-by: full client-side processing
-        this._processClientSide();
-      }
+      this._processClientSide();
     } catch (error) {
       this._error = error as Error;
       dispatchDataError(this.id, this._error);
@@ -439,16 +307,6 @@ export class GouvQuery extends LitElement {
     } finally {
       this._loading = false;
     }
-  }
-
-  /**
-   * Check if the shadow source's adapter handles group-by server-side.
-   * Used to avoid double-processing in backward compat mode.
-   */
-  private _serverHandlesGroupBy(): boolean {
-    if (!this.groupBy) return false;
-    const adapter = (this._shadowSource as any)?.getAdapter?.();
-    return adapter?.capabilities?.serverGroupBy === true;
   }
 
   // --- Client-side processing ---
@@ -700,11 +558,10 @@ export class GouvQuery extends LitElement {
 
     if (!this.id || !this.serverSide) return;
 
-    const upstreamId = this._shadowSourceId || this.source;
-    if (!upstreamId) return;
+    if (!this.source) return;
 
     this._unsubscribeCommands = subscribeToSourceCommands(this.id, (cmd) => {
-      dispatchSourceCommand(upstreamId, cmd);
+      dispatchSourceCommand(this.source, cmd);
     });
   }
 
@@ -715,14 +572,12 @@ export class GouvQuery extends LitElement {
    * Delegue a la source amont si disponible.
    */
   getEffectiveWhere(excludeKey?: string): string {
-    const sourceId = this._shadowSourceId || this.source;
-    if (sourceId) {
-      const sourceEl = document.getElementById(sourceId);
+    if (this.source) {
+      const sourceEl = document.getElementById(this.source);
       if (sourceEl && 'getEffectiveWhere' in sourceEl) {
         return (sourceEl as any).getEffectiveWhere(excludeKey);
       }
     }
-    // Fallback: return static where
     return this.where || this.filter || '';
   }
 
@@ -730,9 +585,8 @@ export class GouvQuery extends LitElement {
    * Retourne l'adapter courant (delegue a la source amont)
    */
   public getAdapter(): any {
-    const sourceId = this._shadowSourceId || this.source;
-    if (sourceId) {
-      const sourceEl = document.getElementById(sourceId);
+    if (this.source) {
+      const sourceEl = document.getElementById(this.source);
       if (sourceEl && 'getAdapter' in sourceEl) {
         return (sourceEl as any).getAdapter();
       }
@@ -744,9 +598,7 @@ export class GouvQuery extends LitElement {
    * Force le rechargement des donnees
    */
   public reload() {
-    if (this._shadowSource) {
-      (this._shadowSource as any).reload?.();
-    } else if (this.source) {
+    if (this.source) {
       const cachedData = getDataCache(this.source);
       if (cachedData !== undefined) {
         this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];

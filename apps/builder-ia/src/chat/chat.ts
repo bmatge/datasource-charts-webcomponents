@@ -182,9 +182,9 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
       ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
       : '';
     const paginationNote = isOds
-      ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000).`
+      ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise gouv-source avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000), puis gouv-query pour transformer.`
       : isTabular
-        ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise gouv-query avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000).`
+        ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise gouv-source avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000), puis gouv-query pour transformer.`
         : '';
     const isGrist = state.source?.type === 'grist';
     const gristNote = isGrist

@@ -72,11 +72,10 @@ describe('playground examples', () => {
     }
   });
 
-  it('direct examples should use gouv-source or gouv-query with api-type', () => {
+  it('direct examples should use gouv-source', () => {
     for (const key of directKeys) {
       const hasSource = examples[key].includes('gouv-source');
-      const hasTabularQuery = examples[key].includes('api-type="tabular"');
-      expect(hasSource || hasTabularQuery, `${key} should use gouv-source or gouv-query with api-type`).toBe(true);
+      expect(hasSource, `${key} should use gouv-source`).toBe(true);
       if (!['direct-kpi', 'direct-datalist', 'direct-display', 'direct-worldmap'].includes(key)) {
         expect(examples[key], `${key} should use gouv-dsfr-chart`).toContain('gouv-dsfr-chart');
       }
