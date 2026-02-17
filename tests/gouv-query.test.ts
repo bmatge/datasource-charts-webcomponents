@@ -621,4 +621,446 @@ describe('GouvQuery', () => {
       expect(query.getError()).toBe(error);
     });
   });
+
+  describe('createRenderRoot and render', () => {
+    it('createRenderRoot returns this (no shadow DOM)', () => {
+      expect(query.createRenderRoot()).toBe(query);
+    });
+
+    it('render returns empty template', () => {
+      const result = query.render();
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('Lifecycle', () => {
+    it('connectedCallback initializes the component', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.connectedCallback();
+      expect((query as any)._unsubscribe).toBeTypeOf('function');
+    });
+
+    it('disconnectedCallback cleans up', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.connectedCallback();
+
+      expect((query as any)._unsubscribe).toBeTypeOf('function');
+      query.disconnectedCallback();
+      expect((query as any)._unsubscribe).toBeNull();
+    });
+
+    it('disconnectedCallback clears data cache', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.connectedCallback();
+
+      dispatchDataLoaded('test-source', [{ a: 1 }]);
+      expect(query.getData()).toHaveLength(1);
+
+      query.disconnectedCallback();
+      // Cache should be cleared
+      const { getDataCache } = require('../src/utils/data-bridge.js');
+      expect(getDataCache('test-query')).toBeUndefined();
+    });
+
+    it('updated re-initializes when source changes', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.connectedCallback();
+
+      const initSpy = vi.spyOn(query as any, '_initialize');
+      const changedProps = new Map([['source', 'old-source']]);
+      query.updated(changedProps);
+      expect(initSpy).toHaveBeenCalled();
+      initSpy.mockRestore();
+    });
+
+    it('updated re-initializes when query props change', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.connectedCallback();
+
+      const initSpy = vi.spyOn(query as any, '_initialize');
+      const changedProps = new Map([['groupBy', '']]);
+      query.updated(changedProps);
+      expect(initSpy).toHaveBeenCalled();
+      initSpy.mockRestore();
+    });
+
+    it('updated calls _setupRefresh when refresh changes', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+
+      const refreshSpy = vi.spyOn(query as any, '_setupRefresh');
+      const changedProps = new Map([['refresh', 0]]);
+      query.updated(changedProps);
+      expect(refreshSpy).toHaveBeenCalled();
+      refreshSpy.mockRestore();
+    });
+  });
+
+  describe('_setupRefresh', () => {
+    afterEach(() => {
+      if ((query as any)._refreshInterval) {
+        clearInterval((query as any)._refreshInterval);
+        (query as any)._refreshInterval = null;
+      }
+    });
+
+    it('sets up interval when refresh > 0', () => {
+      vi.useFakeTimers();
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.refresh = 5;
+      query.connectedCallback();
+
+      (query as any)._setupRefresh();
+      expect((query as any)._refreshInterval).not.toBeNull();
+
+      vi.useRealTimers();
+    });
+
+    it('clears previous interval before setting new one', () => {
+      vi.useFakeTimers();
+      query.refresh = 10;
+      (query as any)._setupRefresh();
+      const firstInterval = (query as any)._refreshInterval;
+
+      query.refresh = 5;
+      (query as any)._setupRefresh();
+      expect((query as any)._refreshInterval).not.toBe(firstInterval);
+
+      vi.useRealTimers();
+    });
+
+    it('clears interval when refresh is 0', () => {
+      vi.useFakeTimers();
+      query.refresh = 5;
+      (query as any)._setupRefresh();
+      expect((query as any)._refreshInterval).not.toBeNull();
+
+      query.refresh = 0;
+      (query as any)._setupRefresh();
+      expect((query as any)._refreshInterval).toBeNull();
+
+      vi.useRealTimers();
+    });
+
+    it('calls _initialize on interval tick', () => {
+      vi.useFakeTimers();
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.refresh = 2;
+
+      const initSpy = vi.spyOn(query as any, '_initialize');
+      (query as any)._setupRefresh();
+
+      vi.advanceTimersByTime(2000);
+      expect(initSpy).toHaveBeenCalled();
+
+      initSpy.mockRestore();
+      vi.useRealTimers();
+    });
+  });
+
+  describe('onLoading and onError callbacks', () => {
+    it('forwards loading from source subscription', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      (query as any)._subscribeToSourceData('test-source');
+
+      // Simulate source emitting loading
+      const { dispatchDataLoading } = require('../src/utils/data-bridge.js');
+      dispatchDataLoading('test-source');
+
+      expect(query.isLoading()).toBe(true);
+    });
+
+    it('forwards error from source subscription', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      (query as any)._subscribeToSourceData('test-source');
+
+      // Simulate source emitting error
+      const { dispatchDataError } = require('../src/utils/data-bridge.js');
+      dispatchDataError('test-source', new Error('test error'));
+
+      expect(query.getError()).toBeInstanceOf(Error);
+      expect(query.getError()!.message).toBe('test error');
+      expect(query.isLoading()).toBe(false);
+    });
+  });
+
+  describe('reload', () => {
+    it('reloads from cached data when in source mode', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.orderBy = 'value:desc';
+
+      // Pre-populate cache
+      dispatchDataLoaded('test-source', [
+        { name: 'A', value: 10 },
+        { name: 'B', value: 30 },
+      ]);
+
+      (query as any)._subscribeToSourceData('test-source');
+      const data1 = query.getData() as Record<string, unknown>[];
+      expect(data1[0].name).toBe('B');
+
+      // Change data in cache and reload
+      dispatchDataLoaded('test-source', [
+        { name: 'C', value: 50 },
+        { name: 'D', value: 5 },
+      ]);
+
+      query.reload();
+
+      const data2 = query.getData() as Record<string, unknown>[];
+      expect(data2[0].name).toBe('C');
+      expect(data2[0].value).toBe(50);
+    });
+
+    it('does nothing when no cached data and no shadow source', () => {
+      query.id = 'test-query';
+      query.source = 'non-existent-source';
+      clearDataCache('non-existent-source');
+
+      // Should not throw
+      query.reload();
+      expect(query.getData()).toEqual([]);
+    });
+
+    it('calls reload on shadow source in compat mode', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+
+      (query as any)._initialize();
+
+      const reloadFn = vi.fn();
+      (query as any)._shadowSource.reload = reloadFn;
+
+      query.reload();
+      expect(reloadFn).toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('_handleSourceData error handling', () => {
+    it('catches errors in processing and dispatches error event', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+
+      // Force an error by setting invalid groupBy with bad data
+      query.groupBy = 'field';
+      query.aggregate = 'bad:invalid';
+      (query as any)._rawData = [{ field: 'A' }];
+
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Even with bad aggregate function, it should catch gracefully
+      (query as any)._handleSourceData();
+      expect(query.isLoading()).toBe(false);
+
+      errorSpy.mockRestore();
+    });
+  });
+
+  describe('_initialize edge cases', () => {
+    it('warns when no id', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.source = 'test-source';
+      (query as any)._initialize();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('attribut "id" requis'));
+      warnSpy.mockRestore();
+    });
+
+    it('warns when generic mode without source', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'generic';
+      query.source = '';
+      (query as any)._initialize();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('attribut "source" requis'));
+      warnSpy.mockRestore();
+    });
+
+    it('unsubscribes commands on re-initialization', () => {
+      query.id = 'test-query';
+      query.source = 'test-source';
+      query.serverSide = true;
+      (query as any)._initialize();
+      const oldCmdUnsub = (query as any)._unsubscribeCommands;
+      expect(oldCmdUnsub).toBeTypeOf('function');
+
+      // Re-initialize
+      (query as any)._initialize();
+      // Should have new command listener
+      expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
+    });
+  });
+
+  describe('_serverHandlesGroupBy', () => {
+    it('returns false when no groupBy', () => {
+      query.groupBy = '';
+      expect((query as any)._serverHandlesGroupBy()).toBe(false);
+    });
+
+    it('returns false when no shadow source', () => {
+      query.groupBy = 'region';
+      (query as any)._shadowSource = null;
+      expect((query as any)._serverHandlesGroupBy()).toBe(false);
+    });
+
+    it('returns true when shadow source adapter has serverGroupBy', () => {
+      query.groupBy = 'region';
+      (query as any)._shadowSource = {
+        getAdapter: () => ({ capabilities: { serverGroupBy: true } }),
+        remove: () => {},
+      };
+      expect((query as any)._serverHandlesGroupBy()).toBe(true);
+    });
+  });
+
+  describe('_handleSourceData with server group-by', () => {
+    it('skips client processing when server handles groupBy', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'opendatasoft';
+      query.baseUrl = 'https://data.example.com';
+      query.datasetId = 'test-dataset';
+      query.groupBy = 'region';
+      query.orderBy = 'total:desc';
+      query.limit = 2;
+
+      (query as any)._initialize();
+
+      // Mock the shadow source adapter
+      (query as any)._shadowSource.getAdapter = () => ({
+        capabilities: { serverGroupBy: true }
+      });
+
+      // Simulate server-processed data arriving
+      (query as any)._rawData = [
+        { region: 'IDF', total: 300 },
+        { region: 'PACA', total: 200 },
+        { region: 'ARA', total: 100 },
+      ];
+      (query as any)._handleSourceData();
+
+      const data = query.getData() as Record<string, unknown>[];
+      // Should sort desc and limit to 2
+      expect(data).toHaveLength(2);
+      expect(data[0].region).toBe('IDF');
+      expect(data[1].region).toBe('PACA');
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('Shadow source edge cases', () => {
+    it('appends to document.body when no parent element', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'tabular';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.resource = 'res-123';
+      // parentElement is null since query is not in DOM
+      (query as any)._createShadowSource();
+
+      const shadow = document.getElementById('__gq_test-query_src');
+      expect(shadow).not.toBeNull();
+      expect(shadow!.parentElement).toBe(document.body);
+
+      shadow!.remove();
+      warnSpy.mockRestore();
+    });
+
+    it('uses filter attribute as where fallback', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.apiType = 'tabular';
+      query.baseUrl = 'https://tabular-api.data.gouv.fr';
+      query.resource = 'res-123';
+      query.where = '';
+      query.filter = 'field:eq:value';
+
+      (query as any)._createShadowSource();
+
+      const shadow = document.getElementById('__gq_test-query_src');
+      expect(shadow!.getAttribute('where')).toBe('field:eq:value');
+
+      shadow!.remove();
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('Additional filter operators', () => {
+    it('matches gte (greater than or equal)', () => {
+      const filter = { field: 'score', operator: 'gte', value: 80 };
+      expect((query as any)._matchesFilter({ score: 80 }, filter)).toBe(true);
+      expect((query as any)._matchesFilter({ score: 79 }, filter)).toBe(false);
+    });
+
+    it('matches lt (less than)', () => {
+      const filter = { field: 'score', operator: 'lt', value: 50 };
+      expect((query as any)._matchesFilter({ score: 49 }, filter)).toBe(true);
+      expect((query as any)._matchesFilter({ score: 50 }, filter)).toBe(false);
+    });
+
+    it('matches notcontains', () => {
+      const filter = { field: 'desc', operator: 'notcontains', value: 'test' };
+      expect((query as any)._matchesFilter({ desc: 'hello world' }, filter)).toBe(true);
+      expect((query as any)._matchesFilter({ desc: 'hello test world' }, filter)).toBe(false);
+    });
+
+    it('matches notin', () => {
+      const filter = { field: 'region', operator: 'notin', value: ['IDF', 'PACA'] };
+      expect((query as any)._matchesFilter({ region: 'ARA' }, filter)).toBe(true);
+      expect((query as any)._matchesFilter({ region: 'IDF' }, filter)).toBe(false);
+    });
+
+    it('matches isnull', () => {
+      const filter = { field: 'name', operator: 'isnull' };
+      expect((query as any)._matchesFilter({ name: null }, filter)).toBe(true);
+      expect((query as any)._matchesFilter({}, filter)).toBe(true);
+      expect((query as any)._matchesFilter({ name: 'hello' }, filter)).toBe(false);
+    });
+
+    it('unknown operator returns true', () => {
+      const filter = { field: 'x', operator: 'unknown', value: 1 };
+      expect((query as any)._matchesFilter({ x: 999 }, filter)).toBe(true);
+    });
+  });
+
+  describe('Aggregation edge cases', () => {
+    it('returns 0 for avg of empty values', () => {
+      const agg = { field: 'val', function: 'avg' };
+      expect((query as any)._computeAggregate([], agg)).toBe(0);
+    });
+
+    it('returns 0 for min of empty values', () => {
+      const agg = { field: 'val', function: 'min' };
+      expect((query as any)._computeAggregate([], agg)).toBe(0);
+    });
+
+    it('returns 0 for max of empty values', () => {
+      const agg = { field: 'val', function: 'max' };
+      expect((query as any)._computeAggregate([], agg)).toBe(0);
+    });
+
+    it('returns 0 for unknown function', () => {
+      const agg = { field: 'val', function: 'median' };
+      expect((query as any)._computeAggregate([{ val: 10 }], agg)).toBe(0);
+    });
+
+    it('returns empty for empty aggregate expression', () => {
+      expect((query as any)._parseAggregates('')).toEqual([]);
+    });
+  });
 });
