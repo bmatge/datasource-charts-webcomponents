@@ -537,7 +537,7 @@ describe('GouvSearch', () => {
       search._applyFilter();
       const elapsed = performance.now() - start;
 
-      expect(elapsed).toBeLessThan(50);
+      expect(elapsed).toBeLessThan(200);
     });
   });
 

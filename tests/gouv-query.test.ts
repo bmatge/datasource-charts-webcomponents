@@ -17,7 +17,10 @@ import {
   clearDataCache,
   clearDataMeta,
   dispatchDataLoaded,
+  dispatchDataLoading,
+  dispatchDataError,
   dispatchSourceCommand,
+  getDataCache,
   subscribeToSourceCommands
 } from '../src/utils/data-bridge.js';
 
@@ -661,7 +664,6 @@ describe('GouvQuery', () => {
 
       query.disconnectedCallback();
       // Cache should be cleared
-      const { getDataCache } = require('../src/utils/data-bridge.js');
       expect(getDataCache('test-query')).toBeUndefined();
     });
 
@@ -772,7 +774,6 @@ describe('GouvQuery', () => {
       (query as any)._subscribeToSourceData('test-source');
 
       // Simulate source emitting loading
-      const { dispatchDataLoading } = require('../src/utils/data-bridge.js');
       dispatchDataLoading('test-source');
 
       expect(query.isLoading()).toBe(true);
@@ -784,7 +785,6 @@ describe('GouvQuery', () => {
       (query as any)._subscribeToSourceData('test-source');
 
       // Simulate source emitting error
-      const { dispatchDataError } = require('../src/utils/data-bridge.js');
       dispatchDataError('test-source', new Error('test error'));
 
       expect(query.getError()).toBeInstanceOf(Error);
