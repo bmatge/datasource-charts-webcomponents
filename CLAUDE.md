@@ -162,10 +162,6 @@ Le mode SQL est un fallback automatique — il est active seulement quand les ca
 
 L'adapter expose aussi `fetchColumns()` et `fetchTables()` pour l'introspection du schema Grist.
 
-### Retrocompatibilite
-
-`<gouv-query api-type="opendatasoft" ...>` sans gouv-source fonctionne toujours (mode compat avec shadow source interne), mais est **deprecie**. Les builders generent le nouveau pattern.
-
 ## Conventions de code
 
 - TypeScript strict mode
@@ -204,7 +200,7 @@ Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient aut
 
 Si un attribut est ajoute a un composant sans maj du skill, le test echouera.
 
-**Note** : gouv-source a deux modes (voir "Attributs gouv-source" ci-dessus). Les attributs `api-type`, `base-url`, `dataset-id`, `resource`, `select`, `headers` sur gouv-query sont deprecies (mode compat seulement).
+**Note** : gouv-source a deux modes (voir "Attributs gouv-source" ci-dessus). gouv-query est un pur transformateur et ne fait aucun fetch HTTP.
 
 ## Release Tauri
 

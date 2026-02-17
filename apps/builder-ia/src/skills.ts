@@ -341,10 +341,7 @@ Apres agregation, les champs sont nommes automatiquement : \`champ__fonction\`
 | server-side | Boolean | \`false\` | non | Active le transfert de commandes vers la source (pagination, recherche, tri) |
 | page-size | Number | \`20\` | non | Taille de page (transmise a la source en mode server-side) |
 
-> **Attributs deprecies** : \`api-type\`, \`base-url\`, \`dataset-id\`, \`resource\`, \`select\`, \`headers\`.
-> Utilisez gouv-source pour le fetch et gouv-query uniquement pour transformer.
-> L'ancien mode (\`<gouv-query api-type="opendatasoft" ...>\`) fonctionne encore
-> via un gouv-source interne mais n'est plus recommande.
+> gouv-query est un pur transformateur de donnees. Utilisez gouv-source pour le fetch HTTP.
 
 ### Mode server-side
 Avec \`server-side\`, gouv-query transfere les commandes des composants en aval

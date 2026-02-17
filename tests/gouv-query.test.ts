@@ -30,7 +30,6 @@ describe('GouvQuery', () => {
   beforeEach(() => {
     clearDataCache('test-query');
     clearDataCache('test-source');
-    clearDataCache('__gq_test-query_src');
     mockFetch.mockReset();
     query = new GouvQuery();
   });
@@ -41,9 +40,6 @@ describe('GouvQuery', () => {
     if (query.isConnected) {
       query.disconnectedCallback();
     }
-    // Clean up any shadow sources
-    const shadows = document.querySelectorAll('[id^="__gq_"]');
-    shadows.forEach(el => el.remove());
   });
 
   describe('Filter parsing', () => {
@@ -354,131 +350,6 @@ describe('GouvQuery', () => {
     });
   });
 
-  describe('Shadow source (backward compat mode)', () => {
-    it('creates shadow source when api-type is set without source', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-
-      (query as any)._initialize();
-
-      expect((query as any)._shadowSource).not.toBeNull();
-      expect((query as any)._shadowSourceId).toBe('__gq_test-query_src');
-
-      // Should warn about deprecation
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('sans source est deprecie')
-      );
-
-      warnSpy.mockRestore();
-    });
-
-    it('shadow source gets all relevant attributes', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'tabular';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.resource = 'resource-123';
-      query.where = 'field:eq:value';
-      query.groupBy = 'region';
-      query.aggregate = 'pop:sum';
-      query.orderBy = 'pop__sum:desc';
-      query.limit = 10;
-      query.serverSide = true;
-      query.pageSize = 50;
-      query.headers = '{"apikey":"test"}';
-
-      (query as any)._initialize();
-
-      const el = (query as any)._shadowSource as HTMLElement;
-      expect(el.getAttribute('api-type')).toBe('tabular');
-      expect(el.getAttribute('base-url')).toBe('https://tabular-api.data.gouv.fr');
-      expect(el.getAttribute('resource')).toBe('resource-123');
-      expect(el.getAttribute('where')).toBe('field:eq:value');
-      expect(el.getAttribute('group-by')).toBe('region');
-      expect(el.getAttribute('aggregate')).toBe('pop:sum');
-      expect(el.getAttribute('order-by')).toBe('pop__sum:desc');
-      expect(el.getAttribute('limit')).toBe('10');
-      expect(el.hasAttribute('server-side')).toBe(true);
-      expect(el.getAttribute('page-size')).toBe('50');
-      expect(el.getAttribute('headers')).toBe('{"apikey":"test"}');
-
-      warnSpy.mockRestore();
-    });
-
-    it('destroys shadow source when switching to source mode', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-
-      (query as any)._initialize();
-      expect((query as any)._shadowSource).not.toBeNull();
-
-      // Switch to source mode
-      query.source = 'external-source';
-      (query as any)._initialize();
-      expect((query as any)._shadowSource).toBeNull();
-
-      warnSpy.mockRestore();
-    });
-
-    it('does not create shadow source in generic mode', () => {
-      query.id = 'test-query';
-      query.apiType = 'generic';
-      query.source = 'test-source';
-
-      (query as any)._initialize();
-      expect((query as any)._shadowSource).toBeNull();
-    });
-
-    it('processes data from shadow source via data-bridge events', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'tabular';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.resource = 'resource-123';
-      query.groupBy = 'region';
-      query.aggregate = 'value:sum';
-
-      (query as any)._initialize();
-
-      // Simulate shadow source emitting data
-      dispatchDataLoaded('__gq_test-query_src', [
-        { region: 'A', value: 10 },
-        { region: 'B', value: 20 },
-        { region: 'A', value: 30 },
-      ]);
-
-      const data = query.getData() as Record<string, unknown>[];
-      expect(data).toHaveLength(2);
-      const regionA = data.find(d => d.region === 'A');
-      expect(regionA?.value__sum).toBe(40);
-
-      warnSpy.mockRestore();
-    });
-
-    it('cleanup removes shadow source', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-
-      (query as any)._initialize();
-      expect((query as any)._shadowSource).not.toBeNull();
-
-      (query as any)._cleanup();
-      expect((query as any)._shadowSource).toBeNull();
-      expect((query as any)._shadowSourceId).toBe('');
-
-      warnSpy.mockRestore();
-    });
-  });
-
   describe('Command forwarding', () => {
     it('forwards commands to upstream source in server-side mode', () => {
       query.id = 'test-query';
@@ -511,29 +382,6 @@ describe('GouvQuery', () => {
 
       (query as any)._setupCommandForwarding();
       expect((query as any)._unsubscribeCommands).toBeNull();
-    });
-
-    it('forwards to shadow source in compat mode', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-      query.serverSide = true;
-
-      (query as any)._initialize();
-
-      const received: any[] = [];
-      const unsub = subscribeToSourceCommands('__gq_test-query_src', (cmd) => {
-        received.push(cmd);
-      });
-
-      dispatchSourceCommand('test-query', { page: 2 });
-      expect(received).toHaveLength(1);
-      expect(received[0].page).toBe(2);
-
-      unsub();
-      warnSpy.mockRestore();
     });
 
     it('cleans up command listener on cleanup', () => {
@@ -832,23 +680,6 @@ describe('GouvQuery', () => {
       expect(query.getData()).toEqual([]);
     });
 
-    it('calls reload on shadow source in compat mode', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-
-      (query as any)._initialize();
-
-      const reloadFn = vi.fn();
-      (query as any)._shadowSource.reload = reloadFn;
-
-      query.reload();
-      expect(reloadFn).toHaveBeenCalled();
-
-      warnSpy.mockRestore();
-    });
   });
 
   describe('_handleSourceData error handling', () => {
@@ -880,14 +711,32 @@ describe('GouvQuery', () => {
       warnSpy.mockRestore();
     });
 
-    it('warns when generic mode without source', () => {
+    it('warns when no source attribute', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       query.id = 'test-query';
-      query.apiType = 'generic';
       query.source = '';
       (query as any)._initialize();
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('attribut "source" requis'));
       warnSpy.mockRestore();
+    });
+
+    it('does not initialize without source', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      query.id = 'test-query';
+      query.source = '';
+      (query as any)._initialize();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('attribut "source" requis'));
+      expect((query as any)._unsubscribe).toBeNull();
+      warnSpy.mockRestore();
+    });
+
+    it('deprecated properties (apiType, baseUrl, etc.) do not exist on element', () => {
+      expect('apiType' in query).toBe(false);
+      expect('baseUrl' in query).toBe(false);
+      expect('datasetId' in query).toBe(false);
+      expect('resource' in query).toBe(false);
+      expect('select' in query).toBe(false);
+      expect('headers' in query).toBe(false);
     });
 
     it('unsubscribes commands on re-initialization', () => {
@@ -902,101 +751,6 @@ describe('GouvQuery', () => {
       (query as any)._initialize();
       // Should have new command listener
       expect((query as any)._unsubscribeCommands).toBeTypeOf('function');
-    });
-  });
-
-  describe('_serverHandlesGroupBy', () => {
-    it('returns false when no groupBy', () => {
-      query.groupBy = '';
-      expect((query as any)._serverHandlesGroupBy()).toBe(false);
-    });
-
-    it('returns false when no shadow source', () => {
-      query.groupBy = 'region';
-      (query as any)._shadowSource = null;
-      expect((query as any)._serverHandlesGroupBy()).toBe(false);
-    });
-
-    it('returns true when shadow source adapter has serverGroupBy', () => {
-      query.groupBy = 'region';
-      (query as any)._shadowSource = {
-        getAdapter: () => ({ capabilities: { serverGroupBy: true } }),
-        remove: () => {},
-      };
-      expect((query as any)._serverHandlesGroupBy()).toBe(true);
-    });
-  });
-
-  describe('_handleSourceData with server group-by', () => {
-    it('skips client processing when server handles groupBy', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'opendatasoft';
-      query.baseUrl = 'https://data.example.com';
-      query.datasetId = 'test-dataset';
-      query.groupBy = 'region';
-      query.orderBy = 'total:desc';
-      query.limit = 2;
-
-      (query as any)._initialize();
-
-      // Mock the shadow source adapter
-      (query as any)._shadowSource.getAdapter = () => ({
-        capabilities: { serverGroupBy: true }
-      });
-
-      // Simulate server-processed data arriving
-      (query as any)._rawData = [
-        { region: 'IDF', total: 300 },
-        { region: 'PACA', total: 200 },
-        { region: 'ARA', total: 100 },
-      ];
-      (query as any)._handleSourceData();
-
-      const data = query.getData() as Record<string, unknown>[];
-      // Should sort desc and limit to 2
-      expect(data).toHaveLength(2);
-      expect(data[0].region).toBe('IDF');
-      expect(data[1].region).toBe('PACA');
-
-      warnSpy.mockRestore();
-    });
-  });
-
-  describe('Shadow source edge cases', () => {
-    it('appends to document.body when no parent element', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'tabular';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.resource = 'res-123';
-      // parentElement is null since query is not in DOM
-      (query as any)._createShadowSource();
-
-      const shadow = document.getElementById('__gq_test-query_src');
-      expect(shadow).not.toBeNull();
-      expect(shadow!.parentElement).toBe(document.body);
-
-      shadow!.remove();
-      warnSpy.mockRestore();
-    });
-
-    it('uses filter attribute as where fallback', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      query.id = 'test-query';
-      query.apiType = 'tabular';
-      query.baseUrl = 'https://tabular-api.data.gouv.fr';
-      query.resource = 'res-123';
-      query.where = '';
-      query.filter = 'field:eq:value';
-
-      (query as any)._createShadowSource();
-
-      const shadow = document.getElementById('__gq_test-query_src');
-      expect(shadow!.getAttribute('where')).toBe('field:eq:value');
-
-      shadow!.remove();
-      warnSpy.mockRestore();
     });
   });
 
