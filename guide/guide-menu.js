@@ -22,11 +22,11 @@
   {
     title: "Exemples avances",
     items: [
-      { id: "avances", label: "Recherche et facettes multizone", href: "guide-exemples-avances.html" },
-      { id: "insee-erfs", label: "Dashboard INSEE ERFS", href: "guide-exemples-insee-erfs.html" },
-      { id: "maires", label: "Dashboard Maires de France", href: "guide-exemples-maires.html" },
-      { id: "ghibli", label: "Dashboard Studio Ghibli", href: "guide-exemples-ghibli.html" },
-      { id: "world-map", label: "Commerce exterieur (World Map)", href: "guide-exemples-world-map.html" }
+      { id: "world-map", label: "Dashboard Huwise", href: "guide-exemples-world-map.html" },
+      { id: "exemple-ods", label: "Recherche Huwise", href: "guide-exemple-ODS.html" },
+      { id: "insee-erfs", label: "Dashboard INSEE", href: "guide-exemples-insee-erfs.html" },
+      { id: "maires", label: "Dashboard Tabular (data.gouv)", href: "guide-exemples-maires.html" },
+      { id: "ghibli", label: "Dashboard generic (ghibli)", href: "guide-exemples-ghibli.html" }
     ]
   }
 ];
