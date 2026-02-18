@@ -388,7 +388,14 @@ export class GouvSource extends LitElement {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const json = await response.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let json: any;
+      try {
+        json = await response.json();
+      } catch {
+        const ct = response.headers?.get?.('content-type') || 'unknown';
+        throw new Error(`Reponse non-JSON (content-type: ${ct}) — verifiez l'URL ou la configuration du proxy`);
+      }
 
       if (this.paginate && json.meta) {
         setDataMeta(this.id, {

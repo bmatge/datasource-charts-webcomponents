@@ -196,9 +196,9 @@ let st = (Mt = class extends HTMLElement {
     var M, n;
     const e = this.constructor, i = e._$Eh.get(s);
     if (i !== void 0 && this._$Em !== i) {
-      const L = e.getPropertyOptions(i), c = typeof L.converter == "function" ? { fromAttribute: L.converter } : ((M = L.converter) == null ? void 0 : M.fromAttribute) !== void 0 ? L.converter : be;
+      const L = e.getPropertyOptions(i), d = typeof L.converter == "function" ? { fromAttribute: L.converter } : ((M = L.converter) == null ? void 0 : M.fromAttribute) !== void 0 ? L.converter : be;
       this._$Em = i;
-      const l = c.fromAttribute(t, L.type);
+      const l = d.fromAttribute(t, L.type);
       this[i] = l ?? ((n = this._$Ej) == null ? void 0 : n.get(i)) ?? l, this._$Em = null;
     }
   }
@@ -237,8 +237,8 @@ let st = (Mt = class extends HTMLElement {
       }
       const i = this.constructor.elementProperties;
       if (i.size > 0) for (const [M, n] of i) {
-        const { wrapped: L } = n, c = this[M];
-        L !== !0 || this._$AL.has(M) || c === void 0 || this.C(M, void 0, n, c);
+        const { wrapped: L } = n, d = this[M];
+        L !== !0 || this._$AL.has(M) || d === void 0 || this.C(M, void 0, n, d);
       }
     }
     let s = !1;
@@ -300,11 +300,11 @@ const Ur = /* @__PURE__ */ a((r, s) => {
   const t = r.length - 1, e = [];
   let i, M = s === 2 ? "<svg>" : s === 3 ? "<math>" : "", n = mt;
   for (let L = 0; L < t; L++) {
-    const c = r[L];
-    let l, o, d = -1, N = 0;
-    for (; N < c.length && (n.lastIndex = N, o = n.exec(c), o !== null); ) N = n.lastIndex, n === mt ? o[1] === "!--" ? n = sM : o[1] !== void 0 ? n = tM : o[2] !== void 0 ? (PM.test(o[2]) && (i = RegExp("</" + o[2], "g")), n = As) : o[3] !== void 0 && (n = As) : n === As ? o[0] === ">" ? (n = i ?? mt, d = -1) : o[1] === void 0 ? d = -2 : (d = n.lastIndex - o[2].length, l = o[1], n = o[3] === void 0 ? As : o[3] === '"' ? iM : eM) : n === iM || n === eM ? n = As : n === sM || n === tM ? n = mt : (n = As, i = void 0);
+    const d = r[L];
+    let l, o, c = -1, N = 0;
+    for (; N < d.length && (n.lastIndex = N, o = n.exec(d), o !== null); ) N = n.lastIndex, n === mt ? o[1] === "!--" ? n = sM : o[1] !== void 0 ? n = tM : o[2] !== void 0 ? (PM.test(o[2]) && (i = RegExp("</" + o[2], "g")), n = As) : o[3] !== void 0 && (n = As) : n === As ? o[0] === ">" ? (n = i ?? mt, c = -1) : o[1] === void 0 ? c = -2 : (c = n.lastIndex - o[2].length, l = o[1], n = o[3] === void 0 ? As : o[3] === '"' ? iM : eM) : n === iM || n === eM ? n = As : n === sM || n === tM ? n = mt : (n = As, i = void 0);
     const T = n === As && r[L + 1].startsWith("/>") ? " " : "";
-    M += n === mt ? c + vr : d >= 0 ? (e.push(l), c.slice(0, d) + $M + c.slice(d) + Os + T) : c + Os + (d === -2 ? L : T);
+    M += n === mt ? d + vr : c >= 0 ? (e.push(l), d.slice(0, c) + $M + d.slice(c) + Os + T) : d + Os + (c === -2 ? L : T);
   }
   return [HM(r, M + (r[t] || "<?>") + (s === 2 ? "</svg>" : s === 3 ? "</math>" : "")), e];
 }, "N"), ge = class ge {
@@ -312,29 +312,29 @@ const Ur = /* @__PURE__ */ a((r, s) => {
     let i;
     this.parts = [];
     let M = 0, n = 0;
-    const L = s.length - 1, c = this.parts, [l, o] = Ur(s, t);
+    const L = s.length - 1, d = this.parts, [l, o] = Ur(s, t);
     if (this.el = ge.createElement(l, e), Qs.currentNode = this.el.content, t === 2 || t === 3) {
-      const d = this.el.content.firstChild;
-      d.replaceWith(...d.childNodes);
+      const c = this.el.content.firstChild;
+      c.replaceWith(...c.childNodes);
     }
-    for (; (i = Qs.nextNode()) !== null && c.length < L; ) {
+    for (; (i = Qs.nextNode()) !== null && d.length < L; ) {
       if (i.nodeType === 1) {
-        if (i.hasAttributes()) for (const d of i.getAttributeNames()) if (d.endsWith($M)) {
-          const N = o[n++], T = i.getAttribute(d).split(Os), x = /([.?@])?(.*)/.exec(N);
-          c.push({ type: 1, index: M, name: x[2], strings: T, ctor: x[1] === "." ? Pe : x[1] === "?" ? Ge : x[1] === "@" ? He : Dt }), i.removeAttribute(d);
-        } else d.startsWith(Os) && (c.push({ type: 6, index: M }), i.removeAttribute(d));
+        if (i.hasAttributes()) for (const c of i.getAttributeNames()) if (c.endsWith($M)) {
+          const N = o[n++], T = i.getAttribute(c).split(Os), x = /([.?@])?(.*)/.exec(N);
+          d.push({ type: 1, index: M, name: x[2], strings: T, ctor: x[1] === "." ? Pe : x[1] === "?" ? Ge : x[1] === "@" ? He : Dt }), i.removeAttribute(c);
+        } else c.startsWith(Os) && (d.push({ type: 6, index: M }), i.removeAttribute(c));
         if (PM.test(i.tagName)) {
-          const d = i.textContent.split(Os), N = d.length - 1;
+          const c = i.textContent.split(Os), N = c.length - 1;
           if (N > 0) {
             i.textContent = ue ? ue.emptyScript : "";
-            for (let T = 0; T < N; T++) i.append(d[T], Rt()), Qs.nextNode(), c.push({ type: 2, index: ++M });
-            i.append(d[N], Rt());
+            for (let T = 0; T < N; T++) i.append(c[T], Rt()), Qs.nextNode(), d.push({ type: 2, index: ++M });
+            i.append(c[N], Rt());
           }
         }
-      } else if (i.nodeType === 8) if (i.data === ZM) c.push({ type: 2, index: M });
+      } else if (i.nodeType === 8) if (i.data === ZM) d.push({ type: 2, index: M });
       else {
-        let d = -1;
-        for (; (d = i.data.indexOf(Os, d + 1)) !== -1; ) c.push({ type: 7, index: M }), d += Os.length - 1;
+        let c = -1;
+        for (; (c = i.data.indexOf(Os, c + 1)) !== -1; ) d.push({ type: 7, index: M }), c += Os.length - 1;
       }
       M++;
     }
@@ -367,13 +367,13 @@ const Ei = class Ei {
   u(s) {
     const { el: { content: t }, parts: e } = this._$AD, i = ((s == null ? void 0 : s.creationScope) ?? Js).importNode(t, !0);
     Qs.currentNode = i;
-    let M = Qs.nextNode(), n = 0, L = 0, c = e[0];
-    for (; c !== void 0; ) {
-      if (n === c.index) {
+    let M = Qs.nextNode(), n = 0, L = 0, d = e[0];
+    for (; d !== void 0; ) {
+      if (n === d.index) {
         let l;
-        c.type === 2 ? l = new Zt(M, M.nextSibling, this, s) : c.type === 1 ? l = new c.ctor(M, c.name, c.strings, this, s) : c.type === 6 && (l = new qe(M, this, s)), this._$AV.push(l), c = e[++L];
+        d.type === 2 ? l = new Zt(M, M.nextSibling, this, s) : d.type === 1 ? l = new d.ctor(M, d.name, d.strings, this, s) : d.type === 6 && (l = new qe(M, this, s)), this._$AV.push(l), d = e[++L];
       }
-      n !== (c == null ? void 0 : c.index) && (M = Qs.nextNode(), n++);
+      n !== (d == null ? void 0 : d.index) && (M = Qs.nextNode(), n++);
     }
     return Qs.currentNode = Js, i;
   }
@@ -465,8 +465,8 @@ const mi = class mi {
     if (M === void 0) s = Ft(this, s, t, 0), n = !Bt(s) || s !== this._$AH && s !== ht, n && (this._$AH = s);
     else {
       const L = s;
-      let c, l;
-      for (s = M[0], c = 0; c < M.length - 1; c++) l = Ft(this, L[e + c], t, c), l === ht && (l = this._$AH[c]), n || (n = !Bt(l) || l !== this._$AH[c]), l === D ? s = D : s !== D && (s += (l ?? "") + M[c + 1]), this._$AH[c] = l;
+      let d, l;
+      for (s = M[0], d = 0; d < M.length - 1; d++) l = Ft(this, L[e + d], t, d), l === ht && (l = this._$AH[d]), n || (n = !Bt(l) || l !== this._$AH[d]), l === D ? s = D : s !== D && (s += (l ?? "") + M[d + 1]), this._$AH[d] = l;
     }
     n && !i && this.j(s);
   }
@@ -594,8 +594,8 @@ const Ar = { attribute: !0, type: String, converter: be, reflect: !1, hasChanged
   if (M === void 0 && globalThis.litPropertyMetadata.set(i, M = /* @__PURE__ */ new Map()), e === "setter" && ((r = Object.create(r)).wrapped = !0), M.set(t.name, r), e === "accessor") {
     const { name: n } = t;
     return { set(L) {
-      const c = s.get.call(this);
-      s.set.call(this, L), this.requestUpdate(n, c, r, !0, L);
+      const d = s.get.call(this);
+      s.set.call(this, L), this.requestUpdate(n, d, r, !0, L);
     }, init(L) {
       return L !== void 0 && this.C(n, void 0, r, L), L;
     } };
@@ -603,8 +603,8 @@ const Ar = { attribute: !0, type: String, converter: be, reflect: !1, hasChanged
   if (e === "setter") {
     const { name: n } = t;
     return function(L) {
-      const c = this[n];
-      s.call(this, L), this.requestUpdate(n, c, r, !0, L);
+      const d = this[n];
+      s.call(this, L), this.requestUpdate(n, d, r, !0, L);
     };
   }
   throw Error("Unsupported decorator location: " + e);
@@ -1312,22 +1312,22 @@ const oe = 100, Ve = 10, ki = class ki {
    */
   async fetchAll(s, t) {
     const i = s.limit <= 0 ? Ve * oe : s.limit, M = oe;
-    let n = [], L = 0, c = -1;
+    let n = [], L = 0, d = -1;
     for (let l = 0; l < Ve; l++) {
       const o = i - n.length;
       if (o <= 0)
         break;
-      const d = this.buildUrl(s, Math.min(M, o), L), N = await fetch(d, Ue(s, t));
+      const c = this.buildUrl(s, Math.min(M, o), L), N = await fetch(c, Ue(s, t));
       if (!N.ok)
         throw new Error(`HTTP ${N.status}: ${N.statusText}`);
       const T = await N.json(), x = T.results || [];
-      if (n = n.concat(x), typeof T.total_count == "number" && (c = T.total_count), c >= 0 && n.length >= c || x.length < M)
+      if (n = n.concat(x), typeof T.total_count == "number" && (d = T.total_count), d >= 0 && n.length >= d || x.length < M)
         break;
       L += x.length;
     }
-    return c >= 0 && n.length < c && n.length < i && console.warn(`gouv-query: pagination incomplete - ${n.length}/${c} resultats recuperes (limite de securite: ${Ve} pages de ${oe})`), {
+    return d >= 0 && n.length < d && n.length < i && console.warn(`gouv-query: pagination incomplete - ${n.length}/${d} resultats recuperes (limite de securite: ${Ve} pages de ${oe})`), {
       data: n,
-      totalCount: c >= 0 ? c : n.length,
+      totalCount: d >= 0 ? d : n.length,
       needsClientProcessing: !1
     };
   }
@@ -1338,10 +1338,10 @@ const oe = 100, Ve = 10, ki = class ki {
     const i = this.buildServerSideUrl(s, t), M = await fetch(i, Ue(s, e));
     if (!M.ok)
       throw new Error(`HTTP ${M.status}: ${M.statusText}`);
-    const n = await M.json(), L = n.results || [], c = typeof n.total_count == "number" ? n.total_count : 0;
+    const n = await M.json(), L = n.results || [], d = typeof n.total_count == "number" ? n.total_count : 0;
     return {
       data: L,
-      totalCount: c,
+      totalCount: d,
       needsClientProcessing: !1,
       rawJson: n
     };
@@ -1355,7 +1355,7 @@ const oe = 100, Ve = 10, ki = class ki {
     s.select ? M.searchParams.set("select", s.select) : s.aggregate && s.groupBy && M.searchParams.set("select", this._buildSelectFromAggregate(s));
     const n = s.where || s.filter;
     if (n && M.searchParams.set("where", n), s.groupBy && M.searchParams.set("group_by", s.groupBy), s.orderBy) {
-      const L = s.orderBy.replace(/:(\w+)$/, (c, l) => ` ${l.toUpperCase()}`);
+      const L = s.orderBy.replace(/:(\w+)$/, (d, l) => ` ${l.toUpperCase()}`);
       M.searchParams.set("order_by", L);
     }
     return t !== void 0 ? M.searchParams.set("limit", String(t)) : s.limit > 0 && M.searchParams.set("limit", String(Math.min(s.limit, oe))), e && e > 0 && M.searchParams.set("offset", String(e)), M.toString();
@@ -1368,7 +1368,7 @@ const oe = 100, Ve = 10, ki = class ki {
     s.select ? i.searchParams.set("select", s.select) : s.aggregate && s.groupBy && i.searchParams.set("select", this._buildSelectFromAggregate(s)), t.effectiveWhere && i.searchParams.set("where", t.effectiveWhere), s.groupBy && i.searchParams.set("group_by", s.groupBy);
     const M = t.orderBy;
     if (M) {
-      const L = M.replace(/:(\w+)$/, (c, l) => ` ${l.toUpperCase()}`);
+      const L = M.replace(/:(\w+)$/, (d, l) => ` ${l.toUpperCase()}`);
       i.searchParams.set("order_by", L);
     }
     i.searchParams.set("limit", String(s.pageSize));
@@ -1386,13 +1386,13 @@ const oe = 100, Ve = 10, ki = class ki {
     const L = await fetch(n.toString(), Ue(s, i));
     if (!L.ok)
       throw new Error(`HTTP ${L.status}: ${L.statusText}`);
-    const c = await L.json(), l = [];
-    for (const o of c.facets || [])
+    const d = await L.json(), l = [];
+    for (const o of d.facets || [])
       l.push({
         field: o.name,
-        values: (o.facets || []).map((d) => ({
-          value: d.value,
-          count: d.count
+        values: (o.facets || []).map((c) => ({
+          value: c.value,
+          count: c.count
         }))
       });
     return l;
@@ -1492,11 +1492,11 @@ const le = 50, Ae = 500, Yi = class Yi {
         break;
     }
     !e && M.length > i && (M = M.slice(0, i)), n >= 0 && M.length < n && M.length < i && console.warn(`gouv-query: pagination incomplete - ${M.length}/${n} resultats recuperes (limite de securite: ${Ae} pages de ${le})`);
-    const c = !!(s.groupBy || s.aggregate);
+    const d = !!(s.groupBy || s.aggregate);
     return {
       data: M,
       totalCount: n >= 0 ? n : M.length,
-      needsClientProcessing: !c
+      needsClientProcessing: !d
     };
   }
   /**
@@ -1507,10 +1507,10 @@ const le = 50, Ae = 500, Yi = class Yi {
     const i = this.buildServerSideUrl(s, t), M = await fetch(i, TM(s, e));
     if (!M.ok)
       throw new Error(`HTTP ${M.status}: ${M.statusText}`);
-    const n = await M.json(), L = n.data || [], c = ((l = n.meta) == null ? void 0 : l.total) ?? 0;
+    const n = await M.json(), L = n.data || [], d = ((l = n.meta) == null ? void 0 : l.total) ?? 0;
     return {
       data: L,
-      totalCount: c,
+      totalCount: d,
       needsClientProcessing: !1,
       rawJson: n
     };
@@ -1521,22 +1521,22 @@ const le = 50, Ae = 500, Yi = class Yi {
   buildUrl(s, t, e) {
     const i = this._getBaseUrl(s), M = typeof window < "u" && window.location.origin !== "null" ? window.location.origin : void 0, n = new URL(`${i}/api/resources/${s.resource}/data/`, M), L = s.filter || s.where;
     if (L && this._applyColonFilters(n, L), s.groupBy) {
-      const c = s.groupBy.split(",").map((l) => l.trim());
-      for (const l of c)
+      const d = s.groupBy.split(",").map((l) => l.trim());
+      for (const l of d)
         n.searchParams.append(`${l}__groupby`, "");
     }
     if (s.aggregate) {
-      const c = s.aggregate.split(",").map((l) => l.trim());
-      for (const l of c) {
+      const d = s.aggregate.split(",").map((l) => l.trim());
+      for (const l of d) {
         const o = l.split(":");
         if (o.length >= 2) {
-          const d = o[0], N = o[1];
-          n.searchParams.append(`${d}__${N}`, "");
+          const c = o[0], N = o[1];
+          n.searchParams.append(`${c}__${N}`, "");
         }
       }
     }
     if (s.orderBy) {
-      const c = s.orderBy.split(":"), l = c[0], o = c[1] || "asc";
+      const d = s.orderBy.split(":"), l = d[0], o = d[1] || "asc";
       n.searchParams.set(`${l}__sort`, o);
     }
     return t ? n.searchParams.set("page_size", String(t)) : s.limit > 0 && n.searchParams.set("page_size", String(s.limit)), e && n.searchParams.set("page", String(e)), n.toString();
@@ -1549,7 +1549,7 @@ const le = 50, Ae = 500, Yi = class Yi {
     n && this._applyColonFilters(M, n);
     const L = t.orderBy;
     if (L) {
-      const c = L.split(":"), l = c[0], o = c[1] || "asc";
+      const d = L.split(":"), l = d[0], o = d[1] || "asc";
       M.searchParams.set(`${l}__sort`, o);
     }
     return M.searchParams.set("page_size", String(s.pageSize)), M.searchParams.set("page", String(t.page)), M.toString();
@@ -1562,8 +1562,8 @@ const le = 50, Ae = 500, Yi = class Yi {
     for (const i of e) {
       const M = i.split(":");
       if (M.length >= 3) {
-        const n = M[0], L = this._mapOperator(M[1]), c = M.slice(2).join(":");
-        s.searchParams.set(`${n}__${L}`, c);
+        const n = M[0], L = this._mapOperator(M[1]), d = M.slice(2).join(":");
+        s.searchParams.set(`${n}__${L}`, d);
       }
     }
   }
@@ -1652,10 +1652,10 @@ const Ji = class Ji {
     const i = this.buildServerSideUrl(s, t), M = await fetch(i, vt(s, e));
     if (!M.ok)
       throw new Error(`HTTP ${M.status}: ${M.statusText}`);
-    const n = await M.json(), L = this._flattenRecords(n.records || []), c = s.pageSize || L.length, l = L.length < c;
+    const n = await M.json(), L = this._flattenRecords(n.records || []), d = s.pageSize || L.length, l = L.length < d;
     return {
       data: L,
-      totalCount: l ? ((t.page || 1) - 1) * c + L.length : -1,
+      totalCount: l ? ((t.page || 1) - 1) * d + L.length : -1,
       needsClientProcessing: !1
     };
   }
@@ -1687,15 +1687,15 @@ const Ji = class Ji {
     if (!await this._checkSqlAvailability(n))
       return M;
     for (const L of t) {
-      const c = this._getTableId(n), l = this._escapeIdentifier(L), o = [];
-      let d = `SELECT ${l}, COUNT(*) as cnt FROM ${this._escapeIdentifier(c)}`;
-      e && (d += ` WHERE ${this._colonWhereToSql(e, o)}`), d += ` GROUP BY ${l} ORDER BY cnt DESC LIMIT 200`;
+      const d = this._getTableId(n), l = this._escapeIdentifier(L), o = [];
+      let c = `SELECT ${l}, COUNT(*) as cnt FROM ${this._escapeIdentifier(d)}`;
+      e && (c += ` WHERE ${this._colonWhereToSql(e, o)}`), c += ` GROUP BY ${l} ORDER BY cnt DESC LIMIT 200`;
       const N = this._getSqlEndpointUrl(n);
       try {
         const T = await fetch(N, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...s.headers || {} },
-          body: JSON.stringify({ sql: d, args: o, timeout: 500 }),
+          body: JSON.stringify({ sql: c, args: o, timeout: 500 }),
           signal: i
         });
         if (!T.ok)
@@ -1795,8 +1795,8 @@ const Ji = class Ji {
   _colonWhereToGristFilter(s) {
     const t = {}, e = s.split(",").map((i) => i.trim()).filter(Boolean);
     for (const i of e) {
-      const [M, n, ...L] = i.split(":"), c = L.join(":");
-      n === "eq" ? t[M] = [c] : n === "in" && (t[M] = c.split("|"));
+      const [M, n, ...L] = i.split(":"), d = L.join(":");
+      n === "eq" ? t[M] = [d] : n === "in" && (t[M] = d.split("|"));
     }
     return Object.keys(t).length > 0 ? t : null;
   }
@@ -1844,12 +1844,12 @@ const Ji = class Ji {
   // Mode SQL : execution
   // =========================================================================
   async _fetchSql(s, t, e) {
-    const i = this._getTableId(s), { select: M, groupBy: n, where: L, orderBy: c, limit: l, offset: o, args: d } = this._buildSqlQuery(s, t, i), N = [
+    const i = this._getTableId(s), { select: M, groupBy: n, where: L, orderBy: d, limit: l, offset: o, args: c } = this._buildSqlQuery(s, t, i), N = [
       `SELECT ${M}`,
       `FROM ${this._escapeIdentifier(i)}`,
       L ? `WHERE ${L}` : "",
       n ? `GROUP BY ${n}` : "",
-      c ? `ORDER BY ${c}` : "",
+      d ? `ORDER BY ${d}` : "",
       l ? `LIMIT ${l}` : "",
       o ? `OFFSET ${o}` : ""
     ].filter(Boolean).join(" "), T = this._getSqlEndpointUrl(s), x = await fetch(T, {
@@ -1858,7 +1858,7 @@ const Ji = class Ji {
         "Content-Type": "application/json",
         ...s.headers || {}
       },
-      body: JSON.stringify({ sql: N, args: d, timeout: 800 }),
+      body: JSON.stringify({ sql: N, args: c, timeout: 800 }),
       signal: e
     });
     if (!x.ok) {
@@ -1890,7 +1890,7 @@ const Ji = class Ji {
   // =========================================================================
   _buildSqlQuery(s, t, e) {
     const i = [];
-    let M = "*", n = "", L = "", c = "", l = "", o = "";
+    let M = "*", n = "", L = "", d = "", l = "", o = "";
     if (s.groupBy) {
       const T = s.groupBy.split(",").map((x) => this._escapeIdentifier(x.trim()));
       if (n = T.join(", "), s.aggregate) {
@@ -1902,13 +1902,13 @@ const Ji = class Ji {
       } else
         M = T.join(", ") + ", COUNT(*) as count";
     }
-    const d = this._mergeWhere(s.where, t == null ? void 0 : t.effectiveWhere);
-    d && (L = this._colonWhereToSql(d, i));
+    const c = this._mergeWhere(s.where, t == null ? void 0 : t.effectiveWhere);
+    c && (L = this._colonWhereToSql(c, i));
     const N = (t == null ? void 0 : t.orderBy) || s.orderBy;
-    return N && (c = N.split(",").map((T) => {
+    return N && (d = N.split(",").map((T) => {
       const [x, u] = T.trim().split(":");
       return `${this._escapeIdentifier(x)} ${u === "desc" ? "DESC" : "ASC"}`;
-    }).join(", ")), t != null && t.page && s.pageSize ? (l = String(s.pageSize), t.page > 1 && (o = String((t.page - 1) * s.pageSize))) : s.limit && (l = String(s.limit)), { select: M, groupBy: n, where: L, orderBy: c, limit: l, offset: o, args: i };
+    }).join(", ")), t != null && t.page && s.pageSize ? (l = String(s.pageSize), t.page > 1 && (o = String((t.page - 1) * s.pageSize))) : s.limit && (l = String(s.limit)), { select: M, groupBy: n, where: L, orderBy: d, limit: l, offset: o, args: i };
   }
   // =========================================================================
   // Mode SQL : conversion WHERE colon → SQL parametre
@@ -1920,7 +1920,7 @@ const Ji = class Ji {
   _colonWhereToSql(s, t) {
     const e = [], i = s.split(",").map((M) => M.trim()).filter(Boolean);
     for (const M of i) {
-      const [n, L, ...c] = M.split(":"), l = c.join(":"), o = this._escapeIdentifier(n);
+      const [n, L, ...d] = M.split(":"), l = d.join(":"), o = this._escapeIdentifier(n);
       switch (L) {
         case "eq":
           e.push(`${o} = ?`), t.push(l);
@@ -1947,13 +1947,13 @@ const Ji = class Ji {
           e.push(`${o} NOT LIKE ?`), t.push(`%${l}%`);
           break;
         case "in": {
-          const d = l.split("|");
-          e.push(`${o} IN (${d.map(() => "?").join(",")})`), t.push(...d);
+          const c = l.split("|");
+          e.push(`${o} IN (${c.map(() => "?").join(",")})`), t.push(...c);
           break;
         }
         case "notin": {
-          const d = l.split("|");
-          e.push(`${o} NOT IN (${d.map(() => "?").join(",")})`), t.push(...d);
+          const c = l.split("|");
+          e.push(`${o} NOT IN (${c.map(() => "?").join(",")})`), t.push(...c);
           break;
         }
         case "isnull":
@@ -2075,18 +2075,18 @@ const Ri = class Ri {
    * The `paging.count` field gives total records, `paging.isLast` signals the last page.
    */
   async fetchAll(s, t) {
-    var c;
+    var d;
     const e = s.pageSize > 0 ? s.pageSize : xM, M = s.limit <= 0 ? Qe * e : s.limit;
     let n = [], L = -1;
     for (let l = 1; l <= Qe; l++) {
       const o = M - n.length;
       if (o <= 0)
         break;
-      const d = Math.min(e, o), N = this.buildUrl(s, d, l), T = await fetch(N, zM(s, t));
+      const c = Math.min(e, o), N = this.buildUrl(s, c, l), T = await fetch(N, zM(s, t));
       if (!T.ok)
         throw new Error(`HTTP ${T.status}: ${T.statusText}`);
       const x = await T.json(), u = x.observations || [], w = this._flattenObservations(u);
-      if (n = n.concat(w), x.paging && typeof x.paging.count == "number" && (L = x.paging.count), ((c = x.paging) == null ? void 0 : c.isLast) === !0 || L >= 0 && n.length >= L || u.length < d)
+      if (n = n.concat(w), x.paging && typeof x.paging.count == "number" && (L = x.paging.count), ((d = x.paging) == null ? void 0 : d.isLast) === !0 || L >= 0 && n.length >= L || u.length < c)
         break;
     }
     return L >= 0 && n.length < L && n.length < M && console.warn(`gouv-source[insee]: pagination incomplete - ${n.length}/${L} resultats (limite: ${Qe} pages de ${e})`), {
@@ -2104,9 +2104,9 @@ const Ri = class Ri {
     const i = this.buildServerSideUrl(s, t), M = await fetch(i, zM(s, e));
     if (!M.ok)
       throw new Error(`HTTP ${M.status}: ${M.statusText}`);
-    const n = await M.json(), L = n.observations || [], c = this._flattenObservations(L), l = ((o = n.paging) == null ? void 0 : o.count) ?? 0;
+    const n = await M.json(), L = n.observations || [], d = this._flattenObservations(L), l = ((o = n.paging) == null ? void 0 : o.count) ?? 0;
     return {
-      data: c,
+      data: d,
       totalCount: l,
       needsClientProcessing: !0,
       rawJson: n
@@ -2158,21 +2158,21 @@ const Ri = class Ri {
     return s.map((t) => {
       const e = t, i = {}, M = e.dimensions;
       if (M)
-        for (const [c, l] of Object.entries(M))
-          i[c] = l;
+        for (const [d, l] of Object.entries(M))
+          i[d] = l;
       const n = e.measures;
       if (n)
-        for (const [c, l] of Object.entries(n)) {
+        for (const [d, l] of Object.entries(n)) {
           const o = l;
           if (o && "value" in o) {
-            const d = c.replace(/_NIVEAU$/, "");
-            i[d] = o.value;
+            const c = d.replace(/_NIVEAU$/, "");
+            i[c] = o.value;
           }
         }
       const L = e.attributes;
       if (L)
-        for (const [c, l] of Object.entries(L))
-          i[c] = l;
+        for (const [d, l] of Object.entries(L))
+          i[d] = l;
       return i;
     });
   }
@@ -2195,15 +2195,15 @@ const Ri = class Ri {
         M.length === 2 && s.searchParams.append(M[0], M[1]);
         continue;
       }
-      const [n, L, ...c] = M, l = c.join(":");
+      const [n, L, ...d] = M, l = d.join(":");
       switch (L) {
         case "eq":
           s.searchParams.append(n, l);
           break;
         case "in": {
           const o = l.split("|");
-          for (const d of o)
-            s.searchParams.append(n, d);
+          for (const c of o)
+            s.searchParams.append(n, c);
           break;
         }
       }
@@ -2418,6 +2418,7 @@ let _ = (rt = class extends k {
   }
   // --- URL mode (legacy, unchanged behavior) ---
   async _fetchViaUrl() {
+    var s, t;
     if (this.url) {
       if (!this.id) {
         console.warn('gouv-source: attribut "id" requis pour identifier la source');
@@ -2425,37 +2426,43 @@ let _ = (rt = class extends k {
       }
       this._abortController && this._abortController.abort(), this._abortController = new AbortController(), this._loading = !0, this._error = null, ms(this.id);
       try {
-        const s = this._buildUrl();
-        let t = Br(s);
-        const e = this._buildFetchOptions();
-        if (this.useProxy && t === s) {
-          const n = $r(t, e.headers);
-          t = n.url, e.headers = n.headers;
+        const e = this._buildUrl();
+        let i = Br(e);
+        const M = this._buildFetchOptions();
+        if (this.useProxy && i === e) {
+          const d = $r(i, M.headers);
+          i = d.url, M.headers = d.headers;
         }
-        const i = await fetch(t, {
-          ...e,
+        const n = await fetch(i, {
+          ...M,
           signal: this._abortController.signal
         });
-        if (!i.ok)
-          throw new Error(`HTTP ${i.status}: ${i.statusText}`);
-        const M = await i.json();
-        this.paginate && M.meta && It(this.id, {
-          page: M.meta.page ?? this._currentPage,
-          pageSize: M.meta.page_size ?? this.pageSize,
-          total: M.meta.total ?? 0
-        }), this.transform ? this._data = $(M, this.transform) : this.paginate && M.data && !this.transform ? this._data = M.data : this._data = M, Ns(this.id, this._data), this.cacheTtl > 0 && ae() && this._putCache(this._data).catch(() => {
+        if (!n.ok)
+          throw new Error(`HTTP ${n.status}: ${n.statusText}`);
+        let L;
+        try {
+          L = await n.json();
+        } catch {
+          const d = ((t = (s = n.headers) == null ? void 0 : s.get) == null ? void 0 : t.call(s, "content-type")) || "unknown";
+          throw new Error(`Reponse non-JSON (content-type: ${d}) — verifiez l'URL ou la configuration du proxy`);
+        }
+        this.paginate && L.meta && It(this.id, {
+          page: L.meta.page ?? this._currentPage,
+          pageSize: L.meta.page_size ?? this.pageSize,
+          total: L.meta.total ?? 0
+        }), this.transform ? this._data = $(L, this.transform) : this.paginate && L.data && !this.transform ? this._data = L.data : this._data = L, Ns(this.id, this._data), this.cacheTtl > 0 && ae() && this._putCache(this._data).catch(() => {
         });
-      } catch (s) {
-        if (s.name === "AbortError")
+      } catch (e) {
+        if (e.name === "AbortError")
           return;
         if (this.cacheTtl > 0 && ae()) {
-          const t = await this._getCache();
-          if (t) {
-            this._data = t, Ns(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
+          const i = await this._getCache();
+          if (i) {
+            this._data = i, Ns(this.id, this._data), this.dispatchEvent(new CustomEvent("cache-fallback", { detail: { sourceId: this.id } }));
             return;
           }
         }
-        this._error = s, fs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, s);
+        this._error = e, fs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
       } finally {
         this._loading = !1;
       }
@@ -2766,15 +2773,15 @@ let ss = (nt = class extends k {
       const M = i.split(":");
       if (M.length >= 2) {
         const n = M[0], L = M[1];
-        let c;
+        let d;
         if (M.length > 2) {
           const l = M.slice(2).join(":");
-          L === "in" || L === "notin" ? c = l.split("|").map((o) => {
-            const d = this._parseValue(o);
-            return typeof d == "boolean" ? String(d) : d;
-          }) : c = this._parseValue(l);
+          L === "in" || L === "notin" ? d = l.split("|").map((o) => {
+            const c = this._parseValue(o);
+            return typeof c == "boolean" ? String(c) : c;
+          }) : d = this._parseValue(l);
         }
-        t.push({ field: n, operator: L, value: c });
+        t.push({ field: n, operator: L, value: d });
       }
     }
     return t;
@@ -2819,20 +2826,20 @@ let ss = (nt = class extends k {
   _applyGroupByAndAggregate(s) {
     const t = this.groupBy.split(",").map((n) => n.trim()).filter(Boolean), e = this._parseAggregates(this.aggregate), i = /* @__PURE__ */ new Map();
     for (const n of s) {
-      const L = t.map((c) => String($(n, c) ?? "")).join("|||");
+      const L = t.map((d) => String($(n, d) ?? "")).join("|||");
       i.has(L) || i.set(L, []), i.get(L).push(n);
     }
     const M = [];
     for (const [n, L] of i) {
-      const c = {}, l = n.split("|||");
-      t.forEach((o, d) => {
-        nM(c, o, l[d]);
+      const d = {}, l = n.split("|||");
+      t.forEach((o, c) => {
+        nM(d, o, l[c]);
       });
       for (const o of e) {
-        const d = o.alias || `${o.field}__${o.function}`;
-        nM(c, d, this._computeAggregate(L, o));
+        const c = o.alias || `${o.field}__${o.function}`;
+        nM(d, c, this._computeAggregate(L, o));
       }
-      M.push(c);
+      M.push(d);
     }
     return M;
   }
@@ -2876,11 +2883,11 @@ let ss = (nt = class extends k {
       return s;
     const e = t[0], i = (t[1] || "asc").toLowerCase();
     return [...s].sort((M, n) => {
-      const L = $(M, e), c = $(n, e), l = Number(L), o = Number(c);
+      const L = $(M, e), d = $(n, e), l = Number(L), o = Number(d);
       if (!isNaN(l) && !isNaN(o))
         return i === "desc" ? o - l : l - o;
-      const d = String(L ?? ""), N = String(c ?? "");
-      return i === "desc" ? N.localeCompare(d) : d.localeCompare(N);
+      const c = String(L ?? ""), N = String(d ?? "");
+      return i === "desc" ? N.localeCompare(c) : c.localeCompare(N);
     });
   }
   // --- Command forwarding ---
@@ -3058,17 +3065,17 @@ let zs = (Lt = class extends k {
       this.flatten && (t = t.map((l) => l == null || typeof l != "object" || Array.isArray(l) ? l : this._flattenRow(l, this.flatten)));
       const e = this._parseNumericFields(), i = this._parsePipeMap(this.rename), M = this._parsePipeMap(this.replace), n = this._parseReplaceFields(this.replaceFields), L = t.map((l) => l == null || typeof l != "object" ? l : this._normalizeRow(l, e, i, M, n));
       Ns(this.id, L);
-      const c = Wt(this.source);
-      c && It(this.id, c);
+      const d = Wt(this.source);
+      d && It(this.id, d);
     } catch (t) {
       fs(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
     }
   }
   _normalizeRow(s, t, e, i, M) {
     const n = {};
-    for (const [L, c] of Object.entries(s)) {
+    for (const [L, d] of Object.entries(s)) {
       const l = this.trim ? L.trim() : L;
-      let o = c;
+      let o = d;
       if (this.trim && typeof o == "string" && (o = o.trim()), this.stripHtml && typeof o == "string" && (o = o.replace(/<[^>]*>/g, "")), M.size > 0 && typeof o == "string") {
         const T = M.get(l);
         if (T) {
@@ -3092,7 +3099,7 @@ let zs = (Lt = class extends k {
         const T = LM(o, !0);
         T !== null && (o = T);
       }
-      const d = e.get(l) ?? l, N = this.lowercaseKeys ? d.toLowerCase() : d;
+      const c = e.get(l) ?? l, N = this.lowercaseKeys ? c.toLowerCase() : c;
       n[N] = o;
     }
     return n;
@@ -3132,8 +3139,8 @@ let zs = (Lt = class extends k {
       const L = M.indexOf(":", n + 1);
       if (L === -1)
         continue;
-      const c = M.substring(0, n).trim(), l = M.substring(n + 1, L).trim(), o = M.substring(L + 1).trim();
-      !c || !l || (t.has(c) || t.set(c, /* @__PURE__ */ new Map()), t.get(c).set(l, o));
+      const d = M.substring(0, n).trim(), l = M.substring(n + 1, L).trim(), o = M.substring(L + 1).trim();
+      !d || !l || (t.has(d) || t.set(d, /* @__PURE__ */ new Map()), t.get(d).set(l, o));
     }
     return t;
   }
@@ -3403,11 +3410,11 @@ let Q = (at = class extends k {
   }
   /** Fetch facet values from server API with cross-facet counts */
   async _fetchServerFacets() {
-    var d, N;
+    var c, N;
     const s = document.getElementById(this.source);
     if (!s)
       return;
-    const t = (d = s.getAdapter) == null ? void 0 : d.call(s);
+    const t = (c = s.getAdapter) == null ? void 0 : c.call(s);
     if (!(t != null && t.capabilities.serverFacets) || !t.fetchFacets) {
       this._buildFacetGroups(), this._applyFilters();
       return;
@@ -3425,7 +3432,7 @@ let Q = (at = class extends k {
     const L = _t(this.fields);
     if (L.length === 0)
       return;
-    const c = this._parseLabels(), l = /* @__PURE__ */ new Map();
+    const d = this._parseLabels(), l = /* @__PURE__ */ new Map();
     for (const T of L) {
       const x = ((N = s.getEffectiveWhere) == null ? void 0 : N.call(s, this.id)) || "", u = this._buildFacetWhere(T), w = [x, u].filter(Boolean).join(" AND ");
       l.has(w) || l.set(w, []), l.get(w).push(T);
@@ -3437,7 +3444,7 @@ let Q = (at = class extends k {
         for (const w of u)
           o.push({
             field: w.field,
-            label: c.get(w.field) ?? w.field,
+            label: d.get(w.field) ?? w.field,
             values: this._sortValues(w.values)
           });
       } catch {
@@ -3594,10 +3601,10 @@ let Q = (at = class extends k {
       const n = t.size > 0 ? t.get(i) ?? null : i;
       if (!n)
         continue;
-      const L = M.split(",").map((c) => c.trim()).filter(Boolean);
+      const L = M.split(",").map((d) => d.trim()).filter(Boolean);
       e[n] || (e[n] = /* @__PURE__ */ new Set());
-      for (const c of L)
-        e[n].add(c);
+      for (const d of L)
+        e[n].add(d);
     }
     Object.keys(e).length > 0 && (this._activeSelections = e);
   }
@@ -3609,8 +3616,8 @@ let Q = (at = class extends k {
     for (const [n, L] of Object.entries(this._activeSelections)) {
       if (L.size === 0)
         continue;
-      const c = e.get(n) ?? n;
-      s.set(c, [...L].join(","));
+      const d = e.get(n) ?? n;
+      s.set(d, [...L].join(","));
     }
     const i = s.toString(), M = i ? `${window.location.pathname}?${i}${window.location.hash}` : `${window.location.pathname}${window.location.hash}`;
     window.history.replaceState(null, "", M);
@@ -3678,8 +3685,8 @@ let Q = (at = class extends k {
   _renderCheckboxGroup(s) {
     const e = _t(this.searchable).includes(s.field), i = (this._searchQueries[s.field] ?? "").toLowerCase(), M = this._expandedFacets.has(s.field), n = this._activeSelections[s.field] ?? /* @__PURE__ */ new Set();
     let L = s.values;
-    e && i && (L = L.filter((d) => d.value.toLowerCase().includes(i)));
-    const c = M ? L : L.slice(0, this.maxValues), l = L.length > this.maxValues, o = `facet-${this.id}-${s.field}`;
+    e && i && (L = L.filter((c) => c.value.toLowerCase().includes(i)));
+    const d = M ? L : L.slice(0, this.maxValues), l = L.length > this.maxValues, o = `facet-${this.id}-${s.field}`;
     return z`
       <fieldset class="fr-fieldset gouv-facets__group" aria-labelledby="${o}-legend">
         <legend class="fr-fieldset__legend fr-text--bold" id="${o}-legend">${s.label}</legend>
@@ -3689,21 +3696,21 @@ let Q = (at = class extends k {
               <input class="fr-input fr-input--sm" type="search"
                 placeholder="Rechercher..."
                 .value="${this._searchQueries[s.field] ?? ""}"
-                @input="${(d) => this._handleSearch(s.field, d)}"
+                @input="${(c) => this._handleSearch(s.field, c)}"
                 aria-label="Rechercher dans ${s.label}">
             </div>
           </div>
         ` : D}
-        ${c.map((d) => {
-      const N = `${o}-${d.value.replace(/[^a-zA-Z0-9]/g, "_")}`, T = n.has(d.value);
+        ${d.map((c) => {
+      const N = `${o}-${c.value.replace(/[^a-zA-Z0-9]/g, "_")}`, T = n.has(c.value);
       return z`
             <div class="fr-fieldset__element">
               <div class="fr-checkbox-group fr-checkbox-group--sm">
                 <input type="checkbox" id="${N}"
                   .checked="${T}"
-                  @change="${() => this._toggleValue(s.field, d.value)}">
+                  @change="${() => this._toggleValue(s.field, c.value)}">
                 <label class="fr-label" for="${N}">
-                  ${d.value}${this._effectiveHideCounts ? D : z` <span class="gouv-facets__count">${d.count}</span>`}
+                  ${c.value}${this._effectiveHideCounts ? D : z` <span class="gouv-facets__count">${c.count}</span>`}
                 </label>
               </div>
             </div>
@@ -3740,14 +3747,14 @@ let Q = (at = class extends k {
   _renderMultiselectGroup(s) {
     const t = `facet-${this.id}-${s.field}`, e = this._activeSelections[s.field] ?? /* @__PURE__ */ new Set(), i = this._openMultiselectField === s.field, M = (this._searchQueries[s.field] ?? "").toLowerCase();
     let n = s.values;
-    M && (n = n.filter((c) => c.value.toLowerCase().includes(M)));
+    M && (n = n.filter((d) => d.value.toLowerCase().includes(M)));
     const L = e.size > 0 ? `${e.size} option${e.size > 1 ? "s" : ""} selectionnee${e.size > 1 ? "s" : ""}` : "Selectionnez des options";
     return z`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${s.field}"
            data-field="${s.field}"
-           @keydown="${(c) => this._handleMultiselectKeydown(s.field, c)}"
-           @focusout="${(c) => this._handleMultiselectFocusout(s.field, c)}">
+           @keydown="${(d) => this._handleMultiselectKeydown(s.field, d)}"
+           @focusout="${(d) => this._handleMultiselectFocusout(s.field, d)}">
         <label class="fr-label" id="${t}-legend">${s.label}</label>
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
@@ -3755,15 +3762,15 @@ let Q = (at = class extends k {
           aria-controls="${t}-panel"
           aria-labelledby="${t}-legend"
           aria-haspopup="dialog"
-          @click="${(c) => {
-      c.stopPropagation(), this._toggleMultiselectDropdown(s.field);
+          @click="${(d) => {
+      d.stopPropagation(), this._toggleMultiselectDropdown(s.field);
     }}">
           ${L}
         </button>
         ${i ? z`
           <div class="gouv-facets__multiselect-panel" id="${t}-panel"
                role="dialog" aria-label="${s.label}"
-               @click="${(c) => c.stopPropagation()}">
+               @click="${(d) => d.stopPropagation()}">
             <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left ${e.size > 0 ? "fr-icon-close-circle-line" : "fr-icon-check-line"} gouv-facets__multiselect-toggle"
               type="button"
               @click="${() => e.size > 0 ? this._clearFieldSelections(s.field) : this._selectAllValues(s.field)}">
@@ -3774,22 +3781,22 @@ let Q = (at = class extends k {
               <input class="fr-input" type="search" id="${t}-search"
                 placeholder="Rechercher..."
                 .value="${this._searchQueries[s.field] ?? ""}"
-                @input="${(c) => this._handleSearch(s.field, c)}">
+                @input="${(d) => this._handleSearch(s.field, d)}">
               <button class="fr-btn" type="button" title="Rechercher" aria-label="Rechercher">
                 Rechercher
               </button>
             </div>
             <fieldset class="fr-fieldset gouv-facets__dropdown-fieldset" aria-label="${s.label}">
-              ${n.map((c) => {
-      const l = `${t}-${c.value.replace(/[^a-zA-Z0-9]/g, "_")}`, o = e.has(c.value);
+              ${n.map((d) => {
+      const l = `${t}-${d.value.replace(/[^a-zA-Z0-9]/g, "_")}`, o = e.has(d.value);
       return z`
                   <div class="fr-fieldset__element">
                     <div class="fr-checkbox-group fr-checkbox-group--sm">
                       <input type="checkbox" id="${l}"
                         .checked="${o}"
-                        @change="${() => this._toggleValue(s.field, c.value)}">
+                        @change="${() => this._toggleValue(s.field, d.value)}">
                       <label class="fr-label" for="${l}">
-                        ${c.value}${this._effectiveHideCounts ? D : z` <span class="gouv-facets__count">${c.count}</span>`}
+                        ${d.value}${this._effectiveHideCounts ? D : z` <span class="gouv-facets__count">${d.count}</span>`}
                       </label>
                     </div>
                   </div>
@@ -3805,7 +3812,7 @@ let Q = (at = class extends k {
     const t = `facet-${this.id}-${s.field}`, e = this._activeSelections[s.field] ?? /* @__PURE__ */ new Set(), i = this._openMultiselectField === s.field, M = (this._searchQueries[s.field] ?? "").toLowerCase();
     let n = s.values;
     M && (n = n.filter((l) => l.value.toLowerCase().includes(M)));
-    const L = e.size > 0 ? [...e][0] : null, c = L ?? "Selectionnez une option";
+    const L = e.size > 0 ? [...e][0] : null, d = L ?? "Selectionnez une option";
     return z`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${s.field}"
@@ -3822,7 +3829,7 @@ let Q = (at = class extends k {
           @click="${(l) => {
       l.stopPropagation(), this._toggleMultiselectDropdown(s.field);
     }}">
-          ${c}
+          ${d}
         </button>
         ${i ? z`
           <div class="gouv-facets__multiselect-panel" id="${t}-panel"
@@ -3847,12 +3854,12 @@ let Q = (at = class extends k {
             </div>
             <fieldset class="fr-fieldset gouv-facets__dropdown-fieldset" aria-label="${s.label}">
               ${n.map((l) => {
-      const o = `${t}-${l.value.replace(/[^a-zA-Z0-9]/g, "_")}`, d = e.has(l.value);
+      const o = `${t}-${l.value.replace(/[^a-zA-Z0-9]/g, "_")}`, c = e.has(l.value);
       return z`
                   <div class="fr-fieldset__element">
                     <div class="fr-radio-group fr-radio-group--sm">
                       <input type="radio" id="${o}" name="${t}-radio"
-                        .checked="${d}"
+                        .checked="${c}"
                         @change="${() => this._toggleValue(s.field, l.value)}">
                       <label class="fr-label" for="${o}">
                         ${l.value}${this._effectiveHideCounts ? D : z` <span class="gouv-facets__count">${l.count}</span>`}
@@ -4073,9 +4080,9 @@ let G = (ot = class extends k {
     const M = e.length > 0 ? e : Object.keys(s).filter((n) => !n.startsWith("_"));
     switch (i) {
       case "starts":
-        return M.some((n) => this._normalize(String(s[n] ?? "")).split(/\s+/).some((c) => c.startsWith(t)));
+        return M.some((n) => this._normalize(String(s[n] ?? "")).split(/\s+/).some((d) => d.startsWith(t)));
       case "words":
-        return t.split(/\s+/).filter(Boolean).every((L) => M.some((c) => this._normalize(String(s[c] ?? "")).includes(L)));
+        return t.split(/\s+/).filter(Boolean).every((L) => M.some((d) => this._normalize(String(s[d] ?? "")).includes(L)));
       case "contains":
       default:
         return M.some((n) => this._normalize(String(s[n] ?? "")).includes(t));
@@ -4088,10 +4095,10 @@ let G = (ot = class extends k {
     return this.fields ? this.fields.split(",").map((s) => s.trim()).filter(Boolean) : [];
   }
   _addHighlight(s, t) {
-    const e = { ...s }, i = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), M = new RegExp("(" + i + ")", "gi"), n = this._getFields(), L = n.length > 0 ? n : Object.keys(s).filter((l) => typeof s[l] == "string"), c = [];
+    const e = { ...s }, i = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), M = new RegExp("(" + i + ")", "gi"), n = this._getFields(), L = n.length > 0 ? n : Object.keys(s).filter((l) => typeof s[l] == "string"), d = [];
     return L.forEach((l) => {
-      typeof s[l] == "string" && c.push(s[l].replace(M, "<mark>$1</mark>"));
-    }), e._highlight = c.join(" … "), e;
+      typeof s[l] == "string" && d.push(s[l].replace(M, "<mark>$1</mark>"));
+    }), e._highlight = d.join(" … "), e;
   }
   _onInput(s) {
     this._term = s, this._debounceTimer !== null && clearTimeout(this._debounceTimer), this._debounceTimer = setTimeout(() => {
@@ -4597,8 +4604,8 @@ let H = (dt = class extends jt(k) {
           return 1;
         if (L == null)
           return -1;
-        const c = typeof n == "number" && typeof L == "number" ? n - L : String(n).localeCompare(String(L), "fr");
-        return e === "desc" ? -c : c;
+        const d = typeof n == "number" && typeof L == "number" ? n - L : String(n).localeCompare(String(L), "fr");
+        return e === "desc" ? -d : d;
       });
     }
     return s;
@@ -4647,15 +4654,15 @@ let H = (dt = class extends jt(k) {
   // --- Export ---
   _exportCsv() {
     const s = this.parseColumns(), t = this.getFilteredData(), e = s.map((l) => l.label).join(";"), i = t.map((l) => s.map((o) => {
-      const d = String(l[o.key] ?? "");
-      return d.includes(";") || d.includes('"') ? `"${d.replace(/"/g, '""')}"` : d;
+      const c = String(l[o.key] ?? "");
+      return c.includes(";") || c.includes('"') ? `"${c.replace(/"/g, '""')}"` : c;
     }).join(";")), M = [e, ...i].join(`
-`), n = new Blob([M], { type: "text/csv;charset=utf-8;" }), L = URL.createObjectURL(n), c = document.createElement("a");
-    c.href = L, c.download = "export.csv", c.click(), URL.revokeObjectURL(L);
+`), n = new Blob([M], { type: "text/csv;charset=utf-8;" }), L = URL.createObjectURL(n), d = document.createElement("a");
+    d.href = L, d.download = "export.csv", d.click(), URL.revokeObjectURL(L);
   }
   _exportHtml() {
-    const s = this.parseColumns(), t = this.getFilteredData(), e = s.map((l) => `<th>${Ke(l.label)}</th>`).join(""), i = t.map((l) => `<tr>${s.map((d) => {
-      const N = l[d.key];
+    const s = this.parseColumns(), t = this.getFilteredData(), e = s.map((l) => `<th>${Ke(l.label)}</th>`).join(""), i = t.map((l) => `<tr>${s.map((c) => {
+      const N = l[c.key];
       return `<td>${N == null ? "" : Ke(String(N))}</td>`;
     }).join("")}</tr>`).join(`
 `), M = `<!DOCTYPE html>
@@ -4678,8 +4685,8 @@ ${i}
 </tbody>
 </table>
 </body>
-</html>`, n = new Blob([M], { type: "text/html;charset=utf-8;" }), L = URL.createObjectURL(n), c = document.createElement("a");
-    c.href = L, c.download = "export.html", c.click(), URL.revokeObjectURL(L);
+</html>`, n = new Blob([M], { type: "text/html;charset=utf-8;" }), L = URL.createObjectURL(n), d = document.createElement("a");
+    d.href = L, d.download = "export.html", d.click(), URL.revokeObjectURL(L);
   }
   // --- Cell formatting ---
   formatCellValue(s) {
@@ -4766,8 +4773,8 @@ ${i}
           <thead>
             <tr>
               ${s.map((e) => {
-      var c;
-      const i = ((c = this._sort) == null ? void 0 : c.key) === e.key, M = i ? this._sort.direction : null, n = M === "asc" ? "ascending" : M === "desc" ? "descending" : "none", L = i ? `Trier par ${e.label}, actuellement tri ${M === "asc" ? "croissant" : "decroissant"}` : `Trier par ${e.label}`;
+      var d;
+      const i = ((d = this._sort) == null ? void 0 : d.key) === e.key, M = i ? this._sort.direction : null, n = M === "asc" ? "ascending" : M === "desc" ? "descending" : "none", L = i ? `Trier par ${e.label}, actuellement tri ${M === "asc" ? "croissant" : "decroissant"}` : `Trier par ${e.label}`;
       return z`
                 <th scope="col" aria-sort="${n}">
                   <button
@@ -5081,7 +5088,7 @@ let ls = (ct = class extends jt(k) {
   }
   _renderGrid(s) {
     const t = this._getColClass(), e = this.pagination > 0 ? (this._currentPage - 1) * this.pagination : 0, i = s.map((n, L) => {
-      const c = e + L, l = this._renderItem(n, c), o = this._getItemUid(n, c);
+      const d = e + L, l = this._renderItem(n, d), o = this._getItemUid(n, d);
       return `<div class="${t}" id="${o}">${l}</div>`;
     }).join(""), M = `<div class="fr-grid-row ${this.gap}">${i}</div>`;
     return z`<div .innerHTML="${M}"></div>`;
@@ -5292,7 +5299,7 @@ let Y = (Nt = class extends jt(k) {
     return s;
   }
   _getTypeSpecificAttributes() {
-    const { x: s, y: t, yMulti: e, labels: i, values: M, values2: n } = this._processData(), L = {}, c = {};
+    const { x: s, y: t, yMulti: e, labels: i, values: M, values2: n } = this._processData(), L = {}, d = {};
     switch (this.type) {
       case "gauge": {
         const l = this.gaugeValue ?? (this._data.length > 0 && Number($(this._data[0], this.valueField)) || 0);
@@ -5316,23 +5323,23 @@ let Y = (Nt = class extends jt(k) {
       case "map-reg": {
         if (L.data = this._processMapData(), this._data.length > 0) {
           let l = 0, o = 0;
-          for (const d of this._data) {
-            const N = Number($(d, this.valueField));
+          for (const c of this._data) {
+            const N = Number($(c, this.valueField));
             isNaN(N) || (l += N, o++);
           }
           if (o > 0) {
-            const d = Math.round(l / o * 100) / 100;
-            c.value = String(d);
+            const c = Math.round(l / o * 100) / 100;
+            d.value = String(c);
           }
         }
-        c.date = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+        d.date = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
         break;
       }
       default:
         L.x = s, L.y = e || t;
         break;
     }
-    return this.type === "bar" && (this.horizontal && (L.horizontal = "true"), this.stacked && (L.stacked = "true"), this.highlightIndex && (L["highlight-index"] = this.highlightIndex)), this.type === "pie" && this.fill && (L.fill = "true"), (this.type === "map" || this.type === "map-reg") && this.mapHighlight && (L.highlight = this.mapHighlight), { attrs: L, deferred: c };
+    return this.type === "bar" && (this.horizontal && (L.horizontal = "true"), this.stacked && (L.stacked = "true"), this.highlightIndex && (L["highlight-index"] = this.highlightIndex)), this.type === "pie" && this.fill && (L.fill = "true"), (this.type === "map" || this.type === "map-reg") && this.mapHighlight && (L.highlight = this.mapHighlight), { attrs: L, deferred: d };
   }
   /**
    * Crée un élément DSFR Chart via DOM API (pas d'innerHTML)
@@ -5642,17 +5649,17 @@ function WM(r) {
 a(WM, "rotationLambda");
 function XM(r, s) {
   var t = Z(r), e = P(r), i = Z(s), M = P(s);
-  function n(L, c) {
-    var l = Z(c), o = Z(L) * l, d = P(L) * l, N = P(c), T = N * t + o * e;
+  function n(L, d) {
+    var l = Z(d), o = Z(L) * l, c = P(L) * l, N = P(d), T = N * t + o * e;
     return [
-      Pt(d * i - T * M, o * t - N * e),
-      Gt(T * i + d * M)
+      Pt(c * i - T * M, o * t - N * e),
+      Gt(T * i + c * M)
     ];
   }
-  return a(n, "rotation"), n.invert = function(L, c) {
-    var l = Z(c), o = Z(L) * l, d = P(L) * l, N = P(c), T = N * i - d * M;
+  return a(n, "rotation"), n.invert = function(L, d) {
+    var l = Z(d), o = Z(L) * l, c = P(L) * l, N = P(d), T = N * i - c * M;
     return [
-      Pt(d * i + N * M, o * t + T * e),
+      Pt(c * i + N * M, o * t + T * e),
       Gt(T * t - o * e)
     ];
   }, n;
@@ -5660,9 +5667,9 @@ function XM(r, s) {
 a(XM, "rotationPhiGamma");
 function zn(r, s, t, e, i, M) {
   if (t) {
-    var n = Z(s), L = P(s), c = e * t;
-    i == null ? (i = s + e * ws, M = s - c / 2) : (i = fM(n, i), M = fM(n, M), (e > 0 ? i < M : i > M) && (i += e * ws));
-    for (var l, o = i; e > 0 ? o > M : o < M; o -= c)
+    var n = Z(s), L = P(s), d = e * t;
+    i == null ? (i = s + e * ws, M = s - d / 2) : (i = fM(n, i), M = fM(n, M), (e > 0 ? i < M : i > M) && (i += e * ws));
+    for (var l, o = i; e > 0 ? o > M : o < M; o -= d)
       l = Li([n, -L * Z(o), -L * P(o)]), r.point(l[0], l[1]);
   }
 }
@@ -5702,7 +5709,7 @@ function Ne(r, s, t, e) {
 }
 a(Ne, "Intersection");
 function or(r, s, t, e, i) {
-  var M = [], n = [], L, c;
+  var M = [], n = [], L, d;
   if (r.forEach(function(x) {
     if (!((u = x.length - 1) <= 0)) {
       var u, w = x[0], X = x[u], h;
@@ -5717,21 +5724,21 @@ function or(r, s, t, e, i) {
       M.push(h = new Ne(w, x, null, !0)), n.push(h.o = new Ne(w, null, h, !1)), M.push(h = new Ne(X, x, null, !1)), n.push(h.o = new Ne(X, null, h, !0));
     }
   }), !!M.length) {
-    for (n.sort(s), gM(M), gM(n), L = 0, c = n.length; L < c; ++L)
+    for (n.sort(s), gM(M), gM(n), L = 0, d = n.length; L < d; ++L)
       n[L].e = t = !t;
-    for (var l = M[0], o, d; ; ) {
+    for (var l = M[0], o, c; ; ) {
       for (var N = l, T = !0; N.v; ) if ((N = N.n) === l) return;
       o = N.z, i.lineStart();
       do {
         if (N.v = N.o.v = !0, N.e) {
           if (T)
-            for (L = 0, c = o.length; L < c; ++L) i.point((d = o[L])[0], d[1]);
+            for (L = 0, d = o.length; L < d; ++L) i.point((c = o[L])[0], c[1]);
           else
             e(N.x, N.n.x, 1, i);
           N = N.n;
         } else {
           if (T)
-            for (o = N.p.z, L = o.length - 1; L >= 0; --L) i.point((d = o[L])[0], d[1]);
+            for (o = N.p.z, L = o.length - 1; L >= 0; --L) i.point((c = o[L])[0], c[1]);
           else
             e(N.x, N.p.x, -1, i);
           N = N.p;
@@ -5756,13 +5763,13 @@ function Ye(r) {
 }
 a(Ye, "longitude");
 function wn(r, s) {
-  var t = Ye(s), e = s[1], i = P(e), M = [P(t), -Z(t), 0], n = 0, L = 0, c = new js();
+  var t = Ye(s), e = s[1], i = P(e), M = [P(t), -Z(t), 0], n = 0, L = 0, d = new js();
   i === 1 ? e = ys + v : i === -1 && (e = -ys - v);
   for (var l = 0, o = r.length; l < o; ++l)
-    if (N = (d = r[l]).length)
-      for (var d, N, T = d[N - 1], x = Ye(T), u = T[1] / 2 + hM, w = P(u), X = Z(u), h = 0; h < N; ++h, x = S, w = f, X = E, T = I) {
-        var I = d[h], S = Ye(I), W = I[1] / 2 + hM, f = P(W), E = Z(W), C = S - x, O = C >= 0 ? 1 : -1, V = O * C, p = V > j, ns = w * f;
-        if (c.add(Pt(ns * O * P(V), X * E + ns * Z(V))), n += p ? C + O * ws : C, p ^ x >= t ^ S >= t) {
+    if (N = (c = r[l]).length)
+      for (var c, N, T = c[N - 1], x = Ye(T), u = T[1] / 2 + hM, w = P(u), X = Z(u), h = 0; h < N; ++h, x = S, w = f, X = E, T = I) {
+        var I = c[h], S = Ye(I), W = I[1] / 2 + hM, f = P(W), E = Z(W), C = S - x, O = C >= 0 ? 1 : -1, V = O * C, p = V > j, ns = w * f;
+        if (d.add(Pt(ns * O * P(V), X * E + ns * Z(V))), n += p ? C + O * ws : C, p ^ x >= t ^ S >= t) {
           var B = he(Xt(T), Xt(I));
           ai(B);
           var m = he(M, B);
@@ -5771,12 +5778,12 @@ function wn(r, s) {
           (e > b || e === b && (B[0] || B[1])) && (L += p ^ C >= 0 ? 1 : -1);
         }
       }
-  return (n < -v || n < v && c < -1e-12) ^ L & 1;
+  return (n < -v || n < v && d < -1e-12) ^ L & 1;
 }
 a(wn, "polygonContains");
 function lr(r, s, t, e) {
   return function(i) {
-    var M = s(i), n = ar(), L = s(n), c = !1, l, o, d, N = {
+    var M = s(i), n = ar(), L = s(n), d = !1, l, o, c, N = {
       point: T,
       lineStart: u,
       lineEnd: w,
@@ -5786,7 +5793,7 @@ function lr(r, s, t, e) {
       polygonEnd: /* @__PURE__ */ a(function() {
         N.point = T, N.lineStart = u, N.lineEnd = w, o = Lr(o);
         var S = wn(l, e);
-        o.length ? (c || (i.polygonStart(), c = !0), or(o, un, S, t, i)) : S && (c || (i.polygonStart(), c = !0), i.lineStart(), t(null, null, 1, i), i.lineEnd()), c && (i.polygonEnd(), c = !1), o = l = null;
+        o.length ? (d || (i.polygonStart(), d = !0), or(o, un, S, t, i)) : S && (d || (i.polygonStart(), d = !0), i.lineStart(), t(null, null, 1, i), i.lineEnd()), d && (i.polygonEnd(), d = !1), o = l = null;
       }, "polygonEnd"),
       sphere: /* @__PURE__ */ a(function() {
         i.polygonStart(), i.lineStart(), t(null, null, 1, i), i.lineEnd(), i.polygonEnd();
@@ -5809,20 +5816,20 @@ function lr(r, s, t, e) {
     }
     a(w, "lineEnd");
     function X(S, W) {
-      d.push([S, W]), L.point(S, W);
+      c.push([S, W]), L.point(S, W);
     }
     a(X, "pointRing");
     function h() {
-      L.lineStart(), d = [];
+      L.lineStart(), c = [];
     }
     a(h, "ringStart");
     function I() {
-      X(d[0][0], d[0][1]), L.lineEnd();
+      X(c[0][0], c[0][1]), L.lineEnd();
       var S = L.clean(), W = n.result(), f, E = W.length, C, O, V;
-      if (d.pop(), l.push(d), d = null, !!E) {
+      if (c.pop(), l.push(c), c = null, !!E) {
         if (S & 1) {
           if (O = W[0], (C = O.length - 1) > 0) {
-            for (c || (i.polygonStart(), c = !0), i.lineStart(), f = 0; f < C; ++f) i.point((V = O[f])[0], V[1]);
+            for (d || (i.polygonStart(), d = !0), i.lineStart(), f = 0; f < C; ++f) i.point((V = O[f])[0], V[1]);
             i.lineEnd();
           }
           return;
@@ -5857,8 +5864,8 @@ function Sn(r) {
       r.lineStart(), i = 1;
     }, "lineStart"),
     point: /* @__PURE__ */ a(function(M, n) {
-      var L = M > 0 ? j : -j, c = A(M - s);
-      A(c - j) < v ? (r.point(s, t = (t + n) / 2 > 0 ? ys : -ys), r.point(e, t), r.lineEnd(), r.lineStart(), r.point(L, t), r.point(M, t), i = 0) : e !== L && c >= j && (A(s - e) < v && (s -= e * v), A(M - L) < v && (M -= L * v), t = hn(s, t, M, n), r.point(e, t), r.lineEnd(), r.lineStart(), r.point(L, t), i = 0), r.point(s = M, t = n), e = L;
+      var L = M > 0 ? j : -j, d = A(M - s);
+      A(d - j) < v ? (r.point(s, t = (t + n) / 2 > 0 ? ys : -ys), r.point(e, t), r.lineEnd(), r.lineStart(), r.point(L, t), r.point(M, t), i = 0) : e !== L && d >= j && (A(s - e) < v && (s -= e * v), A(M - L) < v && (M -= L * v), t = hn(s, t, M, n), r.point(e, t), r.lineEnd(), r.lineStart(), r.point(L, t), i = 0), r.point(s = M, t = n), e = L;
     }, "point"),
     lineEnd: /* @__PURE__ */ a(function() {
       r.lineEnd(), s = t = NaN;
@@ -5887,32 +5894,32 @@ function Fn(r, s, t, e) {
 a(Fn, "clipAntimeridianInterpolate");
 function Dn(r) {
   var s = Z(r), t = 2 * as, e = s > 0, i = A(s) > v;
-  function M(o, d, N, T) {
-    zn(T, r, t, N, o, d);
+  function M(o, c, N, T) {
+    zn(T, r, t, N, o, c);
   }
   a(M, "interpolate");
-  function n(o, d) {
-    return Z(o) * Z(d) > s;
+  function n(o, c) {
+    return Z(o) * Z(c) > s;
   }
   a(n, "visible");
   function L(o) {
-    var d, N, T, x, u;
+    var c, N, T, x, u;
     return {
       lineStart: /* @__PURE__ */ a(function() {
         x = T = !1, u = 1;
       }, "lineStart"),
       point: /* @__PURE__ */ a(function(w, X) {
         var h = [w, X], I, S = n(w, X), W = e ? S ? 0 : l(w, X) : S ? l(w + (w < 0 ? j : -j), X) : 0;
-        if (!d && (x = T = S) && o.lineStart(), S !== T && (I = c(d, h), (!I || we(d, I) || we(h, I)) && (h[2] = 1)), S !== T)
-          u = 0, S ? (o.lineStart(), I = c(h, d), o.point(I[0], I[1])) : (I = c(d, h), o.point(I[0], I[1], 2), o.lineEnd()), d = I;
-        else if (i && d && e ^ S) {
+        if (!c && (x = T = S) && o.lineStart(), S !== T && (I = d(c, h), (!I || we(c, I) || we(h, I)) && (h[2] = 1)), S !== T)
+          u = 0, S ? (o.lineStart(), I = d(h, c), o.point(I[0], I[1])) : (I = d(c, h), o.point(I[0], I[1], 2), o.lineEnd()), c = I;
+        else if (i && c && e ^ S) {
           var f;
-          !(W & N) && (f = c(h, d, !0)) && (u = 0, e ? (o.lineStart(), o.point(f[0][0], f[0][1]), o.point(f[1][0], f[1][1]), o.lineEnd()) : (o.point(f[1][0], f[1][1]), o.lineEnd(), o.lineStart(), o.point(f[0][0], f[0][1], 3)));
+          !(W & N) && (f = d(h, c, !0)) && (u = 0, e ? (o.lineStart(), o.point(f[0][0], f[0][1]), o.point(f[1][0], f[1][1]), o.lineEnd()) : (o.point(f[1][0], f[1][1]), o.lineEnd(), o.lineStart(), o.point(f[0][0], f[0][1], 3)));
         }
-        S && (!d || !we(d, h)) && o.point(h[0], h[1]), d = h, T = S, N = W;
+        S && (!c || !we(c, h)) && o.point(h[0], h[1]), c = h, T = S, N = W;
       }, "point"),
       lineEnd: /* @__PURE__ */ a(function() {
-        T && o.lineEnd(), d = null;
+        T && o.lineEnd(), c = null;
       }, "lineEnd"),
       // Rejoin first and last segments if there were intersections and the first
       // and last points were visible.
@@ -5922,8 +5929,8 @@ function Dn(r) {
     };
   }
   a(L, "clipLine");
-  function c(o, d, N) {
-    var T = Xt(o), x = Xt(d), u = [1, 0, 0], w = he(T, x), X = de(w, w), h = w[0], I = X - h * h;
+  function d(o, c, N) {
+    var T = Xt(o), x = Xt(c), u = [1, 0, 0], w = he(T, x), X = de(w, w), h = w[0], I = X - h * h;
     if (!I) return !N && o;
     var S = s * X / I, W = -s * h / I, f = he(u, w), E = ce(u, S), C = ce(w, W);
     ke(E, C);
@@ -5931,7 +5938,7 @@ function Dn(r) {
     if (!(ns < 0)) {
       var B = Ps(ns), m = ce(O, (-V - B) / p);
       if (ke(m, E), m = Li(m), !N) return m;
-      var b = o[0], g = d[0], K = o[1], Ls = d[1], ds;
+      var b = o[0], g = c[0], K = o[1], Ls = c[1], ds;
       g < b && (ds = b, b = g, g = ds);
       var Et = g - b, ps = A(Et - j) < v, Vs = ps || Et < v;
       if (!ps && Ls < K && (ds = K, K = Ls, Ls = ds), Vs ? ps ? K + Ls > 0 ^ m[1] < (A(m[0] - b) < v ? K : Ls) : K <= m[1] && m[1] <= Ls : Et > j ^ (b <= m[0] && m[0] <= g)) {
@@ -5940,49 +5947,49 @@ function Dn(r) {
       }
     }
   }
-  a(c, "intersect");
-  function l(o, d) {
+  a(d, "intersect");
+  function l(o, c) {
     var N = e ? r : j - r, T = 0;
-    return o < -N ? T |= 1 : o > N && (T |= 2), d < -N ? T |= 4 : d > N && (T |= 8), T;
+    return o < -N ? T |= 1 : o > N && (T |= 2), c < -N ? T |= 4 : c > N && (T |= 8), T;
   }
   return a(l, "code"), lr(n, L, M, e ? [0, -r] : [-j, r - j]);
 }
 a(Dn, "clipCircle");
 function pn(r, s, t, e, i, M) {
-  var n = r[0], L = r[1], c = s[0], l = s[1], o = 0, d = 1, N = c - n, T = l - L, x;
+  var n = r[0], L = r[1], d = s[0], l = s[1], o = 0, c = 1, N = d - n, T = l - L, x;
   if (x = t - n, !(!N && x > 0)) {
     if (x /= N, N < 0) {
       if (x < o) return;
-      x < d && (d = x);
+      x < c && (c = x);
     } else if (N > 0) {
-      if (x > d) return;
+      if (x > c) return;
       x > o && (o = x);
     }
     if (x = i - n, !(!N && x < 0)) {
       if (x /= N, N < 0) {
-        if (x > d) return;
+        if (x > c) return;
         x > o && (o = x);
       } else if (N > 0) {
         if (x < o) return;
-        x < d && (d = x);
+        x < c && (c = x);
       }
       if (x = e - L, !(!T && x > 0)) {
         if (x /= T, T < 0) {
           if (x < o) return;
-          x < d && (d = x);
+          x < c && (c = x);
         } else if (T > 0) {
-          if (x > d) return;
+          if (x > c) return;
           x > o && (o = x);
         }
         if (x = M - L, !(!T && x < 0)) {
           if (x /= T, T < 0) {
-            if (x > d) return;
+            if (x > c) return;
             x > o && (o = x);
           } else if (T > 0) {
             if (x < o) return;
-            x < d && (d = x);
+            x < c && (c = x);
           }
-          return o > 0 && (r[0] = n + o * N, r[1] = L + o * T), d < 1 && (s[0] = n + d * N, s[1] = L + d * T), !0;
+          return o > 0 && (r[0] = n + o * N, r[1] = L + o * T), c < 1 && (s[0] = n + c * N, s[1] = L + c * T), !0;
         }
       }
     }
@@ -5995,12 +6002,12 @@ function In(r, s, t, e) {
     return r <= l && l <= t && s <= o && o <= e;
   }
   a(i, "visible");
-  function M(l, o, d, N) {
+  function M(l, o, c, N) {
     var T = 0, x = 0;
-    if (l == null || (T = n(l, d)) !== (x = n(o, d)) || c(l, o) < 0 ^ d > 0)
+    if (l == null || (T = n(l, c)) !== (x = n(o, c)) || d(l, o) < 0 ^ c > 0)
       do
         N.point(T === 0 || T === 3 ? r : t, T > 1 ? e : s);
-      while ((T = (T + d + 4) % 4) !== x);
+      while ((T = (T + c + 4) % 4) !== x);
     else
       N.point(o[0], o[1]);
   }
@@ -6010,15 +6017,15 @@ function In(r, s, t, e) {
   }
   a(n, "corner");
   function L(l, o) {
-    return c(l.x, o.x);
+    return d(l.x, o.x);
   }
   a(L, "compareIntersection");
-  function c(l, o) {
-    var d = n(l, 1), N = n(o, 1);
-    return d !== N ? d - N : d === 0 ? o[1] - l[1] : d === 1 ? l[0] - o[0] : d === 2 ? l[1] - o[1] : o[0] - l[0];
+  function d(l, o) {
+    var c = n(l, 1), N = n(o, 1);
+    return c !== N ? c - N : c === 0 ? o[1] - l[1] : c === 1 ? l[0] - o[0] : c === 2 ? l[1] - o[1] : o[0] - l[0];
   }
-  return a(c, "comparePoint"), function(l) {
-    var o = l, d = ar(), N, T, x, u, w, X, h, I, S, W, f, E = {
+  return a(d, "comparePoint"), function(l) {
+    var o = l, c = ar(), N, T, x, u, w, X, h, I, S, W, f, E = {
       point: C,
       lineStart: ns,
       lineEnd: B,
@@ -6037,7 +6044,7 @@ function In(r, s, t, e) {
     }
     a(O, "polygonInside");
     function V() {
-      o = d, N = [], T = [], f = !0;
+      o = c, N = [], T = [], f = !0;
     }
     a(V, "polygonStart");
     function p() {
@@ -6050,7 +6057,7 @@ function In(r, s, t, e) {
     }
     a(ns, "lineStart");
     function B() {
-      N && (m(u, w), X && S && d.rejoin(), N.push(d.result())), E.point = C, S && o.lineEnd();
+      N && (m(u, w), X && S && c.rejoin(), N.push(c.result())), E.point = C, S && o.lineEnd();
     }
     a(B, "lineEnd");
     function m(b, g) {
@@ -6327,9 +6334,9 @@ function Un(r, s) {
     if (!arguments.length) return t;
     if (L == null) t = null;
     else {
-      const c = Math.floor(L);
-      if (!(c >= 0)) throw new RangeError(`invalid digits: ${L}`);
-      t = c;
+      const d = Math.floor(L);
+      if (!(d >= 0)) throw new RangeError(`invalid digits: ${L}`);
+      t = d;
     }
     return s === null && (M = new fe(t)), n;
   }, n.projection(r).digits(t).context(s);
@@ -6374,8 +6381,8 @@ function Oi(r, s, t) {
 a(Oi, "fit");
 function hr(r, s, t) {
   return Oi(r, function(e) {
-    var i = s[1][0] - s[0][0], M = s[1][1] - s[0][1], n = Math.min(i / (e[1][0] - e[0][0]), M / (e[1][1] - e[0][1])), L = +s[0][0] + (i - n * (e[1][0] + e[0][0])) / 2, c = +s[0][1] + (M - n * (e[1][1] + e[0][1])) / 2;
-    r.scale(150 * n).translate([L, c]);
+    var i = s[1][0] - s[0][0], M = s[1][1] - s[0][1], n = Math.min(i / (e[1][0] - e[0][0]), M / (e[1][1] - e[0][1])), L = +s[0][0] + (i - n * (e[1][0] + e[0][0])) / 2, d = +s[0][1] + (M - n * (e[1][1] + e[0][1])) / 2;
+    r.scale(150 * n).translate([L, d]);
   }, t);
 }
 a(hr, "fitExtent");
@@ -6411,15 +6418,15 @@ function Yn(r) {
 }
 a(Yn, "resampleNone");
 function Jn(r, s) {
-  function t(e, i, M, n, L, c, l, o, d, N, T, x, u, w) {
+  function t(e, i, M, n, L, d, l, o, c, N, T, x, u, w) {
     var X = l - e, h = o - i, I = X * X + h * h;
     if (I > 4 * s && u--) {
-      var S = n + N, W = L + T, f = c + x, E = Ps(S * S + W * W + f * f), C = Gt(f /= E), O = A(A(f) - 1) < v || A(M - d) < v ? (M + d) / 2 : Pt(W, S), V = r(O, C), p = V[0], ns = V[1], B = p - e, m = ns - i, b = h * B - X * m;
-      (b * b / I > s || A((X * B + h * m) / I - 0.5) > 0.3 || n * N + L * T + c * x < kn) && (t(e, i, M, n, L, c, p, ns, O, S /= E, W /= E, f, u, w), w.point(p, ns), t(p, ns, O, S, W, f, l, o, d, N, T, x, u, w));
+      var S = n + N, W = L + T, f = d + x, E = Ps(S * S + W * W + f * f), C = Gt(f /= E), O = A(A(f) - 1) < v || A(M - c) < v ? (M + c) / 2 : Pt(W, S), V = r(O, C), p = V[0], ns = V[1], B = p - e, m = ns - i, b = h * B - X * m;
+      (b * b / I > s || A((X * B + h * m) / I - 0.5) > 0.3 || n * N + L * T + d * x < kn) && (t(e, i, M, n, L, d, p, ns, O, S /= E, W /= E, f, u, w), w.point(p, ns), t(p, ns, O, S, W, f, l, o, c, N, T, x, u, w));
     }
   }
   return a(t, "resampleLineTo"), function(e) {
-    var i, M, n, L, c, l, o, d, N, T, x, u, w = {
+    var i, M, n, L, d, l, o, c, N, T, x, u, w = {
       point: X,
       lineStart: h,
       lineEnd: S,
@@ -6435,12 +6442,12 @@ function Jn(r, s) {
     }
     a(X, "point");
     function h() {
-      d = NaN, w.point = I, e.lineStart();
+      c = NaN, w.point = I, e.lineStart();
     }
     a(h, "lineStart");
     function I(C, O) {
       var V = Xt([C, O]), p = r(C, O);
-      t(d, N, o, T, x, u, d = p[0], N = p[1], o = C, T = V[0], x = V[1], u = V[2], _M, e), e.point(d, N);
+      t(c, N, o, T, x, u, c = p[0], N = p[1], o = C, T = V[0], x = V[1], u = V[2], _M, e), e.point(c, N);
     }
     a(I, "linePoint");
     function S() {
@@ -6452,11 +6459,11 @@ function Jn(r, s) {
     }
     a(W, "ringStart");
     function f(C, O) {
-      I(i = C, O), M = d, n = N, L = T, c = x, l = u, w.point = I;
+      I(i = C, O), M = c, n = N, L = T, d = x, l = u, w.point = I;
     }
     a(f, "ringPoint");
     function E() {
-      t(d, N, o, T, x, u, M, n, i, L, c, l, _M, e), w.lineEnd = S, S();
+      t(c, N, o, T, x, u, M, n, i, L, d, l, _M, e), w.lineEnd = S, S();
     }
     return a(E, "ringEnd"), w;
   };
@@ -6487,12 +6494,12 @@ function $n(r, s, t, e, i) {
 a($n, "scaleTranslate");
 function VM(r, s, t, e, i, M) {
   if (!M) return $n(r, s, t, e, i);
-  var n = Z(M), L = P(M), c = n * r, l = L * r, o = n / r, d = L / r, N = (L * t - n * s) / r, T = (L * s + n * t) / r;
+  var n = Z(M), L = P(M), d = n * r, l = L * r, o = n / r, c = L / r, N = (L * t - n * s) / r, T = (L * s + n * t) / r;
   function x(u, w) {
-    return u *= e, w *= i, [c * u - l * w + s, t - l * u - c * w];
+    return u *= e, w *= i, [d * u - l * w + s, t - l * u - d * w];
   }
   return a(x, "transform"), x.invert = function(u, w) {
-    return [e * (o * u - d * w + N), i * (T - d * u - o * w)];
+    return [e * (o * u - c * w + N), i * (T - c * u - o * w)];
   }, x;
 }
 a(VM, "scaleTranslateRotate");
@@ -6503,7 +6510,7 @@ function Zn(r) {
 }
 a(Zn, "projection");
 function Pn(r) {
-  var s, t = 150, e = 480, i = 250, M = 0, n = 0, L = 0, c = 0, l = 0, o, d = 0, N = 1, T = 1, x = null, u = jM, w = null, X, h, I, S = di, W = 0.5, f, E, C, O, V;
+  var s, t = 150, e = 480, i = 250, M = 0, n = 0, L = 0, d = 0, l = 0, o, c = 0, N = 1, T = 1, x = null, u = jM, w = null, X, h, I, S = di, W = 0.5, f, E, C, O, V;
   function p(b) {
     return C(b[0] * as, b[1] * as);
   }
@@ -6528,9 +6535,9 @@ function Pn(r) {
   }, p.center = function(b) {
     return arguments.length ? (M = b[0] % 360 * as, n = b[1] % 360 * as, B()) : [M * Ws, n * Ws];
   }, p.rotate = function(b) {
-    return arguments.length ? (L = b[0] % 360 * as, c = b[1] % 360 * as, l = b.length > 2 ? b[2] % 360 * as : 0, B()) : [L * Ws, c * Ws, l * Ws];
+    return arguments.length ? (L = b[0] % 360 * as, d = b[1] % 360 * as, l = b.length > 2 ? b[2] % 360 * as : 0, B()) : [L * Ws, d * Ws, l * Ws];
   }, p.angle = function(b) {
-    return arguments.length ? (d = b % 360 * as, B()) : d * Ws;
+    return arguments.length ? (c = b % 360 * as, B()) : c * Ws;
   }, p.reflectX = function(b) {
     return arguments.length ? (N = b ? -1 : 1, B()) : N < 0;
   }, p.reflectY = function(b) {
@@ -6547,8 +6554,8 @@ function Pn(r) {
     return Qn(p, b, g);
   };
   function B() {
-    var b = VM(t, 0, 0, N, T, d).apply(null, s(M, n)), g = VM(t, e - b[0], i - b[1], N, T, d);
-    return o = xn(L, c, l), E = oi(s, g), C = oi(o, E), f = UM(E, W), m();
+    var b = VM(t, 0, 0, N, T, c).apply(null, s(M, n)), g = VM(t, e - b[0], i - b[1], N, T, c);
+    return o = xn(L, d, l), E = oi(s, g), C = oi(o, E), f = UM(E, W), m();
   }
   a(B, "recenter");
   function m() {
@@ -6589,11 +6596,11 @@ a(Hn, "identity");
 function qn(r) {
   if (r == null) return Hn;
   var s, t, e = r.scale[0], i = r.scale[1], M = r.translate[0], n = r.translate[1];
-  return function(L, c) {
-    c || (s = t = 0);
-    var l = 2, o = L.length, d = new Array(o);
-    for (d[0] = (s += L[0]) * e + M, d[1] = (t += L[1]) * i + n; l < o; ) d[l] = L[l], ++l;
-    return d;
+  return function(L, d) {
+    d || (s = t = 0);
+    var l = 2, o = L.length, c = new Array(o);
+    for (c[0] = (s += L[0]) * e + M, c[1] = (t += L[1]) * i + n; l < o; ) c[l] = L[l], ++l;
+    return c;
   };
 }
 a(qn, "transform");
@@ -6614,11 +6621,11 @@ function AM(r, s) {
 a(AM, "feature$1");
 function Dr(r, s) {
   var t = qn(r.transform), e = r.arcs;
-  function i(o, d) {
-    d.length && d.pop();
+  function i(o, c) {
+    c.length && c.pop();
     for (var N = e[o < 0 ? ~o : o], T = 0, x = N.length; T < x; ++T)
-      d.push(t(N[T], T));
-    o < 0 && Kn(d, x);
+      c.push(t(N[T], T));
+    o < 0 && Kn(c, x);
   }
   a(i, "arc");
   function M(o) {
@@ -6626,24 +6633,24 @@ function Dr(r, s) {
   }
   a(M, "point");
   function n(o) {
-    for (var d = [], N = 0, T = o.length; N < T; ++N) i(o[N], d);
-    return d.length < 2 && d.push(d[0]), d;
+    for (var c = [], N = 0, T = o.length; N < T; ++N) i(o[N], c);
+    return c.length < 2 && c.push(c[0]), c;
   }
   a(n, "line");
   function L(o) {
-    for (var d = n(o); d.length < 4; ) d.push(d[0]);
-    return d;
+    for (var c = n(o); c.length < 4; ) c.push(c[0]);
+    return c;
   }
   a(L, "ring");
-  function c(o) {
+  function d(o) {
     return o.map(L);
   }
-  a(c, "polygon");
+  a(d, "polygon");
   function l(o) {
-    var d = o.type, N;
-    switch (d) {
+    var c = o.type, N;
+    switch (c) {
       case "GeometryCollection":
-        return { type: d, geometries: o.geometries.map(l) };
+        return { type: c, geometries: o.geometries.map(l) };
       case "Point":
         N = M(o.coordinates);
         break;
@@ -6657,15 +6664,15 @@ function Dr(r, s) {
         N = o.arcs.map(n);
         break;
       case "Polygon":
-        N = c(o.arcs);
+        N = d(o.arcs);
         break;
       case "MultiPolygon":
-        N = o.arcs.map(c);
+        N = o.arcs.map(d);
         break;
       default:
         return null;
     }
-    return { type: d, coordinates: N };
+    return { type: c, coordinates: N };
   }
   return a(l, "geometry"), l(s);
 }
@@ -6673,11 +6680,11 @@ a(Dr, "object");
 function t0(r, s) {
   var t = {}, e = {}, i = {}, M = [], n = -1;
   s.forEach(function(l, o) {
-    var d = r.arcs[l < 0 ? ~l : l], N;
-    d.length < 3 && !d[1][0] && !d[1][1] && (N = s[++n], s[n] = l, s[o] = N);
+    var c = r.arcs[l < 0 ? ~l : l], N;
+    c.length < 3 && !c[1][0] && !c[1][1] && (N = s[++n], s[n] = l, s[o] = N);
   }), s.forEach(function(l) {
-    var o = L(l), d = o[0], N = o[1], T, x;
-    if (T = i[d])
+    var o = L(l), c = o[0], N = o[1], T, x;
+    if (T = i[c])
       if (delete i[T.end], T.push(l), T.end = N, x = e[N]) {
         delete e[x.start];
         var u = x === T ? T : T.concat(x);
@@ -6685,31 +6692,31 @@ function t0(r, s) {
       } else
         e[T.start] = i[T.end] = T;
     else if (T = e[N])
-      if (delete e[T.start], T.unshift(l), T.start = d, x = i[d]) {
+      if (delete e[T.start], T.unshift(l), T.start = c, x = i[c]) {
         delete i[x.end];
         var w = x === T ? T : x.concat(T);
         e[w.start = x.start] = i[w.end = T.end] = w;
       } else
         e[T.start] = i[T.end] = T;
     else
-      T = [l], e[T.start = d] = i[T.end = N] = T;
+      T = [l], e[T.start = c] = i[T.end = N] = T;
   });
   function L(l) {
-    var o = r.arcs[l < 0 ? ~l : l], d = o[0], N;
+    var o = r.arcs[l < 0 ? ~l : l], c = o[0], N;
     return r.transform ? (N = [0, 0], o.forEach(function(T) {
       N[0] += T[0], N[1] += T[1];
-    })) : N = o[o.length - 1], l < 0 ? [N, d] : [d, N];
+    })) : N = o[o.length - 1], l < 0 ? [N, c] : [c, N];
   }
   a(L, "ends");
-  function c(l, o) {
-    for (var d in l) {
-      var N = l[d];
+  function d(l, o) {
+    for (var c in l) {
+      var N = l[c];
       delete o[N.start], delete N.start, delete N.end, N.forEach(function(T) {
         t[T < 0 ? ~T : T] = 1;
       }), M.push(N);
     }
   }
-  return a(c, "flush"), c(i, e), c(e, i), s.forEach(function(l) {
+  return a(d, "flush"), d(i, e), d(e, i), s.forEach(function(l) {
     t[l < 0 ? ~l : l] || M.push([l]);
   }), M;
 }
@@ -6727,44 +6734,44 @@ function i0(r, s, t) {
 a(i0, "meshArcs");
 function M0(r, s, t) {
   var e = [], i = [], M;
-  function n(d) {
-    var N = d < 0 ? ~d : d;
-    (i[N] || (i[N] = [])).push({ i: d, g: M });
+  function n(c) {
+    var N = c < 0 ? ~c : c;
+    (i[N] || (i[N] = [])).push({ i: c, g: M });
   }
   a(n, "extract0");
-  function L(d) {
-    d.forEach(n);
+  function L(c) {
+    c.forEach(n);
   }
   a(L, "extract1");
-  function c(d) {
-    d.forEach(L);
+  function d(c) {
+    c.forEach(L);
   }
-  a(c, "extract2");
-  function l(d) {
-    d.forEach(c);
+  a(d, "extract2");
+  function l(c) {
+    c.forEach(d);
   }
   a(l, "extract3");
-  function o(d) {
-    switch (M = d, d.type) {
+  function o(c) {
+    switch (M = c, c.type) {
       case "GeometryCollection":
-        d.geometries.forEach(o);
+        c.geometries.forEach(o);
         break;
       case "LineString":
-        L(d.arcs);
+        L(c.arcs);
         break;
       case "MultiLineString":
       case "Polygon":
-        c(d.arcs);
+        d(c.arcs);
         break;
       case "MultiPolygon":
-        l(d.arcs);
+        l(c.arcs);
         break;
     }
   }
-  return a(o, "geometry"), o(s), i.forEach(t == null ? function(d) {
-    e.push(d[0].i);
-  } : function(d) {
-    t(d[0].g, d[d.length - 1].g) && e.push(d[0].i);
+  return a(o, "geometry"), o(s), i.forEach(t == null ? function(c) {
+    e.push(c[0].i);
+  } : function(c) {
+    t(c[0].g, c[c.length - 1].g) && e.push(c[0].i);
   }), e;
 }
 a(M0, "extractArcs");
@@ -7688,19 +7695,19 @@ let is = (Tt = class extends jt(k) {
   }
   // --- Render ---
   _renderMap() {
-    const s = this._getFeatures(), t = this._getBorders(), e = this._getProjection(), i = Un(e), M = this._buildValueMap(), n = [...M.values()], L = this._getColorScale(n), c = "#F0F0F0", l = s.map((d) => {
-      const N = i(d.geometry) || "", T = M.get(d.id), x = T !== void 0 ? L(T) : c, u = this._hoveredCountryId === d.id;
+    const s = this._getFeatures(), t = this._getBorders(), e = this._getProjection(), i = Un(e), M = this._buildValueMap(), n = [...M.values()], L = this._getColorScale(n), d = "#F0F0F0", l = s.map((c) => {
+      const N = i(c.geometry) || "", T = M.get(c.id), x = T !== void 0 ? L(T) : d, u = this._hoveredCountryId === c.id;
       return MM`<path
         class="gouv-world-map__country"
         d=${N}
         fill=${x}
         stroke=${u ? "#000091" : "none"}
         stroke-width=${u ? "1.5" : "0"}
-        data-id=${d.id}
+        data-id=${c.id}
         style="cursor: ${this.zoom !== "none" ? "pointer" : "default"}"
-        @click=${() => this._onCountryClick(d.id)}
-        @mouseenter=${(w) => this._onCountryHover(w, d.id)}
-        @mousemove=${(w) => this._onCountryHover(w, d.id)}
+        @click=${() => this._onCountryClick(c.id)}
+        @mouseenter=${(w) => this._onCountryHover(w, c.id)}
+        @mousemove=${(w) => this._onCountryHover(w, c.id)}
         @mouseleave=${(w) => this._onCountryHover(w, null)}
       />`;
     }), o = t && i(t) || "";
@@ -7764,7 +7771,7 @@ let is = (Tt = class extends jt(k) {
   _renderLegend(s, t) {
     if (s.length === 0)
       return D;
-    const e = this._getChoroplethPalette(), i = [...s].sort((L, c) => L - c), M = i[0], n = i[i.length - 1];
+    const e = this._getChoroplethPalette(), i = [...s].sort((L, d) => L - d), M = i[0], n = i[i.length - 1];
     return z`
       <div class="gouv-world-map__legend" style="display: flex; align-items: center; gap: 4px;
         margin-top: 8px; font-size: 0.75rem; color: var(--text-mention-grey, #666);">
