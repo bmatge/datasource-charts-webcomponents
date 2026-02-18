@@ -95,11 +95,11 @@
         <h4>Architecture du pipeline</h4>
         <div class="pipeline-diagram">gouv-source "q" (server-side, ODS, 100 resultats)
   |
-  v
-gouv-search "search" (server-search, re-emet)
+  |-- gouv-search "search" (envoie where a q via whereKey)
+  |-- gouv-facets "filtered" (envoie where a q via whereKey, re-emet)
   |
   v
-gouv-facets "filtered" (server-facets, re-emet)
+gouv-facets "filtered" (donnees filtrees par q)
   |-- gouv-query "alim" (client, filtre Aliment, limit 3)
   |     \-- gouv-display (cartes, 3 cols)
   |-- gouv-query "autres" (client, filtre non-Aliment, limit 3)
@@ -108,9 +108,8 @@ gouv-facets "filtered" (server-facets, re-emet)
 
         <p class="fr-mt-2w">
           La source <code>gouv-source id="q"</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
-          La recherche <code>gouv-search id="search"</code> filtre et réémet les données.
-          Les facettes <code>gouv-facets id="filtered" source="search"</code> lisent depuis la recherche et réémettent les données filtrées.
-          Le pipeline forme une chaîne : <code>q → search → filtered</code>.
+          La recherche et les facettes envoient chacune des commandes <code>where</code> a la source avec des <code>whereKey</code> distincts.
+          La source merge automatiquement ces filtres et les facettes <code>gouv-facets id="filtered"</code> réémettent les données filtrées.
           Les donnees sont ensuite splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
         </p>
 
@@ -134,7 +133,7 @@ gouv-facets "filtered" (server-facets, re-emet)
           count>
         </gouv-search>
 
-        <gouv-facets id="filtered" source="search" server-facets
+        <gouv-facets id="filtered" source="q" server-facets
           fields="categorie_produit, sous_categorie_produit"
           labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
           display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
@@ -286,7 +285,7 @@ gouv-facets "filtered" (server-facets, re-emet)
 &lt;/gouv-search&gt;
 
 &lt;!-- Facettes server-side (mode dropdown DSFR) --&gt;
-&lt;gouv-facets id="filtered" source="search" server-facets
+&lt;gouv-facets id="filtered" source="q" server-facets
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
   display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
@@ -414,11 +413,11 @@ gouv-facets "filtered" (server-facets, re-emet)
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>Pipeline chaîné</strong> : <code>gouv-source "q" → gouv-search "search" → gouv-facets "filtered"</code> forme un pipeline ou chaque composant transforme et réémet les données.</li>
-          <li><strong>Recherche server-side</strong> : <code>gouv-search id="search" server-search</code> filtre les données via l'API ODS et les réémet.</li>
-          <li><strong>Facettes server-side</strong> : <code>gouv-facets source="search"</code> lit les données recherchées et applique les filtres utilisateur.</li>
+          <li><strong>1 seule source serveur</strong> : <code>gouv-source server-side</code> charge 100 resultats depuis l'API ODS.</li>
+          <li><strong>Recherche + facettes</strong> : <code>gouv-search id="search" server-search</code> et <code>gouv-facets id="filtered" server-facets</code> envoient chacun un <code>where</code> a la source, merges via <code>whereKey</code> distincts.</li>
           <li><strong>Split client-side</strong> : deux <code>gouv-query</code> filtrent localement les donnees re-emises par les facettes (alimentation vs autres).</li>
           <li><strong>3 zones d'affichage</strong> : les 3 derniers rappels alimentaires, les 3 derniers autres, et la liste complete paginee.</li>
+          <li><strong>Cross-facet</strong> : les compteurs de chaque facette tiennent compte des selections des autres facettes.</li>
         </ul>
 
       </div>
