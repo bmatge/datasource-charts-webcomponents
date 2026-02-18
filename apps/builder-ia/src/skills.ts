@@ -222,6 +222,7 @@ tableau de donnees depuis la reponse. Le resultat DOIT etre un tableau d'objets 
 | server-side | Boolean | \`false\` | non | Active la pagination serveur page par page (datalist, tableaux). |
 | limit | Number | \`0\` | non | Limite du nombre de resultats (0 = pas de limite). |
 | data | String | \`""\` | non | Donnees JSON inline (pas de fetch). Ex: \`data='[{"x":1},{"x":2}]'\` |
+| use-proxy | Boolean | \`false\` | non | Force le passage par le proxy CORS generique. Utile pour les APIs externes sans CORS. |
 
 ### Evenements emis
 - \`gouv-data-loaded\` : donnees chargees (detail : tableau de donnees)
