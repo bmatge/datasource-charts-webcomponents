@@ -25,10 +25,10 @@
        ============================================================ -->
 
   <!-- Exemple 1 : Maires de France (tabular-api) -->
-  <gouv-query id="elus-raw"
+  <gouv-source id="elus-raw"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-query>
+  </gouv-source>
   <gouv-normalize id="elus-clean" source="elus-raw"
     rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
     trim>
@@ -156,10 +156,10 @@
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-query id="raw"
+        <pre><code>&lt;gouv-source id="raw"
   api-type="tabular"
   resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
-&lt;/gouv-query&gt;
+&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; du d&eacute;partement:Departement | Libell&eacute; de la commune:Commune | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
