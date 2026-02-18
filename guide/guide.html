@@ -9,13 +9,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
-    .guide-sidemenu { flex: 0 0 280px; position: sticky; top: 1rem; height: fit-content; max-height: calc(100vh - 2rem); overflow-y: auto; }
     .guide-content { flex: 1; min-width: 0; }
     @media (max-width: 992px) {
       .guide-layout { flex-direction: column; }
-      .guide-sidemenu { position: static; flex: none; max-height: none; }
     }
     .guide-content img { max-width: 100%; height: auto; border: 1px solid var(--border-default-grey); border-radius: 4px; margin: 1rem 0; }
     .guide-content .user-story { background: var(--background-alt-blue-france); border-left: 4px solid var(--border-action-high-blue-france); padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
@@ -25,7 +24,6 @@
     .guide-content h3 { margin-top: 2rem; }
     .guide-content ol, .guide-content ul { margin: 0.5rem 0 1rem 1.5rem; }
     .guide-content li { margin-bottom: 0.25rem; }
-    .fr-sidemenu__link[aria-current="true"] { font-weight: 700; color: var(--text-action-high-blue-france); }
   </style>
 </head>
 <body>
@@ -34,62 +32,7 @@
   <main class="fr-container fr-py-4w" id="main-content">
     <div class="guide-layout">
 
-      <!-- Sidemenu -->
-      <nav class="fr-sidemenu guide-sidemenu" role="navigation" aria-labelledby="guide-sidemenu-title">
-        <div class="fr-sidemenu__inner">
-          <button class="fr-sidemenu__btn" hidden aria-controls="guide-sidemenu-wrapper" aria-expanded="true">Menu</button>
-          <div class="fr-collapse" id="guide-sidemenu-wrapper">
-            <div class="fr-sidemenu__title" id="guide-sidemenu-title">Guide utilisateur</div>
-            <ul class="fr-sidemenu__list">
-              <li class="fr-sidemenu__item fr-sidemenu__item--active">
-                <a class="fr-sidemenu__link" href="#overview" aria-current="true">Vue d'ensemble</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="#grist-widgets">Widgets Grist</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-parcours.html">Parcours utilisateur</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-source.html">gouv-source</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-normalize.html">gouv-normalize</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-query.html">gouv-query</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-search.html">gouv-search</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-facets.html">gouv-facets</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-display.html">gouv-display</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-raw-data.html">gouv-raw-data</a>
-              </li>
-            </ul>
-            <div class="fr-sidemenu__title fr-mt-1w" id="guide-sidemenu-title-advanced">Exemples avances</div>
-            <ul class="fr-sidemenu__list">
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-avances.html">Recherche et facettes multizone</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-insee-erfs.html">Dashboard INSEE ERFS</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-maires.html">Dashboard Maires de France</a>
-              </li>
-              <li class="fr-sidemenu__item">
-                <a class="fr-sidemenu__link" href="guide-exemples-ghibli.html">Dashboard Studio Ghibli</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <app-sidemenu section="guide"></app-sidemenu>
 
       <!-- Contenu principal -->
       <div class="guide-content">

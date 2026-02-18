@@ -96,6 +96,8 @@ export const ISO_A2_TO_NUM: Record<string, string> = {
   TR: '792', TM: '795', UG: '800', UA: '804', MK: '807', EG: '818',
   GB: '826', TZ: '834', US: '840', BF: '854', UY: '858', UZ: '860',
   VE: '862', YE: '887', ZM: '894',
+  // Missing from initial mapping
+  ES: '724', SG: '702', BH: '048',
   // SB missing in 110m but keep for completeness
   SB: '090', GD: '308',
 };
@@ -131,6 +133,8 @@ export const ISO_A3_TO_NUM: Record<string, string> = {
   TUR: '792', TKM: '795', UGA: '800', UKR: '804', MKD: '807', EGY: '818',
   GBR: '826', TZA: '834', USA: '840', BFA: '854', URY: '858', UZB: '860',
   VEN: '862', YEM: '887', ZMB: '894',
+  // Missing from initial mapping
+  ESP: '724', SGP: '702', BHR: '048',
   SLB: '090',
 };
 
