@@ -139,15 +139,17 @@
         <h1><i class="ri-film-line fr-mr-1w"></i>Dashboard Studio Ghibli</h1>
         <p class="fr-text--lead">
           Tableau de bord filmographique du Studio Ghibli, construit a partir d'une API REST generique
-          (JSON plat, CORS natif, sans authentification). Illustre l'usage du provider <code>generic</code>
-          avec le pipeline : source URL directe, normalisation, queries client-side et visualisations DSFR.
+          (JSON plat, sans authentification) via <code>use-proxy</code> pour le contournement CORS.
+          Illustre l'usage du provider <code>generic</code>
+          avec le pipeline : source URL directe + proxy CORS, normalisation, queries client-side et visualisations DSFR.
         </p>
 
         <div class="fr-callout fr-callout--blue-france fr-mt-2w">
           <p class="fr-callout__text">
             <strong>Provider generic :</strong> L'API Ghibli retourne directement un tableau JSON plat
             (pas d'enveloppe). <code>gouv-source</code> utilise une URL directe sans <code>api-type</code>
-            ni <code>transform</code>. Les champs numeriques (<code>rt_score</code>, <code>running_time</code>,
+            ni <code>transform</code>, avec <code>use-proxy</code> pour contourner les restrictions CORS.
+            Les champs numeriques (<code>rt_score</code>, <code>running_time</code>,
             <code>release_date</code>) arrivent en string et sont convertis via <code>gouv-normalize numeric</code>.
             Toutes les transformations (tri, filtre, group-by, agregation) sont effectuees client-side
             par <code>gouv-query</code>.
@@ -155,7 +157,7 @@
         </div>
 
         <h4>Architecture du pipeline</h4>
-        <div class="pipeline-diagram">gouv-source "raw-films" (fetch URL directe, JSON plat)
+        <div class="pipeline-diagram">gouv-source "raw-films" (fetch URL directe, JSON plat, use-proxy)
   \-- gouv-normalize "films" (trim + numeric="rt_score,running_time,release_date")
        |-- gouv-query "by-score" (order-by rt_score:desc)
        |     \-- gouv-dsfr-chart bar horizontal (scores RT)
@@ -176,9 +178,10 @@
         <!-- PIPELINE                                                        -->
         <!-- ============================================================= -->
 
-        <!-- 1. Fetch generique (URL directe, JSON plat) -->
+        <!-- 1. Fetch generique (URL directe, JSON plat, proxy CORS) -->
         <gouv-source id="raw-films"
-          url="https://ghibliapi.vercel.app/films">
+          url="https://ghibliapi.vercel.app/films"
+          use-proxy>
         </gouv-source>
 
         <!-- 2. Normalisation : conversion numerique des champs string -->
@@ -389,9 +392,10 @@
         <section class="fr-accordion fr-mt-2w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-ghibli">Code source complet</button></h3>
           <div class="fr-collapse" id="code-ghibli">
-<pre class="example-code">&lt;!-- 1. Fetch generique (URL directe, JSON plat) --&gt;
+<pre class="example-code">&lt;!-- 1. Fetch generique (URL directe, proxy CORS) --&gt;
 &lt;gouv-source id="raw-films"
-  url="https://ghibliapi.vercel.app/films"&gt;
+  url="https://ghibliapi.vercel.app/films"
+  use-proxy&gt;
 &lt;/gouv-source&gt;
 
 &lt;!-- 2. Normalisation : conversion numerique des champs string --&gt;
@@ -509,14 +513,14 @@
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>Provider generic</strong> : <code>gouv-source</code> utilise une URL directe vers une API REST qui retourne un tableau JSON plat. Pas besoin d'<code>api-type</code> ni de <code>transform</code> — le cas d'usage le plus simple.</li>
+          <li><strong>Provider generic</strong> : <code>gouv-source</code> utilise une URL directe vers une API REST qui retourne un tableau JSON plat. Pas besoin d'<code>api-type</code> ni de <code>transform</code> — le cas d'usage le plus simple. L'attribut <code>use-proxy</code> route la requete via le proxy CORS generique pour eviter les blocages CORS en production.</li>
           <li><strong>Normalisation des types</strong> : l'API retourne <code>rt_score</code>, <code>running_time</code> et <code>release_date</code> en string. <code>gouv-normalize numeric</code> les convertit en nombres pour permettre le tri, les agregations et les filtres numeriques.</li>
           <li><strong>Queries multiples sur une seule source</strong> : 6 <code>gouv-query</code> derivent chacun une vue differente des memes donnees (tri, group-by, aggregate, where) — tout en client-side.</li>
           <li><strong>KPI avec agregation inline</strong> : <code>gouv-kpi valeur="avg:rt_score"</code> calcule la moyenne directement, sans query intermediaire.</li>
           <li><strong>Facettes et tableau interactif</strong> : <code>gouv-facets</code> en mode select filtre par realisateur et producteur, <code>gouv-datalist</code> ajoute la recherche, le tri et l'export CSV.</li>
           <li><strong>Accessibilite</strong> : <code>gouv-raw-data</code> sur chaque graphique pour le telechargement CSV.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
-          <li><strong>CORS natif</strong> : l'API Ghibli autorise les requetes cross-origin, donc aucun proxy n'est necessaire.</li>
+          <li><strong>Proxy CORS</strong> : l'attribut <code>use-proxy</code> garantit le fonctionnement dans tous les environnements (dev, production, Tauri) en routant les requetes via le proxy generique <code>/cors-proxy</code>.</li>
         </ul>
 
       </div>
