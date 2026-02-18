@@ -58,6 +58,29 @@ export function getProxiedUrl(url: string): string {
 }
 
 /**
+ * Build a CORS-proxied fetch request for any external URL.
+ * Routes the request through the generic CORS proxy endpoint
+ * (X-Target-URL header pattern).
+ *
+ * Usage:
+ *   const { url, headers } = buildCorsProxyRequest('https://api.example.com/data');
+ *   fetch(url, { headers });
+ */
+export function buildCorsProxyRequest(
+  targetUrl: string,
+  extraHeaders?: Record<string, string>
+): { url: string; headers: Record<string, string> } {
+  const config = getProxyConfig();
+  return {
+    url: `${config.baseUrl}${config.endpoints.corsProxy}`,
+    headers: {
+      ...(extraHeaders || {}),
+      'X-Target-URL': targetUrl,
+    },
+  };
+}
+
+/**
  * Get the external proxy base URL
  */
 export function getExternalProxyUrl(): string {

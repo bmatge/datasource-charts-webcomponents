@@ -88,7 +88,7 @@ export default defineConfig({
           });
         }
       },
-      // Proxy générique pour les APIs externes
+      // Proxy générique pour les APIs externes (legacy, prefer /cors-proxy middleware)
       '/api-proxy': {
         target: '',
         changeOrigin: true,
@@ -161,6 +161,82 @@ export default defineConfig({
             return;
           }
           next();
+        });
+      },
+    },
+    {
+      name: 'cors-proxy',
+      configureServer(server) {
+        // Proxy CORS generique pour gouv-source use-proxy :
+        // lit l'URL cible depuis le header X-Target-URL
+        // et forwarde la requete cote serveur (contourne CORS)
+        server.middlewares.use('/cors-proxy', (req, res) => {
+          if (req.method === 'OPTIONS') {
+            res.writeHead(204, {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Target-URL',
+            });
+            res.end();
+            return;
+          }
+
+          const targetUrl = req.headers['x-target-url'] as string;
+          if (!targetUrl) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing X-Target-URL header' }));
+            return;
+          }
+
+          let parsed: URL;
+          try {
+            parsed = new URL(targetUrl);
+          } catch {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid X-Target-URL' }));
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+          req.on('data', (chunk: Buffer) => chunks.push(chunk));
+          req.on('end', () => {
+            const body = Buffer.concat(chunks);
+            const isHttps = parsed.protocol === 'https:';
+            const doRequest = isHttps ? httpsRequest : httpRequest;
+
+            const skipHeaders = new Set(['host', 'connection', 'x-target-url', 'transfer-encoding', 'origin', 'referer']);
+            const forwardHeaders: Record<string, string> = {};
+            for (const [key, val] of Object.entries(req.headers)) {
+              if (skipHeaders.has(key)) continue;
+              if (val) forwardHeaders[key] = Array.isArray(val) ? val[0] : val;
+            }
+            forwardHeaders['host'] = parsed.host;
+            if (body.length > 0) {
+              forwardHeaders['content-length'] = String(body.length);
+            }
+
+            const proxyReq = doRequest({
+              hostname: parsed.hostname,
+              port: parsed.port || (isHttps ? 443 : 80),
+              path: parsed.pathname + parsed.search,
+              method: req.method,
+              headers: forwardHeaders,
+            }, (proxyRes) => {
+              res.writeHead(proxyRes.statusCode || 500, {
+                ...proxyRes.headers,
+                'access-control-allow-origin': '*',
+              });
+              proxyRes.pipe(res);
+            });
+
+            proxyReq.on('error', (err) => {
+              res.writeHead(502, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: `CORS proxy error: ${err.message}` }));
+            });
+
+            if (body.length > 0) proxyReq.write(body);
+            proxyReq.end();
+          });
         });
       },
     },

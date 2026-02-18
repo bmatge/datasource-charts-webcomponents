@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getByPath } from '../utils/json-path.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
-import { getProxiedUrl, isAuthenticated } from '@gouv-widgets/shared';
+import { getProxiedUrl, buildCorsProxyRequest, isAuthenticated } from '@gouv-widgets/shared';
 import type { ApiAdapter, AdapterParams, ServerSideOverlay } from '../adapters/api-adapter.js';
 import { getAdapter } from '../adapters/adapter-registry.js';
 import {
@@ -67,6 +67,10 @@ export class GouvSource extends LitElement {
 
   @property({ type: Number, attribute: 'cache-ttl' })
   cacheTtl = 3600;
+
+  /** Force le passage par le proxy CORS generique (pour les APIs externes sans CORS) */
+  @property({ type: Boolean, attribute: 'use-proxy' })
+  useProxy = false;
 
   // --- Mode inline data ---
 
@@ -363,8 +367,17 @@ export class GouvSource extends LitElement {
     dispatchDataLoading(this.id);
 
     try {
-      const url = getProxiedUrl(this._buildUrl());
+      const rawUrl = this._buildUrl();
+      let url = getProxiedUrl(rawUrl);
       const options = this._buildFetchOptions();
+
+      // If use-proxy is set and URL was not already proxied by getProxiedUrl(),
+      // route through the generic CORS proxy
+      if (this.useProxy && url === rawUrl) {
+        const proxy = buildCorsProxyRequest(url, options.headers as Record<string, string>);
+        url = proxy.url;
+        options.headers = proxy.headers;
+      }
 
       const response = await fetch(url, {
         ...options,
