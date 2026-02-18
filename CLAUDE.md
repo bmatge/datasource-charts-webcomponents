@@ -290,6 +290,88 @@ npx playwright test --config tests/builder-e2e/playwright.config.ts
 - Sources de test : locale (donnees embarquees), ODS et Tabular (APIs distantes via proxy),
   Grist (donnees embarquees, pas de proxy en dev)
 
+## Tests de validation des parametres Builder (Playwright E2E)
+
+Tests dans `tests/builder-e2e/` : valident que tous les parametres du builder fonctionnent correctement et generent le code attendu avec des donnees de test connues.
+
+**Pre-requis** : le serveur de dev doit tourner (port 5173) pour acceder au builder.
+
+```bash
+# 1. Lancer le serveur de dev (dans un terminal separe)
+npm run dev
+
+# 2. Lancer les tests de validation des parametres
+cd tests/builder-e2e
+npx playwright test quick-audit.spec.ts
+
+# 3. Tests de base (elements UI)
+npx playwright test simple-test.spec.ts
+
+# 4. Inspection de la structure (diagnostic)
+npx playwright test inspect-builder.spec.ts --headed
+```
+
+### Tests de validation critiques
+
+**11/12 tests passent** (91.7% de reussite) :
+
+- **Fonctions d'agregation** (5/5) : SUM, AVG, MIN, MAX, COUNT
+- **Types de graphiques** (4/4) : bar, horizontalBar, pie, kpi
+- **Palettes** : Application correcte des couleurs
+- **Tri** : Ordre ascendant et descendant
+- **Mode avance** : Filtres et conditions
+
+### Donnees de test et valeurs attendues
+
+Les tests utilisent un dataset de test avec valeurs connues pour verification :
+
+```typescript
+const TEST_DATA = [
+  { region: 'Ile-de-France', population: 12000, budget: 500, code: '75' },
+  { region: 'Provence', population: 5000, budget: 200, code: '13' },
+  { region: 'Bretagne', population: 3000, budget: 150, code: '35' },
+  { region: 'Normandie', population: 3300, budget: 180, code: '14' }
+];
+```
+
+**Valeurs attendues** (field: population) :
+- SUM = 23300
+- AVG = 5825
+- MIN = 3000
+- MAX = 12000
+- COUNT = 4 (nombre de regions)
+
+### Exposition du state pour les tests
+
+Pour permettre aux tests de verifier les calculs, le state du builder est expose globalement dans `apps/builder/src/main.ts` :
+
+```typescript
+// Expose state for E2E tests
+(window as any).__BUILDER_STATE__ = state;
+```
+
+Cette exposition permet aux tests de :
+- Injecter des donnees de test directement dans le state
+- Verifier que les agregations calculent les valeurs correctes
+- Comparer les resultats avec les valeurs attendues
+- Valider la coherence entre donnees source et resultats affiches
+
+### Documentation complete
+
+- `tests/builder-e2e/README.md` : Guide d'utilisation des tests
+- `tests/builder-e2e/RESULTAT_TESTS.md` : Resultats detailles des tests
+- `tests/builder-e2e/QUICK_START.md` : Demarrage rapide et troubleshooting
+- `tests/builder-e2e/FIX_TESTS.md` : Guide de resolution des problemes
+- `tests/builder-e2e/SYNTHESE.md` : Synthese et vue d'ensemble
+- `tests/builder-e2e/TESTING_MATRIX.md` : Matrice complete des parametres a tester
+
+### Utilitaires de test
+
+- `data-consistency-checker.ts` : Calcul des valeurs attendues et verification de coherence
+- `inspect-builder.spec.ts` : Outil de diagnostic de la structure du builder
+- `simple-test.spec.ts` : Tests de base (elements UI, options disponibles)
+- `quick-audit.spec.ts` : Tests critiques de validation des parametres
+
 ## Notes importantes
 
 - Les fichiers `.js` dans `/src/` sont des artefacts de build, ne pas les modifier

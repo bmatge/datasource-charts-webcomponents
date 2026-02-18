@@ -188,6 +188,37 @@ npm run test:coverage # Tests avec couverture
 npm run test:e2e      # Tests E2E Playwright
 ```
 
+#### Tests de validation Builder (E2E Playwright)
+
+Le dossier [tests/builder-e2e/](tests/builder-e2e/) contient une suite complete de tests E2E qui valident que tous les parametres du builder fonctionnent correctement :
+
+```bash
+# Pre-requis : lancer le serveur de dev
+npm run dev
+
+# Dans un autre terminal
+cd tests/builder-e2e
+
+# Tests critiques (agregations, graphiques, palettes)
+npx playwright test quick-audit.spec.ts
+
+# Tests de base (elements UI)
+npx playwright test simple-test.spec.ts
+
+# Diagnostic de la structure
+npx playwright test inspect-builder.spec.ts --headed
+```
+
+**Couverture actuelle : 11/12 tests passent** (91.7%)
+
+- 5/5 fonctions d'agregation validees : SUM, AVG, MIN, MAX, COUNT
+- 4/4 types de graphiques testes : bar, horizontalBar, pie, kpi
+- Palettes, tri, mode avance, filtres : tous valides
+
+Les tests utilisent un dataset de test avec valeurs connues pour verifier la coherence entre donnees source et resultats calcules.
+
+Documentation complete dans [tests/builder-e2e/README.md](tests/builder-e2e/README.md).
+
 ### Tauri (application desktop)
 
 ```bash
