@@ -93,21 +93,25 @@
         </p>
 
         <h4>Architecture du pipeline</h4>
-        <div class="pipeline-diagram">gouv-query "q" (server-side, ODS, 100 resultats)
-  |-- gouv-search (server-search) --> envoie search() a q
-  |-- gouv-facets "filtered" (server-facets) --> envoie where a q, re-emet les donnees
-        |-- gouv-query "alim" (client, filtre Aliment, limit 3)
-        |     \-- gouv-display (cartes, 3 cols)
-        |-- gouv-query "autres" (client, filtre non-Aliment, limit 3)
-        |     \-- gouv-display (cartes, 3 cols)
-        \-- gouv-display (liste complete, pagination 20)</div>
+        <div class="pipeline-diagram">gouv-source "q" (server-side, ODS, 100 resultats)
+  |
+  v
+gouv-search "search" (server-search, re-emet)
+  |
+  v
+gouv-facets "filtered" (server-facets, re-emet)
+  |-- gouv-query "alim" (client, filtre Aliment, limit 3)
+  |     \-- gouv-display (cartes, 3 cols)
+  |-- gouv-query "autres" (client, filtre non-Aliment, limit 3)
+  |     \-- gouv-display (cartes, 3 cols)
+  \-- gouv-display (liste complete, pagination 20)</div>
 
         <p class="fr-mt-2w">
-          La source <code>gouv-source</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
-          La recherche (avec <code>id="search"</code>) et les facettes envoient chacune un <code>where</code> a la source,
-          qui sont automatiquement merges grace a leurs <code>whereKey</code> distincts (deduits de leurs ID).
-          Les donnees filtrees sont re-emises par <code>gouv-facets</code> sous l'id <code>"filtered"</code>,
-          puis splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
+          La source <code>gouv-source id="q"</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
+          La recherche <code>gouv-search id="search"</code> filtre et réémet les données.
+          Les facettes <code>gouv-facets id="filtered" source="search"</code> lisent depuis la recherche et réémettent les données filtrées.
+          Le pipeline forme une chaîne : <code>q → search → filtered</code>.
+          Les donnees sont ensuite splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
         </p>
 
         <h4 class="fr-mt-3w">Exemple live</h4>
@@ -130,7 +134,7 @@
           count>
         </gouv-search>
 
-        <gouv-facets id="filtered" source="q" server-facets
+        <gouv-facets id="filtered" source="search" server-facets
           fields="categorie_produit, sous_categorie_produit"
           labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
           display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
@@ -282,7 +286,7 @@
 &lt;/gouv-search&gt;
 
 &lt;!-- Facettes server-side (mode dropdown DSFR) --&gt;
-&lt;gouv-facets id="filtered" source="q" server-facets
+&lt;gouv-facets id="filtered" source="search" server-facets
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
   display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
@@ -410,11 +414,11 @@
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>1 seule source serveur</strong> : <code>gouv-source server-side</code> charge 100 resultats depuis l'API ODS.</li>
-          <li><strong>Recherche + facettes</strong> : <code>gouv-search id="search" server-search</code> et <code>gouv-facets server-facets</code> envoient chacun un <code>where</code> a la source, merges via <code>whereKey</code> distincts (deduits des ID).</li>
+          <li><strong>Pipeline chaîné</strong> : <code>gouv-source "q" → gouv-search "search" → gouv-facets "filtered"</code> forme un pipeline ou chaque composant transforme et réémet les données.</li>
+          <li><strong>Recherche server-side</strong> : <code>gouv-search id="search" server-search</code> filtre les données via l'API ODS et les réémet.</li>
+          <li><strong>Facettes server-side</strong> : <code>gouv-facets source="search"</code> lit les données recherchées et applique les filtres utilisateur.</li>
           <li><strong>Split client-side</strong> : deux <code>gouv-query</code> filtrent localement les donnees re-emises par les facettes (alimentation vs autres).</li>
           <li><strong>3 zones d'affichage</strong> : les 3 derniers rappels alimentaires, les 3 derniers autres, et la liste complete paginee.</li>
-          <li><strong>Cross-facet</strong> : les compteurs de chaque facette tiennent compte des selections des autres facettes.</li>
         </ul>
 
       </div>
