@@ -127,6 +127,9 @@
             <tr><td><code>paginate</code></td><td>Boolean</td><td>Presence = <code>true</code></td><td>Active la pagination manuelle. Injecte <code>page</code> et <code>page_size</code> dans l'URL.
               Auto-extrait <code>json.data</code> si aucun <code>transform</code> n'est defini.</td></tr>
             <tr><td><code>page-size</code></td><td>Number</td><td>Entier positif. Defaut : <code>20</code></td><td>Taille de page pour la pagination manuelle</td></tr>
+            <tr><td><code>use-proxy</code></td><td>Boolean</td><td>Presence = <code>true</code></td><td>Force le passage par le proxy CORS generique (<code>/cors-proxy</code>).
+              Utile pour les APIs externes qui ne gerent pas CORS. La requete est routee cote serveur
+              via un header <code>X-Target-URL</code>.</td></tr>
           </tbody>
         </table>
 
@@ -262,6 +265,27 @@ where="email:isnull"</pre></div>
               <strong>Auto-extraction :</strong> en mode <code>paginate</code>, pas besoin de <code>transform="data"</code>.
               Les donnees sont automatiquement extraites depuis <code>json.data</code> et les metadonnees de pagination
               (<code>json.meta</code>) sont stockees pour calculer le nombre total de pages.
+            </p>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h3>Mode URL brute : API externe avec proxy CORS</h3>
+          <p>
+            L'attribut <code>use-proxy</code> force le passage par le proxy CORS generique.
+            Utile quand l'API cible ne renvoie pas les headers CORS necessaires.
+          </p>
+          <div class="code-block"><pre>&lt;gouv-source
+  id="ghibli-films"
+  url="https://ghibliapi.vercel.app/films"
+  use-proxy
+&gt;&lt;/gouv-source&gt;</pre></div>
+          <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
+            <p class="fr-callout__text">
+              <strong>Fonctionnement :</strong> en dev, la requete est routee via le middleware Vite
+              <code>/cors-proxy</code>. En production, elle passe par l'endpoint equivalent sur le serveur proxy
+              (<code>chartsbuilder.matge.com/cors-proxy</code>).
+              L'URL cible est transmise dans le header <code>X-Target-URL</code>.
             </p>
           </div>
         </section>
