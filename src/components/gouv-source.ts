@@ -144,6 +144,10 @@ export class GouvSource extends LitElement {
   private _whereOverlays = new Map<string, string>();
   /** Dynamic orderBy overlay from gouv-datalist sort */
   private _orderByOverlay = '';
+  /** Dynamic groupBy overlay from gouv-query delegation */
+  private _groupByOverlay = '';
+  /** Dynamic aggregate overlay from gouv-query delegation */
+  private _aggregateOverlay = '';
 
   /** Cached adapter instance */
   private _adapter: ApiAdapter | null = null;
@@ -334,6 +338,16 @@ export class GouvSource extends LitElement {
         needsFetch = true;
       }
 
+      if (cmd.groupBy !== undefined && cmd.groupBy !== this._groupByOverlay) {
+        this._groupByOverlay = cmd.groupBy;
+        needsFetch = true;
+      }
+
+      if (cmd.aggregate !== undefined && cmd.aggregate !== this._aggregateOverlay) {
+        this._aggregateOverlay = cmd.aggregate;
+        needsFetch = true;
+      }
+
       if (needsFetch) {
         this._fetchData();
       }
@@ -491,10 +505,19 @@ export class GouvSource extends LitElement {
           page: this._currentPage,
           pageSize: this.pageSize,
           total: result.totalCount,
+          needsClientProcessing: result.needsClientProcessing,
         });
       } else {
         // Fetch all with auto-pagination
         result = await adapter.fetchAll(params, this._abortController.signal);
+
+        // Publish meta with needsClientProcessing flag
+        setDataMeta(this.id, {
+          page: 1,
+          pageSize: 0,
+          total: result.totalCount,
+          needsClientProcessing: result.needsClientProcessing,
+        });
       }
 
       this._data = result.data;
@@ -541,8 +564,8 @@ export class GouvSource extends LitElement {
       select: this.select,
       where: this.getEffectiveWhere(),
       filter: '',
-      groupBy: this.groupBy,
-      aggregate: this.aggregate,
+      groupBy: this._groupByOverlay || this.groupBy,
+      aggregate: this._aggregateOverlay || this.aggregate,
       orderBy: this._orderByOverlay || this.orderBy,
       limit: this.limit,
       transform: this.transform,
