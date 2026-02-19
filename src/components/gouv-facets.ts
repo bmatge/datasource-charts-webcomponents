@@ -144,6 +144,10 @@ export class GouvFacets extends LitElement {
   @state()
   private _openMultiselectField: string | null = null;
 
+  /** Message annonce par la live region (lecteurs d'ecran) */
+  @state()
+  private _liveAnnouncement = '';
+
   private _unsubscribe: (() => void) | null = null;
   private _unsubscribeCommands: (() => void) | null = null;
   private _popstateHandler: (() => void) | null = null;
@@ -682,7 +686,8 @@ export class GouvFacets extends LitElement {
     const isDisjunctive = displayMode === 'multiselect'
       || (displayMode === 'checkbox' && disjunctiveFields.includes(field));
 
-    if (fieldSet.has(value)) {
+    const wasSelected = fieldSet.has(value);
+    if (wasSelected) {
       fieldSet.delete(value);
     } else {
       if (!isDisjunctive) {
@@ -699,6 +704,12 @@ export class GouvFacets extends LitElement {
 
     this._activeSelections = selections;
     this._afterSelectionChange();
+
+    // Announce selection change for multiselect/radio modes
+    if (displayMode === 'multiselect' || displayMode === 'radio') {
+      const action = wasSelected ? 'deselectionnee' : 'selectionnee';
+      this._announce(`${value} ${action}, ${fieldSet.size} option${fieldSet.size > 1 ? 's' : ''} selectionnee${fieldSet.size > 1 ? 's' : ''}`);
+    }
   }
 
   private _handleSelectChange(field: string, e: Event) {
@@ -721,6 +732,7 @@ export class GouvFacets extends LitElement {
     delete selections[field];
     this._activeSelections = selections;
     this._afterSelectionChange();
+    this._announce('Aucune option selectionnee');
   }
 
   private _selectAllValues(field: string) {
@@ -730,6 +742,7 @@ export class GouvFacets extends LitElement {
     selections[field] = new Set(group.values.map(v => v.value));
     this._activeSelections = selections;
     this._afterSelectionChange();
+    this._announce(`${group.values.length} options selectionnees`);
   }
 
   private _toggleMultiselectDropdown(field: string) {
@@ -741,8 +754,21 @@ export class GouvFacets extends LitElement {
         const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
         const firstFocusable = panel?.querySelector('button, input, select, [tabindex]') as HTMLElement;
         firstFocusable?.focus();
+
+        // Announce panel context to screen readers
+        const group = this._facetGroups.find(g => g.field === field);
+        if (group) {
+          const selected = this._activeSelections[field] ?? new Set();
+          this._announce(`${group.label}, ${group.values.length} options disponibles, ${selected.size} selectionnee${selected.size > 1 ? 's' : ''}`);
+        }
       });
     }
+  }
+
+  private _announce(message: string) {
+    // Clear then set to ensure re-announcement of identical messages
+    this._liveAnnouncement = '';
+    requestAnimationFrame(() => { this._liveAnnouncement = message; });
   }
 
   private _handleMultiselectKeydown(field: string, e: KeyboardEvent) {
@@ -750,6 +776,49 @@ export class GouvFacets extends LitElement {
       this._openMultiselectField = null;
       const trigger = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-trigger`) as HTMLElement;
       trigger?.focus();
+      return;
+    }
+
+    // Focus trap: Tab wraps within the dialog panel
+    if (e.key === 'Tab') {
+      const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
+      if (!panel) return;
+      const focusables = [...panel.querySelectorAll<HTMLElement>('button:not([tabindex="-1"]), input, select, [tabindex]:not([tabindex="-1"])')];
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+
+    // Arrow key navigation between checkboxes/radios
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') {
+      const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
+      if (!panel) return;
+      const inputs = [...panel.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]')];
+      if (inputs.length === 0) return;
+
+      const currentIndex = inputs.indexOf(e.target as HTMLInputElement);
+      if (currentIndex === -1 && e.key !== 'ArrowDown') return;
+
+      e.preventDefault();
+      let nextIndex: number;
+      if (e.key === 'ArrowDown') {
+        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, inputs.length - 1);
+      } else if (e.key === 'ArrowUp') {
+        nextIndex = Math.max(currentIndex - 1, 0);
+      } else if (e.key === 'Home') {
+        nextIndex = 0;
+      } else {
+        nextIndex = inputs.length - 1;
+      }
+      inputs[nextIndex].focus();
     }
   }
 
@@ -781,9 +850,23 @@ export class GouvFacets extends LitElement {
     this._expandedFacets = expanded;
   }
 
+  private _searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   private _handleSearch(field: string, e: Event) {
     const input = e.target as HTMLInputElement;
     this._searchQueries = { ...this._searchQueries, [field]: input.value };
+
+    // Debounced announcement of filtered results count
+    if (this._searchDebounceTimer) clearTimeout(this._searchDebounceTimer);
+    this._searchDebounceTimer = setTimeout(() => {
+      const group = this._facetGroups.find(g => g.field === field);
+      if (!group) return;
+      const query = input.value.toLowerCase();
+      const count = query
+        ? group.values.filter(v => v.value.toLowerCase().includes(query)).length
+        : group.values.length;
+      this._announce(count === 0 ? 'Aucune option trouvee' : `${count} option${count > 1 ? 's' : ''} disponible${count > 1 ? 's' : ''}`);
+    }, 300);
   }
 
   private _clearAll() {
@@ -987,7 +1070,7 @@ export class GouvFacets extends LitElement {
                   .checked="${isChecked}"
                   @change="${() => this._toggleValue(group.field, fv.value)}">
                 <label class="fr-label" for="${checkId}">
-                  ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                  ${fv.value}${this._effectiveHideCounts ? nothing : html`<span class="gouv-facets__count" aria-hidden="true">${fv.count}</span><span class="fr-sr-only">, ${fv.count} resultat${fv.count > 1 ? 's' : ''}</span>`}
                 </label>
               </div>
             </div>
@@ -1041,6 +1124,9 @@ export class GouvFacets extends LitElement {
       ? `${selected.size} option${selected.size > 1 ? 's' : ''} selectionnee${selected.size > 1 ? 's' : ''}`
       : 'Selectionnez des options';
 
+    // Selected values description for screen readers
+    const selectedDesc = selected.size > 0 ? [...selected].join(', ') : '';
+
     return html`
       <div class="fr-select-group gouv-facets__group gouv-facets__multiselect"
            data-multiselect="${group.field}"
@@ -1048,12 +1134,14 @@ export class GouvFacets extends LitElement {
            @keydown="${(e: KeyboardEvent) => this._handleMultiselectKeydown(group.field, e)}"
            @focusout="${(e: FocusEvent) => this._handleMultiselectFocusout(group.field, e)}">
         <label class="fr-label" id="${uid}-legend">${group.label}</label>
+        ${selectedDesc ? html`<span class="fr-sr-only" id="${uid}-desc">${selectedDesc}</span>` : nothing}
         <button class="fr-select gouv-facets__multiselect-trigger"
           type="button"
           aria-expanded="${isOpen}"
           aria-controls="${uid}-panel"
           aria-labelledby="${uid}-legend"
           aria-haspopup="dialog"
+          aria-describedby="${selectedDesc ? `${uid}-desc` : nothing}"
           @click="${(e: Event) => { e.stopPropagation(); this._toggleMultiselectDropdown(group.field); }}">
           ${triggerLabel}
         </button>
@@ -1061,8 +1149,10 @@ export class GouvFacets extends LitElement {
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
                role="dialog" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
+            <div aria-live="polite" class="fr-sr-only">${this._liveAnnouncement}</div>
             <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left ${selected.size > 0 ? 'fr-icon-close-circle-line' : 'fr-icon-check-line'} gouv-facets__multiselect-toggle"
               type="button"
+              aria-label="${selected.size > 0 ? `Tout deselectionner pour ${group.label}` : `Tout selectionner pour ${group.label}`}"
               @click="${() => selected.size > 0 ? this._clearFieldSelections(group.field) : this._selectAllValues(group.field)}">
               ${selected.size > 0 ? 'Tout deselectionner' : 'Tout selectionner'}
             </button>
@@ -1070,9 +1160,11 @@ export class GouvFacets extends LitElement {
               <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>
               <input class="fr-input" type="search" id="${uid}-search"
                 placeholder="Rechercher..."
+                aria-describedby="${uid}-search-hint"
                 .value="${this._searchQueries[group.field] ?? ''}"
                 @input="${(e: Event) => this._handleSearch(group.field, e)}">
-              <button class="fr-btn" type="button" title="Rechercher" aria-label="Rechercher">
+              <span class="fr-sr-only" id="${uid}-search-hint">Les resultats se mettent a jour automatiquement</span>
+              <button class="fr-btn" type="button" title="Rechercher" aria-hidden="true" tabindex="-1">
                 Rechercher
               </button>
             </div>
@@ -1087,7 +1179,7 @@ export class GouvFacets extends LitElement {
                         .checked="${isChecked}"
                         @change="${() => this._toggleValue(group.field, fv.value)}">
                       <label class="fr-label" for="${checkId}">
-                        ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                        ${fv.value}${this._effectiveHideCounts ? nothing : html`<span class="gouv-facets__count" aria-hidden="true">${fv.count}</span><span class="fr-sr-only">, ${fv.count} resultat${fv.count > 1 ? 's' : ''}</span>`}
                       </label>
                     </div>
                   </div>
@@ -1134,9 +1226,11 @@ export class GouvFacets extends LitElement {
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
                role="dialog" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
+            <div aria-live="polite" class="fr-sr-only">${this._liveAnnouncement}</div>
             ${selectedValue ? html`
               <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left fr-icon-close-circle-line gouv-facets__multiselect-toggle"
                 type="button"
+                aria-label="Reinitialiser ${group.label}"
                 @click="${() => this._clearFieldSelections(group.field)}">
                 Reinitialiser
               </button>
@@ -1145,9 +1239,11 @@ export class GouvFacets extends LitElement {
               <label class="fr-label fr-sr-only" for="${uid}-search">Rechercher dans ${group.label}</label>
               <input class="fr-input" type="search" id="${uid}-search"
                 placeholder="Rechercher..."
+                aria-describedby="${uid}-search-hint"
                 .value="${this._searchQueries[group.field] ?? ''}"
                 @input="${(e: Event) => this._handleSearch(group.field, e)}">
-              <button class="fr-btn" type="button" title="Rechercher" aria-label="Rechercher">
+              <span class="fr-sr-only" id="${uid}-search-hint">Les resultats se mettent a jour automatiquement</span>
+              <button class="fr-btn" type="button" title="Rechercher" aria-hidden="true" tabindex="-1">
                 Rechercher
               </button>
             </div>
@@ -1162,7 +1258,7 @@ export class GouvFacets extends LitElement {
                         .checked="${isChecked}"
                         @change="${() => this._toggleValue(group.field, fv.value)}">
                       <label class="fr-label" for="${radioId}">
-                        ${fv.value}${this._effectiveHideCounts ? nothing : html` <span class="gouv-facets__count">${fv.count}</span>`}
+                        ${fv.value}${this._effectiveHideCounts ? nothing : html`<span class="gouv-facets__count" aria-hidden="true">${fv.count}</span><span class="fr-sr-only">, ${fv.count} resultat${fv.count > 1 ? 's' : ''}</span>`}
                       </label>
                     </div>
                   </div>
