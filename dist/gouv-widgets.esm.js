@@ -8527,7 +8527,8 @@ let Zs = (bt = class extends Q {
 
         .builder-layout-container {
           display: flex;
-          align-items: flex-start;
+          flex: 1;
+          min-height: 0;
         }
 
         .builder-layout-left {
@@ -8538,7 +8539,6 @@ let Zs = (bt = class extends Q {
           display: flex;
           flex-direction: column;
           min-width: 280px;
-          max-height: 100vh;
         }
 
         .builder-layout-resizer {
@@ -8560,10 +8560,6 @@ let Zs = (bt = class extends Q {
           background: var(--background-default-grey);
           display: flex;
           flex-direction: column;
-          position: sticky;
-          top: 0;
-          max-height: 100vh;
-          align-self: flex-start;
         }
 
         /* Responsive: stack vertical on mobile */

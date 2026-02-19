@@ -191,7 +191,8 @@ export class AppLayoutBuilder extends LitElement {
 
         .builder-layout-container {
           display: flex;
-          align-items: flex-start;
+          flex: 1;
+          min-height: 0;
         }
 
         .builder-layout-left {
@@ -202,7 +203,6 @@ export class AppLayoutBuilder extends LitElement {
           display: flex;
           flex-direction: column;
           min-width: 280px;
-          max-height: 100vh;
         }
 
         .builder-layout-resizer {
@@ -224,10 +224,6 @@ export class AppLayoutBuilder extends LitElement {
           background: var(--background-default-grey);
           display: flex;
           flex-direction: column;
-          position: sticky;
-          top: 0;
-          max-height: 100vh;
-          align-self: flex-start;
         }
 
         /* Responsive: stack vertical on mobile */
