@@ -11,8 +11,10 @@ import {
   clearDataMeta,
   subscribeToSource,
   getDataCache,
+  getDataMeta,
   subscribeToSourceCommands
 } from '../utils/data-bridge.js';
+import type { AdapterCapabilities } from '../adapters/api-adapter.js';
 
 /**
  * Operateurs de filtre supportes
@@ -62,16 +64,27 @@ export interface QuerySort {
  * Ne fait aucun fetch HTTP : les donnees sont recues d'un composant amont
  * (gouv-source ou gouv-normalize) via le data-bridge.
  *
- * @example Source explicite
+ * **Negotiation server-side** : a l'initialisation, gouv-query interroge les
+ * capabilities de l'adapter (via gouv-source.getAdapter()) et delegue
+ * automatiquement les operations (group-by, aggregate, order-by) au serveur
+ * quand l'adapter le supporte. Si l'adapter ne supporte pas l'operation,
+ * ou si gouv-source a deja ses propres attributs, gouv-query fait le
+ * traitement client-side en fallback.
+ *
+ * Si l'adapter signale needsClientProcessing=true (ex: Grist SQL indisponible),
+ * gouv-query reprend le traitement client-side meme pour les operations
+ * initialement deleguees.
+ *
+ * @example Server-side automatique (ODS supporte group-by server-side)
  * <gouv-source id="src" api-type="opendatasoft"
- *   base-url="https://data.opendatasoft.com" dataset-id="communes-france"
- *   select="sum(population) as total_pop, region" group-by="region">
+ *   base-url="https://data.opendatasoft.com" dataset-id="communes-france">
  * </gouv-source>
  * <gouv-query id="stats" source="src"
+ *   group-by="region" aggregate="population:sum:total_pop"
  *   order-by="total_pop:desc" limit="10">
  * </gouv-query>
  *
- * @example Client-side (donnees d'une source existante)
+ * @example Client-side (source generique sans adapter)
  * <gouv-query
  *   id="stats"
  *   source="raw-data"
@@ -173,6 +186,16 @@ export class GouvQuery extends LitElement {
   private _unsubscribe: (() => void) | null = null;
   private _unsubscribeCommands: (() => void) | null = null;
 
+  /**
+   * Tracks which operations have been delegated to gouv-source server-side.
+   * When needsClientProcessing comes back true, we fall back to client-side.
+   */
+  private _serverDelegated = {
+    groupBy: false,
+    aggregate: false,
+    orderBy: false,
+  };
+
   // Pas de rendu - composant invisible
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
@@ -190,6 +213,8 @@ export class GouvQuery extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    // Clear server-side overlays on gouv-source before cleanup
+    this._clearServerDelegation();
     this._cleanup();
     if (this.id) {
       clearDataCache(this.id);
@@ -259,20 +284,113 @@ export class GouvQuery extends LitElement {
       return;
     }
 
+    // Negotiate server-side delegation BEFORE subscribing to data.
+    // This sends commands to gouv-source so it re-fetches with the right params.
+    this._negotiateServerSide();
+
     this._subscribeToSourceData(this.source);
 
     // Forward commands from downstream to upstream source
     this._setupCommandForwarding();
   }
 
+  // --- Server-side negotiation ---
+
+  /**
+   * Check upstream adapter capabilities and delegate operations server-side
+   * when possible. Sends commands to gouv-source with groupBy/aggregate/orderBy
+   * so the adapter handles them in the API request.
+   *
+   * Falls back to client-side for operations the adapter can't handle,
+   * or when gouv-source already has its own groupBy/aggregate attributes.
+   */
+  private _negotiateServerSide() {
+    // Reset delegation state
+    this._serverDelegated = { groupBy: false, aggregate: false, orderBy: false };
+
+    const sourceEl = document.getElementById(this.source);
+    if (!sourceEl || !('getAdapter' in sourceEl)) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const adapter = (sourceEl as any).getAdapter?.();
+    if (!adapter?.capabilities) return;
+
+    const caps: AdapterCapabilities = adapter.capabilities;
+
+    // Don't override if gouv-source already has its own groupBy/aggregate
+    // (user explicitly configured them on the source — respect that)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sourceGroupBy = (sourceEl as any).groupBy || '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sourceAggregate = (sourceEl as any).aggregate || '';
+
+    const cmd: Record<string, string> = {};
+
+    // Delegate group-by + aggregate together (they're coupled).
+    // Don't override if source already has its own groupBy or aggregate.
+    if (this.groupBy && caps.serverGroupBy && !sourceGroupBy && !sourceAggregate) {
+      cmd.groupBy = this.groupBy;
+      this._serverDelegated.groupBy = true;
+
+      if (this.aggregate) {
+        cmd.aggregate = this.aggregate;
+        this._serverDelegated.aggregate = true;
+      }
+    }
+
+    // Delegate order-by
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sourceOrderBy = (sourceEl as any).orderBy || '';
+    if (this.orderBy && caps.serverOrderBy && !sourceOrderBy) {
+      cmd.orderBy = this.orderBy;
+      this._serverDelegated.orderBy = true;
+    }
+
+    if (Object.keys(cmd).length > 0) {
+      dispatchSourceCommand(this.source, cmd);
+    }
+  }
+
+  /**
+   * Clear server-side overlays on gouv-source (disconnect cleanup).
+   * Sends empty values so gouv-source reverts to its own attributes.
+   */
+  private _clearServerDelegation() {
+    if (!this.source || !this._hasServerDelegation()) return;
+
+    const cmd: Record<string, string> = {};
+    if (this._serverDelegated.groupBy) cmd.groupBy = '';
+    if (this._serverDelegated.aggregate) cmd.aggregate = '';
+    if (this._serverDelegated.orderBy) cmd.orderBy = '';
+
+    if (Object.keys(cmd).length > 0) {
+      dispatchSourceCommand(this.source, cmd);
+    }
+
+    this._serverDelegated = { groupBy: false, aggregate: false, orderBy: false };
+  }
+
+  /**
+   * Returns true if we delegated any operation server-side.
+   */
+  private _hasServerDelegation(): boolean {
+    return this._serverDelegated.groupBy ||
+           this._serverDelegated.aggregate ||
+           this._serverDelegated.orderBy;
+  }
+
   // --- Source subscription ---
 
   private _subscribeToSourceData(sourceId: string) {
-    // Check cache first (avoids race condition if source already emitted)
-    const cachedData = getDataCache(sourceId);
-    if (cachedData !== undefined) {
-      this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];
-      this._handleSourceData();
+    // Check cache first (avoids race condition if source already emitted).
+    // BUT skip cache if we just sent server-side commands — the cached data
+    // is stale (pre-delegation). Wait for fresh data from gouv-source.
+    if (!this._hasServerDelegation()) {
+      const cachedData = getDataCache(sourceId);
+      if (cachedData !== undefined) {
+        this._rawData = Array.isArray(cachedData) ? cachedData : [cachedData];
+        this._handleSourceData();
+      }
     }
 
     this._unsubscribe = subscribeToSource(sourceId, {
@@ -312,28 +430,44 @@ export class GouvQuery extends LitElement {
   // --- Client-side processing ---
 
   /**
-   * Traitement cote client des donnees
+   * Traitement des donnees : applique client-side uniquement les operations
+   * qui n'ont pas ete delegues server-side.
+   *
+   * Si needsClientProcessing est true dans la meta de la source,
+   * ca signifie que l'adapter n'a pas pu traiter server-side (ex: Grist SQL
+   * indisponible) — on fait le fallback client-side.
    */
   private _processClientSide() {
     let result = [...this._rawData] as Record<string, unknown>[];
 
-    // 1. Appliquer les filtres
+    // Check if the adapter flagged that client processing is needed
+    // (server-side delegation failed, e.g. Grist SQL endpoint unavailable)
+    const meta = getDataMeta(this.source);
+    const forceClientSide = meta?.needsClientProcessing === true;
+
+    // 1. Appliquer les filtres (toujours client-side pour gouv-query)
     const filterExpr = this.filter || this.where;
     if (filterExpr) {
       result = this._applyFilters(result, filterExpr);
     }
 
     // 2. Appliquer le groupement et les agregations
-    if (this.groupBy) {
+    // Skip si delegue server-side, SAUF si needsClientProcessing (fallback)
+    const needsClientGroupBy = this.groupBy &&
+      (!this._serverDelegated.groupBy || forceClientSide);
+    if (needsClientGroupBy) {
       result = this._applyGroupByAndAggregate(result);
     }
 
     // 3. Appliquer le tri
-    if (this.orderBy) {
+    // Skip si delegue server-side, SAUF si needsClientProcessing (fallback)
+    const needsClientSort = this.orderBy &&
+      (!this._serverDelegated.orderBy || forceClientSide);
+    if (needsClientSort) {
       result = this._applySort(result);
     }
 
-    // 4. Appliquer la limite
+    // 4. Appliquer la limite (toujours client-side)
     if (this.limit > 0) {
       result = result.slice(0, this.limit);
     }
