@@ -71,11 +71,12 @@ npm run dev --workspace=@gouv-widgets/app-monitoring
 gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► donnees brutes
      │                                                         │
      │ adapters (ODS, Tabular, Grist, Generic)                 ▼
-     │                                               gouv-normalize (optionnel)
+     │                                               gouv-query [transform seulement]
+     │◄── commandes (groupBy, aggregate, orderBy) ─── delegation server-side
+     │                                               filter, group-by, aggregate, sort
      │                                                         │
      │                                                         ▼
-     │                                               gouv-query [transform seulement]
-     │                                               filter, group-by, aggregate, sort
+     │                                               gouv-normalize (optionnel, renommage)
      │                                                         │
      │                                    ┌────────────────────┤
      │                                    ▼                    ▼
@@ -92,24 +93,30 @@ gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► don
 **Regles** :
 - **gouv-source** est le seul composant qui fait du fetch HTTP. Il supporte `api-type` pour ODS, Tabular, Grist et Generic.
 - **gouv-query** est un pur transformateur de donnees (filter, group-by, aggregate, sort). Il ne fait jamais de requete HTTP.
+- **gouv-query** negocie automatiquement la delegation server-side : si `source` pointe directement sur un `gouv-source` avec un adapter qui supporte `serverGroupBy`/`serverOrderBy`, il envoie des commandes pour que l'API fasse le group-by/aggregate/sort cote serveur. Si la source est un intermediaire (normalize, facets), le traitement reste client-side.
+- **gouv-normalize** se place de preference **apres** gouv-query quand on veut beneficier de la delegation server-side (renommage cosmetique apres agregation). Il peut aussi se placer avant gouv-query si le nettoyage est necessaire pour les filtres (ex: conversion numerique), mais cela force le traitement client-side.
 - Les commandes (page, where, orderBy) remontent vers gouv-source via `gouv-source-command`.
+- **gouv-facets et gouv-search** restent toujours **avant** gouv-query dans les pipelines filtre+agregation : l'ordre "filtrer puis agreger" est semantiquement different de "agreger puis filtrer". Le traitement est client-side dans ces cas.
 - gouv-facets et gouv-search delegent la construction des WHERE clauses aux adapters.
 
 ### Pattern HTML
 
 ```html
-<!-- Source (fetch) → Query (transform) → Chart (display) -->
+<!-- Source (fetch) → Query (transform, delegation server-side) → Normalize (renommage) → Chart -->
 <gouv-source id="src" api-type="opendatasoft"
   dataset-id="mon-dataset" base-url="https://data.economie.gouv.fr">
 </gouv-source>
 <gouv-query id="data" source="src"
-  group-by="region" aggregate="population:sum:total" order-by="total:desc">
+  group-by="nom_region" aggregate="population:sum:total" order-by="total:desc">
 </gouv-query>
-<gouv-dsfr-chart id="mon-graph" source="data" type="bar"
-  label-field="region" value-field="total">
+<gouv-normalize id="clean" source="data"
+  rename="nom_region:Region">
+</gouv-normalize>
+<gouv-dsfr-chart id="mon-graph" source="clean" type="bar"
+  label-field="Region" value-field="total">
 </gouv-dsfr-chart>
 <!-- Optionnel : telechargement CSV accessible -->
-<gouv-raw-data for="mon-graph" source="data"></gouv-raw-data>
+<gouv-raw-data for="mon-graph" source="clean"></gouv-raw-data>
 ```
 
 Pour les cas sans transformation (datalist, display), gouv-query peut etre omis :
@@ -120,6 +127,23 @@ Pour les cas sans transformation (datalist, display), gouv-query peut etre omis 
 </gouv-source>
 <gouv-datalist source="src" colonnes="..." pagination="20">
 </gouv-datalist>
+```
+
+Pour les pipelines avec facettes (filtrer puis agreger — client-side) :
+
+```html
+<gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr" dataset-id="mon-dataset">
+</gouv-source>
+<gouv-facets id="filtered" source="src" server-facets
+  fields="nom_region" display="nom_region:multiselect">
+</gouv-facets>
+<gouv-query id="stats" source="filtered"
+  group-by="nom_departement" aggregate="population:sum:total" order-by="total:desc">
+</gouv-query>
+<gouv-dsfr-chart source="stats" type="bar"
+  label-field="nom_departement" value-field="total">
+</gouv-dsfr-chart>
 ```
 
 ### Adapters et ProviderConfig

@@ -80,11 +80,18 @@
         <h2>Position dans le pipeline</h2>
         <div class="fr-highlight">
           <p>
-            <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &rarr; <strong><code>gouv-facets</code></strong> &rarr; <code>gouv-dsfr-chart</code> / <code>gouv-datalist</code>
+            <code>gouv-source</code> &rarr; <strong><code>gouv-facets</code></strong> &rarr; <code>gouv-query</code> &rarr; <code>gouv-dsfr-chart</code> / <code>gouv-datalist</code>
           </p>
           <p>
-            Normaliser <strong>avant</strong> <code>gouv-facets</code> permet d'avoir des valeurs
-            propres et coherentes dans les filtres (pas de doublons dus aux espaces ou casses differentes).
+            Les facettes se placent <strong>avant</strong> <code>gouv-query</code> dans les pipelines filtre + agregation :
+            l'utilisateur filtre d'abord les donnees brutes, puis <code>gouv-query</code> agrege le sous-ensemble filtre.
+            L'ordre inverse (agreger puis filtrer) changerait la semantique — les facettes porteraient sur des
+            donnees deja agregees au lieu des enregistrements individuels.
+          </p>
+          <p class="fr-mt-1w">
+            <strong>Note :</strong> dans ce cas, <code>gouv-query</code> ne peut pas negocier la delegation
+            server-side car <code>source</code> pointe sur <code>gouv-facets</code> (intermediaire).
+            Le traitement reste client-side, ce qui est le comportement attendu.
           </p>
         </div>
 

@@ -73,11 +73,17 @@
         <h2>Position dans le pipeline</h2>
         <div class="fr-highlight">
           <p>
-            <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &rarr; <strong><code>gouv-search</code></strong> &rarr; <code>gouv-facets</code> &rarr; <code>gouv-display</code> / <code>gouv-datalist</code>
+            <code>gouv-source</code> &rarr; <strong><code>gouv-search</code></strong> &rarr; <code>gouv-facets</code> &rarr; <code>gouv-query</code> &rarr; <code>gouv-display</code> / <code>gouv-datalist</code>
           </p>
           <p>
-            La recherche reduit le jeu de donnees, les facettes affinent ensuite.
+            La recherche reduit le jeu de donnees, les facettes affinent ensuite,
+            puis <code>gouv-query</code> agrege le sous-ensemble filtre.
             Les compteurs de facettes se recalculent dynamiquement.
+          </p>
+          <p class="fr-mt-1w">
+            <strong>Note :</strong> comme pour <code>gouv-facets</code>, la recherche se place toujours
+            <strong>avant</strong> <code>gouv-query</code> : on filtre les donnees brutes avant de les agreger.
+            Le traitement de <code>gouv-query</code> est client-side dans ces pipelines.
           </p>
         </div>
 

@@ -41,8 +41,8 @@
     <div slot="content">
         <p class="fr-text--lead">
           Composant intermediaire de normalisation et nettoyage des donnees.
-          Se place entre <code>&lt;gouv-source&gt;</code> et <code>&lt;gouv-query&gt;</code>
-          pour nettoyer les donnees avant traitement.
+          Se place avant ou apres <code>&lt;gouv-query&gt;</code> selon le besoin
+          (voir <a href="#position">Position dans le pipeline</a>).
         </p>
 
         <div class="fr-callout fr-callout--blue-france">
@@ -52,14 +52,31 @@
           </p>
         </div>
 
-        <h2>Position dans le pipeline</h2>
+        <h2 id="position">Position dans le pipeline</h2>
+
+        <h3 class="fr-mt-2w">Option A : apres gouv-query (recommande pour la performance)</h3>
+        <div class="fr-highlight">
+          <p>
+            <code>gouv-source</code> &rarr; <code>gouv-query</code> &rarr; <strong><code>gouv-normalize</code></strong> &rarr; <code>gouv-dsfr-chart</code>
+          </p>
+          <p>
+            Placer <code>gouv-normalize</code> <strong>apres</strong> <code>gouv-query</code> permet a celui-ci
+            de negocier la delegation server-side avec <code>gouv-source</code> (group-by, aggregate, sort
+            executes par l'API). Le renommage cosmetique s'applique ensuite sur les resultats agreges.
+            Utilisez les noms de champs serveur dans <code>gouv-query</code>.
+          </p>
+        </div>
+
+        <h3 class="fr-mt-2w">Option B : avant gouv-query (nettoyage necessaire pour les filtres)</h3>
         <div class="fr-highlight">
           <p>
             <code>gouv-source</code> &rarr; <strong><code>gouv-normalize</code></strong> &rarr; <code>gouv-query</code> &rarr; <code>gouv-dsfr-chart</code>
           </p>
           <p>
-            Normaliser <strong>avant</strong> <code>gouv-query</code> permet aux filtres et agregations de travailler
-            sur des donnees propres (evite les comparaisons string vs number).
+            Normaliser <strong>avant</strong> <code>gouv-query</code> quand le nettoyage est necessaire pour que
+            les filtres et agregations fonctionnent correctement (ex: conversion numerique pour eviter
+            les comparaisons string vs number). Dans ce cas, le traitement de <code>gouv-query</code>
+            reste client-side car <code>source</code> pointe sur un intermediaire.
           </p>
         </div>
 
@@ -148,29 +165,56 @@
 &lt;!-- Les donnees normalisees sont pretes pour query/chart --&gt;
 &lt;gouv-datalist source="clean" pagination="5"&gt;&lt;/gouv-datalist&gt;</code></pre>
 
-        <!-- Exemple 2 : pipeline complet -->
-        <h2 class="fr-mt-6w">Exemple : pipeline complet</h2>
-        <p>Source &rarr; Normalize &rarr; Query &rarr; Chart</p>
+        <!-- Exemple 2 : pipeline avec delegation server-side -->
+        <h2 class="fr-mt-6w">Exemple : renommage apres query (delegation server-side)</h2>
+        <p>Source &rarr; Query (server-side) &rarr; Normalize (renommage) &rarr; Chart</p>
+
+        <pre><code>&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="mon-dataset" base-url="https://data.economie.gouv.fr"&gt;
+&lt;/gouv-source&gt;
+
+&lt;!-- gouv-query pointe sur gouv-source → delegation server-side --&gt;
+&lt;gouv-query id="stats" source="raw"
+  group-by="nom_reg"
+  aggregate="pop_municipale:sum:total_pop"
+  order-by="total_pop:desc"
+  limit="10"&gt;
+&lt;/gouv-query&gt;
+
+&lt;!-- Renommage cosmetique apres agregation --&gt;
+&lt;gouv-normalize id="clean" source="stats"
+  rename="nom_reg:Region | total_pop:Population"&gt;
+&lt;/gouv-normalize&gt;
+
+&lt;gouv-dsfr-chart source="clean" type="bar"
+  label-field="Region" value-field="Population"&gt;
+&lt;/gouv-dsfr-chart&gt;</code></pre>
+
+        <!-- Exemple 3 : pipeline avec nettoyage avant query -->
+        <h2 class="fr-mt-6w">Exemple : nettoyage avant query (client-side)</h2>
+        <p>Source &rarr; Normalize (nettoyage) &rarr; Query (client-side) &rarr; Chart</p>
 
         <pre><code>&lt;gouv-source id="raw" url="..." transform="results"&gt;&lt;/gouv-source&gt;
 
+&lt;!-- Conversion numerique necessaire pour que les filtres gt/lt marchent --&gt;
 &lt;gouv-normalize id="clean" source="raw"
   numeric="population, budget"
-  rename="pop_tot:Population totale | lib_dep:Departement"
+  rename="pop_tot:Population | lib_dep:Departement"
   trim
   replace="N/A: | n.d.:"&gt;
 &lt;/gouv-normalize&gt;
 
+&lt;!-- gouv-query pointe sur normalize → client-side --&gt;
 &lt;gouv-query id="stats" source="clean"
   group-by="Departement"
-  aggregate="population:sum"
-  order-by="population__sum:desc"
+  aggregate="Population:sum"
+  order-by="Population__sum:desc"
   limit="10"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="stats" type="bar"
   label-field="Departement"
-  value-field="population__sum"&gt;
+  value-field="Population__sum"&gt;
 &lt;/gouv-dsfr-chart&gt;</code></pre>
 
         <!-- Exemple 3 : remplacement cible par champ (INSEE) -->
