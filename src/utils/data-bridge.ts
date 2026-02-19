@@ -21,6 +21,8 @@ export interface PaginationMeta {
   page: number;
   pageSize: number;
   total: number;
+  /** True si le fetch n'a pas pu traiter group-by/aggregate server-side (fallback client) */
+  needsClientProcessing?: boolean;
 }
 
 export interface SourceCommandEvent {
@@ -29,6 +31,8 @@ export interface SourceCommandEvent {
   where?: string;      // recherche serveur (ODSQL pour ODS)
   whereKey?: string;   // identifie la source du where (permet merge multi-sources)
   orderBy?: string;    // tri serveur ("field:direction")
+  groupBy?: string;    // group-by serveur (delegue par gouv-query)
+  aggregate?: string;  // agregation serveur (delegue par gouv-query)
 }
 
 // Noms des événements custom

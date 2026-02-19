@@ -34,13 +34,24 @@ export { LocalStorageAdapter } from './storage/storage-adapter.js';
 export { ApiStorageAdapter } from './storage/api-storage-adapter.js';
 export { setStorageAdapter, getStorageAdapter, loadData, saveData, removeData } from './storage/storage-provider.js';
 
+// Sync queue (reliable background sync with retry)
+export type { SyncStatus } from './storage/sync-queue.js';
+export { onSyncStatusChange, getSyncStatus } from './storage/sync-queue.js';
+
+// Import/Export
+export type { ExportBundle, ImportResult } from './storage/import-export.js';
+export { exportAllData, downloadExport, importData, importFromFile } from './storage/import-export.js';
+
+// Data validation
+export { validateSource, validateConnection, validateFavorite, validateDashboard, validateAndFilterArray } from './validation/validators.js';
+
 // Auth
 export type { User, AuthState, LoginRequest, RegisterRequest, ShareTarget, ShareInfo } from './auth/auth-types.js';
 export {
   setAuthBaseUrl, isDbMode, checkAuth, login, register, logout,
   onAuthChange, getAuthState, getUser, isAuthenticated,
 } from './auth/auth-service.js';
-export { initAuth } from './auth/init-auth.js';
+export { initAuth, getApiAdapter } from './auth/init-auth.js';
 
 // Providers
 export type { ProviderConfig, ProviderId } from './providers/index.js';

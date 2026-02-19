@@ -2,7 +2,7 @@
  * Favorites app - main entry point
  */
 
-import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo, initAuth } from '@gouv-widgets/shared';
+import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo, initAuth, getApiAdapter } from '@gouv-widgets/shared';
 import { loadFavorites, saveFavorites, deleteFavorite, findFavorite } from './favorites-manager.js';
 import type { Favorite } from './favorites-manager.js';
 import { getPreviewHTML } from './preview.js';
@@ -285,6 +285,7 @@ function confirmDelete(): void {
   if (deleteTargetId) {
     favorites = deleteFavorite(favorites, deleteTargetId);
     saveFavorites(favorites);
+    getApiAdapter()?.deleteItemFromServer(STORAGE_KEYS.FAVORITES, deleteTargetId);
 
     if (selectedId === deleteTargetId) {
       selectedId = favorites.length > 0 ? favorites[0].id : null;

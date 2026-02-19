@@ -4,7 +4,7 @@
  */
 
 import './styles/sources.css';
-import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, navigateTo, initAuth } from '@gouv-widgets/shared';
+import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, toastSuccess, toastError, navigateTo, initAuth, downloadExport, importFromFile } from '@gouv-widgets/shared';
 
 import {
   state,
@@ -80,7 +80,7 @@ function saveManualSource(): void {
   if (!data) return;
 
   const source = {
-    id: `manual_${Date.now()}`,
+    id: crypto.randomUUID(),
     name,
     type: 'manual' as const,
     data,
@@ -231,4 +231,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ---- Table editor buttons (add row / add column) ----
   document.getElementById('add-table-row-btn')?.addEventListener('click', addTableRow);
   document.getElementById('add-table-col-btn')?.addEventListener('click', addTableColumn);
+
+  // ---- Import / Export ----
+  document.getElementById('export-data-btn')?.addEventListener('click', () => {
+    downloadExport();
+    toastSuccess('Export telecharge');
+  });
+
+  document.getElementById('import-data-file')?.addEventListener('change', async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const result = await importFromFile(file);
+      // Refresh state from localStorage after import
+      state.connections = normalizeConnections(loadFromStorage(STORAGE_KEYS.CONNECTIONS, []));
+      state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []);
+      renderConnections();
+      renderSources();
+      toastSuccess(`Import : ${result.sources} sources, ${result.connections} connexions, ${result.favorites} favoris, ${result.dashboards} dashboards${result.skipped > 0 ? ` (${result.skipped} ignores)` : ''}`);
+    } catch (err) {
+      toastError(`Erreur import : ${(err as Error).message}`);
+    }
+    input.value = ''; // reset file input
+  });
 });

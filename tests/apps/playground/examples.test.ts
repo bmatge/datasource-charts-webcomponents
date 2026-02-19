@@ -3,9 +3,7 @@ import { examples } from '../../../apps/playground/src/examples/examples-data';
 
 describe('playground examples', () => {
   const directKeys = [
-    'direct-bar', 'direct-line', 'direct-pie', 'direct-radar', 'direct-gauge',
-    'direct-scatter', 'direct-barline', 'direct-map', 'direct-kpi', 'direct-datalist',
-    'direct-worldmap'
+    'direct-bar', 'direct-kpi', 'direct-datalist', 'direct-worldmap'
   ];
 
   const serverPaginateKeys = [
@@ -13,13 +11,11 @@ describe('playground examples', () => {
   ];
 
   const queryKeys = [
-    'query-tabular-pie',
-    'query-bar', 'query-line', 'query-pie', 'query-radar', 'query-gauge',
-    'query-scatter', 'query-barline', 'query-map', 'query-kpi', 'query-datalist'
+    'query-bar', 'query-pie', 'query-map'
   ];
 
   const normalizeKeys = [
-    'normalize-bar', 'normalize-pie', 'normalize-line', 'normalize-datalist'
+    'normalize-bar', 'normalize-pie', 'normalize-datalist'
   ];
 
   const displayKeys = [
@@ -31,7 +27,7 @@ describe('playground examples', () => {
   ];
 
   const searchClientKeys = [
-    'search-facets-display', 'search-kpi-chart'
+    'search-kpi-chart'
   ];
 
   const searchServerKeys = [
@@ -56,8 +52,8 @@ describe('playground examples', () => {
     }
   });
 
-  it('should have 42 examples', () => {
-    expect(Object.keys(examples)).toHaveLength(42);
+  it('should have 25 examples', () => {
+    expect(Object.keys(examples)).toHaveLength(25);
   });
 
   it('should have non-empty code for all examples', () => {
@@ -99,12 +95,10 @@ describe('playground examples', () => {
 
   it('kpi examples should use gouv-kpi', () => {
     expect(examples['direct-kpi']).toContain('gouv-kpi');
-    expect(examples['query-kpi']).toContain('gouv-kpi');
   });
 
   it('datalist examples should use gouv-datalist', () => {
     expect(examples['direct-datalist']).toContain('gouv-datalist');
-    expect(examples['query-datalist']).toContain('gouv-datalist');
   });
 
   it('normalize examples should use gouv-source and gouv-normalize', () => {

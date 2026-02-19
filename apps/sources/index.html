@@ -49,6 +49,18 @@
         <button class="fr-btn fr-btn--sm fr-btn--secondary add-btn" id="add-source-btn">
           <i class="ri-add-line"></i> Créer une source manuelle
         </button>
+
+        <hr class="fr-mt-2w fr-mb-2w">
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="fr-btn fr-btn--sm fr-btn--tertiary" id="export-data-btn" title="Exporter toutes les donnees">
+            <i class="ri-download-line"></i> Exporter
+          </button>
+          <label class="fr-btn fr-btn--sm fr-btn--tertiary" id="import-data-btn" title="Importer des donnees" style="cursor:pointer;">
+            <i class="ri-upload-line"></i> Importer
+            <input type="file" id="import-data-file" accept=".json" style="display:none;">
+          </label>
+        </div>
       </aside>
 
       <!-- MAIN : Explorateur -->

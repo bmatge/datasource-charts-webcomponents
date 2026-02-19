@@ -10,7 +10,7 @@ import type { Widget, WidgetType } from './state.js';
 
 export function addWidget(type: WidgetType, row: number, col: number, cell: HTMLElement): void {
   const widget: Widget = {
-    id: `widget-${Date.now()}`,
+    id: crypto.randomUUID(),
     type,
     title: getDefaultTitle(type),
     position: { row, col },
@@ -25,7 +25,7 @@ export function addWidget(type: WidgetType, row: number, col: number, cell: HTML
 
 export function addWidgetFromFavorite(favorite: any, row: number, col: number, cell: HTMLElement): void {
   const widget: Widget = {
-    id: `widget-${Date.now()}`,
+    id: crypto.randomUUID(),
     type: 'chart',
     title: favorite.name,
     position: { row, col },
@@ -185,7 +185,7 @@ export function duplicateWidget(widgetId: string): void {
   }
 
   const newWidget: Widget = {
-    id: `widget-${Date.now()}`,
+    id: crypto.randomUUID(),
     type: widget.type,
     title: widget.title + ' (copie)',
     position: {

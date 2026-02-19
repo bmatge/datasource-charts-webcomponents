@@ -3,15 +3,19 @@
  *
  * Strategy:
  * - load(): GET from API, fallback to localStorage if offline
- * - save(): save to localStorage immediately, then POST/PUT to API in background
- * - remove(): remove from localStorage, then DELETE from API
+ * - save(): save to localStorage immediately, then sync to API via SyncQueue
+ * - remove(): remove from localStorage, then DELETE from API via SyncQueue
  *
  * This is a "local-first" adapter: localStorage is always written first for instant UI,
- * then synced to the server asynchronously.
+ * then synced to the server reliably via a retry queue.
+ *
+ * IMPORTANT: Sync never performs implicit DELETEs. If a remote item is absent from the
+ * local array, it is NOT deleted. Deletions must be explicit (user-triggered).
  */
 
 import type { StorageAdapter } from './storage-adapter.js';
 import { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from './local-storage.js';
+import { syncItems, deleteItem, setSyncBaseUrl } from './sync-queue.js';
 
 /** Maps STORAGE_KEYS to API endpoints */
 const KEY_TO_ENDPOINT: Record<string, string> = {
@@ -26,6 +30,7 @@ export class ApiStorageAdapter implements StorageAdapter {
 
   constructor(baseUrl = '') {
     this.baseUrl = baseUrl;
+    setSyncBaseUrl(baseUrl);
   }
 
   async load<T>(key: string, defaultValue: T): Promise<T> {
@@ -66,10 +71,12 @@ export class ApiStorageAdapter implements StorageAdapter {
       return localResult;
     }
 
-    // Sync to API in background (fire-and-forget)
-    this.syncToApi(endpoint, data).catch((err) => {
-      console.warn(`[ApiStorageAdapter] save(${key}): API sync failed`, err);
-    });
+    // Sync to API via SyncQueue (reliable, with retry)
+    if (Array.isArray(data)) {
+      syncItems(endpoint, data as { id?: string }[]).catch((err) => {
+        console.warn(`[ApiStorageAdapter] save(${key}): sync failed`, err);
+      });
+    }
 
     return localResult;
   }
@@ -81,67 +88,16 @@ export class ApiStorageAdapter implements StorageAdapter {
     if (!endpoint) return;
 
     // Note: bulk delete is not standard for our CRUD endpoints.
-    // Individual item deletions are handled at the app level.
+    // Individual item deletions are handled at the app level via deleteItemFromServer().
   }
 
   /**
-   * Sync data to the API. For array-type resources (sources, favorites, etc.),
-   * this compares local and remote state and syncs individual items.
+   * Explicitly delete a single item from the server.
+   * This is the ONLY way to trigger a server-side deletion — sync never deletes implicitly.
    */
-  private async syncToApi<T>(endpoint: string, data: T): Promise<void> {
-    if (!Array.isArray(data)) return;
-
-    const items = data as { id?: string; [key: string]: unknown }[];
-
-    // Get current remote items
-    let remoteItems: { id: string }[] = [];
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        remoteItems = await response.json();
-      }
-    } catch {
-      return; // Can't sync if we can't reach the server
-    }
-
-    const remoteIds = new Set(remoteItems.map(r => r.id));
-    const localIds = new Set(items.filter(i => i.id).map(i => i.id!));
-
-    // Create or update local items
-    for (const item of items) {
-      if (!item.id) continue;
-
-      const method = remoteIds.has(item.id) ? 'PUT' : 'POST';
-      const url = method === 'PUT'
-        ? `${this.baseUrl}${endpoint}/${item.id}`
-        : `${this.baseUrl}${endpoint}`;
-
-      try {
-        await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(item),
-        });
-      } catch {
-        // Ignore individual sync failures
-      }
-    }
-
-    // Delete remote items not in local state (owned only)
-    for (const remote of remoteItems) {
-      if (!localIds.has(remote.id) && (remote as Record<string, unknown>)._owned !== false) {
-        try {
-          await fetch(`${this.baseUrl}${endpoint}/${remote.id}`, {
-            method: 'DELETE',
-            credentials: 'include',
-          });
-        } catch {
-          // Ignore delete failures
-        }
-      }
-    }
+  deleteItemFromServer(key: string, id: string): void {
+    const endpoint = KEY_TO_ENDPOINT[key];
+    if (!endpoint) return;
+    deleteItem(endpoint, id);
   }
 }

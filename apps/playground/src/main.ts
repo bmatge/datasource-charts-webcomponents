@@ -120,7 +120,7 @@ function saveFavorite(): void {
   const favorites = loadFromStorage<FavoriteEntry[]>(STORAGE_KEYS.FAVORITES, []);
 
   const favorite: FavoriteEntry = {
-    id: 'fav-' + Date.now(),
+    id: crypto.randomUUID(),
     name,
     code,
     chartType: 'playground',

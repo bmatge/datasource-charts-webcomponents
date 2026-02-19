@@ -113,6 +113,17 @@ CREATE TABLE IF NOT EXISTS monitoring (
   UNIQUE(component, chart_type, origin)
 );
 
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_sources_owner ON sources(owner_id);
+CREATE INDEX IF NOT EXISTS idx_connections_owner ON connections(owner_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_owner ON favorites(owner_id);
+CREATE INDEX IF NOT EXISTS idx_dashboards_owner ON dashboards(owner_id);
+CREATE INDEX IF NOT EXISTS idx_shares_resource ON shares(resource_type, resource_id);
+CREATE INDEX IF NOT EXISTS idx_shares_target ON shares(target_type, target_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_user ON group_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_monitoring_component ON monitoring(component, origin);
+CREATE INDEX IF NOT EXISTS idx_data_cache_fetched ON data_cache(fetched_at);
+
 -- Schema version (for future migrations)
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY,

@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { checkAuth, logout, onAuthChange, isDbMode } from '@gouv-widgets/shared';
-import type { User } from '@gouv-widgets/shared';
+import { checkAuth, logout, onAuthChange, isDbMode, onSyncStatusChange } from '@gouv-widgets/shared';
+import type { User, SyncStatus } from '@gouv-widgets/shared';
 
 // Side-effect import: register <auth-modal> custom element
 import './auth-modal.js';
@@ -41,7 +41,14 @@ export class AppHeader extends LitElement {
   @state()
   private _dbMode = false;
 
+  @state()
+  private _syncStatus: SyncStatus = 'idle';
+
+  @state()
+  private _syncErrorCount = 0;
+
   private _unsubAuth?: () => void;
+  private _unsubSync?: () => void;
 
   // Light DOM pour hériter des styles DSFR
   createRenderRoot() {
@@ -66,16 +73,22 @@ export class AppHeader extends LitElement {
     if (!document.getElementById('app-header-active-style')) {
       const style = document.createElement('style');
       style.id = 'app-header-active-style';
-      style.textContent = `.fr-nav__link[aria-current="page"]{font-weight:700;border-bottom:2px solid var(--border-action-high-blue-france);color:var(--text-action-high-blue-france)}`;
+      style.textContent = `.fr-nav__link[aria-current="page"]{font-weight:700;border-bottom:2px solid var(--border-action-high-blue-france);color:var(--text-action-high-blue-france)}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`;
       document.head.appendChild(style);
     }
     // Check auth state
     this._initAuth();
+    // Subscribe to sync status
+    this._unsubSync = onSyncStatusChange((status, errorCount) => {
+      this._syncStatus = status;
+      this._syncErrorCount = errorCount;
+    });
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this._unsubAuth?.();
+    this._unsubSync?.();
   }
 
   private async _initAuth(): Promise<void> {
@@ -112,6 +125,33 @@ export class AppHeader extends LitElement {
       { id: 'dashboard', label: 'Dashboard', href: 'apps/dashboard/index.html' },
       { id: 'monitoring', label: 'Monitoring', href: 'apps/monitoring/index.html' },
     ];
+  }
+
+  private _renderSyncStatus() {
+    if (!this._dbMode) return nothing;
+    if (this._syncStatus === 'idle' && this._syncErrorCount === 0) return nothing;
+
+    if (this._syncStatus === 'syncing') {
+      return html`
+        <li>
+          <span class="fr-btn fr-btn--tertiary-no-outline" style="pointer-events:none;color:var(--text-mention-grey);" title="Synchronisation en cours...">
+            <i class="ri-refresh-line" style="animation:spin 1s linear infinite;"></i>
+          </span>
+        </li>
+      `;
+    }
+
+    if (this._syncStatus === 'error' || this._syncErrorCount > 0) {
+      return html`
+        <li>
+          <span class="fr-btn fr-btn--tertiary-no-outline" style="pointer-events:none;color:var(--text-default-warning);" title="Erreurs de synchronisation (${this._syncErrorCount})">
+            <i class="ri-error-warning-line"></i>
+          </span>
+        </li>
+      `;
+    }
+
+    return nothing;
   }
 
   private _renderAuthButton() {
@@ -195,6 +235,7 @@ export class AppHeader extends LitElement {
                         Favoris${this._favCount > 0 ? html` <span class="fr-badge fr-badge--sm fr-badge--info">${this._favCount}</span>` : nothing}
                       </a>
                     </li>
+                    ${this._renderSyncStatus()}
                     ${this._renderAuthButton()}
                   </ul>
                 </div>

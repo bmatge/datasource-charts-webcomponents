@@ -93,14 +93,14 @@ export async function checkAuth(): Promise<AuthState> {
 }
 
 async function _doCheckAuth(): Promise<AuthState> {
-  const dbAvailable = await isDbMode();
-
-  if (!dbAvailable) {
-    setState({ user: null, isAuthenticated: false, isLoading: false });
-    return _state;
-  }
-
   try {
+    const dbAvailable = await isDbMode();
+
+    if (!dbAvailable) {
+      setState({ user: null, isAuthenticated: false, isLoading: false });
+      return _state;
+    }
+
     const res = await apiFetch('/api/auth/me');
     if (res.ok) {
       const data = await res.json();
@@ -109,6 +109,8 @@ async function _doCheckAuth(): Promise<AuthState> {
       setState({ user: null, isAuthenticated: false, isLoading: false });
     }
   } catch {
+    // Invalidate promise cache on failure so next caller can retry
+    _checkAuthPromise = null;
     setState({ user: null, isAuthenticated: false, isLoading: false });
   }
 

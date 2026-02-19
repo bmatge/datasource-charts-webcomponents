@@ -22,11 +22,11 @@ import { switchExplorerTab, renderSources } from './connection-manager.js';
 // ============================================================
 
 export async function gristFetch(endpoint: string): Promise<unknown> {
-  if (state.selectedConnection === null) {
+  if (state.selectedConnectionId === null) {
     throw new Error('Aucune connexion selectionnee');
   }
 
-  const conn = state.connections[state.selectedConnection];
+  const conn = state.connections.find(c => c.id === state.selectedConnectionId);
   const connUrl = (conn as Record<string, unknown>).url as string | undefined;
   if (!connUrl) {
     throw new Error('URL du serveur Grist manquante dans la connexion');
@@ -262,8 +262,9 @@ export async function createGristTable(): Promise<void> {
   }
 
   try {
-    if (state.selectedConnection === null) return;
-    const conn = state.connections[state.selectedConnection];
+    if (state.selectedConnectionId === null) return;
+    const conn = state.connections.find(c => c.id === state.selectedConnectionId);
+    if (!conn) return;
 
     const createUrl = getProxyUrl(
       (conn as Record<string, unknown>).url as string,
@@ -326,12 +327,13 @@ export function saveCurrentAsSource(): void {
     !state.selectedDocument ||
     !state.selectedTable ||
     state.tableData.length === 0 ||
-    state.selectedConnection === null
+    state.selectedConnectionId === null
   ) {
     return;
   }
 
-  const conn = state.connections[state.selectedConnection];
+  const conn = state.connections.find(c => c.id === state.selectedConnectionId);
+  if (!conn) return;
   const doc = state.documents.find((d) => d.id === state.selectedDocument);
 
   const source: Source = {
@@ -371,16 +373,17 @@ export async function loadExportDocuments(): Promise<void> {
   const docSelect = document.getElementById('export-document') as HTMLSelectElement | null;
   const docGroup = document.getElementById('export-document-group');
 
-  const connIndex = connSelectEl?.value ?? '';
+  const connId = connSelectEl?.value ?? '';
 
-  if (!connIndex || !docSelect || !docGroup) {
+  if (!connId || !docSelect || !docGroup) {
     if (docGroup) docGroup.style.display = 'none';
     if (docSelect) docSelect.innerHTML = '<option value="">-- Selectionner --</option>';
     updateExportButton();
     return;
   }
 
-  const conn = state.connections[parseInt(connIndex, 10)];
+  const conn = state.connections.find(c => c.id === connId);
+  if (!conn) return;
 
   try {
     docSelect.innerHTML = '<option value="">Chargement...</option>';
@@ -451,12 +454,12 @@ export function updateExportButton(): void {
   const tableNameEl = document.getElementById('export-table-name') as HTMLInputElement | null;
   const btn = document.getElementById('export-grist-confirm-btn') as HTMLButtonElement | null;
 
-  const connIndex = connEl?.value ?? '';
+  const connId = connEl?.value ?? '';
   const docId = docEl?.value ?? '';
   const tableName = tableNameEl?.value.trim() ?? '';
 
   if (btn) {
-    btn.disabled = !connIndex || !docId || !tableName;
+    btn.disabled = !connId || !docId || !tableName;
   }
 }
 
@@ -481,16 +484,20 @@ export async function exportToGrist(): Promise<void> {
   const docEl = document.getElementById('export-document') as HTMLSelectElement | null;
   const tableNameEl = document.getElementById('export-table-name') as HTMLInputElement | null;
 
-  const connIndex = parseInt(connEl?.value ?? '', 10);
+  const connId = connEl?.value ?? '';
   const docId = docEl?.value ?? '';
   const tableName = tableNameEl?.value.trim() ?? '';
 
-  if ((isNaN(connIndex)) || !docId || !tableName) {
+  if (!connId || !docId || !tableName) {
     toastWarning('Veuillez remplir tous les champs');
     return;
   }
 
-  const conn = state.connections[connIndex];
+  const conn = state.connections.find(c => c.id === connId);
+  if (!conn) {
+    toastWarning('Connexion introuvable');
+    return;
+  }
   const btn = document.getElementById('export-grist-confirm-btn') as HTMLButtonElement | null;
 
   if (btn) {
@@ -571,7 +578,7 @@ export async function exportToGrist(): Promise<void> {
     closeModal('export-grist-modal');
 
     // If we are viewing this connection, refresh
-    if (state.selectedConnection === connIndex && state.selectedDocument === docId) {
+    if (state.selectedConnectionId === connId && state.selectedDocument === docId) {
       await loadTables();
     }
   } catch (error) {
