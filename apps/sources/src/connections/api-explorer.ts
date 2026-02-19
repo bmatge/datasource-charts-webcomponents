@@ -18,9 +18,9 @@ import { renderSources } from './connection-manager.js';
 // ============================================================
 
 export async function loadApiData(): Promise<void> {
-  if (state.selectedConnection === null) return;
+  if (state.selectedConnectionId === null) return;
 
-  const conn = state.connections[state.selectedConnection];
+  const conn = state.connections.find(c => c.id === state.selectedConnectionId);
   if (!conn || conn.type !== 'api') return;
 
   const info = document.getElementById('preview-info');
@@ -197,9 +197,9 @@ export async function loadApiData(): Promise<void> {
 // ============================================================
 
 export function saveApiAsSource(): void {
-  if (state.selectedConnection === null) return;
+  if (state.selectedConnectionId === null) return;
 
-  const conn = state.connections[state.selectedConnection];
+  const conn = state.connections.find(c => c.id === state.selectedConnectionId);
   if (!conn) return;
 
   const source: Source = {

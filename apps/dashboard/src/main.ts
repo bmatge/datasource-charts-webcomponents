@@ -80,10 +80,10 @@ async function loadTemplate(name: string): Promise<void> {
       state.dashboard.layout.columns = 3;
       state.dashboard.layout.rowColumns = { 0: 3, 1: 1 };
       state.dashboard.widgets = [
-        { id: `w-${Date.now()}`, type: 'kpi', title: 'Indicateur 1', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 1' } },
-        { id: `w-${Date.now()+1}`, type: 'kpi', title: 'Indicateur 2', position: { row: 0, col: 1 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 2' } },
-        { id: `w-${Date.now()+2}`, type: 'kpi', title: 'Indicateur 3', position: { row: 0, col: 2 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 3' } },
-        { id: `w-${Date.now()+3}`, type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: crypto.randomUUID(), type: 'kpi', title: 'Indicateur 1', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 1' } },
+        { id: crypto.randomUUID(), type: 'kpi', title: 'Indicateur 2', position: { row: 0, col: 1 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 2' } },
+        { id: crypto.randomUUID(), type: 'kpi', title: 'Indicateur 3', position: { row: 0, col: 2 }, config: { valeur: '', format: 'nombre', icone: '', label: 'KPI 3' } },
+        { id: crypto.randomUUID(), type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
       ];
       break;
     case 'two-charts':
@@ -91,8 +91,8 @@ async function loadTemplate(name: string): Promise<void> {
       state.dashboard.layout.columns = 2;
       state.dashboard.layout.rowColumns = { 0: 2 };
       state.dashboard.widgets = [
-        { id: `w-${Date.now()}`, type: 'chart', title: 'Graphique 1', position: { row: 0, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
-        { id: `w-${Date.now()+1}`, type: 'chart', title: 'Graphique 2', position: { row: 0, col: 1 }, config: { chartType: 'line', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: crypto.randomUUID(), type: 'chart', title: 'Graphique 1', position: { row: 0, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: crypto.randomUUID(), type: 'chart', title: 'Graphique 2', position: { row: 0, col: 1 }, config: { chartType: 'line', labelField: '', valueField: '', palette: 'categorical' } },
       ];
       break;
     case 'full':
@@ -100,10 +100,10 @@ async function loadTemplate(name: string): Promise<void> {
       state.dashboard.layout.columns = 2;
       state.dashboard.layout.rowColumns = { 0: 2, 1: 2 };
       state.dashboard.widgets = [
-        { id: `w-${Date.now()}`, type: 'kpi', title: 'Indicateur', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'Mon KPI' } },
-        { id: `w-${Date.now()+1}`, type: 'text', title: 'Description', position: { row: 0, col: 1 }, config: { content: '<p>Description du dashboard</p>', style: 'callout' } },
-        { id: `w-${Date.now()+2}`, type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
-        { id: `w-${Date.now()+3}`, type: 'table', title: 'Tableau', position: { row: 1, col: 1 }, config: { columns: [], searchable: true, sortable: true } },
+        { id: crypto.randomUUID(), type: 'kpi', title: 'Indicateur', position: { row: 0, col: 0 }, config: { valeur: '', format: 'nombre', icone: '', label: 'Mon KPI' } },
+        { id: crypto.randomUUID(), type: 'text', title: 'Description', position: { row: 0, col: 1 }, config: { content: '<p>Description du dashboard</p>', style: 'callout' } },
+        { id: crypto.randomUUID(), type: 'chart', title: 'Graphique', position: { row: 1, col: 0 }, config: { chartType: 'bar', labelField: '', valueField: '', palette: 'categorical' } },
+        { id: crypto.randomUUID(), type: 'table', title: 'Tableau', position: { row: 1, col: 1 }, config: { columns: [], searchable: true, sortable: true } },
       ];
       break;
   }

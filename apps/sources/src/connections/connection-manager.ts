@@ -38,9 +38,9 @@ export function renderConnections(): void {
     return;
   }
 
-  state.connections.forEach((conn, index) => {
+  state.connections.forEach((conn) => {
     const card = document.createElement('div');
-    card.className = `connection-card ${state.selectedConnection === index ? 'selected' : ''}`;
+    card.className = `connection-card ${state.selectedConnectionId === conn.id ? 'selected' : ''}`;
 
     const typeBadge =
       conn.type === 'api'
@@ -73,21 +73,21 @@ export function renderConnections(): void {
     card.addEventListener('click', (e: Event) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.delete-conn-btn') && !target.closest('.edit-conn-btn')) {
-        selectConnection(index);
+        selectConnection(conn.id);
       }
     });
 
     // Edit button
     card.querySelector('.edit-conn-btn')?.addEventListener('click', (e: Event) => {
       e.stopPropagation();
-      editConnection(index);
+      editConnection(conn.id);
     });
 
     // Delete button
     card.querySelector('.delete-conn-btn')?.addEventListener('click', async (e: Event) => {
       e.stopPropagation();
       if (await confirmDialog(`Supprimer la connexion "${conn.name}" ?`)) {
-        deleteConnection(index);
+        deleteConnection(conn.id);
       }
     });
 
@@ -95,7 +95,7 @@ export function renderConnections(): void {
     card.addEventListener('contextmenu', async (e: Event) => {
       e.preventDefault();
       if (await confirmDialog(`Supprimer la connexion "${conn.name}" ?`)) {
-        deleteConnection(index);
+        deleteConnection(conn.id);
       }
     });
 
@@ -180,11 +180,12 @@ export async function saveGristConnection(name: string): Promise<void> {
 
   const orgs: unknown[] = await response.json();
 
+  const editingConn = state.editingConnectionId
+    ? state.connections.find(c => c.id === state.editingConnectionId)
+    : null;
+
   const connection: StoredConnection = {
-    id:
-      state.editingConnectionIndex !== null
-        ? state.connections[state.editingConnectionIndex].id
-        : Date.now().toString(),
+    id: editingConn ? editingConn.id : crypto.randomUUID(),
     type: 'grist',
     name,
     url,
@@ -196,23 +197,18 @@ export async function saveGristConnection(name: string): Promise<void> {
       : `Connecte (${orgs.length} org${orgs.length > 1 ? 's' : ''})`,
   };
 
-  if (state.editingConnectionIndex !== null) {
-    state.connections[state.editingConnectionIndex] = connection;
+  if (editingConn) {
+    const idx = state.connections.indexOf(editingConn);
+    if (idx >= 0) state.connections[idx] = connection;
   } else {
     state.connections.push(connection);
   }
 
-  const wasEditing = state.editingConnectionIndex;
   saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
   renderConnections();
   closeModal('connection-modal');
   resetConnectionForm();
-
-  if (wasEditing !== null) {
-    selectConnection(wasEditing);
-  } else {
-    selectConnection(state.connections.length - 1);
-  }
+  selectConnection(connection.id);
 }
 
 export async function saveApiConnection(name: string): Promise<void> {
@@ -263,11 +259,12 @@ export async function saveApiConnection(name: string): Promise<void> {
   const isArray = Array.isArray(data);
   const count = isArray ? (data as unknown[]).length : data ? 1 : 0;
 
+  const editingConn = state.editingConnectionId
+    ? state.connections.find(c => c.id === state.editingConnectionId)
+    : null;
+
   const connection: StoredConnection = {
-    id:
-      state.editingConnectionIndex !== null
-        ? state.connections[state.editingConnectionIndex].id
-        : Date.now().toString(),
+    id: editingConn ? editingConn.id : crypto.randomUUID(),
     type: 'api',
     name,
     apiUrl,
@@ -278,10 +275,9 @@ export async function saveApiConnection(name: string): Promise<void> {
     statusText: `Connecte (${count} ${isArray ? 'elements' : 'objet'})`,
   };
 
-  const wasEditing = state.editingConnectionIndex;
-
-  if (state.editingConnectionIndex !== null) {
-    state.connections[state.editingConnectionIndex] = connection;
+  if (editingConn) {
+    const idx = state.connections.indexOf(editingConn);
+    if (idx >= 0) state.connections[idx] = connection;
   } else {
     state.connections.push(connection);
   }
@@ -290,23 +286,18 @@ export async function saveApiConnection(name: string): Promise<void> {
   renderConnections();
   closeModal('connection-modal');
   resetConnectionForm();
-
-  if (wasEditing !== null) {
-    selectConnection(wasEditing);
-  } else {
-    selectConnection(state.connections.length - 1);
-  }
+  selectConnection(connection.id);
 }
 
 // ============================================================
 // Edit / Delete / Select
 // ============================================================
 
-export function editConnection(index: number): void {
-  const conn = state.connections[index];
+export function editConnection(id: string): void {
+  const conn = state.connections.find(c => c.id === id);
   if (!conn) return;
 
-  state.editingConnectionIndex = index;
+  state.editingConnectionId = id;
 
   // Update modal title
   const titleEl = document.querySelector('#connection-modal .modal-header h3');
@@ -372,24 +363,25 @@ export function editConnection(index: number): void {
   openModal('connection-modal');
 }
 
-export function deleteConnection(index: number): void {
-  state.connections.splice(index, 1);
+export function deleteConnection(id: string): void {
+  state.connections = state.connections.filter(c => c.id !== id);
   saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
-  if (state.selectedConnection === index) {
-    state.selectedConnection = null;
+  if (state.selectedConnectionId === id) {
+    state.selectedConnectionId = null;
     showExplorerEmpty();
   }
   renderConnections();
 }
 
-export async function selectConnection(index: number): Promise<void> {
-  state.selectedConnection = index;
+export async function selectConnection(id: string): Promise<void> {
+  state.selectedConnectionId = id;
   state.selectedDocument = null;
   state.selectedTable = null;
   state.previewedSource = null;
   renderConnections();
 
-  const conn = state.connections[index];
+  const conn = state.connections.find(c => c.id === id);
+  if (!conn) return;
   const titleEl = document.getElementById('explorer-title');
   const emptyEl = document.getElementById('explorer-empty');
   const contentEl = document.getElementById('explorer-content');
@@ -426,7 +418,7 @@ export async function selectConnection(index: number): Promise<void> {
 }
 
 export function resetConnectionForm(): void {
-  state.editingConnectionIndex = null;
+  state.editingConnectionId = null;
 
   const nameEl = document.getElementById('conn-name') as HTMLInputElement | null;
   if (nameEl) nameEl.value = '';
@@ -508,7 +500,7 @@ export function showExplorerEmpty(): void {
 }
 
 export function refreshCurrentView(): void {
-  if (state.selectedConnection !== null) {
+  if (state.selectedConnectionId !== null) {
     loadDocuments();
   }
 }
@@ -547,7 +539,7 @@ export function renderSources(): void {
     return;
   }
 
-  state.sources.forEach((source, index) => {
+  state.sources.forEach((source) => {
     const card = document.createElement('div');
     card.className = 'source-card';
 
@@ -572,21 +564,21 @@ export function renderSources(): void {
     card.addEventListener('click', (e: Event) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.delete-source-btn')) {
-        previewSource(index);
+        previewSource(source.id);
       }
     });
 
     card.querySelector('.delete-source-btn')?.addEventListener('click', async (e: Event) => {
       e.stopPropagation();
       if (await confirmDialog(`Supprimer la source "${source.name}" ?`)) {
-        deleteSource(index);
+        deleteSource(source.id);
       }
     });
 
     card.addEventListener('contextmenu', async (e: Event) => {
       e.preventDefault();
       if (await confirmDialog(`Supprimer la source "${source.name}" ?`)) {
-        deleteSource(index);
+        deleteSource(source.id);
       }
     });
 
@@ -598,14 +590,14 @@ export function renderSources(): void {
 // Source CRUD
 // ============================================================
 
-export function deleteSource(index: number): void {
-  state.sources.splice(index, 1);
+export function deleteSource(id: string): void {
+  state.sources = state.sources.filter(s => s.id !== id);
   saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
   renderSources();
 }
 
-export function previewSource(index: number): void {
-  const source = state.sources[index];
+export function previewSource(id: string): void {
+  const source = state.sources.find(s => s.id === id);
   if (!source) return;
 
   state.previewedSource = source;
@@ -669,26 +661,28 @@ export function previewSource(index: number): void {
 }
 
 export function saveAsFavorite(): void {
-  if (!state.previewedSource && state.selectedConnection === null) return;
+  if (!state.previewedSource && state.selectedConnectionId === null) return;
 
   const selectedSourceStr = localStorage.getItem(STORAGE_KEYS.SELECTED_SOURCE);
   if (!selectedSourceStr) return;
 
-  const source = JSON.parse(selectedSourceStr);
-  const existingSources = JSON.parse(localStorage.getItem(STORAGE_KEYS.SOURCES) || '[]');
+  let source: Record<string, unknown>;
+  try {
+    source = JSON.parse(selectedSourceStr);
+  } catch {
+    toastWarning('Erreur de lecture de la source selectionnee.');
+    return;
+  }
 
   // Check if already exists
-  const exists = existingSources.some((s: { id: string }) => s.id === source.id);
+  const exists = state.sources.some((s) => s.id === source.id);
   if (exists) {
     toastWarning('Cette source est deja enregistree.');
     return;
   }
 
-  existingSources.push(source);
-  saveToStorage(STORAGE_KEYS.SOURCES, existingSources);
-
-  // Reload state
-  state.sources = existingSources;
+  state.sources.push(source as unknown as typeof state.sources[0]);
+  saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
   renderSources();
   toastSuccess('Source enregistree !');
 }
@@ -708,9 +702,9 @@ export function openExportGristModal(): void {
   if (!select) return;
 
   select.innerHTML = '<option value="">-- Choisir --</option>';
-  state.connections.forEach((conn, i) => {
+  state.connections.forEach((conn) => {
     if (conn.type === 'grist') {
-      select.innerHTML += `<option value="${i}">${escapeHtml(conn.name)}</option>`;
+      select.innerHTML += `<option value="${conn.id}">${escapeHtml(conn.name)}</option>`;
     }
   });
 
@@ -727,8 +721,8 @@ export function openExportGristModal(): void {
 
 export async function loadExportDocuments(): Promise<void> {
   const selectEl = document.getElementById('export-connection') as HTMLSelectElement | null;
-  const connIndex = Number(selectEl?.value);
-  const conn = state.connections[connIndex];
+  const connId = selectEl?.value ?? '';
+  const conn = state.connections.find(c => c.id === connId);
 
   const docSelect = document.getElementById('export-document') as HTMLSelectElement | null;
   if (!docSelect || !conn || conn.type !== 'grist') return;
@@ -797,10 +791,10 @@ export async function exportToGrist(): Promise<void> {
   const nameEl = document.getElementById('export-table-name') as HTMLInputElement | null;
   const btn = document.getElementById('export-grist-confirm-btn') as HTMLButtonElement | null;
 
-  const connIndex = Number(connEl?.value);
+  const connId = connEl?.value ?? '';
   const docId = docEl?.value ?? '';
   const tableName = nameEl?.value.trim() ?? '';
-  const conn = state.connections[connIndex];
+  const conn = state.connections.find(c => c.id === connId);
 
   if (!conn || !docId || !tableName) return;
 

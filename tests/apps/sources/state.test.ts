@@ -12,13 +12,13 @@ describe('sources state', () => {
     const state = createInitialState();
     expect(state.connections).toEqual([]);
     expect(state.sources).toEqual([]);
-    expect(state.selectedConnection).toBeNull();
+    expect(state.selectedConnectionId).toBeNull();
     expect(state.selectedDocument).toBeNull();
     expect(state.selectedTable).toBeNull();
     expect(state.documents).toEqual([]);
     expect(state.tables).toEqual([]);
     expect(state.tableData).toEqual([]);
-    expect(state.editingConnectionIndex).toBeNull();
+    expect(state.editingConnectionId).toBeNull();
     expect(state.previewedSource).toBeNull();
   });
 
@@ -53,7 +53,7 @@ describe('sources state', () => {
   it('should create independent state instances', () => {
     const state1 = createInitialState();
     const state2 = createInitialState();
-    state1.selectedConnection = 5;
-    expect(state2.selectedConnection).toBeNull();
+    state1.selectedConnectionId = 'test-id';
+    expect(state2.selectedConnectionId).toBeNull();
   });
 });

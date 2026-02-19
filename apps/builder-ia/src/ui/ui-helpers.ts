@@ -83,7 +83,7 @@ export function saveFavorite(): void {
   const favorites = loadFromStorage<Favorite[]>(FAVORITES_KEY, []);
 
   const favorite: Favorite = {
-    id: 'fav-' + Date.now(),
+    id: crypto.randomUUID(),
     name: name,
     code: code,
     chartType: state.chartConfig?.type || 'chart',

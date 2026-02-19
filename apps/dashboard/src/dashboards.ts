@@ -43,7 +43,7 @@ export function confirmSave(): void {
   state.dashboard.updatedAt = new Date().toISOString();
 
   if (!state.dashboard.id) {
-    state.dashboard.id = `dashboard-${Date.now()}`;
+    state.dashboard.id = crypto.randomUUID();
     state.dashboard.createdAt = state.dashboard.updatedAt;
   }
 

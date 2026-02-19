@@ -62,13 +62,15 @@ export type { Source } from '@gouv-widgets/shared';
 export interface SourcesState {
   connections: StoredConnection[];
   sources: Source[];
-  selectedConnection: number | null;
+  /** ID of the currently selected connection (null = none selected) */
+  selectedConnectionId: string | null;
   selectedDocument: string | null;
   selectedTable: string | null;
   documents: GristDocument[];
   tables: GristTable[];
   tableData: GristRecord[] | Record<string, unknown>[];
-  editingConnectionIndex: number | null;
+  /** ID of the connection being edited in the modal (null = creating new) */
+  editingConnectionId: string | null;
   previewedSource: Source | null;
   /** Total record count reported by API (e.g. ODS total_count), -1 if unknown */
   apiTotalCount: number;
@@ -150,13 +152,13 @@ export function createInitialState(): SourcesState {
   return {
     connections: normalizeConnections(loadFromStorage<StoredConnection[]>(STORAGE_KEYS.CONNECTIONS, [])),
     sources: loadFromStorage<Source[]>(STORAGE_KEYS.SOURCES, []).map(migrateSource),
-    selectedConnection: null,
+    selectedConnectionId: null,
     selectedDocument: null,
     selectedTable: null,
     documents: [],
     tables: [],
     tableData: [],
-    editingConnectionIndex: null,
+    editingConnectionId: null,
     previewedSource: null,
     apiTotalCount: -1,
   };
