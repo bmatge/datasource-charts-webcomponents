@@ -301,8 +301,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="15"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="bar"
   label-field="libcom" value-field="taux_global_tfb"
@@ -314,8 +316,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="20"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="line"
   label-field="nom_departement" value-field="nombre_beneficiaires">
@@ -326,8 +330,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="8"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="pie"
   label-field="libcom" value-field="mpoid">
@@ -338,8 +344,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="6"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="radar"
   label-field="nom_region" value-field="nombre_beneficiaires">
@@ -350,8 +358,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="1"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="gauge"
   value-field="taux_global_tfb">
@@ -362,8 +372,9 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="scatter"
   label-field="montant_investissement"
@@ -375,8 +386,10 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="15"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="bar-line"
   label-field="nom_departement"
@@ -390,8 +403,9 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-dsfr-chart source="data" type="map"
   code-field="code_departement" value-field="nombre_beneficiaires"
@@ -403,8 +417,9 @@ Les donnees de la source sont transmises directement au composant de visualisati
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
   <gouv-kpi source="data" valeur="sum:nombre_beneficiaires"
@@ -440,8 +455,9 @@ Les donnees passent par `gouv-normalize` qui nettoie les valeurs (conversion num
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-normalize id="clean" source="data"
   numeric="nombre_beneficiaires, montant_investissement"
@@ -517,8 +533,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-query id="q" source="data"
   group-by="nom_region"
@@ -535,8 +552,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-query id="q" source="data"
   group-by="libreg"
@@ -570,8 +588,9 @@ Les donnees passent par `gouv-query` qui les filtre, regroupe et/ou agrege avant
 
 ```html
 <gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"></gouv-source>
+  api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"></gouv-source>
 
 <gouv-query id="q" source="data"
   group-by="dep"

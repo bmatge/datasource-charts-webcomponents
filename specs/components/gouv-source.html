@@ -186,20 +186,21 @@ where="email:isnull"</pre></div>
             retourne la clause WHERE fusionnee.
           </p>
           <div class="code-block"><pre>&lt;!-- WHERE statique + overlays dynamiques des facettes et recherche --&gt;
-&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-..."
-  where="status:eq:active"
+&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  where="categorie_produit = 'Alimentation'"
   server-side page-size="20"&gt;
 &lt;/gouv-source&gt;
 
 &lt;!-- La recherche ajoute un overlay WHERE via server-search --&gt;
 &lt;gouv-search id="search" source="src"
-  server-search search-template='nom__contains={q}'&gt;
+  server-search&gt;
 &lt;/gouv-search&gt;
 
 &lt;!-- Les facettes ajoutent des overlays WHERE --&gt;
 &lt;gouv-facets id="facets" source="src"
-  fields="region, departement" server-facets&gt;
+  fields="categorie_produit, marque_produit" server-facets&gt;
 &lt;/gouv-facets&gt;</pre></div>
         </section>
 
@@ -244,20 +245,23 @@ where="email:isnull"</pre></div>
         </section>
 
         <section class="demo-section">
-          <h3>Mode URL brute : pagination manuelle (API Tabular)</h3>
+          <h3>Mode URL brute : pagination manuelle</h3>
           <p>
             Avec <code>paginate</code>, chaque changement de page dans un <code>gouv-datalist</code>
-            en aval declenche un nouvel appel API avec <code>?page=N&amp;page_size=M</code>.
+            en aval declenche un nouvel appel API avec les parametres de pagination.
           </p>
           <div class="code-block"><pre>&lt;gouv-source
-  id="maires"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
+  id="browse"
+  api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side
   paginate
   page-size="20"
 &gt;&lt;/gouv-source&gt;
 
-&lt;gouv-datalist source="maires"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle du departement:Departement"
+&lt;gouv-datalist source="browse"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque"
   pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre></div>
           <div class="fr-callout fr-callout--blue-ecume fr-mt-2w">
@@ -316,27 +320,25 @@ where="email:isnull"</pre></div>
         </section>
 
         <section class="demo-section">
-          <h3>Mode adapter : Tabular API (data.gouv.fr)</h3>
+          <h3>Mode adapter : OpenDataSoft (data.economie.gouv.fr)</h3>
           <p>
-            L'adapter Tabular gere la pagination par pages (50 records/page, max 25 000 records)
-            et supporte le groupement et l'agregation server-side.
+            L'adapter ODS gere la pagination, le tri serveur, la recherche full-text et les facettes.
+            Ici un simple datalist pagine.
           </p>
           <div class="code-block"><pre>&lt;gouv-source
-  id="maires"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  id="src-ods"
+  api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side
+  page-size="20"
 &gt;&lt;/gouv-source&gt;
 
-&lt;gouv-query id="top-dept" source="maires"
-  group-by="Libelle du departement"
-  aggregate="Code sexe:count:nb"
-  order-by="nb:desc"
-  limit="10"&gt;
-&lt;/gouv-query&gt;
-
-&lt;gouv-dsfr-chart source="top-dept" type="bar"
-  label-field="Libelle du departement" value-field="nb"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre></div>
+&lt;gouv-datalist source="src-ods"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
+  server-tri
+  pagination="20"&gt;
+&lt;/gouv-datalist&gt;</pre></div>
         </section>
 
         <section class="demo-section">
@@ -374,15 +376,17 @@ where="email:isnull"</pre></div>
             Le <code>gouv-datalist</code> en aval pilote la navigation entre les pages.
           </p>
           <div class="code-block"><pre>&lt;gouv-source
-  id="src"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  id="srv"
+  api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
   server-side
   page-size="20"
 &gt;&lt;/gouv-source&gt;
 
-&lt;gouv-datalist source="src"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom"
+&lt;gouv-datalist source="srv"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque"
+  server-tri
   pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre></div>
         </section>

@@ -20,11 +20,13 @@
   </style>
 </head>
 <body>
-  <!-- Source de donnees brutes (maires de France) -->
+  <!-- Source de donnees brutes (RappelConso) -->
   <gouv-source
     id="demo-raw"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+    api-type="opendatasoft"
+    dataset-id="rappelconso-v2-gtin-trie"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="50">
   </gouv-source>
 
   <!-- Header -->
@@ -96,34 +98,51 @@
           </p>
         </div>
 
-        <!-- Exemple 1 : conversion numerique -->
-        <h2 class="fr-mt-4w">Exemple : conversion numerique + renommage</h2>
-        <p>Les donnees brutes contiennent des populations en string. On les convertit en nombre et on renomme les colonnes.</p>
+        <!-- Exemple 1 : conversion numerique + renommage -->
+        <h2 class="fr-mt-4w">Exemple : trim + renommage</h2>
+        <p>Les donnees brutes RappelConso contiennent des noms de colonnes longs et techniques.
+          On renomme les colonnes pour la lisibilite et on nettoie les espaces superflus.</p>
 
         <gouv-normalize
           id="demo-clean"
           source="demo-raw"
-          numeric-auto
-          trim>
+          trim
+          rename="modeles_ou_references:Produit | categorie_produit:Categorie | marque_produit:Marque | date_publication:Date | motif_rappel:Motif">
         </gouv-normalize>
 
         <div class="fr-grid-row fr-grid-row--gutters fr-mt-2w">
           <div class="fr-col-12 fr-col-md-6">
-            <h3>Donnees brutes</h3>
-            <gouv-datalist source="demo-raw" pagination="5"></gouv-datalist>
+            <h3>Donnees brutes (JSON)</h3>
+            <pre><code>{
+  "modeles_ou_references": " Lot 2024-ABC ",
+  "categorie_produit": "Alimentation",
+  "marque_produit": "Ma Marque",
+  "date_publication": "2024-06-15",
+  "motif_rappel": "Presence de Listeria"
+}</code></pre>
           </div>
           <div class="fr-col-12 fr-col-md-6">
-            <h3>Donnees normalisees</h3>
-            <gouv-datalist source="demo-clean" pagination="5"></gouv-datalist>
+            <h3>Apres normalisation</h3>
+            <pre><code>{
+  "Produit": "Lot 2024-ABC",       <em>// trim + rename</em>
+  "Categorie": "Alimentation",     <em>// rename</em>
+  "Marque": "Ma Marque",           <em>// rename</em>
+  "Date": "2024-06-15",            <em>// rename</em>
+  "Motif": "Presence de Listeria"  <em>// rename</em>
+}</code></pre>
           </div>
         </div>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-source id="raw" url="..." transform="data"&gt;&lt;/gouv-source&gt;
+        <pre><code>&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="50"&gt;
+&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
-  numeric-auto
-  trim&gt;
+  trim
+  rename="modeles_ou_references:Produit | categorie_produit:Categorie | marque_produit:Marque | date_publication:Date | motif_rappel:Motif"&gt;
 &lt;/gouv-normalize&gt;
 
 &lt;!-- Les donnees normalisees sont pretes pour query/chart --&gt;

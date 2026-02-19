@@ -5,17 +5,17 @@ var a = (r, s) => Xr(r, "name", { value: s, configurable: !0 });
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const be = globalThis, pi = be.ShadowRoot && (be.ShadyCSS === void 0 || be.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ii = Symbol(), Hi = /* @__PURE__ */ new WeakMap();
+const be = globalThis, Ii = be.ShadowRoot && (be.ShadyCSS === void 0 || be.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Wi = Symbol(), Hi = /* @__PURE__ */ new WeakMap();
 var it;
 let ZM = (it = class {
   constructor(s, t, e) {
-    if (this._$cssResult$ = !0, e !== Ii) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, e !== Wi) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = s, this.t = t;
   }
   get styleSheet() {
     let s = this.o;
     const t = this.t;
-    if (pi && s === void 0) {
+    if (Ii && s === void 0) {
       const e = t !== void 0 && t.length === 1;
       e && (s = Hi.get(t)), s === void 0 && ((this.o = s = new CSSStyleSheet()).replaceSync(this.cssText), e && Hi.set(t, s));
     }
@@ -25,20 +25,20 @@ let ZM = (it = class {
     return this.cssText;
   }
 }, a(it, "n"), it);
-const gr = /* @__PURE__ */ a((r) => new ZM(typeof r == "string" ? r : r + "", void 0, Ii), "r$4"), PM = /* @__PURE__ */ a((r, ...s) => {
+const gr = /* @__PURE__ */ a((r) => new ZM(typeof r == "string" ? r : r + "", void 0, Wi), "r$4"), PM = /* @__PURE__ */ a((r, ...s) => {
   const t = r.length === 1 ? r[0] : s.reduce((e, i, M) => e + ((n) => {
     if (n._$cssResult$ === !0) return n.cssText;
     if (typeof n == "number") return n;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + n + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(i) + r[M + 1], r[0]);
-  return new ZM(t, r, Ii);
+  return new ZM(t, r, Wi);
 }, "i$3"), jr = /* @__PURE__ */ a((r, s) => {
-  if (pi) r.adoptedStyleSheets = s.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+  if (Ii) r.adoptedStyleSheets = s.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of s) {
     const e = document.createElement("style"), i = be.litNonce;
     i !== void 0 && e.setAttribute("nonce", i), e.textContent = t.cssText, r.appendChild(e);
   }
-}, "S$1"), qi = pi ? (r) => r : (r) => r instanceof CSSStyleSheet ? ((s) => {
+}, "S$1"), qi = Ii ? (r) => r : (r) => r instanceof CSSStyleSheet ? ((s) => {
   let t = "";
   for (const e of s.cssRules) t += e.cssText;
   return gr(t);
@@ -48,7 +48,7 @@ const gr = /* @__PURE__ */ a((r) => new ZM(typeof r == "string" ? r : r + "", vo
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Cr, defineProperty: Or, getOwnPropertyDescriptor: Er, getOwnPropertyNames: mr, getOwnPropertySymbols: vr, getPrototypeOf: _r } = Object, Es = globalThis, Ki = Es.trustedTypes, Ur = Ki ? Ki.emptyScript : "", me = Es.reactiveElementPolyfillSupport, Jt = /* @__PURE__ */ a((r, s) => r, "d$1"), Se = { toAttribute(r, s) {
+const { is: Cr, defineProperty: Or, getOwnPropertyDescriptor: Er, getOwnPropertyNames: mr, getOwnPropertySymbols: vr, getPrototypeOf: _r } = Object, Es = globalThis, Ki = Es.trustedTypes, Ur = Ki ? Ki.emptyScript : "", ve = Es.reactiveElementPolyfillSupport, Jt = /* @__PURE__ */ a((r, s) => r, "d$1"), Se = { toAttribute(r, s) {
   switch (s) {
     case Boolean:
       r = r ? Ur : null;
@@ -76,7 +76,7 @@ const { is: Cr, defineProperty: Or, getOwnPropertyDescriptor: Er, getOwnProperty
       }
   }
   return t;
-} }, Wi = /* @__PURE__ */ a((r, s) => !Cr(r, s), "f$1"), sM = { attribute: !0, type: String, converter: Se, reflect: !1, useDefault: !1, hasChanged: Wi };
+} }, fi = /* @__PURE__ */ a((r, s) => !Cr(r, s), "f$1"), sM = { attribute: !0, type: String, converter: Se, reflect: !1, useDefault: !1, hasChanged: fi };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), Es.litPropertyMetadata ?? (Es.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 var Mt;
 let st = (Mt = class extends HTMLElement {
@@ -206,7 +206,7 @@ let st = (Mt = class extends HTMLElement {
     var n;
     if (s !== void 0) {
       const L = this.constructor;
-      if (i === !1 && (M = this[s]), e ?? (e = L.getPropertyOptions(s)), !((e.hasChanged ?? Wi)(M, t) || e.useDefault && e.reflect && M === ((n = this._$Ej) == null ? void 0 : n.get(s)) && !this.hasAttribute(L._$Eu(s, e)))) return;
+      if (i === !1 && (M = this[s]), e ?? (e = L.getPropertyOptions(s)), !((e.hasChanged ?? fi)(M, t) || e.useDefault && e.reflect && M === ((n = this._$Ej) == null ? void 0 : n.get(s)) && !this.hasAttribute(L._$Eu(s, e)))) return;
       this.C(s, t, e);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -282,17 +282,17 @@ let st = (Mt = class extends HTMLElement {
   firstUpdated(s) {
   }
 }, a(Mt, "y"), Mt);
-st.elementStyles = [], st.shadowRootOptions = { mode: "open" }, st[Jt("elementProperties")] = /* @__PURE__ */ new Map(), st[Jt("finalized")] = /* @__PURE__ */ new Map(), me == null || me({ ReactiveElement: st }), (Es.reactiveElementVersions ?? (Es.reactiveElementVersions = [])).push("2.1.2");
+st.elementStyles = [], st.shadowRootOptions = { mode: "open" }, st[Jt("elementProperties")] = /* @__PURE__ */ new Map(), st[Jt("finalized")] = /* @__PURE__ */ new Map(), ve == null || ve({ ReactiveElement: st }), (Es.reactiveElementVersions ?? (Es.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Rt = globalThis, tM = /* @__PURE__ */ a((r) => r, "i$1"), he = Rt.trustedTypes, eM = he ? he.createPolicy("lit-html", { createHTML: /* @__PURE__ */ a((r) => r, "createHTML") }) : void 0, GM = "$lit$", Os = `lit$${Math.random().toFixed(9).slice(2)}$`, HM = "?" + Os, Vr = `<${HM}>`, Js = document, Bt = /* @__PURE__ */ a(() => Js.createComment(""), "c"), $t = /* @__PURE__ */ a((r) => r === null || typeof r != "object" && typeof r != "function", "a"), fi = Array.isArray, Ar = /* @__PURE__ */ a((r) => fi(r) || typeof (r == null ? void 0 : r[Symbol.iterator]) == "function", "d"), ve = `[ 	
-\f\r]`, vt = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, iM = /-->/g, MM = />/g, As = RegExp(`>|${ve}(?:([^\\s"'>=/]+)(${ve}*=${ve}*(?:[^ 	
+const Rt = globalThis, tM = /* @__PURE__ */ a((r) => r, "i$1"), he = Rt.trustedTypes, eM = he ? he.createPolicy("lit-html", { createHTML: /* @__PURE__ */ a((r) => r, "createHTML") }) : void 0, GM = "$lit$", Os = `lit$${Math.random().toFixed(9).slice(2)}$`, HM = "?" + Os, Vr = `<${HM}>`, Js = document, Bt = /* @__PURE__ */ a(() => Js.createComment(""), "c"), $t = /* @__PURE__ */ a((r) => r === null || typeof r != "object" && typeof r != "function", "a"), Xi = Array.isArray, Ar = /* @__PURE__ */ a((r) => Xi(r) || typeof (r == null ? void 0 : r[Symbol.iterator]) == "function", "d"), _e = `[ 	
+\f\r]`, vt = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, iM = /-->/g, MM = />/g, As = RegExp(`>|${_e}(?:([^\\s"'>=/]+)(${_e}*=${_e}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), rM = /'/g, nM = /"/g, qM = /^(?:script|style|textarea|title)$/i, KM = /* @__PURE__ */ a((r) => (s, ...t) => ({ _$litType$: r, strings: s, values: t }), "x"), z = KM(1), LM = KM(2), Ft = Symbol.for("lit-noChange"), F = Symbol.for("lit-nothing"), aM = /* @__PURE__ */ new WeakMap(), Qs = Js.createTreeWalker(Js, 129);
 function sr(r, s) {
-  if (!fi(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  if (!Xi(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return eM !== void 0 ? eM.createHTML(s) : s;
 }
 a(sr, "V");
@@ -321,7 +321,7 @@ const Qr = /* @__PURE__ */ a((r, s) => {
       if (i.nodeType === 1) {
         if (i.hasAttributes()) for (const c of i.getAttributeNames()) if (c.endsWith(GM)) {
           const N = o[n++], T = i.getAttribute(c).split(Os), x = /([.?@])?(.*)/.exec(N);
-          d.push({ type: 1, index: M, name: x[2], strings: T, ctor: x[1] === "." ? qe : x[1] === "?" ? Ke : x[1] === "@" ? si : pt }), i.removeAttribute(c);
+          d.push({ type: 1, index: M, name: x[2], strings: T, ctor: x[1] === "." ? Ke : x[1] === "?" ? si : x[1] === "@" ? ti : pt }), i.removeAttribute(c);
         } else c.startsWith(Os) && (d.push({ type: 6, index: M }), i.removeAttribute(c));
         if (qM.test(i.tagName)) {
           const c = i.textContent.split(Os), N = c.length - 1;
@@ -371,7 +371,7 @@ const _i = class _i {
     for (; d !== void 0; ) {
       if (n === d.index) {
         let l;
-        d.type === 2 ? l = new Pt(M, M.nextSibling, this, s) : d.type === 1 ? l = new d.ctor(M, d.name, d.strings, this, s) : d.type === 6 && (l = new ti(M, this, s)), this._$AV.push(l), d = e[++L];
+        d.type === 2 ? l = new Pt(M, M.nextSibling, this, s) : d.type === 1 ? l = new d.ctor(M, d.name, d.strings, this, s) : d.type === 6 && (l = new ei(M, this, s)), this._$AV.push(l), d = e[++L];
       }
       n !== (d == null ? void 0 : d.index) && (M = Qs.nextNode(), n++);
     }
@@ -383,7 +383,7 @@ const _i = class _i {
   }
 };
 a(_i, "R");
-let He = _i;
+let qe = _i;
 const Oe = class Oe {
   get _$AU() {
     var s;
@@ -420,7 +420,7 @@ const Oe = class Oe {
     const { values: t, _$litType$: e } = s, i = typeof e == "number" ? this._$AC(s) : (e.el === void 0 && (e.el = Zt.createElement(sr(e.h, e.h[0]), this.options)), e);
     if (((M = this._$AH) == null ? void 0 : M._$AD) === i) this._$AH.p(t);
     else {
-      const n = new He(i, this), L = n.u(this.options);
+      const n = new qe(i, this), L = n.u(this.options);
       n.p(t), this.T(L), this._$AH = n;
     }
   }
@@ -429,7 +429,7 @@ const Oe = class Oe {
     return t === void 0 && aM.set(s.strings, t = new Zt(s)), t;
   }
   k(s) {
-    fi(this._$AH) || (this._$AH = [], this._$AR());
+    Xi(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let e, i = 0;
     for (const M of s) i === t.length ? t.push(e = new Oe(this.O(Bt()), this.O(Bt()), this, this.options)) : e = t[i], e._$AI(M), i++;
@@ -485,7 +485,7 @@ const Vi = class Vi extends pt {
   }
 };
 a(Vi, "I");
-let qe = Vi;
+let Ke = Vi;
 const Ai = class Ai extends pt {
   constructor() {
     super(...arguments), this.type = 4;
@@ -495,7 +495,7 @@ const Ai = class Ai extends pt {
   }
 };
 a(Ai, "L");
-let Ke = Ai;
+let si = Ai;
 const Qi = class Qi extends pt {
   constructor(s, t, e, i, M) {
     super(s, t, e, i, M), this.type = 5;
@@ -511,7 +511,7 @@ const Qi = class Qi extends pt {
   }
 };
 a(Qi, "z");
-let si = Qi;
+let ti = Qi;
 const ki = class ki {
   constructor(s, t, e) {
     this.element = s, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = e;
@@ -524,9 +524,9 @@ const ki = class ki {
   }
 };
 a(ki, "Z");
-let ti = ki;
-const _e = Rt.litHtmlPolyfillSupport;
-_e == null || _e(Zt, Pt), (Rt.litHtmlVersions ?? (Rt.litHtmlVersions = [])).push("3.3.2");
+let ei = ki;
+const Ue = Rt.litHtmlPolyfillSupport;
+Ue == null || Ue(Zt, Pt), (Rt.litHtmlVersions ?? (Rt.litHtmlVersions = [])).push("3.3.2");
 const kr = /* @__PURE__ */ a((r, s, t) => {
   const e = (t == null ? void 0 : t.renderBefore) ?? s;
   let i = e._$litPart$;
@@ -570,8 +570,8 @@ a(Yi, "i");
 let Q = Yi;
 var $M;
 Q._$litElement$ = !0, Q.finalized = !0, ($M = Ys.litElementHydrateSupport) == null || $M.call(Ys, { LitElement: Q });
-const Ue = Ys.litElementPolyfillSupport;
-Ue == null || Ue({ LitElement: Q });
+const Ve = Ys.litElementPolyfillSupport;
+Ve == null || Ve({ LitElement: Q });
 (Ys.litElementVersions ?? (Ys.litElementVersions = [])).push("4.2.2");
 /**
  * @license
@@ -588,7 +588,7 @@ const ss = /* @__PURE__ */ a((r) => (s, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Yr = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged: Wi }, Jr = /* @__PURE__ */ a((r = Yr, s, t) => {
+const Yr = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged: fi }, Jr = /* @__PURE__ */ a((r = Yr, s, t) => {
   const { kind: e, metadata: i } = t;
   let M = globalThis.litPropertyMetadata.get(i);
   if (M === void 0 && globalThis.litPropertyMetadata.set(i, M = /* @__PURE__ */ new Map()), e === "setter" && ((r = Object.create(r)).wrapped = !0), M.set(t.name, r), e === "accessor") {
@@ -657,10 +657,10 @@ function u0(r, s, t) {
   return e !== void 0 ? e : t;
 }
 a(u0, "getByPathOrDefault");
-function ei(r) {
+function ii(r) {
   return r ? String(r).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "";
 }
-a(ei, "escapeHtml");
+a(ii, "escapeHtml");
 function lM(r, s = !1) {
   if (typeof r == "number")
     return isNaN(r) ? s ? null : 0 : r;
@@ -690,8 +690,8 @@ function Br(r) {
   return !r || typeof r != "string" || ["N/A", "null", "undefined", "00", ""].includes(r) ? !1 : !!(r === "2A" || r === "2B" || /^97[1-6]$/.test(r) || /^(0[1-9]|[1-8]\d|9[0-5])$/.test(r));
 }
 a(Br, "isValidDeptCode");
-const Xi = "https://chartsbuilder.matge.com", Ve = {
-  baseUrl: Xi,
+const gi = "https://chartsbuilder.matge.com", Ae = {
+  baseUrl: gi,
   endpoints: {
     grist: "/grist-proxy",
     gristGouv: "/grist-gouv-proxy",
@@ -711,24 +711,24 @@ function Zr() {
   return typeof window < "u" && "__TAURI__" in window;
 }
 a(Zr, "isTauriMode");
-function gi() {
+function ji() {
   var e;
-  const r = { ...Ve.endpoints };
-  return $r() ? { baseUrl: "", endpoints: r } : Zr() ? { baseUrl: Ve.baseUrl, endpoints: r } : {
-    baseUrl: ((e = import.meta.env) == null ? void 0 : e.VITE_PROXY_URL) || Ve.baseUrl,
+  const r = { ...Ae.endpoints };
+  return $r() ? { baseUrl: "", endpoints: r } : Zr() ? { baseUrl: Ae.baseUrl, endpoints: r } : {
+    baseUrl: ((e = import.meta.env) == null ? void 0 : e.VITE_PROXY_URL) || Ae.baseUrl,
     endpoints: r
   };
 }
-a(gi, "getProxyConfig");
+a(ji, "getProxyConfig");
 function Pr(r) {
   if (!r)
     throw new Error("getProxiedUrl: url is required");
-  const s = gi();
+  const s = ji();
   return r.includes("tabular-api.data.gouv.fr") ? r.replace("https://tabular-api.data.gouv.fr", `${s.baseUrl}${s.endpoints.tabular}`) : r.includes("docs.getgrist.com") ? r.replace("https://docs.getgrist.com", `${s.baseUrl}${s.endpoints.grist}`) : r.includes("grist.numerique.gouv.fr") ? r.replace("https://grist.numerique.gouv.fr", `${s.baseUrl}${s.endpoints.gristGouv}`) : r.includes("albert.api.etalab.gouv.fr") ? r.replace("https://albert.api.etalab.gouv.fr", `${s.baseUrl}${s.endpoints.albert}`) : r;
 }
 a(Pr, "getProxiedUrl");
 function Gr(r, s) {
-  const t = gi();
+  const t = ji();
   return {
     url: `${t.baseUrl}${t.endpoints.corsProxy}`,
     headers: {
@@ -759,9 +759,9 @@ const Hr = {
   isLoading: !0
 };
 let It = { ...Hr }, Ks = null, oe = null, tr = "";
-const ii = /* @__PURE__ */ new Set();
+const Mi = /* @__PURE__ */ new Set();
 function qr() {
-  for (const r of ii)
+  for (const r of Mi)
     try {
       r(It);
     } catch {
@@ -856,8 +856,8 @@ async function Mn() {
 }
 a(Mn, "logout");
 function rn(r) {
-  return ii.add(r), () => {
-    ii.delete(r);
+  return Mi.add(r), () => {
+    Mi.delete(r);
   };
 }
 a(rn, "onAuthChange");
@@ -865,20 +865,20 @@ function le() {
   return It.isAuthenticated;
 }
 a(le, "isAuthenticated");
-const Ae = "gw-migrated";
+const Qe = "gw-migrated";
 async function ir() {
-  if (localStorage.getItem(Ae))
+  if (localStorage.getItem(Qe))
     return;
   const r = ae(Le.SOURCES, []), s = ae(Le.CONNECTIONS, []), t = ae(Le.FAVORITES, []), e = ae(Le.DASHBOARDS, []);
   if (!(r.length > 0 || s.length > 0 || t.length > 0 || e.length > 0)) {
-    localStorage.setItem(Ae, "1");
+    localStorage.setItem(Qe, "1");
     return;
   }
   try {
     (await te("/api/migrate", {
       method: "POST",
       body: JSON.stringify({ sources: r, connections: s, favorites: t, dashboards: e })
-    })).ok && (localStorage.setItem(Ae, "1"), console.info("[auth] localStorage data migrated to server"));
+    })).ok && (localStorage.setItem(Qe, "1"), console.info("[auth] localStorage data migrated to server"));
   } catch {
     console.warn("[auth] Migration failed, will retry on next login");
   }
@@ -1210,13 +1210,13 @@ ee(rr);
 ee(nr);
 ee(ar);
 ee(Lr);
-const yM = `${Xi}/beacon`, xM = /* @__PURE__ */ new Set();
+const yM = `${gi}/beacon`, xM = /* @__PURE__ */ new Set();
 function us(r, s) {
   const t = `${r}:${s || ""}`;
   if (xM.has(t) || (xM.add(t), typeof window > "u"))
     return;
   const e = window.location.hostname;
-  if (e === "localhost" || e === "127.0.0.1" || e === new URL(Xi).hostname)
+  if (e === "localhost" || e === "127.0.0.1" || e === new URL(gi).hostname)
     return;
   const i = new URLSearchParams();
   if (i.set("c", r), s && i.set("t", s), i.set("r", window.location.origin), typeof window < "u" && window.__gwDbMode === !0)
@@ -1283,13 +1283,13 @@ const Ji = class Ji {
   }
 };
 a(Ji, "GenericAdapter");
-let Mi = Ji;
-function Qe(r, s) {
+let ri = Ji;
+function ke(r, s) {
   const t = {};
   return s && (t.signal = s), r.headers && Object.keys(r.headers).length > 0 && (t.headers = r.headers), t;
 }
-a(Qe, "buildFetchOptions$3");
-const de = 100, ke = 10, Ri = class Ri {
+a(ke, "buildFetchOptions$3");
+const de = 100, Ye = 10, Ri = class Ri {
   constructor() {
     this.type = "opendatasoft", this.capabilities = {
       serverFetch: !0,
@@ -1311,13 +1311,13 @@ const de = 100, ke = 10, Ri = class Ri {
    * - limit = 0 : fetch TOUS les records disponibles (via total_count)
    */
   async fetchAll(s, t) {
-    const i = s.limit <= 0 ? ke * de : s.limit, M = de;
+    const i = s.limit <= 0 ? Ye * de : s.limit, M = de;
     let n = [], L = 0, d = -1;
-    for (let l = 0; l < ke; l++) {
+    for (let l = 0; l < Ye; l++) {
       const o = i - n.length;
       if (o <= 0)
         break;
-      const c = this.buildUrl(s, Math.min(M, o), L), N = await fetch(c, Qe(s, t));
+      const c = this.buildUrl(s, Math.min(M, o), L), N = await fetch(c, ke(s, t));
       if (!N.ok)
         throw new Error(`HTTP ${N.status}: ${N.statusText}`);
       const T = await N.json(), x = T.results || [];
@@ -1325,7 +1325,7 @@ const de = 100, ke = 10, Ri = class Ri {
         break;
       L += x.length;
     }
-    return d >= 0 && n.length < d && n.length < i && console.warn(`gouv-query: pagination incomplete - ${n.length}/${d} resultats recuperes (limite de securite: ${ke} pages de ${de})`), {
+    return d >= 0 && n.length < d && n.length < i && console.warn(`gouv-query: pagination incomplete - ${n.length}/${d} resultats recuperes (limite de securite: ${Ye} pages de ${de})`), {
       data: n,
       totalCount: d >= 0 ? d : n.length,
       needsClientProcessing: !1
@@ -1335,7 +1335,7 @@ const de = 100, ke = 10, Ri = class Ri {
    * Fetch une seule page en mode server-side.
    */
   async fetchPage(s, t, e) {
-    const i = this.buildServerSideUrl(s, t), M = await fetch(i, Qe(s, e));
+    const i = this.buildServerSideUrl(s, t), M = await fetch(i, ke(s, e));
     if (!M.ok)
       throw new Error(`HTTP ${M.status}: ${M.statusText}`);
     const n = await M.json(), L = n.results || [], d = typeof n.total_count == "number" ? n.total_count : 0;
@@ -1383,7 +1383,7 @@ const de = 100, ke = 10, Ri = class Ri {
     for (const o of t)
       n.searchParams.append("facet", o);
     e && n.searchParams.set("where", e);
-    const L = await fetch(n.toString(), Qe(s, i));
+    const L = await fetch(n.toString(), ke(s, i));
     if (!L.ok)
       throw new Error(`HTTP ${L.status}: ${L.statusText}`);
     const d = await L.json(), l = [];
@@ -1446,13 +1446,13 @@ const de = 100, ke = 10, Ri = class Ri {
   }
 };
 a(Ri, "OpenDataSoftAdapter");
-let ri = Ri;
+let ni = Ri;
 function zM(r, s) {
   const t = {};
   return s && (t.signal = s), r.headers && Object.keys(r.headers).length > 0 && (t.headers = r.headers), t;
 }
 a(zM, "buildFetchOptions$2");
-const ce = 50, Ye = 500, Bi = class Bi {
+const ce = 50, Je = 500, Bi = class Bi {
   constructor() {
     this.type = "tabular", this.capabilities = {
       serverFetch: !0,
@@ -1473,9 +1473,9 @@ const ce = 50, Ye = 500, Bi = class Bi {
    */
   async fetchAll(s, t) {
     var l;
-    const e = s.limit <= 0, i = e ? Ye * ce : s.limit;
+    const e = s.limit <= 0, i = e ? Je * ce : s.limit;
     let M = [], n = -1, L = 1;
-    for (let o = 0; o < Ye && !(i - M.length <= 0); o++) {
+    for (let o = 0; o < Je && !(i - M.length <= 0); o++) {
       const N = this.buildUrl(s, ce, L), T = await fetch(N, zM(s, t));
       if (!T.ok)
         throw new Error(`HTTP ${T.status}: ${T.statusText}`);
@@ -1491,7 +1491,7 @@ const ce = 50, Ye = 500, Bi = class Bi {
       if (!w || n >= 0 && M.length >= n || u.length < ce)
         break;
     }
-    !e && M.length > i && (M = M.slice(0, i)), n >= 0 && M.length < n && M.length < i && console.warn(`gouv-query: pagination incomplete - ${M.length}/${n} resultats recuperes (limite de securite: ${Ye} pages de ${ce})`);
+    !e && M.length > i && (M = M.slice(0, i)), n >= 0 && M.length < n && M.length < i && console.warn(`gouv-query: pagination incomplete - ${M.length}/${n} resultats recuperes (limite de securite: ${Je} pages de ${ce})`);
     const d = !!(s.groupBy || s.aggregate);
     return {
       data: M,
@@ -1604,12 +1604,12 @@ const ce = 50, Ye = 500, Bi = class Bi {
   _getBaseUrl(s) {
     if (s.baseUrl)
       return s.baseUrl;
-    const t = gi();
+    const t = ji();
     return `${t.baseUrl}${t.endpoints.tabular}`;
   }
 };
 a(Bi, "TabularAdapter");
-let ni = Bi;
+let Li = Bi;
 function _t(r, s) {
   const t = {};
   return s && (t.signal = s), r.headers && Object.keys(r.headers).length > 0 && (t.headers = r.headers), t;
@@ -2047,8 +2047,8 @@ const $i = class $i {
   }
 };
 a($i, "GristAdapter");
-let Li = $i;
-const wM = "https://api.insee.fr/melodi", bM = 1e3, Je = 100;
+let ai = $i;
+const wM = "https://api.insee.fr/melodi", bM = 1e3, Re = 100;
 function uM(r, s) {
   const t = {};
   return s && (t.signal = s), r.headers && Object.keys(r.headers).length > 0 && (t.headers = r.headers), t;
@@ -2076,9 +2076,9 @@ const Zi = class Zi {
    */
   async fetchAll(s, t) {
     var d;
-    const e = s.pageSize > 0 ? s.pageSize : bM, M = s.limit <= 0 ? Je * e : s.limit;
+    const e = s.pageSize > 0 ? s.pageSize : bM, M = s.limit <= 0 ? Re * e : s.limit;
     let n = [], L = -1;
-    for (let l = 1; l <= Je; l++) {
+    for (let l = 1; l <= Re; l++) {
       const o = M - n.length;
       if (o <= 0)
         break;
@@ -2089,7 +2089,7 @@ const Zi = class Zi {
       if (n = n.concat(w), x.paging && typeof x.paging.count == "number" && (L = x.paging.count), ((d = x.paging) == null ? void 0 : d.isLast) === !0 || L >= 0 && n.length >= L || u.length < c)
         break;
     }
-    return L >= 0 && n.length < L && n.length < M && console.warn(`gouv-source[insee]: pagination incomplete - ${n.length}/${L} resultats (limite: ${Je} pages de ${e})`), {
+    return L >= 0 && n.length < L && n.length < M && console.warn(`gouv-source[insee]: pagination incomplete - ${n.length}/${L} resultats (limite: ${Re} pages de ${e})`), {
       data: n,
       totalCount: L >= 0 ? L : n.length,
       needsClientProcessing: !0
@@ -2211,13 +2211,13 @@ const Zi = class Zi {
   }
 };
 a(Zi, "InseeAdapter");
-let ai = Zi;
+let oi = Zi;
 const or = /* @__PURE__ */ new Map([
-  ["generic", new Mi()],
-  ["opendatasoft", new ri()],
-  ["tabular", new ni()],
-  ["grist", new Li()],
-  ["insee", new ai()]
+  ["generic", new ri()],
+  ["opendatasoft", new ni()],
+  ["tabular", new Li()],
+  ["grist", new ai()],
+  ["insee", new oi()]
 ]);
 function Ln(r) {
   const s = or.get(r);
@@ -2235,31 +2235,31 @@ const cs = {
   ERROR: "gouv-data-error",
   LOADING: "gouv-data-loading",
   SOURCE_COMMAND: "gouv-source-command"
-}, ji = /* @__PURE__ */ new Map(), Ci = /* @__PURE__ */ new Map();
+}, Ci = /* @__PURE__ */ new Map(), Oi = /* @__PURE__ */ new Map();
 function an(r, s) {
-  ji.set(r, s);
+  Ci.set(r, s);
 }
 a(an, "setDataCache");
 function Rs(r) {
-  return ji.get(r);
+  return Ci.get(r);
 }
 a(Rs, "getDataCache");
 function ie(r) {
-  ji.delete(r);
+  Ci.delete(r);
 }
 a(ie, "clearDataCache");
 function Wt(r, s) {
-  Ci.set(r, s);
+  Oi.set(r, s);
 }
 a(Wt, "setDataMeta");
 function ft(r) {
-  return Ci.get(r);
+  return Oi.get(r);
 }
 a(ft, "getDataMeta");
-function Oi(r) {
-  Ci.delete(r);
+function Ei(r) {
+  Oi.delete(r);
 }
-a(Oi, "clearDataMeta");
+a(Ei, "clearDataMeta");
 function Ns(r, s) {
   an(r, s);
   const t = new CustomEvent(cs.LOADED, {
@@ -2270,7 +2270,7 @@ function Ns(r, s) {
   document.dispatchEvent(t);
 }
 a(Ns, "dispatchDataLoaded");
-function Xs(r, s) {
+function gs(r, s) {
   const t = new CustomEvent(cs.ERROR, {
     bubbles: !0,
     composed: !0,
@@ -2278,7 +2278,7 @@ function Xs(r, s) {
   });
   document.dispatchEvent(t);
 }
-a(Xs, "dispatchDataError");
+a(gs, "dispatchDataError");
 function ms(r) {
   const s = new CustomEvent(cs.LOADING, {
     bubbles: !0,
@@ -2288,7 +2288,7 @@ function ms(r) {
   document.dispatchEvent(s);
 }
 a(ms, "dispatchDataLoading");
-function gs(r, s) {
+function ps(r, s) {
   const t = new CustomEvent(cs.SOURCE_COMMAND, {
     bubbles: !0,
     composed: !0,
@@ -2296,8 +2296,8 @@ function gs(r, s) {
   });
   document.dispatchEvent(t);
 }
-a(gs, "dispatchSourceCommand");
-function Ei(r, s) {
+a(ps, "dispatchSourceCommand");
+function Ee(r, s) {
   const t = /* @__PURE__ */ a((e) => {
     const i = e;
     if (i.detail.sourceId === r) {
@@ -2307,7 +2307,7 @@ function Ei(r, s) {
   }, "handler");
   return document.addEventListener(cs.SOURCE_COMMAND, t), () => document.removeEventListener(cs.SOURCE_COMMAND, t);
 }
-a(Ei, "subscribeToSourceCommands");
+a(Ee, "subscribeToSourceCommands");
 function Me(r, s) {
   const t = /* @__PURE__ */ a((M) => {
     const n = M;
@@ -2343,7 +2343,7 @@ let _ = (rt = class extends Q {
     super.connectedCallback(), us("gouv-source", this._isAdapterMode() ? this.apiType : void 0), this._setupRefresh(), this._setupCommandListener();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (ie(this.id), Oi(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (ie(this.id), Ei(this.id));
   }
   updated(s) {
     if (s.has("data") && this.data) {
@@ -2389,7 +2389,7 @@ let _ = (rt = class extends Q {
       const s = JSON.parse(this.data);
       this._data = s, Ns(this.id, this._data);
     } catch (s) {
-      this._error = new Error("Donnees inline invalides (JSON attendu)"), Xs(this.id, this._error), console.error(`gouv-source[${this.id}]: JSON invalide dans data`, s);
+      this._error = new Error("Donnees inline invalides (JSON attendu)"), gs(this.id, this._error), console.error(`gouv-source[${this.id}]: JSON invalide dans data`, s);
     }
   }
   _isAdapterMode() {
@@ -2404,7 +2404,7 @@ let _ = (rt = class extends Q {
     }, this.refresh * 1e3));
   }
   _setupCommandListener() {
-    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !(this.paginate || this.serverSide || this._isAdapterMode())) && (this._unsubscribeCommands = Ei(this.id, (t) => {
+    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !(this.paginate || this.serverSide || this._isAdapterMode())) && (this._unsubscribeCommands = Ee(this.id, (t) => {
       let e = !1;
       if (t.page !== void 0 && t.page !== this._currentPage && (this._currentPage = t.page, e = !0), t.where !== void 0) {
         const i = t.whereKey || "__default";
@@ -2462,7 +2462,7 @@ let _ = (rt = class extends Q {
             return;
           }
         }
-        this._error = e, Xs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
+        this._error = e, gs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, e);
       } finally {
         this._loading = !1;
       }
@@ -2512,7 +2512,7 @@ let _ = (rt = class extends Q {
           return;
         }
       }
-      this._error = i, Xs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, i);
+      this._error = i, gs(this.id, this._error), console.error(`gouv-source[${this.id}]: Erreur de chargement`, i);
     } finally {
       this._loading = !1;
     }
@@ -2689,7 +2689,7 @@ let ts = (nt = class extends Q {
     super.connectedCallback(), us("gouv-query"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._cleanup(), this.id && (ie(this.id), Oi(this.id));
+    super.disconnectedCallback(), this._cleanup(), this.id && (ie(this.id), Ei(this.id));
   }
   updated(s) {
     [
@@ -2735,7 +2735,7 @@ let ts = (nt = class extends Q {
         this._loading = !0, ms(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ a((e) => {
-        this._error = e, this._loading = !1, Xs(this.id, e);
+        this._error = e, this._loading = !1, gs(this.id, e);
       }, "onError")
     });
   }
@@ -2746,7 +2746,7 @@ let ts = (nt = class extends Q {
     try {
       ms(this.id), this._loading = !0, this._processClientSide();
     } catch (s) {
-      this._error = s, Xs(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, s);
+      this._error = s, gs(this.id, this._error), console.error(`gouv-query[${this.id}]: Erreur de traitement`, s);
     } finally {
       this._loading = !1;
     }
@@ -2897,8 +2897,8 @@ let ts = (nt = class extends Q {
    * we forward them to the actual gouv-source.
    */
   _setupCommandForwarding() {
-    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !this.serverSide) && this.source && (this._unsubscribeCommands = Ei(this.id, (s) => {
-      gs(this.source, s);
+    this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), !(!this.id || !this.serverSide) && this.source && (this._unsubscribeCommands = Ee(this.id, (s) => {
+      ps(this.source, s);
     }));
   }
   // --- Public API ---
@@ -3021,7 +3021,7 @@ let zs = (Lt = class extends Q {
     super.connectedCallback(), us("gouv-normalize"), this._initialize();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (ie(this.id), Oi(this.id));
+    super.disconnectedCallback(), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribePageRequests && (this._unsubscribePageRequests(), this._unsubscribePageRequests = null), this.id && (ie(this.id), Ei(this.id));
   }
   updated(s) {
     if (super.updated(s), s.has("source")) {
@@ -3052,10 +3052,10 @@ let zs = (Lt = class extends Q {
         ms(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ a((t) => {
-        Xs(this.id, t);
+        gs(this.id, t);
       }, "onError")
-    }), this._unsubscribePageRequests = Ei(this.id, (t) => {
-      gs(this.source, t);
+    }), this._unsubscribePageRequests = Ee(this.id, (t) => {
+      ps(this.source, t);
     });
   }
   _processData(s) {
@@ -3068,7 +3068,7 @@ let zs = (Lt = class extends Q {
       const d = ft(this.source);
       d && Wt(this.id, d);
     } catch (t) {
-      Xs(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
+      gs(this.id, t), console.error(`gouv-normalize[${this.id}]: Erreur de normalisation`, t);
     }
   }
   _normalizeRow(s, t, e, i, M) {
@@ -3201,7 +3201,7 @@ var J = function(r, s, t, e) {
 }, at;
 let k = (at = class extends Q {
   constructor() {
-    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this.staticValues = "", this.hideCounts = !1, this.cols = "", this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (s) => {
+    super(...arguments), this.source = "", this.fields = "", this.labels = "", this.maxValues = 6, this.disjunctive = "", this.sort = "count", this.searchable = "", this.hideEmpty = !1, this.display = "", this.urlParams = !1, this.urlParamMap = "", this.urlSync = !1, this.serverFacets = !1, this.staticValues = "", this.hideCounts = !1, this.cols = "", this._rawData = [], this._facetGroups = [], this._activeSelections = {}, this._expandedFacets = /* @__PURE__ */ new Set(), this._searchQueries = {}, this._openMultiselectField = null, this._unsubscribe = null, this._unsubscribeCommands = null, this._popstateHandler = null, this._urlParamsApplied = !1, this._onClickOutsideMultiselect = (s) => {
       if (!this._openMultiselectField)
         return;
       const t = s.target, e = this.querySelector(`[data-multiselect="${this._openMultiselectField}"]`);
@@ -3221,7 +3221,7 @@ let k = (at = class extends Q {
     }, window.addEventListener("popstate", this._popstateHandler));
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this.id && ie(this.id);
+    super.disconnectedCallback(), document.removeEventListener("click", this._onClickOutsideMultiselect), this._popstateHandler && (window.removeEventListener("popstate", this._popstateHandler), this._popstateHandler = null), this._unsubscribe && (this._unsubscribe(), this._unsubscribe = null), this._unsubscribeCommands && (this._unsubscribeCommands(), this._unsubscribeCommands = null), this.id && ie(this.id);
   }
   updated(s) {
     if (super.updated(s), s.has("source")) {
@@ -3253,8 +3253,10 @@ let k = (at = class extends Q {
         ms(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ a((e) => {
-        Xs(this.id, e);
+        gs(this.id, e);
       }, "onError")
+    }), this._unsubscribeCommands && this._unsubscribeCommands(), this._unsubscribeCommands = Ee(this.id, (e) => {
+      ps(this.source, e);
     });
   }
   _onData(s) {
@@ -3454,7 +3456,7 @@ let k = (at = class extends Q {
   /** Dispatch facet where command to upstream gouv-query */
   _dispatchFacetCommand() {
     const s = this._buildFacetWhere();
-    gs(this.source, { where: s, whereKey: this.id });
+    ps(this.source, { where: s, whereKey: this.id });
   }
   // --- Filtering ---
   _applyFilters() {
@@ -4020,7 +4022,7 @@ let G = (ot = class extends Q {
         ms(this.id);
       }, "onLoading"),
       onError: /* @__PURE__ */ a((e) => {
-        Xs(this.id, e);
+        gs(this.id, e);
       }, "onError")
     });
   }
@@ -4066,7 +4068,7 @@ let G = (ot = class extends Q {
       const e = s.replace(/"/g, '\\"');
       t = this.searchTemplate.replace(/\{q\}/g, e);
     }
-    gs(this.source, { where: t, whereKey: this.id }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
+    ps(this.source, { where: t, whereKey: this.id }), this.urlSync && this.urlSearchParam && this._syncUrl(), document.dispatchEvent(new CustomEvent("gouv-search-change", {
       bubbles: !0,
       composed: !0,
       detail: {
@@ -4231,6 +4233,12 @@ function Ct(r) {
      */
     onSourceData(i) {
     }
+    /**
+     * Hook appelé quand une erreur survient.
+     * À surcharger pour gérer les erreurs (ex: revert pagination).
+     */
+    onSourceError(i) {
+    }
     connectedCallback() {
       super.connectedCallback(), this._subscribeToSource();
     }
@@ -4254,7 +4262,7 @@ function Ct(r) {
           this._sourceLoading = !0, this.requestUpdate();
         }, "onLoading"),
         onError: /* @__PURE__ */ a((n) => {
-          this._sourceError = n, this._sourceLoading = !1, this.requestUpdate();
+          this._sourceError = n, this._sourceLoading = !1, this.onSourceError(n), this.requestUpdate();
         }, "onError")
       });
     }
@@ -4540,7 +4548,7 @@ var es = function(r, s, t, e) {
 }, dt;
 let H = (dt = class extends Ct(Q) {
   constructor() {
-    super(...arguments), this.source = "", this.colonnes = "", this.recherche = !1, this.filtres = "", this.tri = "", this.pagination = 0, this.export = "", this.urlSync = !1, this.urlPageParam = "page", this.serverTri = !1, this._data = [], this._searchQuery = "", this._activeFilters = {}, this._sort = null, this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._popstateHandler = null;
+    super(...arguments), this.source = "", this.colonnes = "", this.recherche = !1, this.filtres = "", this.tri = "", this.pagination = 0, this.export = "", this.urlSync = !1, this.urlPageParam = "page", this.serverTri = !1, this._data = [], this._searchQuery = "", this._activeFilters = {}, this._sort = null, this._currentPage = 1, this._serverPagination = !1, this._serverTotal = 0, this._serverPageSize = 0, this._previousPage = 1, this._popstateHandler = null;
   }
   // Light DOM pour les styles DSFR
   createRenderRoot() {
@@ -4556,6 +4564,9 @@ let H = (dt = class extends Ct(Q) {
   }
   updated(s) {
     super.updated(s), s.has("tri") && this._initSort();
+  }
+  onSourceError(s) {
+    this._serverPagination && this._data.length > 0 && (this._currentPage = this._previousPage);
   }
   onSourceData(s) {
     this._data = Array.isArray(s) ? s : [];
@@ -4626,7 +4637,7 @@ let H = (dt = class extends Ct(Q) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const e = parseInt(t, 10);
-      !isNaN(e) && e >= 1 && (this._currentPage = e, this.source && gs(this.source, { page: e }));
+      !isNaN(e) && e >= 1 && (this._currentPage = e, this.source && ps(this.source, { page: e }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -4644,12 +4655,12 @@ let H = (dt = class extends Ct(Q) {
   }
   _handleSort(s) {
     var t;
-    ((t = this._sort) == null ? void 0 : t.key) === s ? this._sort = { key: s, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: s, direction: "asc" }, this.serverTri && this.source && gs(this.source, {
+    ((t = this._sort) == null ? void 0 : t.key) === s ? this._sort = { key: s, direction: this._sort.direction === "asc" ? "desc" : "asc" } : this._sort = { key: s, direction: "asc" }, this.serverTri && this.source && ps(this.source, {
       orderBy: `${this._sort.key}:${this._sort.direction}`
     });
   }
   _handlePageChange(s) {
-    this._currentPage = s, this._serverPagination && this.source && gs(this.source, { page: s }), this.urlSync && this._syncPageUrl();
+    this._previousPage = this._currentPage, this._currentPage = s, this._serverPagination && this.source && ps(this.source, { page: s }), this.urlSync && this._syncPageUrl();
   }
   // --- Export ---
   _exportCsv() {
@@ -4661,9 +4672,9 @@ let H = (dt = class extends Ct(Q) {
     d.href = L, d.download = "export.csv", d.click(), URL.revokeObjectURL(L);
   }
   _exportHtml() {
-    const s = this.parseColumns(), t = this.getFilteredData(), e = s.map((l) => `<th>${ei(l.label)}</th>`).join(""), i = t.map((l) => `<tr>${s.map((c) => {
+    const s = this.parseColumns(), t = this.getFilteredData(), e = s.map((l) => `<th>${ii(l.label)}</th>`).join(""), i = t.map((l) => `<tr>${s.map((c) => {
       const N = l[c.key];
-      return `<td>${N == null ? "" : ei(String(N))}</td>`;
+      return `<td>${N == null ? "" : ii(String(N))}</td>`;
     }).join("")}</tr>`).join(`
 `), M = `<!DOCTYPE html>
 <html lang="fr">
@@ -4873,7 +4884,7 @@ ${i}
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement des données...
           </div>
-        ` : this._sourceError ? z`
+        ` : this._sourceError && !(this._serverPagination && this._data.length > 0) ? z`
           <div class="gouv-datalist__error" aria-live="assertive">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
             Erreur: ${this._sourceError.message}
@@ -5026,7 +5037,7 @@ let ls = (ct = class extends Ct(Q) {
     let e = this._templateContent;
     return e = e.replace(/\{\{\{([^}]+)\}\}\}/g, (i, M) => this._resolveExpression(s, M.trim(), t)), e = e.replace(/\{\{([^}]+)\}\}/g, (i, M) => {
       const n = this._resolveExpression(s, M.trim(), t);
-      return ei(n);
+      return ii(n);
     }), e;
   }
   /** Resout une expression : champ, champ.nested, champ|defaut, $index, $uid */
@@ -5058,7 +5069,7 @@ let ls = (ct = class extends Ct(Q) {
     const t = new URLSearchParams(window.location.search).get(this.urlPageParam);
     if (t) {
       const e = parseInt(t, 10);
-      !isNaN(e) && e >= 1 && (this._currentPage = e, this.source && gs(this.source, { page: e }));
+      !isNaN(e) && e >= 1 && (this._currentPage = e, this.source && ps(this.source, { page: e }));
     }
   }
   /** Sync current page to URL via replaceState */
@@ -5069,7 +5080,7 @@ let ls = (ct = class extends Ct(Q) {
     window.history.replaceState(null, "", e);
   }
   _handlePageChange(s) {
-    this._currentPage = s, this._serverPagination && this.source && gs(this.source, { page: s }), this.urlSync && this._syncPageUrl();
+    this._currentPage = s, this._serverPagination && this.source && ps(this.source, { page: s }), this.urlSync && this._syncPageUrl();
   }
   // --- Grid ---
   _getColClass() {
@@ -5521,7 +5532,7 @@ function lr(r) {
   return Array.from(yn(r));
 }
 a(lr, "merge");
-var v = 1e-6, j = Math.PI, ys = j / 2, pM = j / 4, ws = j * 2, Ws = 180 / j, as = j / 180, A = Math.abs, xn = Math.atan, Gt = Math.atan2, Z = Math.cos, P = Math.sin, zn = Math.sign || function(r) {
+var v = 1e-6, j = Math.PI, ys = j / 2, pM = j / 4, ws = j * 2, fs = 180 / j, as = j / 180, A = Math.abs, xn = Math.atan, Gt = Math.atan2, Z = Math.cos, P = Math.sin, zn = Math.sign || function(r) {
   return r > 0 ? 1 : r < 0 ? -1 : 0;
 }, Ps = Math.sqrt;
 function wn(r) {
@@ -5557,10 +5568,10 @@ var IM = {
     for (var t = r.coordinates, e = -1, i = t.length; ++e < i; ) r = t[e], s.point(r[0], r[1], r[2]);
   }, "MultiPoint"),
   LineString: /* @__PURE__ */ a(function(r, s) {
-    oi(r.coordinates, s, 0);
+    li(r.coordinates, s, 0);
   }, "LineString"),
   MultiLineString: /* @__PURE__ */ a(function(r, s) {
-    for (var t = r.coordinates, e = -1, i = t.length; ++e < i; ) oi(t[e], s, 0);
+    for (var t = r.coordinates, e = -1, i = t.length; ++e < i; ) li(t[e], s, 0);
   }, "MultiLineString"),
   Polygon: /* @__PURE__ */ a(function(r, s) {
     fM(r.coordinates, s);
@@ -5572,15 +5583,15 @@ var IM = {
     for (var t = r.geometries, e = -1, i = t.length; ++e < i; ) Fe(t[e], s);
   }, "GeometryCollection")
 };
-function oi(r, s, t) {
+function li(r, s, t) {
   var e = -1, i = r.length - t, M;
   for (s.lineStart(); ++e < i; ) M = r[e], s.point(M[0], M[1], M[2]);
   s.lineEnd();
 }
-a(oi, "streamLine");
+a(li, "streamLine");
 function fM(r, s) {
   var t = -1, e = r.length;
-  for (s.polygonStart(); ++t < e; ) oi(r[t], s, 1);
+  for (s.polygonStart(); ++t < e; ) li(r[t], s, 1);
   s.polygonEnd();
 }
 a(fM, "streamPolygon");
@@ -5588,10 +5599,10 @@ function tt(r, s) {
   r && IM.hasOwnProperty(r.type) ? IM[r.type](r, s) : Fe(r, s);
 }
 a(tt, "geoStream");
-function li(r) {
+function di(r) {
   return [Gt(r[1], r[0]), Ht(r[2])];
 }
-a(li, "spherical");
+a(di, "spherical");
 function Xt(r) {
   var s = r[0], t = r[1], e = Z(t);
   return [e * Z(s), e * P(s), P(t)];
@@ -5605,20 +5616,20 @@ function De(r, s) {
   return [r[1] * s[2] - r[2] * s[1], r[2] * s[0] - r[0] * s[2], r[0] * s[1] - r[1] * s[0]];
 }
 a(De, "cartesianCross");
-function Re(r, s) {
+function Be(r, s) {
   r[0] += s[0], r[1] += s[1], r[2] += s[2];
 }
-a(Re, "cartesianAddInPlace");
+a(Be, "cartesianAddInPlace");
 function Te(r, s) {
   return [r[0] * s, r[1] * s, r[2] * s];
 }
 a(Te, "cartesianScale");
-function di(r) {
+function ci(r) {
   var s = Ps(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
   r[0] /= s, r[1] /= s, r[2] /= s;
 }
-a(di, "cartesianNormalizeInPlace");
-function ci(r, s) {
+a(ci, "cartesianNormalizeInPlace");
+function Ni(r, s) {
   function t(e, i) {
     return e = r(e, i), s(e[0], e[1]);
   }
@@ -5626,14 +5637,14 @@ function ci(r, s) {
     return e = s.invert(e, i), e && r.invert(e[0], e[1]);
   }), t;
 }
-a(ci, "compose");
-function Ni(r, s) {
+a(Ni, "compose");
+function Ti(r, s) {
   return A(r) > j && (r -= Math.round(r / ws) * ws), [r, s];
 }
-a(Ni, "rotationIdentity");
-Ni.invert = Ni;
+a(Ti, "rotationIdentity");
+Ti.invert = Ti;
 function bn(r, s, t) {
-  return (r %= ws) ? s || t ? ci(gM(r), jM(s, t)) : gM(r) : s || t ? jM(s, t) : Ni;
+  return (r %= ws) ? s || t ? Ni(gM(r), jM(s, t)) : gM(r) : s || t ? jM(s, t) : Ti;
 }
 a(bn, "rotateRadians");
 function XM(r) {
@@ -5670,12 +5681,12 @@ function un(r, s, t, e, i, M) {
     var n = Z(s), L = P(s), d = e * t;
     i == null ? (i = s + e * ws, M = s - d / 2) : (i = CM(n, i), M = CM(n, M), (e > 0 ? i < M : i > M) && (i += e * ws));
     for (var l, o = i; e > 0 ? o > M : o < M; o -= d)
-      l = li([n, -L * Z(o), -L * P(o)]), r.point(l[0], l[1]);
+      l = di([n, -L * Z(o), -L * P(o)]), r.point(l[0], l[1]);
   }
 }
 a(un, "circleStream");
 function CM(r, s) {
-  s = Xt(s), s[0] -= r, di(s);
+  s = Xt(s), s[0] -= r, ci(s);
   var t = wn(-s[1]);
   return ((-s[2] < 0 ? -t : t) + ws - v) % ws;
 }
@@ -5758,22 +5769,22 @@ function OM(r) {
   }
 }
 a(OM, "link");
-function Be(r) {
+function $e(r) {
   return A(r[0]) <= j ? r[0] : zn(r[0]) * ((A(r[0]) + j) % ws - j);
 }
-a(Be, "longitude");
+a($e, "longitude");
 function Sn(r, s) {
-  var t = Be(s), e = s[1], i = P(e), M = [P(t), -Z(t), 0], n = 0, L = 0, d = new js();
+  var t = $e(s), e = s[1], i = P(e), M = [P(t), -Z(t), 0], n = 0, L = 0, d = new js();
   i === 1 ? e = ys + v : i === -1 && (e = -ys - v);
   for (var l = 0, o = r.length; l < o; ++l)
     if (N = (c = r[l]).length)
-      for (var c, N, T = c[N - 1], x = Be(T), u = T[1] / 2 + pM, w = P(u), f = Z(u), h = 0; h < N; ++h, x = S, w = X, f = E, T = I) {
-        var I = c[h], S = Be(I), W = I[1] / 2 + pM, X = P(W), E = Z(W), C = S - x, O = C >= 0 ? 1 : -1, V = O * C, p = V > j, ns = w * X;
+      for (var c, N, T = c[N - 1], x = $e(T), u = T[1] / 2 + pM, w = P(u), f = Z(u), h = 0; h < N; ++h, x = S, w = X, f = E, T = I) {
+        var I = c[h], S = $e(I), W = I[1] / 2 + pM, X = P(W), E = Z(W), C = S - x, O = C >= 0 ? 1 : -1, V = O * C, p = V > j, ns = w * X;
         if (d.add(Gt(ns * O * P(V), f * E + ns * Z(V))), n += p ? C + O * ws : C, p ^ x >= t ^ S >= t) {
           var B = De(Xt(T), Xt(I));
-          di(B);
+          ci(B);
           var m = De(M, B);
-          di(m);
+          ci(m);
           var b = (p ^ C >= 0 ? -1 : 1) * Ht(m[2]);
           (e > b || e === b && (B[0] || B[1])) && (L += p ^ C >= 0 ? 1 : -1);
         }
@@ -5933,17 +5944,17 @@ function Wn(r) {
     var T = Xt(o), x = Xt(c), u = [1, 0, 0], w = De(T, x), f = Ne(w, w), h = w[0], I = f - h * h;
     if (!I) return !N && o;
     var S = s * f / I, W = -s * h / I, X = De(u, w), E = Te(u, S), C = Te(w, W);
-    Re(E, C);
+    Be(E, C);
     var O = X, V = Ne(E, O), p = Ne(O, O), ns = V * V - p * (Ne(E, E) - 1);
     if (!(ns < 0)) {
       var B = Ps(ns), m = Te(O, (-V - B) / p);
-      if (Re(m, E), m = li(m), !N) return m;
+      if (Be(m, E), m = di(m), !N) return m;
       var b = o[0], g = c[0], K = o[1], Ls = c[1], ds;
       g < b && (ds = b, b = g, g = ds);
-      var mt = g - b, ps = A(mt - j) < v, Vs = ps || mt < v;
-      if (!ps && Ls < K && (ds = K, K = Ls, Ls = ds), Vs ? ps ? K + Ls > 0 ^ m[1] < (A(m[0] - b) < v ? K : Ls) : K <= m[1] && m[1] <= Ls : mt > j ^ (b <= m[0] && m[0] <= g)) {
-        var Is = Te(O, (-V + B) / p);
-        return Re(Is, E), [m, li(Is)];
+      var mt = g - b, Is = A(mt - j) < v, Vs = Is || mt < v;
+      if (!Is && Ls < K && (ds = K, K = Ls, Ls = ds), Vs ? Is ? K + Ls > 0 ^ m[1] < (A(m[0] - b) < v ? K : Ls) : K <= m[1] && m[1] <= Ls : mt > j ^ (b <= m[0] && m[0] <= g)) {
+        var Ws = Te(O, (-V + B) / p);
+        return Be(Ws, E), [m, di(Ws)];
       }
     }
   }
@@ -6038,8 +6049,8 @@ function Xn(r, s, t, e) {
     a(C, "point");
     function O() {
       for (var b = 0, g = 0, K = T.length; g < K; ++g)
-        for (var Ls = T[g], ds = 1, mt = Ls.length, ps = Ls[0], Vs, Is, ne = ps[0], qs = ps[1]; ds < mt; ++ds)
-          Vs = ne, Is = qs, ps = Ls[ds], ne = ps[0], qs = ps[1], Is <= e ? qs > e && (ne - Vs) * (e - Is) > (qs - Is) * (r - Vs) && ++b : qs <= e && (ne - Vs) * (e - Is) < (qs - Is) * (r - Vs) && --b;
+        for (var Ls = T[g], ds = 1, mt = Ls.length, Is = Ls[0], Vs, Ws, ne = Is[0], qs = Is[1]; ds < mt; ++ds)
+          Vs = ne, Ws = qs, Is = Ls[ds], ne = Is[0], qs = Is[1], Ws <= e ? qs > e && (ne - Vs) * (e - Ws) > (qs - Ws) * (r - Vs) && ++b : qs <= e && (ne - Vs) * (e - Ws) < (qs - Ws) * (r - Vs) && --b;
       return b;
     }
     a(O, "polygonInside");
@@ -6075,32 +6086,32 @@ function Xn(r, s, t, e) {
   };
 }
 a(Xn, "clipRectangle");
-const Ti = /* @__PURE__ */ a((r) => r, "identity$1");
-var $e = new js(), yi = new js(), Tr, yr, xi, zi, fs = {
+const yi = /* @__PURE__ */ a((r) => r, "identity$1");
+var Ze = new js(), xi = new js(), Tr, yr, zi, wi, Xs = {
   point: xs,
   lineStart: xs,
   lineEnd: xs,
   polygonStart: /* @__PURE__ */ a(function() {
-    fs.lineStart = gn, fs.lineEnd = Cn;
+    Xs.lineStart = gn, Xs.lineEnd = Cn;
   }, "polygonStart"),
   polygonEnd: /* @__PURE__ */ a(function() {
-    fs.lineStart = fs.lineEnd = fs.point = xs, $e.add(A(yi)), yi = new js();
+    Xs.lineStart = Xs.lineEnd = Xs.point = xs, Ze.add(A(xi)), xi = new js();
   }, "polygonEnd"),
   result: /* @__PURE__ */ a(function() {
-    var r = $e / 2;
-    return $e = new js(), r;
+    var r = Ze / 2;
+    return Ze = new js(), r;
   }, "result")
 };
 function gn() {
-  fs.point = jn;
+  Xs.point = jn;
 }
 a(gn, "areaRingStart");
 function jn(r, s) {
-  fs.point = xr, Tr = xi = r, yr = zi = s;
+  Xs.point = xr, Tr = zi = r, yr = wi = s;
 }
 a(jn, "areaPointFirst");
 function xr(r, s) {
-  yi.add(zi * r - xi * s), xi = r, zi = s;
+  xi.add(wi * r - zi * s), zi = r, wi = s;
 }
 a(xr, "areaPoint");
 function Cn() {
@@ -6122,7 +6133,7 @@ function On(r, s) {
   r < gt && (gt = r), r > qt && (qt = r), s < pe && (pe = s), s > Ie && (Ie = s);
 }
 a(On, "boundsPoint");
-var wi = 0, bi = 0, At = 0, fe = 0, Xe = 0, et = 0, ui = 0, Si = 0, Qt = 0, zr, wr, Fs, Ds, Ts = {
+var bi = 0, ui = 0, At = 0, fe = 0, Xe = 0, et = 0, Si = 0, hi = 0, Qt = 0, zr, wr, Fs, Ds, Ts = {
   point: Bs,
   lineStart: mM,
   lineEnd: vM,
@@ -6133,12 +6144,12 @@ var wi = 0, bi = 0, At = 0, fe = 0, Xe = 0, et = 0, ui = 0, Si = 0, Qt = 0, zr, 
     Ts.point = Bs, Ts.lineStart = mM, Ts.lineEnd = vM;
   }, "polygonEnd"),
   result: /* @__PURE__ */ a(function() {
-    var r = Qt ? [ui / Qt, Si / Qt] : et ? [fe / et, Xe / et] : At ? [wi / At, bi / At] : [NaN, NaN];
-    return wi = bi = At = fe = Xe = et = ui = Si = Qt = 0, r;
+    var r = Qt ? [Si / Qt, hi / Qt] : et ? [fe / et, Xe / et] : At ? [bi / At, ui / At] : [NaN, NaN];
+    return bi = ui = At = fe = Xe = et = Si = hi = Qt = 0, r;
   }, "result")
 };
 function Bs(r, s) {
-  wi += r, bi += s, ++At;
+  bi += r, ui += s, ++At;
 }
 a(Bs, "centroidPoint");
 function mM() {
@@ -6172,7 +6183,7 @@ function Un(r, s) {
 a(Un, "centroidPointFirstRing");
 function br(r, s) {
   var t = r - Fs, e = s - Ds, i = Ps(t * t + e * e);
-  fe += i * (Fs + r) / 2, Xe += i * (Ds + s) / 2, et += i, i = Ds * r - Fs * s, ui += i * (Fs + r), Si += i * (Ds + s), Qt += i * 3, Bs(Fs = r, Ds = s);
+  fe += i * (Fs + r) / 2, Xe += i * (Ds + s) / 2, et += i, i = Ds * r - Fs * s, Si += i * (Fs + r), hi += i * (Ds + s), Qt += i * 3, Bs(Fs = r, Ds = s);
 }
 a(br, "centroidPointRing");
 function ur(r) {
@@ -6214,23 +6225,23 @@ ur.prototype = {
   }, "point"),
   result: xs
 };
-var hi = new js(), Ze, Sr, hr, kt, Yt, Kt = {
+var Fi = new js(), Pe, Sr, hr, kt, Yt, Kt = {
   point: xs,
   lineStart: /* @__PURE__ */ a(function() {
     Kt.point = Vn;
   }, "lineStart"),
   lineEnd: /* @__PURE__ */ a(function() {
-    Ze && Fr(Sr, hr), Kt.point = xs;
+    Pe && Fr(Sr, hr), Kt.point = xs;
   }, "lineEnd"),
   polygonStart: /* @__PURE__ */ a(function() {
-    Ze = !0;
+    Pe = !0;
   }, "polygonStart"),
   polygonEnd: /* @__PURE__ */ a(function() {
-    Ze = null;
+    Pe = null;
   }, "polygonEnd"),
   result: /* @__PURE__ */ a(function() {
-    var r = +hi;
-    return hi = new js(), r;
+    var r = +Fi;
+    return Fi = new js(), r;
   }, "result")
 };
 function Vn(r, s) {
@@ -6238,7 +6249,7 @@ function Vn(r, s) {
 }
 a(Vn, "lengthPointFirst");
 function Fr(r, s) {
-  kt -= r, Yt -= s, hi.add(Ps(kt * kt + Yt * Yt)), kt = r, Yt = s;
+  kt -= r, Yt -= s, Fi.add(Ps(kt * kt + Yt * Yt)), kt = r, Yt = s;
 }
 a(Fr, "lengthPoint");
 let _M, ge, UM, VM;
@@ -6317,7 +6328,7 @@ function Qn(r, s) {
     return L && (typeof e == "function" && M.pointRadius(+e.apply(this, arguments)), tt(L, i(M))), M.result();
   }
   return a(n, "path"), n.area = function(L) {
-    return tt(L, i(fs)), fs.result();
+    return tt(L, i(Xs)), Xs.result();
   }, n.measure = function(L) {
     return tt(L, i(Kt)), Kt.result();
   }, n.bounds = function(L) {
@@ -6325,7 +6336,7 @@ function Qn(r, s) {
   }, n.centroid = function(L) {
     return tt(L, i(Ts)), Ts.result();
   }, n.projection = function(L) {
-    return arguments.length ? (i = L == null ? (r = null, Ti) : (r = L).stream, n) : r;
+    return arguments.length ? (i = L == null ? (r = null, yi) : (r = L).stream, n) : r;
   }, n.context = function(L) {
     return arguments.length ? (M = L == null ? (s = null, new je(t)) : new ur(s = L), typeof e != "function" && M.pointRadius(e), n) : s;
   }, n.pointRadius = function(L) {
@@ -6344,17 +6355,17 @@ function Qn(r, s) {
 a(Qn, "geoPath");
 function mi(r) {
   return function(s) {
-    var t = new Fi();
+    var t = new Di();
     for (var e in r) t[e] = r[e];
     return t.stream = s, t;
   };
 }
 a(mi, "transformer");
-function Fi() {
+function Di() {
 }
-a(Fi, "TransformStream");
-Fi.prototype = {
-  constructor: Fi,
+a(Di, "TransformStream");
+Di.prototype = {
+  constructor: Di,
   point: /* @__PURE__ */ a(function(r, s) {
     this.stream.point(r, s);
   }, "point"),
@@ -6510,13 +6521,13 @@ function Hn(r) {
 }
 a(Hn, "projection");
 function qn(r) {
-  var s, t = 150, e = 480, i = 250, M = 0, n = 0, L = 0, d = 0, l = 0, o, c = 0, N = 1, T = 1, x = null, u = EM, w = null, f, h, I, S = Ti, W = 0.5, X, E, C, O, V;
+  var s, t = 150, e = 480, i = 250, M = 0, n = 0, L = 0, d = 0, l = 0, o, c = 0, N = 1, T = 1, x = null, u = EM, w = null, f, h, I, S = yi, W = 0.5, X, E, C, O, V;
   function p(b) {
     return C(b[0] * as, b[1] * as);
   }
   a(p, "projection");
   function ns(b) {
-    return b = C.invert(b[0], b[1]), b && [b[0] * Ws, b[1] * Ws];
+    return b = C.invert(b[0], b[1]), b && [b[0] * fs, b[1] * fs];
   }
   a(ns, "invert"), p.stream = function(b) {
     return O && V === b ? O : O = Zn(Pn(o)(u(X(S(V = b)))));
@@ -6525,19 +6536,19 @@ function qn(r) {
   }, p.postclip = function(b) {
     return arguments.length ? (S = b, w = f = h = I = null, m()) : S;
   }, p.clipAngle = function(b) {
-    return arguments.length ? (u = +b ? Wn(x = b * as) : (x = null, EM), m()) : x * Ws;
+    return arguments.length ? (u = +b ? Wn(x = b * as) : (x = null, EM), m()) : x * fs;
   }, p.clipExtent = function(b) {
-    return arguments.length ? (S = b == null ? (w = f = h = I = null, Ti) : Xn(w = +b[0][0], f = +b[0][1], h = +b[1][0], I = +b[1][1]), m()) : w == null ? null : [[w, f], [h, I]];
+    return arguments.length ? (S = b == null ? (w = f = h = I = null, yi) : Xn(w = +b[0][0], f = +b[0][1], h = +b[1][0], I = +b[1][1]), m()) : w == null ? null : [[w, f], [h, I]];
   }, p.scale = function(b) {
     return arguments.length ? (t = +b, B()) : t;
   }, p.translate = function(b) {
     return arguments.length ? (e = +b[0], i = +b[1], B()) : [e, i];
   }, p.center = function(b) {
-    return arguments.length ? (M = b[0] % 360 * as, n = b[1] % 360 * as, B()) : [M * Ws, n * Ws];
+    return arguments.length ? (M = b[0] % 360 * as, n = b[1] % 360 * as, B()) : [M * fs, n * fs];
   }, p.rotate = function(b) {
-    return arguments.length ? (L = b[0] % 360 * as, d = b[1] % 360 * as, l = b.length > 2 ? b[2] % 360 * as : 0, B()) : [L * Ws, d * Ws, l * Ws];
+    return arguments.length ? (L = b[0] % 360 * as, d = b[1] % 360 * as, l = b.length > 2 ? b[2] % 360 * as : 0, B()) : [L * fs, d * fs, l * fs];
   }, p.angle = function(b) {
-    return arguments.length ? (c = b % 360 * as, B()) : c * Ws;
+    return arguments.length ? (c = b % 360 * as, B()) : c * fs;
   }, p.reflectX = function(b) {
     return arguments.length ? (N = b ? -1 : 1, B()) : N < 0;
   }, p.reflectY = function(b) {
@@ -6555,7 +6566,7 @@ function qn(r) {
   };
   function B() {
     var b = kM(t, 0, 0, N, T, c).apply(null, s(M, n)), g = kM(t, e - b[0], i - b[1], N, T, c);
-    return o = bn(L, d, l), E = ci(s, g), C = ci(o, E), X = QM(E, W), m();
+    return o = bn(L, d, l), E = Ni(s, g), C = Ni(o, E), X = QM(E, W), m();
   }
   a(B, "recenter");
   function m() {
@@ -7518,7 +7529,7 @@ async function c0() {
   return ze = await (await fetch(r)).json(), ze;
 }
 a(c0, "loadTopology");
-const Pe = 960, Ge = 500, we = 20, RM = {
+const Ge = 960, He = 500, we = 20, RM = {
   sequentialAscending: [
     "#F5F5FE",
     "#E3E3FD",
@@ -7672,12 +7683,12 @@ let is = (Tt = class extends Ct(Q) {
     return r0(this._topology, s, (t, e) => t !== e);
   }
   _getProjection() {
-    const s = Kn().translate([Pe / 2, Ge / 2]).scale(153);
+    const s = Kn().translate([Ge / 2, He / 2]).scale(153);
     if (this._zoomedContinent) {
       const t = this._getFeatures().filter((e) => JM[e.id] === this._zoomedContinent);
       if (t.length > 0) {
         const e = { type: "FeatureCollection", features: t };
-        s.fitExtent([[we, we], [Pe - we, Ge - we]], e);
+        s.fitExtent([[we, we], [Ge - we, He - we]], e);
       }
     }
     return s;
@@ -7733,7 +7744,7 @@ let is = (Tt = class extends Ct(Q) {
         ` : F}
 
         <svg
-          viewBox="0 0 ${Pe} ${Ge}"
+          viewBox="0 0 ${Ge} ${He}"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label=${this._getAriaLabel()}
@@ -8358,7 +8369,7 @@ var fr = function(r, s, t, e) {
   else for (var L = r.length - 1; L >= 0; L--) (n = r[L]) && (M = (i < 3 ? n(M) : i > 3 ? n(s, t, M) : n(s, t)) || M);
   return i > 3 && M && Object.defineProperty(s, t, M), M;
 }, wt;
-let Di = (wt = class extends Q {
+let pi = (wt = class extends Q {
   constructor() {
     super(...arguments), this.basePath = "";
   }
@@ -8423,10 +8434,10 @@ let Di = (wt = class extends Q {
 }, a(wt, "AppFooter"), wt);
 fr([
   y({ type: String, attribute: "base-path" })
-], Di.prototype, "basePath", void 0);
-Di = fr([
+], pi.prototype, "basePath", void 0);
+pi = fr([
   ss("app-footer")
-], Di);
+], pi);
 var Et = function(r, s, t, e) {
   var i = arguments.length, M = i < 3 ? s : e === null ? e = Object.getOwnPropertyDescriptor(s, t) : e, n;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") M = Reflect.decorate(r, s, t, e);
@@ -8868,7 +8879,7 @@ re([
 jt = re([
   ss("app-layout-demo")
 ], jt);
-var Ee = function(r, s, t, e) {
+var me = function(r, s, t, e) {
   var i = arguments.length, M = i < 3 ? s : e === null ? e = Object.getOwnPropertyDescriptor(s, t) : e, n;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") M = Reflect.decorate(r, s, t, e);
   else for (var L = r.length - 1; L >= 0; L--) (n = r[L]) && (M = (i < 3 ? n(M) : i > 3 ? n(s, t, M) : n(s, t)) || M);
@@ -8906,12 +8917,21 @@ let se = (St = class extends Q {
     const i = s.href;
     if (e && i === t + e || i === t || e && i === e)
       return s.id;
-    if (s.children)
+    if (s.children) {
       for (const M of s.children) {
         const n = this._findMatchingItem(M, t, e);
         if (n)
           return n;
       }
+      if (!e) {
+        const M = s.children.find((n) => {
+          const [L] = (n.href || "").split("#");
+          return L === t;
+        });
+        if (M)
+          return M.id;
+      }
+    }
     return null;
   }
   _isActive(s, t) {
@@ -8998,16 +9018,16 @@ let se = (St = class extends Q {
     `;
   }
 }, a(St, "AppSidemenu"), St);
-Ee([
+me([
   y({ type: String })
 ], se.prototype, "section", void 0);
-Ee([
+me([
   y({ type: String, attribute: "active-path" })
 ], se.prototype, "activePath", void 0);
-Ee([
+me([
   y({ type: String, attribute: "base-path" })
 ], se.prototype, "basePath", void 0);
-se = Ee([
+se = me([
   ss("app-sidemenu")
 ], se);
 var Hs = function(r, s, t, e) {
@@ -9448,7 +9468,7 @@ function F0(r, s, t, e = "none", i = "none", M = 0) {
 }
 a(F0, "processChartData");
 export {
-  Di as AppFooter,
+  pi as AppFooter,
   $s as AppHeader,
   Zs as AppLayoutBuilder,
   jt as AppLayoutDemo,
@@ -9467,7 +9487,7 @@ export {
   Ct as SourceSubscriberMixin,
   y0 as aggregateByLabel,
   FM as computeAggregation,
-  Xs as dispatchDataError,
+  gs as dispatchDataError,
   Ns as dispatchDataLoaded,
   ms as dispatchDataLoading,
   T0 as extractLabelValues,

@@ -13,11 +13,13 @@
   </style>
 </head>
 <body>
-  <!-- Source de donnees pour les exemples client-side (maires de France) -->
+  <!-- Source de donnees pour les exemples client-side (RappelConso) -->
   <gouv-source
     id="demo-communes-src"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+    api-type="opendatasoft"
+    dataset-id="rappelconso-v2-gtin-trie"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="100">
   </gouv-source>
   <gouv-query
     id="demo-communes"
@@ -224,33 +226,35 @@ order-by="total:desc"                 &lt;!-- champ agrege avec alias --&gt;</pr
         </section>
 
         <section class="demo-section">
-          <h3>Tabular API : requete data.gouv.fr via gouv-source</h3>
+          <h3>OpenDataSoft : requete data.economie.gouv.fr via gouv-source</h3>
           <p>
-            Utilise <code>&lt;gouv-source&gt;</code> pour interroger l'API Tabular de data.gouv.fr,
+            Utilise <code>&lt;gouv-source&gt;</code> pour interroger une API OpenDataSoft,
             puis <code>&lt;gouv-query&gt;</code> pour le groupement et l'agregation.
-            <a href="../../guide/guide-exemples-query.html#query-tabular-pie" class="fr-link fr-link--sm">Voir l'exemple live</a>
+            <a href="../../guide/guide-exemples-query.html#query-pie" class="fr-link fr-link--sm">Voir l'exemple live</a>
           </p>
           <div class="code-block"><pre>&lt;gouv-source
-  id="tabular-src"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"
+  id="ods-src"
+  api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"
 &gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query
-  id="tabular-stats"
-  source="tabular-src"
-  group-by="Libell&eacute; du d&eacute;partement"
-  aggregate="Code sexe:count"
-  order-by="Code sexe__count:desc"
-  limit="10"
+  id="ods-stats"
+  source="ods-src"
+  group-by="categorie_produit"
+  aggregate="libelle:count:nombre"
+  order-by="nombre:desc"
+  limit="8"
 &gt;&lt;/gouv-query&gt;
 
-&lt;gouv-kpi
-  source="tabular-stats"
-  valeur="count"
-  label="Nombre de maires"
-  format="nombre"
-&gt;&lt;/gouv-kpi&gt;</pre></div>
+&lt;gouv-dsfr-chart
+  source="ods-stats"
+  type="pie"
+  label-field="categorie_produit"
+  value-field="nombre"
+&gt;&lt;/gouv-dsfr-chart&gt;</pre></div>
         </section>
 
         <section class="demo-section">

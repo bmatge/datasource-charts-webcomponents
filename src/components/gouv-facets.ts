@@ -9,6 +9,7 @@ import {
   subscribeToSource,
   getDataCache,
   dispatchSourceCommand,
+  subscribeToSourceCommands,
   getDataMeta,
   setDataMeta
 } from '../utils/data-bridge.js';
@@ -144,6 +145,7 @@ export class GouvFacets extends LitElement {
   private _openMultiselectField: string | null = null;
 
   private _unsubscribe: (() => void) | null = null;
+  private _unsubscribeCommands: (() => void) | null = null;
   private _popstateHandler: (() => void) | null = null;
   private _urlParamsApplied = false;
 
@@ -176,6 +178,10 @@ export class GouvFacets extends LitElement {
     if (this._unsubscribe) {
       this._unsubscribe();
       this._unsubscribe = null;
+    }
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+      this._unsubscribeCommands = null;
     }
     if (this.id) {
       clearDataCache(this.id);
@@ -255,6 +261,14 @@ export class GouvFacets extends LitElement {
       onError: (error: Error) => {
         dispatchDataError(this.id, error);
       }
+    });
+
+    // Forward downstream commands (page, orderBy) to upstream source
+    if (this._unsubscribeCommands) {
+      this._unsubscribeCommands();
+    }
+    this._unsubscribeCommands = subscribeToSourceCommands(this.id, (cmd) => {
+      dispatchSourceCommand(this.source, cmd);
     });
   }
 

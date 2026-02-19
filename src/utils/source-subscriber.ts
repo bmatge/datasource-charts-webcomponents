@@ -15,6 +15,7 @@ export interface SourceSubscriberInterface {
   _sourceData: unknown;
   _sourceError: Error | null;
   onSourceData(data: unknown): void;
+  onSourceError?(error: Error): void;
 }
 
 /**
@@ -37,6 +38,14 @@ export function SourceSubscriberMixin<T extends Constructor<LitElement>>(superCl
      * À surcharger dans le composant hôte.
      */
     onSourceData(_data: unknown): void {
+      // default: no-op
+    }
+
+    /**
+     * Hook appelé quand une erreur survient.
+     * À surcharger pour gérer les erreurs (ex: revert pagination).
+     */
+    onSourceError(_error: Error): void {
       // default: no-op
     }
 
@@ -85,6 +94,7 @@ export function SourceSubscriberMixin<T extends Constructor<LitElement>>(superCl
         onError: (error) => {
           this._sourceError = error;
           this._sourceLoading = false;
+          this.onSourceError(error);
           this.requestUpdate();
         },
       });

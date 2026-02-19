@@ -96,6 +96,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
 
   private _serverTotal = 0;
   private _serverPageSize = 0;
+  private _previousPage = 1;
   private _popstateHandler: (() => void) | null = null;
 
   // Light DOM pour les styles DSFR
@@ -131,6 +132,14 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     super.updated(changedProperties);
     if (changedProperties.has('tri')) {
       this._initSort();
+    }
+  }
+
+  onSourceError(_error: Error): void {
+    // In server pagination mode, revert to previous page on fetch failure
+    // (e.g., API offset limit exceeded). Keep showing current data.
+    if (this._serverPagination && this._data.length > 0) {
+      this._currentPage = this._previousPage;
     }
   }
 
@@ -305,6 +314,7 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   }
 
   private _handlePageChange(page: number) {
+    this._previousPage = this._currentPage;
     this._currentPage = page;
     // En mode serveur, demander la page a la source
     if (this._serverPagination && this.source) {
@@ -598,7 +608,7 @@ ${bodyRows}
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement des données...
           </div>
-        ` : this._sourceError ? html`
+        ` : this._sourceError && !(this._serverPagination && this._data.length > 0) ? html`
           <div class="gouv-datalist__error" aria-live="assertive">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
             Erreur: ${this._sourceError.message}

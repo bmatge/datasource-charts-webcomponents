@@ -51,9 +51,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-n-bar">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="data"
   numeric="nombre_beneficiaires, montant_investissement"
@@ -82,9 +82,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-flatten">Code source</button></h3>
           <div class="fr-collapse" id="code-n-flatten">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;!-- flatten est sans effet ici car les donnees sont deja plates,
      mais illustre la syntaxe pour des sources Grist/ODS v1 --&gt;
@@ -106,26 +106,27 @@
           </div>
         </section>
 
-        <!-- normalize-datalist (maires) -->
-        <h4>Tableau — Renommage de champs accentes</h4>
-        <p>Les champs de l'API tabular contiennent des accents (<code>Nom de l'&#233;lu</code>, <code>Libell&#233; du d&#233;partement</code>). <code>gouv-normalize</code> renomme ces champs en noms simples avant l'affichage en tableau.</p>
+        <!-- normalize-datalist (RappelConso ODS) -->
+        <h4>Tableau — Renommage de champs ODS</h4>
+        <p>Les champs de l'API ODS ont des noms techniques (<code>modeles_ou_references</code>, <code>categorie_produit</code>). <code>gouv-normalize</code> renomme ces champs en noms lisibles avant l'affichage en tableau.</p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-n-datalist">
-<pre class="example-code">&lt;gouv-source id="data"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="50"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="data"
   trim
-  rename="Nom de l'&#233;lu:Nom | Pr&#233;nom de l'&#233;lu:Prenom | Libell&#233; du d&#233;partement:Departement | Libell&#233; de la commune:Commune | Libell&#233; de la cat&#233;gorie socio-professionnelle:Categorie | Code sexe:Sexe"&gt;
+  rename="modeles_ou_references:Produit | marque_produit:Marque | categorie_produit:Categorie | sous_categorie_produit:Sous-categorie | date_publication:Date"&gt;
 &lt;/gouv-normalize&gt;
 
 &lt;gouv-datalist source="clean"
-  colonnes="Nom, Prenom, Commune, Departement, Categorie, Sexe"
-  recherche="true" filtres="Departement"
-  tri="Nom:asc" pagination="10" export="csv"&gt;
+  colonnes="Produit, Marque, Categorie, Sous-categorie, Date"
+  recherche="true" filtres="Categorie"
+  tri="Produit:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>

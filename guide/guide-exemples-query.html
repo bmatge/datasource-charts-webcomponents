@@ -74,9 +74,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-q-bar">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="nom_region"
@@ -97,9 +97,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-order">Code source</button></h3>
           <div class="fr-collapse" id="code-v-order">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="nom_region"
@@ -122,9 +122,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-line">Code source</button></h3>
           <div class="fr-collapse" id="code-q-line">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="libreg"
@@ -138,27 +138,29 @@
           </div>
         </section>
 
-        <!-- query-pie (FIXED: maires dataset) -->
-        <h4 id="query-pie">Camembert — Maires par categorie socio-professionnelle</h4>
-        <p>Compte les maires par categorie socio-professionnelle via <code>count</code>.
+        <!-- query-pie (RappelConso ODS) -->
+        <h4 id="query-pie">Camembert — Rappels par categorie de produit</h4>
+        <p>Compte les rappels par categorie de produit via <code>count</code>.
           <a href="../apps/playground/index.html?example=query-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-pie">Code source</button></h3>
           <div class="fr-collapse" id="code-q-pie">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="src"
-  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
-  aggregate="Code sexe:count:nombre"
+  group-by="categorie_produit"
+  aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="8"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="q" type="pie"
-  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  label-field="categorie_produit"
   value-field="nombre"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
           </div>
@@ -171,18 +173,20 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-limit">Code source</button></h3>
           <div class="fr-collapse" id="code-v-limit">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="src"
-  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
-  aggregate="Code sexe:count:nombre"
+  group-by="categorie_produit"
+  aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="4"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="q" type="pie"
-  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  label-field="categorie_produit"
   value-field="nombre"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
           </div>
@@ -197,9 +201,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-radar">Code source</button></h3>
           <div class="fr-collapse" id="code-q-radar">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="nom_region"
@@ -222,9 +226,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-gauge">Code source</button></h3>
           <div class="fr-collapse" id="code-q-gauge">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="libreg"
@@ -247,9 +251,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-scatter">Code source</button></h3>
           <div class="fr-collapse" id="code-q-scatter">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="libdep"
@@ -272,9 +276,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-barline">Code source</button></h3>
           <div class="fr-collapse" id="code-q-barline">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="libreg"
@@ -299,9 +303,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-map">Code source</button></h3>
           <div class="fr-collapse" id="code-q-map">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="dep"
@@ -322,9 +326,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-agg">Code source</button></h3>
           <div class="fr-collapse" id="code-v-agg">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="data"
   group-by="dep"
@@ -338,130 +342,140 @@
           </div>
         </section>
 
-        <!-- query-kpi (FIXED: maires dataset, filter by sex) -->
-        <h4 id="query-kpi">KPI — Statistiques des maires avec filtre</h4>
-        <p>Compare le nombre total de maires au nombre de femmes maires via <code>filter</code>.
+        <!-- query-kpi (RappelConso ODS, filter by category) -->
+        <h4 id="query-kpi">KPI — Statistiques des rappels avec filtre</h4>
+        <p>Compare le nombre total de rappels au nombre de rappels alimentaires via <code>filter</code>.
           <a href="../apps/playground/index.html?example=query-kpi" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-q-kpi">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-query id="q-femmes" source="src"
-  filter="Code sexe:eq:F"&gt;
+&lt;gouv-query id="q-alim" source="src"
+  filter="categorie_produit:contains:Aliment"&gt;
 &lt;/gouv-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
   &lt;gouv-kpi source="src" valeur="count"
-    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="q-femmes" valeur="count"
-    label="Dont femmes" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="q-alim" valeur="count"
+    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
 
         <!-- Variation: filtres combines -->
         <h4 id="variation-filter">Variation : filtres combines</h4>
-        <p>Combine deux filtres avec <code>,</code> (logique ET) : ne garder que les femmes maires de l'Ain.</p>
+        <p>Combine deux filtres avec <code>,</code> (logique ET) : ne garder que les rappels alimentaires contenant "lait".</p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-filter">Code source</button></h3>
           <div class="fr-collapse" id="code-v-filter">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q-combine" source="src"
-  filter="Code sexe:eq:F, Libell&#233; du d&#233;partement:contains:Ain"&gt;
+  filter="categorie_produit:contains:Aliment, sous_categorie_produit:contains:Lait"&gt;
 &lt;/gouv-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
   &lt;gouv-kpi source="src" valeur="count"
-    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
   &lt;gouv-kpi source="q-combine" valeur="count"
-    label="Femmes maires (Ain)" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+    label="Alimentaires (Lait)" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
 
-        <!-- query-datalist (FIXED: maires dataset, filter by department) -->
-        <h4 id="query-datalist">Tableau — Maires filtres par departement</h4>
-        <p>Filtre les maires de Paris et affiche le resultat dans un tableau interactif.
+        <!-- query-datalist (RappelConso ODS, filter by category) -->
+        <h4 id="query-datalist">Tableau — Rappels filtres par categorie</h4>
+        <p>Filtre les rappels alimentaires et affiche le resultat dans un tableau interactif.
           <a href="../apps/playground/index.html?example=query-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-q-datalist">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="src"
-  filter="Libell&#233; du d&#233;partement:contains:Ain"&gt;
+  filter="categorie_produit:contains:Aliment"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-datalist source="q"
-  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; de la commune:Commune"
-  recherche="true" tri="Nom de l'&#233;lu:asc" pagination="10" export="csv"&gt;
+  colonnes="modeles_ou_references:Produit, marque_produit:Marque, sous_categorie_produit:Sous-categorie"
+  recherche="true" tri="modeles_ou_references:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>
 
         <!-- Variation: operateur in -->
-        <h4 id="variation-in">Variation : operateur <code>in</code> pour plusieurs departements</h4>
-        <p>Utilise <code>filter="Libelle du departement:in:Ain|Rhone|Isere"</code> pour selectionner plusieurs departements avec le separateur <code>|</code>.</p>
+        <h4 id="variation-in">Variation : operateur <code>in</code> pour plusieurs categories</h4>
+        <p>Utilise <code>filter="categorie_produit:in:Alimentation|Habitat"</code> pour selectionner plusieurs categories avec le separateur <code>|</code>.</p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-in">Code source</button></h3>
           <div class="fr-collapse" id="code-v-in">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="src"
-  filter="Libell&#233; du d&#233;partement:in:Ain|Rh&#244;ne|Is&#232;re"&gt;
+  filter="categorie_produit:in:Alimentation|Habitat"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-datalist source="q"
-  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
-  recherche="true" tri="Libell&#233; du d&#233;partement:asc" pagination="10" export="csv"&gt;
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
+  recherche="true" tri="categorie_produit:asc" pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>
 
-        <!-- Multi-page Tabular -->
-        <h2 id="multi-page" class="fr-mt-6w">Multi-page Tabular</h2>
+        <!-- Multi-page ODS -->
+        <h2 id="multi-page" class="fr-mt-6w">Multi-page ODS</h2>
         <p>
-          Avec <code>api-type="tabular"</code>, <code>gouv-source</code> charge automatiquement <strong>toutes les pages</strong>
-          du dataset (par tranches de 50 records, max 25 000) avant de transmettre les donnees a <code>gouv-query</code>.
-          Cela permet de faire un camembert ou un KPI sur l'ensemble d'un dataset, pas seulement les 50 premiers enregistrements.
+          Avec <code>api-type="opendatasoft"</code> et <code>server-side page-size="100"</code>,
+          <code>gouv-source</code> charge les donnees page par page (ici 100 records) avant de transmettre a <code>gouv-query</code>.
+          Cela permet de faire un camembert ou un KPI sur un volume significatif de donnees.
         </p>
 
-        <h4 id="query-tabular-pie">Camembert — Tous les maires par categorie (dataset complet)</h4>
-        <p>Charge les 34 874 maires page par page, puis compte par categorie socio-professionnelle.
+        <h4 id="query-tabular-pie">Camembert — Rappels par categorie (dataset complet)</h4>
+        <p>Charge les rappels de produits, puis compte par categorie de produit.
           <a href="../apps/playground/index.html?example=query-tabular-pie" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-tabular">Code source</button></h3>
           <div class="fr-collapse" id="code-q-tabular">
-<pre class="example-code">&lt;gouv-source id="src" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-query id="q" source="src"
-  group-by="Libell&#233; de la cat&#233;gorie socio-professionnelle"
-  aggregate="Nom de l'&#233;lu:count:nombre"
+  group-by="categorie_produit"
+  aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="10"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="q" type="pie"
-  label-field="Libell&#233; de la cat&#233;gorie socio-professionnelle"
+  label-field="categorie_produit"
   value-field="nombre"
   selected-palette="categorical"&gt;
 &lt;/gouv-dsfr-chart&gt;</pre>
@@ -471,13 +485,13 @@
         <!-- Pagination serveur + KPI globaux -->
         <h2 id="pagination-kpi" class="fr-mt-6w">Pagination serveur + KPI globaux</h2>
         <p>
-          Quand <code>gouv-source paginate</code> est actif, les composants en aval ne voient que la page courante.
-          Les KPI et facettes calcules sur une seule page sont trompeurs. La solution : utiliser <strong>deux sources</strong> —
-          <code>gouv-source paginate</code> pour la navigation + <code>gouv-source api-type="tabular"</code> + <code>gouv-query</code> pour les KPI globaux.
+          Quand <code>gouv-source server-side</code> est actif, les composants en aval ne voient que la page courante.
+          Les KPI calcules sur une seule page sont trompeurs. La solution : utiliser <strong>deux sources</strong> —
+          une <code>gouv-source server-side</code> pour la navigation + une <code>gouv-source</code> avec <code>page-size</code> eleve pour les KPI globaux.
         </p>
 
-        <h4 id="paginate-kpi">Double source — Navigation pagin&#233;e + KPI sur le dataset complet</h4>
-        <p>La datalist navigue dans les 34 874 maires page par page. Les KPI calculent les statistiques globales via <code>gouv-source api-type="tabular"</code>.
+        <h4 id="paginate-kpi">Double source — Navigation paginee + KPI sur un volume etendu</h4>
+        <p>Le datalist navigue page par page. Les KPI calculent les statistiques globales via une seconde source ODS avec page-size plus eleve.
           <a href="../apps/playground/index.html?example=paginate-kpi-global" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
@@ -485,34 +499,38 @@
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-paginate-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-q-paginate-kpi">
 <pre class="example-code">&lt;!-- Source 1 : pagination serveur pour la navigation --&gt;
-&lt;gouv-source id="browse"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
-  paginate page-size="20"&gt;&lt;/gouv-source&gt;
+&lt;gouv-source id="browse" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"
+  order-by="date_publication:desc"&gt;&lt;/gouv-source&gt;
 
-&lt;!-- Source 2 : chargement complet pour les KPI globaux --&gt;
-&lt;gouv-source id="elus" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+&lt;!-- Source 2 : chargement etendu pour les KPI globaux --&gt;
+&lt;gouv-source id="stats-src" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-query id="global-stats" source="elus"
-  aggregate="Nom de l'&#233;lu:count:total"&gt;
+&lt;gouv-query id="global-stats" source="stats-src"
+  aggregate="libelle:count:total"&gt;
 &lt;/gouv-query&gt;
 
-&lt;gouv-query id="global-femmes" source="elus"
-  filter="Code sexe:eq:F"
-  aggregate="Nom de l'&#233;lu:count:total_femmes"&gt;
+&lt;gouv-query id="global-alim" source="stats-src"
+  filter="categorie_produit:contains:Aliment"
+  aggregate="libelle:count:total_alim"&gt;
 &lt;/gouv-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"&gt;
   &lt;gouv-kpi source="global-stats" valeur="sum:total"
-    label="Total des maires" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="global-femmes" valeur="sum:total_femmes"
-    label="Dont femmes" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="global-alim" valeur="sum:total_alim"
+    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
 &lt;/div&gt;
 
 &lt;gouv-datalist source="browse"
-  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
-  tri="Nom de l'&#233;lu:asc"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
+  server-tri
   pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
@@ -527,8 +545,8 @@
         <div class="fr-callout fr-callout--blue-ecume fr-mb-3w">
           <p class="fr-callout__text">
             <strong>Quand utiliser server-side ?</strong>
-            En mode normal, <code>gouv-source</code> charge tous les records (max 1000 ODS, 25K Tabular).
-            Si le dataset est plus gros, ou si vous avez besoin de recherche full-text serveur,
+            En mode normal, <code>gouv-source</code> charge tous les records disponibles.
+            Si le dataset est volumineux, ou si vous avez besoin de recherche full-text serveur,
             utilisez <code>server-side</code>.
           </p>
         </div>
@@ -574,7 +592,7 @@
           </div>
         </section>
 
-        <h4 id="server-side-tabular">Tri serveur — Communes (Tabular)</h4>
+        <h4 id="server-side-tabular">Tri serveur — Rappels de produits (ODS)</h4>
         <p>Utilise <code>gouv-source server-side</code> + <code>gouv-datalist server-tri</code> pour trier cote serveur.
           <a href="../apps/playground/index.html?example=server-side-tabular-tri" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
@@ -582,13 +600,15 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-tab">Code source</button></h3>
           <div class="fr-collapse" id="code-q-ss-tab">
-<pre class="example-code">&lt;gouv-source id="q" api-type="tabular"
-  resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
-  server-side page-size="20"&gt;
+<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"
+  order-by="date_publication:desc"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-datalist source="q"
-  colonnes="COM:Code commune, LIBELLE:Commune, DEP:Departement, REG:Region"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="20"
   url-sync&gt;

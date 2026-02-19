@@ -54,9 +54,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-d-bar">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="15"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="bar"
   label-field="libcom" value-field="taux_global_tfb"
@@ -74,9 +75,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-line">Code source</button></h3>
           <div class="fr-collapse" id="code-d-line">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="20"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="line"
   label-field="nom_departement" value-field="nombre_beneficiaires"&gt;
@@ -93,9 +95,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-pie">Code source</button></h3>
           <div class="fr-collapse" id="code-d-pie">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="8"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="pie"
   label-field="libcom" value-field="mpoid"&gt;
@@ -112,9 +115,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-radar">Code source</button></h3>
           <div class="fr-collapse" id="code-d-radar">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="6"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="radar"
   label-field="nom_region" value-field="nombre_beneficiaires"&gt;
@@ -131,9 +135,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-gauge">Code source</button></h3>
           <div class="fr-collapse" id="code-d-gauge">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"
+  limit="1"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="gauge"
   value-field="taux_global_tfb"&gt;
@@ -150,9 +155,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-scatter">Code source</button></h3>
           <div class="fr-collapse" id="code-d-scatter">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="scatter"
   label-field="montant_investissement"
@@ -170,9 +175,10 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-barline">Code source</button></h3>
           <div class="fr-collapse" id="code-d-barline">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"
+  limit="15"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="bar-line"
   label-field="nom_departement"
@@ -192,9 +198,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-map">Code source</button></h3>
           <div class="fr-collapse" id="code-d-map">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-dsfr-chart source="data" type="map"
   code-field="code_departement" value-field="nombre_beneficiaires"
@@ -212,9 +218,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-d-kpi">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;"&gt;
   &lt;gouv-kpi source="data" valeur="sum:nombre_beneficiaires"
@@ -230,22 +236,24 @@
         </section>
 
         <!-- direct-datalist -->
-        <h4>Tableau — Maires de France</h4>
-        <p>Tableau interactif avec recherche, filtres, tri et export CSV. Utilise le registre des maires (34 874 enregistrements).
+        <h4>Tableau — Rappels de produits (ODS server-side)</h4>
+        <p>Tableau interactif avec recherche, tri serveur et pagination serveur. Utilise le dataset RappelConso (data.economie.gouv.fr).
           <a href="../apps/playground/index.html?example=direct-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-d-datalist">
-<pre class="example-code">&lt;gouv-source id="data"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="10"
+  order-by="date_publication:desc"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-datalist source="data"
-  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
-  recherche="true" filtres="Libell&#233; du d&#233;partement"
-  tri="Nom de l'&#233;lu:asc" pagination="10" export="csv"&gt;
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
+  server-tri
+  pagination="10" export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>
@@ -258,22 +266,25 @@
           de plusieurs dizaines de milliers d'enregistrements sans tout charger en memoire.
         </p>
 
-        <h4>Tableau pagine cote serveur — Maires de France (34 874 records)</h4>
-        <p>La pagination est geree par l'API Tabular : cliquer sur "page 2" appelle <code>?page=2&amp;page_size=20</code>.
+        <h4>Tableau pagine cote serveur — Rappels de produits</h4>
+        <p>La pagination est geree par l'API ODS : cliquer sur "page 2" appelle la page suivante cote serveur.
           <a href="../apps/playground/index.html?example=server-paginate-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-paginate">Code source</button></h3>
           <div class="fr-collapse" id="code-d-paginate">
-<pre class="example-code">&lt;gouv-source id="data"
-  url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
-  paginate page-size="20"&gt;
+<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"
+  order-by="date_publication:desc"&gt;
 &lt;/gouv-source&gt;
 
 &lt;gouv-datalist source="data"
-  colonnes="Nom de l'&#233;lu:Nom, Pr&#233;nom de l'&#233;lu:Prenom, Libell&#233; du d&#233;partement:Departement, Libell&#233; de la commune:Commune"
-  recherche="true" tri="Nom de l'&#233;lu:asc" pagination="20"&gt;
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
+  server-tri
+  pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>

@@ -21,40 +21,39 @@
 </head>
 <body>
   <!-- ============================================================
-       Sources de donnees pour les 3 exemples live
+       Sources ODS : prix controle technique (data.economie.gouv.fr)
        ============================================================ -->
 
-  <!-- Exemple 1 : Maires de France (tabular-api) -->
-  <gouv-source id="elus-raw"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  <!-- Source server-side pour exemple 1 (datalist) -->
+  <gouv-source id="ct-src1"
+    api-type="opendatasoft"
+    base-url="https://data.economie.gouv.fr"
+    dataset-id="prix-controle-technique"
+    server-side
+    page-size="10">
   </gouv-source>
-  <gouv-normalize id="elus-clean" source="elus-raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
-    trim>
-  </gouv-normalize>
 
-  <!-- Exemple 2 : Industrie du futur -->
-  <gouv-source id="industrie-raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+  <!-- Source client-side pour exemple 2 (chart) — charge ~1000 records -->
+  <gouv-source id="ct-src2"
+    api-type="opendatasoft"
+    base-url="https://data.economie.gouv.fr"
+    dataset-id="prix-controle-technique">
   </gouv-source>
-  <gouv-normalize id="industrie-clean" source="industrie-raw"
-    numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
-    rename="nom_region:Region | nom_departement:Departement"
-    trim>
-  </gouv-normalize>
 
-  <!-- Exemple 3 : Fiscalite locale -->
-  <gouv-source id="fisca-raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
+  <!-- Source client-side pour exemple 3 (KPI + carte) — charge ~1000 records -->
+  <gouv-source id="ct-src3"
+    api-type="opendatasoft"
+    base-url="https://data.economie.gouv.fr"
+    dataset-id="prix-controle-technique">
   </gouv-source>
-  <gouv-normalize id="fisca-clean" source="fisca-raw"
-    numeric="taux_global_tfb, taux_global_th, mpoid"
-    rename="libreg:Region | libdep:Departement | libcom:Commune"
-    trim>
-  </gouv-normalize>
+
+  <!-- Source client-side pour exemples 4, 5, 6 (demo modes d'affichage) -->
+  <gouv-source id="ct-local"
+    api-type="opendatasoft"
+    base-url="https://data.economie.gouv.fr"
+    dataset-id="prix-controle-technique"
+    limit="200">
+  </gouv-source>
 
   <!-- Header -->
   <app-header current-page="composants" base-path="../../"></app-header>
@@ -134,186 +133,184 @@
           </p>
         </div>
 
-        <!-- ========================================================
-             Exemple 1 : Facettes + Datalist (Elus municipaux)
-             ======================================================== -->
-        <h2 class="fr-mt-4w">Exemple 1 : tableau filtrable avec facettes</h2>
-        <p>Les facettes <code>Departement</code> (multiselect), <code>Categorie</code> (select) et <code>Sexe</code> (radio) filtrent
-        le tableau des maires avec colonnage DSFR (<code>cols="4"</code>).</p>
+        <div class="fr-callout fr-callout--blue-france fr-mt-3w">
+          <p class="fr-callout__text">
+            <strong>Facettes server-side :</strong> Avec une source <code>api-type="opendatasoft"</code>
+            et l'attribut <code>server-side</code>, les valeurs des facettes et les compteurs sont
+            calcules directement par l'API (pas de telechargement complet des donnees).
+            Les exemples ci-dessous utilisent le dataset
+            <em>Prix du controle technique</em> (~133 000 enregistrements) de data.economie.gouv.fr.
+          </p>
+        </div>
 
-        <gouv-facets id="elus-filtered" source="elus-clean"
-          fields="Departement, Categorie, Sexe"
-          labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-          display="Departement:multiselect | Categorie:select | Sexe:radio"
+        <!-- ========================================================
+             Exemple 1 : Facettes + Datalist (prix controle technique)
+             ======================================================== -->
+        <h2 class="fr-mt-4w">Exemple 1 : tableau filtrable avec facettes server-side</h2>
+        <p>Les facettes <code>Region</code> (multiselect), <code>Type de vehicule</code> (select) et <code>Energie</code> (radio) filtrent
+        le tableau des prix du controle technique avec colonnage DSFR (<code>cols="4"</code>).</p>
+
+        <gouv-facets id="ct-filtered1" source="ct-src1"
+          server-facets
+          fields="nom_region, cat_vehicule_libelle, cat_energie_libelle"
+          labels="nom_region:Region | cat_vehicule_libelle:Type de vehicule | cat_energie_libelle:Energie"
+          display="nom_region:multiselect | cat_vehicule_libelle:select | cat_energie_libelle:radio"
           cols="4">
         </gouv-facets>
 
-        <gouv-datalist source="elus-filtered"
-          colonnes="Nom, Prenom, Commune, Departement, Categorie"
-          recherche="true"
-          tri="Nom:asc"
+        <gouv-datalist source="ct-filtered1"
+          colonnes="cct_commune, nom_departement, cat_vehicule_libelle, cat_energie_libelle, prix_visite"
+          server-tri
           pagination="10">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-source id="raw"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;
+        <pre><code>&lt;gouv-source id="src"
+  api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr"
+  dataset-id="prix-controle-technique"
+  server-side
+  page-size="10"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; du d&eacute;partement:Departement | Libell&eacute; de la commune:Commune | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Departement, Categorie, Sexe"
-  labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-  display="Departement:multiselect | Categorie:select | Sexe:radio"
+&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region, cat_vehicule_libelle, cat_energie_libelle"
+  labels="nom_region:Region | cat_vehicule_libelle:Type de vehicule | cat_energie_libelle:Energie"
+  display="nom_region:multiselect | cat_vehicule_libelle:select | cat_energie_libelle:radio"
   cols="4"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Commune, Departement, Categorie"
-  recherche="true"
-  tri="Nom:asc"
+  colonnes="cct_commune, nom_departement, cat_vehicule_libelle, cat_energie_libelle, prix_visite"
+  server-tri
   pagination="10"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
 
         <!-- ========================================================
-             Exemple 2 : Facettes + Query + Barres (Industrie du futur)
+             Exemple 2 : Facettes + Query + Barres (prix moyen par departement)
              ======================================================== -->
         <h2 class="fr-mt-6w">Exemple 2 : graphique filtre par region</h2>
         <p>La facette Region en mode multiselect filtre les donnees, puis <code>gouv-query</code> agrege
-        pour le graphique en barres des beneficiaires par departement.</p>
+        le prix moyen du controle technique par departement pour le graphique en barres.</p>
 
-        <gouv-facets id="industrie-filtered" source="industrie-clean"
-          fields="Region"
-          display="Region:multiselect"
+        <gouv-facets id="ct-filtered2" source="ct-src2"
+          server-facets
+          fields="nom_region"
+          labels="nom_region:Region"
+          display="nom_region:multiselect"
           sort="alpha">
         </gouv-facets>
 
-        <gouv-query id="industrie-stats" source="industrie-filtered"
-          group-by="Departement"
-          aggregate="nombre_beneficiaires:sum:Beneficiaires"
-          order-by="Beneficiaires:desc"
+        <gouv-query id="ct-stats2" source="ct-filtered2"
+          group-by="nom_departement"
+          aggregate="prix_visite:avg:Prix_moyen"
+          order-by="Prix_moyen:desc"
           limit="15">
         </gouv-query>
 
-        <gouv-dsfr-chart source="industrie-stats"
+        <gouv-dsfr-chart source="ct-stats2"
           type="bar"
-          label-field="Departement"
-          value-field="Beneficiaires"
+          label-field="nom_departement"
+          value-field="Prix_moyen"
           selected-palette="categorical">
         </gouv-dsfr-chart>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;
+        <pre><code>&lt;gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr"
+  dataset-id="prix-controle-technique"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  numeric="montant_investissement, nombre_beneficiaires"
-  rename="nom_region:Region | nom_departement:Departement"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Region"
-  display="Region:multiselect"
+&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region"
+  labels="nom_region:Region"
+  display="nom_region:multiselect"
   sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-query id="stats" source="filtered"
-  group-by="Departement"
-  aggregate="nombre_beneficiaires:sum:Beneficiaires"
-  order-by="Beneficiaires:desc"
+  group-by="nom_departement"
+  aggregate="prix_visite:avg:Prix_moyen"
+  order-by="Prix_moyen:desc"
   limit="15"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="stats" type="bar"
-  label-field="Departement"
-  value-field="Beneficiaires"
+  label-field="nom_departement"
+  value-field="Prix_moyen"
   selected-palette="categorical"&gt;
 &lt;/gouv-dsfr-chart&gt;</code></pre>
 
         <!-- ========================================================
-             Exemple 3 : Facettes + KPI + Carte (Fiscalite locale)
+             Exemple 3 : Facettes + KPI + Carte (prix par departement)
              ======================================================== -->
-        <h2 class="fr-mt-6w">Exemple 3 : carte + KPI filtres par region</h2>
+        <h2 class="fr-mt-6w">Exemple 3 : KPI + carte filtres par region</h2>
         <p>Un meme <code>gouv-facets</code> alimente a la fois des <strong>KPI</strong> et une <strong>carte</strong>.
         Selectionner des regions met a jour simultanement les indicateurs et la carte departementale.</p>
 
-        <gouv-facets id="fisca-filtered" source="fisca-clean"
-          fields="Region"
-          display="Region:multiselect"
+        <gouv-facets id="ct-filtered3" source="ct-src3"
+          server-facets
+          fields="nom_region"
+          labels="nom_region:Region"
+          display="nom_region:multiselect"
           sort="alpha">
         </gouv-facets>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
-          <gouv-kpi source="fisca-filtered"
+          <gouv-kpi source="ct-filtered3"
             valeur="count"
-            label="Communes"
+            label="Centres"
             format="nombre">
           </gouv-kpi>
 
-          <gouv-kpi source="fisca-filtered"
-            valeur="avg:taux_global_tfb"
-            label="Taux TFB moyen"
-            format="pourcentage">
-          </gouv-kpi>
-
-          <gouv-kpi source="fisca-filtered"
-            valeur="avg:taux_global_th"
-            label="Taux TH moyen"
-            format="pourcentage">
+          <gouv-kpi source="ct-filtered3"
+            valeur="avg:prix_visite"
+            label="Prix moyen"
+            format="euros">
           </gouv-kpi>
         </div>
 
-        <gouv-query id="fisca-stats" source="fisca-filtered"
-          group-by="dep"
-          aggregate="taux_global_tfb:avg:taux">
+        <gouv-query id="ct-map-stats" source="ct-filtered3"
+          group-by="code_departement"
+          aggregate="prix_visite:avg:prix_moyen">
         </gouv-query>
 
-        <gouv-dsfr-chart source="fisca-stats"
+        <gouv-dsfr-chart source="ct-map-stats"
           type="map"
-          code-field="dep"
-          value-field="taux"
+          code-field="code_departement"
+          value-field="prix_moyen"
           selected-palette="sequentialAscending">
         </gouv-dsfr-chart>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;
+        <pre><code>&lt;gouv-source id="src" api-type="opendatasoft"
+  base-url="https://data.economie.gouv.fr"
+  dataset-id="prix-controle-technique"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  numeric="taux_global_tfb, taux_global_th, mpoid"
-  rename="libreg:Region | libdep:Departement | libcom:Commune"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Region"
-  display="Region:multiselect"
+&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region"
+  labels="nom_region:Region"
+  display="nom_region:multiselect"
   sort="alpha"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;!-- KPI sur les donnees filtrees --&gt;
-&lt;gouv-kpi source="filtered" valeur="count" label="Communes" format="nombre"&gt;&lt;/gouv-kpi&gt;
-&lt;gouv-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="pourcentage"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="filtered" valeur="count" label="Centres" format="nombre"&gt;&lt;/gouv-kpi&gt;
+&lt;gouv-kpi source="filtered" valeur="avg:prix_visite" label="Prix moyen" format="euros"&gt;&lt;/gouv-kpi&gt;
 
 &lt;!-- Carte sur les donnees filtrees et agregees --&gt;
 &lt;gouv-query id="stats" source="filtered"
-  group-by="dep"
-  aggregate="taux_global_tfb:avg:taux"&gt;
+  group-by="code_departement"
+  aggregate="prix_visite:avg:prix_moyen"&gt;
 &lt;/gouv-query&gt;
 
 &lt;gouv-dsfr-chart source="stats" type="map"
-  code-field="dep"
-  value-field="taux"
+  code-field="code_departement"
+  value-field="prix_moyen"
   selected-palette="sequentialAscending"&gt;
 &lt;/gouv-dsfr-chart&gt;</code></pre>
 
@@ -322,35 +319,36 @@
              ======================================================== -->
         <h2 class="fr-mt-6w">Exemple 4 : les 4 modes d'affichage</h2>
         <p>Quatre facettes avec des modes differents :
-        <code>radio</code> pour le Sexe (dropdown avec radio buttons, selection exclusive),
-        <code>multiselect</code> pour le Departement (dropdown avec checkboxes, recherche et "Tout selectionner"),
-        <code>select</code> pour la Categorie (liste deroulante native DSFR),
-        et <code>checkbox</code> (defaut) pour la Commune.</p>
+        <code>radio</code> pour l'Energie (dropdown avec radio buttons, selection exclusive),
+        <code>multiselect</code> pour la Region (dropdown avec checkboxes, recherche et "Tout selectionner"),
+        <code>select</code> pour le Type de vehicule (liste deroulante native DSFR),
+        et <code>checkbox</code> (defaut) pour le Departement.</p>
 
-        <gouv-facets id="elus-display-demo" source="elus-clean"
-          fields="Sexe, Departement, Categorie, Commune"
-          labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
-          display="Sexe:radio | Departement:multiselect | Categorie:select"
+        <gouv-facets id="ct-display-demo" source="ct-local"
+          server-facets
+          fields="cat_energie_libelle, nom_region, cat_vehicule_libelle, nom_departement"
+          labels="cat_energie_libelle:Energie | nom_region:Region | cat_vehicule_libelle:Type de vehicule | nom_departement:Departement"
+          display="cat_energie_libelle:radio | nom_region:multiselect | cat_vehicule_libelle:select"
           max-values="6">
         </gouv-facets>
 
-        <gouv-datalist source="elus-display-demo"
-          colonnes="Nom, Prenom, Commune, Departement"
+        <gouv-datalist source="ct-display-demo"
+          colonnes="cct_commune, nom_departement, cat_vehicule_libelle, prix_visite"
           recherche="true"
           pagination="5">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-facets id="filtered" source="clean"
-  fields="Sexe, Departement, Categorie, Commune"
-  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
-  display="Sexe:radio | Departement:multiselect | Categorie:select"
+        <pre><code>&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="cat_energie_libelle, nom_region, cat_vehicule_libelle, nom_departement"
+  labels="cat_energie_libelle:Energie | nom_region:Region | cat_vehicule_libelle:Type | nom_departement:Departement"
+  display="cat_energie_libelle:radio | nom_region:multiselect | cat_vehicule_libelle:select"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Commune, Departement"
-  recherche="true"
+  colonnes="cct_commune, nom_departement, cat_vehicule_libelle, prix_visite"
   pagination="5"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
 
@@ -361,25 +359,27 @@
         <p>L'attribut <code>hide-counts</code> masque les compteurs a cote de chaque valeur de facette,
         pour un affichage plus epure.</p>
 
-        <gouv-facets id="elus-hide-counts-demo" source="elus-clean"
-          fields="Departement, Categorie"
-          labels="Departement:Departement | Categorie:Categorie"
-          display="Departement:multiselect | Categorie:select"
+        <gouv-facets id="ct-hide-counts-demo" source="ct-local"
+          server-facets
+          fields="nom_region, cat_vehicule_libelle"
+          labels="nom_region:Region | cat_vehicule_libelle:Type de vehicule"
+          display="nom_region:multiselect | cat_vehicule_libelle:select"
           hide-counts
           cols="6">
         </gouv-facets>
 
-        <gouv-datalist source="elus-hide-counts-demo"
-          colonnes="Nom, Prenom, Commune, Departement"
+        <gouv-datalist source="ct-hide-counts-demo"
+          colonnes="cct_commune, nom_departement, cat_vehicule_libelle, prix_visite"
           recherche="true"
           pagination="5">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
-        <pre><code>&lt;gouv-facets id="filtered" source="clean"
-  fields="Departement, Categorie"
-  labels="Departement:Departement | Categorie:Categorie"
-  display="Departement:multiselect | Categorie:select"
+        <pre><code>&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region, cat_vehicule_libelle"
+  labels="nom_region:Region | cat_vehicule_libelle:Type de vehicule"
+  display="nom_region:multiselect | cat_vehicule_libelle:select"
   hide-counts
   cols="6"&gt;
 &lt;/gouv-facets&gt;</code></pre>
@@ -389,35 +389,39 @@
              ======================================================== -->
         <h2 class="fr-mt-6w">Exemple 6 : colonnage DSFR des facettes</h2>
         <p>L'attribut <code>cols</code> permet de controler la largeur de chaque facette
-        dans la grille DSFR. Ici, Departement occupe la moitie (<code>col-6</code>),
-        Categorie un tiers (<code>col-4</code>) et Sexe toute la largeur (<code>col-12</code>).</p>
+        dans la grille DSFR. Ici, Region occupe la moitie (<code>col-6</code>),
+        Type de vehicule un tiers (<code>col-4</code>) et Energie toute la largeur (<code>col-12</code>).</p>
 
-        <gouv-facets id="elus-cols-demo" source="elus-clean"
-          fields="Departement, Categorie, Sexe"
-          labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-          display="Departement:multiselect | Categorie:select"
-          cols="Departement:6 | Categorie:4 | Sexe:12"
+        <gouv-facets id="ct-cols-demo" source="ct-local"
+          server-facets
+          fields="nom_region, cat_vehicule_libelle, cat_energie_libelle"
+          labels="nom_region:Region | cat_vehicule_libelle:Type de vehicule | cat_energie_libelle:Energie"
+          display="nom_region:multiselect | cat_vehicule_libelle:select"
+          cols="nom_region:6 | cat_vehicule_libelle:4 | cat_energie_libelle:12"
           max-values="8">
         </gouv-facets>
 
-        <gouv-datalist source="elus-cols-demo"
-          colonnes="Nom, Prenom, Commune, Departement"
+        <gouv-datalist source="ct-cols-demo"
+          colonnes="cct_commune, nom_departement, cat_vehicule_libelle, prix_visite"
           recherche="true"
           pagination="5">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;!-- Colonnage par facette --&gt;
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Departement, Categorie, Sexe"
-  display="Departement:multiselect | Categorie:select"
-  cols="Departement:6 | Categorie:4 | Sexe:12"
+&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region, cat_vehicule_libelle, cat_energie_libelle"
+  labels="nom_region:Region | cat_vehicule_libelle:Type | cat_energie_libelle:Energie"
+  display="nom_region:multiselect | cat_vehicule_libelle:select"
+  cols="nom_region:6 | cat_vehicule_libelle:4 | cat_energie_libelle:12"
   max-values="8"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;!-- Colonnage global (toutes les facettes en col-6) --&gt;
-&lt;gouv-facets id="filtered" source="clean"
-  fields="region, type, statut"
+&lt;gouv-facets id="filtered" source="src"
+  server-facets
+  fields="nom_region, cat_vehicule_libelle, cat_energie_libelle"
   cols="6"&gt;
 &lt;/gouv-facets&gt;</code></pre>
 

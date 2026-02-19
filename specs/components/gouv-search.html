@@ -24,20 +24,22 @@
        Sources de donnees pour les exemples live
        ============================================================ -->
 
-  <!-- Exemple 1 & 2 : Maires de France (tabular-api) -->
+  <!-- Exemple 1 & 2 : RappelConso (OpenDataSoft) -->
   <gouv-source id="elus-raw"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+    api-type="opendatasoft"
+    dataset-id="rappelconso-v2-gtin-trie"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
   <gouv-normalize id="elus-clean" source="elus-raw"
-    rename="Nom de l'&eacute;lu:Nom | Pr&eacute;nom de l'&eacute;lu:Prenom | Libell&eacute; du d&eacute;partement:Departement | Libell&eacute; de la commune:Commune | Libell&eacute; de la cat&eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
+    rename="modeles_ou_references:Produit | categorie_produit:Categorie | marque_produit:Marque | date_publication:Date | motif_rappel:Motif"
     trim>
   </gouv-normalize>
 
   <!-- Exemple 3 : Industrie du futur -->
   <gouv-source id="industrie-raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+    api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
   <gouv-normalize id="industrie-clean" source="industrie-raw"
     numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
@@ -120,35 +122,35 @@
              Exemple 1 : Recherche seule + Datalist
              ======================================================== -->
         <h2 class="fr-mt-4w">Exemple 1 : recherche simple + tableau</h2>
-        <p>Recherche textuelle sur les champs <code>Nom</code>, <code>Prenom</code> et <code>Commune</code>.
+        <p>Recherche textuelle sur les champs <code>Produit</code>, <code>Marque</code> et <code>Categorie</code>.
         Le tableau se filtre en temps reel avec un compteur de resultats.</p>
 
         <gouv-search id="elus-searched" source="elus-clean"
-          fields="Nom, Prenom, Commune"
-          placeholder="Nom, prenom ou commune..."
+          fields="Produit, Marque, Categorie"
+          placeholder="Produit, marque ou categorie..."
           operator="words"
           min-length="2"
           count>
         </gouv-search>
 
         <gouv-datalist source="elus-searched"
-          colonnes="Nom, Prenom, Commune, Departement"
-          tri="Nom:asc"
+          colonnes="Produit, Categorie, Marque, Date"
+          tri="Date:desc"
           pagination="10">
         </gouv-datalist>
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Commune"
-  placeholder="Nom, prenom ou commune..."
+  fields="Produit, Marque, Categorie"
+  placeholder="Produit, marque ou categorie..."
   operator="words"
   min-length="2"
   count&gt;
 &lt;/gouv-search&gt;
 
 &lt;gouv-datalist source="searched"
-  colonnes="Nom, Prenom, Commune, Departement"
-  tri="Nom:asc"
+  colonnes="Produit, Categorie, Marque, Date"
+  tri="Date:desc"
   pagination="10"&gt;
 &lt;/gouv-datalist&gt;</code></pre>
 
@@ -160,15 +162,15 @@
         les facettes affinent. Les cartes affichent les resultats.</p>
 
         <gouv-search id="elus-search-facets" source="elus-clean"
-          fields="Nom, Prenom, Commune, Departement"
-          placeholder="Rechercher un maire..."
+          fields="Produit, Marque, Categorie"
+          placeholder="Rechercher un produit rappele..."
           operator="words"
           count>
         </gouv-search>
 
         <gouv-facets id="elus-search-filtered" source="elus-search-facets"
-          fields="Departement, Categorie"
-          labels="Departement:Departement | Categorie:Categorie socio-pro"
+          fields="Categorie, Marque"
+          labels="Categorie:Categorie | Marque:Marque"
           max-values="6">
         </gouv-facets>
 
@@ -177,11 +179,11 @@
             <div class="fr-card">
               <div class="fr-card__body">
                 <div class="fr-card__content">
-                  <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
-                  <p class="fr-card__desc">{{Commune}}</p>
+                  <h3 class="fr-card__title">{{Produit}}</h3>
+                  <p class="fr-card__desc">{{Marque}}</p>
                 </div>
                 <div class="fr-card__footer">
-                  <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>
+                  <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Categorie}}</p>
                 </div>
               </div>
             </div>
@@ -190,15 +192,15 @@
 
         <h3 class="fr-mt-3w">Code</h3>
         <pre><code>&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Commune, Departement"
-  placeholder="Rechercher un maire..."
+  fields="Produit, Marque, Categorie"
+  placeholder="Rechercher un produit rappele..."
   operator="words"
   count&gt;
 &lt;/gouv-search&gt;
 
 &lt;gouv-facets id="filtered" source="searched"
-  fields="Departement, Categorie"
-  labels="Departement:Departement | Categorie:Categorie socio-pro"
+  fields="Categorie, Marque"
+  labels="Categorie:Categorie | Marque:Marque"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
@@ -207,11 +209,11 @@
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
-          &lt;h3 class="fr-card__title"&gt;{{Prenom}} {{Nom}}&lt;/h3&gt;
-          &lt;p class="fr-card__desc"&gt;{{Commune}}&lt;/p&gt;
+          &lt;h3 class="fr-card__title"&gt;{{Produit}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{Marque}}&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class="fr-card__footer"&gt;
-          &lt;p class="fr-badge fr-badge--sm"&gt;{{Departement}}&lt;/p&gt;
+          &lt;p class="fr-badge fr-badge--sm"&gt;{{Categorie}}&lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;

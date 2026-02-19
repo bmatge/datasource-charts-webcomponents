@@ -48,34 +48,31 @@
         <p>En mode client-side (defaut), <code>gouv-facets</code> recoit toutes les donnees, detecte automatiquement les champs filtrables, calcule les compteurs localement, et filtre les donnees avant de les redistribuer.</p>
 
         <!-- facets-datalist -->
-        <h4>Tableau filtrable — Maires avec facettes</h4>
-        <p>Facettes sur Departement (multiselect), Categorie (select) et Sexe (radio) avec colonnage DSFR (<code>cols="4"</code>). Les donnees filtrees alimentent un <code>gouv-datalist</code>.
+        <h4>Tableau filtrable — Rappels de produits avec facettes serveur</h4>
+        <p>Facettes serveur ODS sur Categorie (multiselect) et Sous-categorie (select) avec colonnage DSFR (<code>cols="4"</code>). Les compteurs se mettent a jour dynamiquement sur le dataset complet. Les donnees filtrees alimentent un <code>gouv-datalist</code>.
           <a href="../apps/playground/index.html?example=facets-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-f-datalist">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"&gt;&lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'&amp;eacute;lu:Nom | Pr&amp;eacute;nom de l'&amp;eacute;lu:Prenom | Libell&amp;eacute; du d&amp;eacute;partement:Departement | Libell&amp;eacute; de la commune:Commune | Libell&amp;eacute; de la cat&amp;eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Departement, Categorie, Sexe"
-  labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-  display="Departement:multiselect | Categorie:select | Sexe:radio"
+&lt;gouv-facets id="filtered" source="raw"
+  server-facets
+  fields="categorie_produit, sous_categorie_produit"
+  labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie"
+  display="categorie_produit:multiselect | sous_categorie_produit:select"
   cols="4"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Commune, Departement, Categorie"
-  recherche="true"
-  tri="Nom:asc"
-  pagination="10"
+  colonnes="modeles_ou_references:Produit, marque_produit:Marque, categorie_produit:Categorie, sous_categorie_produit:Sous-cat."
+  server-tri
+  pagination="20"
   export="csv"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
@@ -90,9 +87,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-f-bar">
-<pre class="example-code">&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
@@ -131,9 +128,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-map">Code source</button></h3>
           <div class="fr-collapse" id="code-f-map">
-<pre class="example-code">&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="fiscalite-locale-des-particuliers"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   numeric="taux_global_tfb, taux_global_th, mpoid"
@@ -183,25 +180,23 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-modes">Code source</button></h3>
           <div class="fr-collapse" id="code-f-modes">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="20"&gt;&lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'&amp;eacute;lu:Nom | Pr&amp;eacute;nom de l'&amp;eacute;lu:Prenom | Libell&amp;eacute; du d&amp;eacute;partement:Departement | Libell&amp;eacute; de la commune:Commune | Libell&amp;eacute; de la cat&amp;eacute;gorie socio-professionnelle:Categorie | Code sexe:Sexe"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-facets id="filtered" source="clean"
-  fields="Sexe, Departement, Categorie, Commune"
-  labels="Sexe:Sexe | Departement:Departement | Categorie:Categorie | Commune:Commune"
-  display="Sexe:radio | Departement:multiselect | Categorie:select"
+&lt;gouv-facets id="filtered" source="raw"
+  server-facets
+  fields="categorie_produit, sous_categorie_produit, marque_produit"
+  labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie | marque_produit:Marque"
+  display="categorie_produit:radio | sous_categorie_produit:multiselect | marque_produit:select"
   max-values="6"&gt;
 &lt;/gouv-facets&gt;
 
 &lt;gouv-datalist source="filtered"
-  colonnes="Nom, Prenom, Commune, Departement"
-  recherche="true"
-  pagination="10"&gt;
+  colonnes="modeles_ou_references:Produit, marque_produit:Marque, categorie_produit:Categorie"
+  server-tri
+  pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>
         </section>

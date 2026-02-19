@@ -4,7 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 export interface SidemenuItem {
   id: string;
   label: string;
-  href: string;
+  href?: string;
   children?: SidemenuItem[];
 }
 
@@ -88,6 +88,15 @@ export class AppSidemenu extends LitElement {
       for (const child of item.children) {
         const match = this._findMatchingItem(child, filename, hash);
         if (match) return match;
+      }
+      // No hash: if a child href matches filename + any hash, select first matching child
+      // This ensures the parent section expands when visiting the page without a specific anchor
+      if (!hash) {
+        const firstMatch = item.children.find(child => {
+          const [childFile] = (child.href || '').split('#');
+          return childFile === filename;
+        });
+        if (firstMatch) return firstMatch.id;
       }
     }
     return null;

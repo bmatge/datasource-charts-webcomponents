@@ -206,15 +206,18 @@
           </p>
 
           <div class="code-block">
-            <pre>&lt;gouv-source id="maires"
-  url="https://tabular-api.data.gouv.fr/api/resources/.../data/"
+            <pre>&lt;gouv-source id="rappels"
+  api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side
   paginate page-size="20"&gt;
 &lt;/gouv-source&gt;
 
-&lt;gouv-datalist source="maires"
-  colonnes="Nom de l'elu:Nom, Prenom de l'elu:Prenom, Libelle du departement:Departement"
+&lt;gouv-datalist source="rappels"
+  colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque"
   recherche="true"
-  tri="Nom de l'elu:asc"
+  tri="date_publication:desc"
   pagination="20"&gt;
 &lt;/gouv-datalist&gt;</pre>
           </div>

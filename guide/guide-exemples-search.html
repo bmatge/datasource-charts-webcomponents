@@ -114,34 +114,30 @@
           </div>
         </section>
 
-        <!-- search-facets-display (FIXED: maires dataset) -->
+        <!-- search-facets-display (RappelConso ODS) -->
         <h4>Recherche + facettes + cartes</h4>
-        <p>Pipeline complet : la recherche reduit le jeu de donnees, les facettes affinent par departement et categorie, et <code>gouv-display</code> genere les cartes.
+        <p>Pipeline complet : la recherche reduit le jeu de donnees, les facettes affinent par categorie et sous-categorie, et <code>gouv-display</code> genere les cartes.
           <a href="../apps/playground/index.html?example=search-facets-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-facets">Code source</button></h3>
           <div class="fr-collapse" id="code-s-facets">
-<pre class="example-code">&lt;gouv-source id="raw"
-  api-type="tabular"
-  resource="2876a346-d50c-4911-934e-19ee07b0e503"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="rappelconso-v2-gtin-trie"
+  base-url="https://data.economie.gouv.fr"
+  server-side page-size="100"&gt;&lt;/gouv-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
-  rename="Nom de l'&#233;lu:Nom | Pr&#233;nom de l'&#233;lu:Prenom | Libell&#233; du d&#233;partement:Departement | Libell&#233; de la commune:Commune | Libell&#233; de la cat&#233;gorie socio-professionnelle:Categorie"
-  trim&gt;
-&lt;/gouv-normalize&gt;
-
-&lt;gouv-search id="searched" source="clean"
-  fields="Nom, Prenom, Departement, Commune"
-  placeholder="Rechercher un maire..."
+&lt;gouv-search id="searched" source="raw"
+  fields="libelle, marque_produit, motif_rappel"
+  placeholder="Rechercher un rappel..."
   operator="words" count&gt;
 &lt;/gouv-search&gt;
 
 &lt;gouv-facets id="filtered" source="searched"
-  fields="Departement, Categorie"
-  labels="Departement:Departement | Categorie:Categorie socio-pro"
-  display="Departement:multiselect | Categorie:select"
+  fields="categorie_produit, sous_categorie_produit"
+  labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie"
+  display="categorie_produit:multiselect | sous_categorie_produit:select"
   cols="6"&gt;
 &lt;/gouv-facets&gt;
 
@@ -150,11 +146,11 @@
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
         &lt;div class="fr-card__content"&gt;
-          &lt;h3 class="fr-card__title"&gt;{{Prenom}} {{Nom}}&lt;/h3&gt;
-          &lt;p class="fr-card__desc"&gt;{{Commune}}&lt;/p&gt;
+          &lt;h3 class="fr-card__title"&gt;{{libelle}}&lt;/h3&gt;
+          &lt;p class="fr-card__desc"&gt;{{motif_rappel}}&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class="fr-card__footer"&gt;
-          &lt;p class="fr-badge fr-badge--sm"&gt;{{Departement}}&lt;/p&gt;
+          &lt;p class="fr-badge fr-badge--sm"&gt;{{categorie_produit}}&lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;
@@ -172,9 +168,9 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-s-kpi">
-<pre class="example-code">&lt;gouv-source id="raw"
-  url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-  transform="results"&gt;&lt;/gouv-source&gt;
+<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+  dataset-id="industrie-du-futur"
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
 
 &lt;gouv-normalize id="clean" source="raw"
   numeric="montant_investissement, nombre_beneficiaires"
