@@ -2,7 +2,7 @@
  * ApiStorageAdapter — stores data via the backend API with localStorage as cache/fallback.
  *
  * Strategy:
- * - load(): GET from API, fallback to localStorage if offline
+ * - load(): GET from API, merge with local data, fallback to localStorage if offline
  * - save(): save to localStorage immediately, then sync to API via SyncQueue
  * - remove(): remove from localStorage, then DELETE from API via SyncQueue
  *
@@ -18,6 +18,72 @@ import { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from 
 import { syncItems, deleteItem, setSyncBaseUrl } from './sync-queue.js';
 import type { Source } from '../types/source.js';
 import { serializeSourceForServer } from '../types/source.js';
+
+// ---- Merge helpers (repair incomplete server data from pre-serialization-fix) ----
+
+/**
+ * Check if a server item has complete config_json data.
+ * Items saved before the serialization fix have config_json: null.
+ */
+function hasCompleteServerConfig(item: Record<string, unknown>): boolean {
+  const configJson = item.config_json ?? item.configJson;
+  return configJson != null
+    && typeof configJson === 'object'
+    && Object.keys(configJson as object).length > 0;
+}
+
+/**
+ * Check if a local item has connection/source config data (flat fields).
+ * Local items store config as top-level fields (apiUrl, url, documentId, etc.).
+ */
+function hasLocalConfig(item: Record<string, unknown>, key: string): boolean {
+  if (key === STORAGE_KEYS.SOURCES) {
+    if (item.type === 'manual') return true;
+    return !!(item.apiUrl || item.documentId);
+  }
+  if (key === STORAGE_KEYS.CONNECTIONS) {
+    return !!(item.url || item.apiUrl);
+  }
+  return false;
+}
+
+/**
+ * Merge server data with local data for sources/connections.
+ *
+ * Pre-serialization-fix data on the server has config_json: null because flat client
+ * fields weren't packed into the JSON blob. When local has complete data for such items,
+ * prefer the local version. The repaired data will be re-synced to the server via the
+ * saveToStorage hook (which triggers save → syncItems with correct serialization).
+ */
+function mergeServerWithLocal(
+  serverItems: Record<string, unknown>[],
+  localItems: Record<string, unknown>[],
+  key: string,
+): Record<string, unknown>[] {
+  if (localItems.length === 0) return serverItems;
+
+  const localById = new Map<string, Record<string, unknown>>();
+  for (const item of localItems) {
+    if (item.id) localById.set(item.id as string, item);
+  }
+
+  return serverItems.map(serverItem => {
+    const id = serverItem.id as string;
+    if (!id) return serverItem;
+
+    // Server item already has complete config → use as-is
+    if (hasCompleteServerConfig(serverItem)) return serverItem;
+
+    // Server item is incomplete — check if local has better data
+    const localItem = localById.get(id);
+    if (localItem && hasLocalConfig(localItem, key)) {
+      console.info(`[ApiStorageAdapter] Repaired ${key} item ${id} from local data`);
+      return localItem;
+    }
+
+    return serverItem;
+  });
+}
 
 /** Server columns for connections: name, type, config_json, api_key_encrypted, status */
 const CONNECTION_TOP_LEVEL = new Set(['id', 'name', 'type', 'status']);
@@ -71,7 +137,20 @@ export class ApiStorageAdapter implements StorageAdapter {
         return loadFromStorage(key, defaultValue);
       }
 
-      const data = await response.json() as T;
+      let data = await response.json() as T;
+
+      // For sources/connections: merge server data with local to repair
+      // items that have config_json: null (saved before serialization fix).
+      // The save hook will re-sync repaired items to the server.
+      if (Array.isArray(data) && (key === STORAGE_KEYS.SOURCES || key === STORAGE_KEYS.CONNECTIONS)) {
+        const localData = loadFromStorage<Record<string, unknown>[]>(key, []);
+        data = mergeServerWithLocal(
+          data as Record<string, unknown>[],
+          localData,
+          key,
+        ) as T;
+      }
+
       // Update localStorage cache
       saveToStorage(key, data);
       return data;
