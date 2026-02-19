@@ -16,6 +16,7 @@ import {
   toastSuccess,
   toastError,
   confirmDialog,
+  getApiAdapter,
 } from '@gouv-widgets/shared';
 
 import { state, EXTERNAL_PROXY } from '../state.js';
@@ -366,6 +367,7 @@ export function editConnection(id: string): void {
 export function deleteConnection(id: string): void {
   state.connections = state.connections.filter(c => c.id !== id);
   saveToStorage(STORAGE_KEYS.CONNECTIONS, state.connections);
+  getApiAdapter()?.deleteItemFromServer(STORAGE_KEYS.CONNECTIONS, id);
   if (state.selectedConnectionId === id) {
     state.selectedConnectionId = null;
     showExplorerEmpty();
@@ -593,6 +595,7 @@ export function renderSources(): void {
 export function deleteSource(id: string): void {
   state.sources = state.sources.filter(s => s.id !== id);
   saveToStorage(STORAGE_KEYS.SOURCES, state.sources);
+  getApiAdapter()?.deleteItemFromServer(STORAGE_KEYS.SOURCES, id);
   renderSources();
 }
 

@@ -2,7 +2,7 @@
  * Dashboard app - Dashboard CRUD operations
  */
 
-import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo, confirmDialog } from '@gouv-widgets/shared';
+import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo, confirmDialog, getApiAdapter } from '@gouv-widgets/shared';
 import { state, createEmptyDashboard } from './state.js';
 import { resetGrid, rebuildGrid } from './grid.js';
 import { updateGeneratedCode, generateHTMLCode } from './code-generator.js';
@@ -115,6 +115,7 @@ export async function deleteDashboard(id: string): Promise<void> {
 
   state.savedDashboards = state.savedDashboards.filter(d => d.id !== id);
   saveToStorage(STORAGE_KEYS.DASHBOARDS, state.savedDashboards);
+  getApiAdapter()?.deleteItemFromServer(STORAGE_KEYS.DASHBOARDS, id);
 
   // If the deleted dashboard is the currently loaded one, reset its id
   if (state.dashboard.id === id) {
