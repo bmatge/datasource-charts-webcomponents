@@ -163,7 +163,10 @@ export class GouvSearch extends LitElement {
   clear() {
     this._term = '';
     const input = this.querySelector('input');
-    if (input) input.value = '';
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
     this._applyFilter();
   }
 
@@ -489,18 +492,18 @@ export class GouvSearch extends LitElement {
           .value="${this._term}"
           @input="${(e: Event) => this._onInput((e.target as HTMLInputElement).value)}"
           @search="${(e: Event) => { this._term = (e.target as HTMLInputElement).value; this._onSubmit(); }}"
-          @keydown="${(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); this._onSubmit(); } }}">
+          @keydown="${(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); this._onSubmit(); } if (e.key === 'Escape') { this.clear(); } }}">
         <button class="fr-btn" title="Rechercher" type="button"
           @click="${(e: Event) => { e.preventDefault(); this._onSubmit(); }}">
           Rechercher
         </button>
       </div>
       ${this.count ? html`
-        <p class="fr-text--sm fr-mt-1v gouv-search-count" aria-live="polite">
+        <p class="fr-text--sm fr-mt-1v gouv-search-count" aria-live="polite" aria-atomic="true" role="status">
           ${this._resultCount} resultat${this._resultCount !== 1 ? 's' : ''}
         </p>
       ` : html`
-        <p class="fr-sr-only" aria-live="polite">
+        <p class="fr-sr-only" aria-live="polite" aria-atomic="true" role="status">
           ${this._resultCount} resultat${this._resultCount !== 1 ? 's' : ''}
         </p>
       `}

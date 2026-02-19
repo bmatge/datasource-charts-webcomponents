@@ -705,8 +705,8 @@ export class GouvFacets extends LitElement {
     this._activeSelections = selections;
     this._afterSelectionChange();
 
-    // Announce selection change for multiselect/radio modes
-    if (displayMode === 'multiselect' || displayMode === 'radio') {
+    // Announce selection change for all interactive modes
+    if (displayMode === 'multiselect' || displayMode === 'radio' || displayMode === 'checkbox') {
       const action = wasSelected ? 'deselectionnee' : 'selectionnee';
       this._announce(`${value} ${action}, ${fieldSet.size} option${fieldSet.size > 1 ? 's' : ''} selectionnee${fieldSet.size > 1 ? 's' : ''}`);
     }
@@ -1049,6 +1049,7 @@ export class GouvFacets extends LitElement {
     return html`
       <fieldset class="fr-fieldset gouv-facets__group" aria-labelledby="${uid}-legend">
         <legend class="fr-fieldset__legend fr-text--bold" id="${uid}-legend">${group.label}</legend>
+        <div aria-live="polite" class="fr-sr-only">${this._liveAnnouncement}</div>
         ${isSearchable ? html`
           <div class="fr-fieldset__element">
             <div class="fr-input-group">
