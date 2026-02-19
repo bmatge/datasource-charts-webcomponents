@@ -63,7 +63,7 @@ export {
 
 // Types
 export type { Source } from './types/source.js';
-export { migrateSource } from './types/source.js';
+export { migrateSource, serializeSourceForServer } from './types/source.js';
 
 // UI
 export { openModal, closeModal, setupModalOverlayClose, confirmDialog } from './ui/modal.js';

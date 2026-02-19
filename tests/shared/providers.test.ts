@@ -11,7 +11,7 @@ import {
   GENERIC_CONFIG,
 } from '../../packages/shared/src/providers/index.js';
 import type { ProviderId, ProviderConfig } from '../../packages/shared/src/providers/index.js';
-import { migrateSource } from '../../packages/shared/src/types/source.js';
+import { migrateSource, serializeSourceForServer } from '../../packages/shared/src/types/source.js';
 import type { Source } from '../../packages/shared/src/types/source.js';
 
 // =========================================================================
@@ -429,6 +429,68 @@ describe('migrateSource', () => {
     const migrated = migrateSource(legacy);
     expect(migrated.provider).toBe('grist');
     expect(migrated.resourceIds).toEqual({ documentId: 'myDoc', tableId: 'myTable' });
+  });
+
+  it('unpacks server format (record_count, config_json, data_json)', () => {
+    // Simulate what the server returns after GET /api/sources
+    const serverRow = {
+      id: 'api_123', name: 'ODS Source', type: 'api' as const,
+      record_count: 10,
+      config_json: {
+        apiUrl: 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/test/records',
+        method: 'GET',
+        connectionId: 'conn_1',
+        provider: 'opendatasoft',
+      },
+      data_json: [{ col1: 'a' }, { col1: 'b' }],
+      owner_id: 'user_1',
+      _owned: true,
+      _permissions: { read: true, write: true },
+    } as unknown as Partial<Source>;
+
+    const migrated = migrateSource(serverRow);
+    expect(migrated.recordCount).toBe(10);
+    expect(migrated.apiUrl).toBe('https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/test/records');
+    expect(migrated.method).toBe('GET');
+    expect(migrated.connectionId).toBe('conn_1');
+    expect(migrated.provider).toBe('opendatasoft');
+    expect(migrated.data).toEqual([{ col1: 'a' }, { col1: 'b' }]);
+    // Server-only fields should be cleaned up
+    expect((migrated as Record<string, unknown>).record_count).toBeUndefined();
+    expect((migrated as Record<string, unknown>).config_json).toBeUndefined();
+    expect((migrated as Record<string, unknown>).data_json).toBeUndefined();
+    expect((migrated as Record<string, unknown>).owner_id).toBeUndefined();
+    expect((migrated as Record<string, unknown>)._owned).toBeUndefined();
+  });
+});
+
+// =========================================================================
+// serializeSourceForServer
+// =========================================================================
+
+describe('serializeSourceForServer', () => {
+  it('packs client fields into server format', () => {
+    const source: Source = {
+      id: 'api_1', name: 'Test', type: 'api',
+      apiUrl: 'https://example.com/api', method: 'GET',
+      headers: '{"X-Key": "abc"}', dataPath: 'results',
+      connectionId: 'conn_1', provider: 'opendatasoft',
+      data: [{ a: 1 }, { a: 2 }], recordCount: 100,
+    };
+    const serialized = serializeSourceForServer(source);
+    expect(serialized.id).toBe('api_1');
+    expect(serialized.name).toBe('Test');
+    expect(serialized.type).toBe('api');
+    expect(serialized.recordCount).toBe(100);
+    expect(serialized.configJson).toEqual({
+      apiUrl: 'https://example.com/api', method: 'GET',
+      headers: '{"X-Key": "abc"}', dataPath: 'results',
+      connectionId: 'conn_1', provider: 'opendatasoft',
+    });
+    expect(serialized.dataJson).toEqual([{ a: 1 }, { a: 2 }]);
+    // Flat fields should NOT be in the serialized output
+    expect(serialized.apiUrl).toBeUndefined();
+    expect(serialized.data).toBeUndefined();
   });
 });
 

@@ -16,6 +16,26 @@
 import type { StorageAdapter } from './storage-adapter.js';
 import { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from './local-storage.js';
 import { syncItems, deleteItem, setSyncBaseUrl } from './sync-queue.js';
+import type { Source } from '../types/source.js';
+import { serializeSourceForServer } from '../types/source.js';
+
+/** Server columns for connections: name, type, config_json, api_key_encrypted, status */
+const CONNECTION_TOP_LEVEL = new Set(['id', 'name', 'type', 'status']);
+
+/** Pack flat connection fields into configJson for the server */
+function serializeConnectionForServer(conn: Record<string, unknown>): Record<string, unknown> {
+  const configJson: Record<string, unknown> = {};
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(conn)) {
+    if (CONNECTION_TOP_LEVEL.has(key)) {
+      result[key] = value;
+    } else if (!key.startsWith('_')) {
+      configJson[key] = value;
+    }
+  }
+  result.configJson = configJson;
+  return result;
+}
 
 /** Maps STORAGE_KEYS to API endpoints */
 const KEY_TO_ENDPOINT: Record<string, string> = {
@@ -73,7 +93,16 @@ export class ApiStorageAdapter implements StorageAdapter {
 
     // Sync to API via SyncQueue (reliable, with retry)
     if (Array.isArray(data)) {
-      syncItems(endpoint, data as { id?: string }[]).catch((err) => {
+      // Transform to server format (pack flat fields into config_json/data_json)
+      let items: { id?: string; [k: string]: unknown }[];
+      if (key === STORAGE_KEYS.SOURCES) {
+        items = (data as Source[]).map(serializeSourceForServer);
+      } else if (key === STORAGE_KEYS.CONNECTIONS) {
+        items = (data as Record<string, unknown>[]).map(serializeConnectionForServer);
+      } else {
+        items = data as { id?: string }[];
+      }
+      syncItems(endpoint, items).catch((err) => {
         console.warn(`[ApiStorageAdapter] save(${key}): sync failed`, err);
       });
     }

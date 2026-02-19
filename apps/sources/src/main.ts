@@ -4,7 +4,7 @@
  */
 
 import './styles/sources.css';
-import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, toastSuccess, toastError, navigateTo, initAuth, downloadExport, importFromFile } from '@gouv-widgets/shared';
+import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, toastSuccess, toastError, navigateTo, initAuth, downloadExport, importFromFile, migrateSource } from '@gouv-widgets/shared';
 
 import {
   state,
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   // Reload state from (now-updated) localStorage, normalizing backend format
   state.connections = normalizeConnections(loadFromStorage(STORAGE_KEYS.CONNECTIONS, []));
-  state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []);
+  state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []).map(migrateSource);
 
   // Initial render
   renderConnections();
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const result = await importFromFile(file);
       // Refresh state from localStorage after import
       state.connections = normalizeConnections(loadFromStorage(STORAGE_KEYS.CONNECTIONS, []));
-      state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []);
+      state.sources = loadFromStorage(STORAGE_KEYS.SOURCES, []).map(migrateSource);
       renderConnections();
       renderSources();
       toastSuccess(`Import : ${result.sources} sources, ${result.connections} connexions, ${result.favorites} favoris, ${result.dashboards} dashboards${result.skipped > 0 ? ` (${result.skipped} ignores)` : ''}`);
