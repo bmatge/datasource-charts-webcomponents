@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GouvKpi } from '../src/components/gouv-kpi.js';
+import { GouvKpiGroup } from '../src/components/gouv-kpi-group.js';
 import { clearDataCache, dispatchDataLoaded, dispatchDataLoading, dispatchDataError } from '../src/utils/data-bridge.js';
 
 describe('GouvKpi', () => {
@@ -253,6 +254,33 @@ describe('GouvKpi', () => {
     });
   });
 
+  describe('col property', () => {
+    it('defaults to undefined', () => {
+      expect(kpi.col).toBeUndefined();
+    });
+
+    it('can be set to a number', () => {
+      kpi.col = 6;
+      expect(kpi.col).toBe(6);
+    });
+
+    it('does not affect _computeValue', () => {
+      kpi.valeur = 'score';
+      kpi.col = 6;
+      (kpi as any)._sourceData = [{ score: 42 }];
+      expect((kpi as any)._computeValue()).toBe(42);
+    });
+
+    it('does not affect _getColor', () => {
+      kpi.valeur = 'score';
+      kpi.col = 4;
+      (kpi as any)._sourceData = [{ score: 90 }];
+      kpi.seuilVert = 80;
+      kpi.seuilOrange = 50;
+      expect((kpi as any)._getColor()).toBe('vert');
+    });
+  });
+
   describe('Format types', () => {
     beforeEach(() => {
       kpi.valeur = 'score';
@@ -283,5 +311,88 @@ describe('GouvKpi', () => {
       const label = (kpi as any)._getAriaLabel();
       expect(label).toMatch(/75[,.]5/);
     });
+  });
+});
+
+describe('GouvKpiGroup', () => {
+  let group: GouvKpiGroup;
+
+  afterEach(() => {
+    if (group?.isConnected) {
+      group.remove();
+    }
+  });
+
+  it('is registered as custom element', () => {
+    expect(customElements.get('gouv-kpi-group')).toBeDefined();
+  });
+
+  it('defaults cols to 3', () => {
+    group = new GouvKpiGroup();
+    expect(group.cols).toBe(3);
+  });
+
+  it('defaults gap to md', () => {
+    group = new GouvKpiGroup();
+    expect(group.gap).toBe('md');
+  });
+
+  it('sets role="group" on connectedCallback', () => {
+    group = new GouvKpiGroup();
+    document.body.appendChild(group);
+    expect(group.getAttribute('role')).toBe('group');
+  });
+
+  it('does not override existing role', () => {
+    group = new GouvKpiGroup();
+    group.setAttribute('role', 'region');
+    document.body.appendChild(group);
+    expect(group.getAttribute('role')).toBe('region');
+  });
+
+  it('computes default span CSS variable from cols', async () => {
+    group = new GouvKpiGroup();
+    group.cols = 4;
+    document.body.appendChild(group);
+    await group.updateComplete;
+    expect(group.style.getPropertyValue('--_kpi-default-span')).toBe('3');
+  });
+
+  it('handles cols that do not divide 12 evenly', async () => {
+    group = new GouvKpiGroup();
+    group.cols = 5;
+    document.body.appendChild(group);
+    await group.updateComplete;
+    expect(group.style.getPropertyValue('--_kpi-default-span')).toBe('2');
+  });
+
+  it('clamps cols to valid range (min 1)', async () => {
+    group = new GouvKpiGroup();
+    group.cols = 0;
+    document.body.appendChild(group);
+    await group.updateComplete;
+    expect(group.style.getPropertyValue('--_kpi-default-span')).toBe('12');
+  });
+
+  it('clamps cols to valid range (max 12)', async () => {
+    group = new GouvKpiGroup();
+    group.cols = 20;
+    document.body.appendChild(group);
+    await group.updateComplete;
+    expect(group.style.getPropertyValue('--_kpi-default-span')).toBe('1');
+  });
+
+  it('uses Shadow DOM', () => {
+    group = new GouvKpiGroup();
+    document.body.appendChild(group);
+    expect(group.shadowRoot).not.toBeNull();
+  });
+
+  it('renders a slot for children', async () => {
+    group = new GouvKpiGroup();
+    document.body.appendChild(group);
+    await group.updateComplete;
+    const slot = group.shadowRoot!.querySelector('slot');
+    expect(slot).not.toBeNull();
   });
 });

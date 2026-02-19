@@ -17,6 +17,7 @@ import { GouvFacets } from '../../../src/components/gouv-facets.js';
 import { GouvDisplay } from '../../../src/components/gouv-display.js';
 import { GouvSearch } from '../../../src/components/gouv-search.js';
 import { GouvRawData } from '../../../src/components/gouv-raw-data.js';
+import { GouvKpiGroup } from '../../../src/components/gouv-kpi-group.js';
 
 // Type/constant imports for alignment checks
 import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
@@ -44,8 +45,8 @@ function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
 }
 
 describe('builder-ia skills', () => {
-  it('should have 20 skill definitions', () => {
-    expect(Object.keys(SKILLS)).toHaveLength(20);
+  it('should have 21 skill definitions', () => {
+    expect(Object.keys(SKILLS)).toHaveLength(21);
   });
 
   it('should have expected skill IDs', () => {
@@ -57,6 +58,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('gouvFacets');
     expect(SKILLS).toHaveProperty('gouvSearch');
     expect(SKILLS).toHaveProperty('gouvKpi');
+    expect(SKILLS).toHaveProperty('gouvKpiGroup');
     expect(SKILLS).toHaveProperty('gouvDsfrChart');
     expect(SKILLS).toHaveProperty('gouvDatalist');
     expect(SKILLS).toHaveProperty('gouvDisplay');
@@ -250,6 +252,10 @@ describe('builder-ia skills', () => {
       it('gouvRawData skill covers all <gouv-raw-data> attributes', () => {
         assertAttributesCovered(GouvRawData as unknown as typeof GouvSource, 'gouvRawData', 'gouv-raw-data');
       });
+
+      it('gouvKpiGroup skill covers all <gouv-kpi-group> attributes', () => {
+        assertAttributesCovered(GouvKpiGroup as unknown as typeof GouvSource, 'gouvKpiGroup', 'gouv-kpi-group');
+      });
     });
 
     describe('chart types coverage', () => {
@@ -320,6 +326,7 @@ describe('builder-ia skills', () => {
         'GouvFacets': 'gouvFacets',
         'GouvSearch': 'gouvSearch',
         'GouvKpi': 'gouvKpi',
+        'GouvKpiGroup': 'gouvKpiGroup',
         'GouvDatalist': 'gouvDatalist',
         'GouvDisplay': 'gouvDisplay',
         'GouvDsfrChart': 'gouvDsfrChart',

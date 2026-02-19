@@ -457,7 +457,7 @@ Nommage automatique sans alias : \`champ__fonction\` (ex: \`population__sum\`)
     id: 'gouvNormalize',
     name: 'gouv-normalize',
     description: 'Nettoyage et normalisation des donnees avant traitement',
-    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation', 'grist', 'airtable', 'flatten', 'aplatir', 'nested', 'ods v1', 'records.fields', 'replace-fields', 'dimension codee', 'code insee'],
+    trigger: ['normaliser', 'nettoyer', 'renommer', 'convertir', 'normalize', 'clean', 'nettoyage', 'normalisation', 'grist', 'airtable', 'flatten', 'aplatir', 'nested', 'ods v1', 'records.fields', 'replace-fields', 'dimension codee', 'code insee', 'arrondir', 'round', 'decimales'],
     content: `## <gouv-normalize> - Normalisation de donnees
 
 Composant invisible intermediaire qui nettoie et normalise les donnees avant traitement.
@@ -486,6 +486,7 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 | strip-html | Boolean | \`false\` | non | Supprime les balises HTML des valeurs string |
 | replace | String | \`""\` | non | Remplace des valeurs globalement : \`"N/A: | n.d.: | -:0"\` (pipe-separe) |
 | replace-fields | String | \`""\` | non | Remplacement cible par champ : \`"CHAMP:ancien:nouveau | CHAMP2:a:n"\` (pipe-separe). Ne remplace que dans le champ specifie. |
+| round | String | \`""\` | non | Arrondit des champs numeriques : \`"montant, prix"\` (0 decimales) ou \`"taux:2, score:1"\` (decimales explicites) |
 | lowercase-keys | Boolean | \`false\` | non | Met toutes les cles en minuscules |
 
 ### Ordre d'execution des transformations
@@ -495,8 +496,9 @@ Sortie : meme tableau avec valeurs nettoyees/renommees.
 4a. **replace-fields** — remplace les valeurs dans les champs specifies
 4b. replace — remplace les valeurs globalement (tous les champs)
 5. numeric / numeric-auto — conversion en nombres
-6. rename — renomme les cles
-7. lowercase-keys — cles en minuscules
+6. **round** — arrondit les valeurs numeriques
+7. rename — renomme les cles
+8. lowercase-keys — cles en minuscules
 
 ### Separateurs
 - \`numeric\` : champs separes par virgule
@@ -561,6 +563,14 @@ rendant les donnees compatibles avec tous les composants (facettes, datalist, gr
   replace="N/A: | n.d.: | -:0"
   numeric-auto>
 </gouv-normalize>
+
+<!-- Arrondir des montants (supprimer les decimales) -->
+<gouv-normalize id="clean" source="raw"
+  round="montant_investissement, montant_participation_etat">
+</gouv-normalize>
+
+<!-- Arrondir a 2 decimales (taux) -->
+<gouv-normalize id="clean" source="raw" round="taux:2"></gouv-normalize>
 
 <!-- Normalisation des cles en minuscules -->
 <gouv-normalize id="lower" source="raw" lowercase-keys></gouv-normalize>
@@ -795,7 +805,7 @@ la fonction ODSQL \`search()\` pour une recherche full-text. Personnalisable via
     id: 'gouvKpi',
     name: 'gouv-kpi',
     description: 'Composant KPI avec agregation, seuils et tendances',
-    trigger: ['kpi', 'indicateur', 'chiffre', 'valeur', 'tendance', 'seuil', 'pourcentage', 'euro', 'metrique'],
+    trigger: ['kpi', 'indicateur', 'chiffre', 'valeur', 'tendance', 'seuil', 'pourcentage', 'euro', 'metrique', 'grouper', 'grille'],
     content: `## <gouv-kpi> - Indicateur chiffre cle
 
 Affiche une valeur numerique mise en avant avec formatage, couleur conditionnelle, icone et tendance.
@@ -819,6 +829,21 @@ Attend un tableau d'objets. L'attribut \`valeur\` determine comment extraire/agr
 | couleur | String | \`""\` | non | Forcer la couleur : vert, orange, rouge, bleu |
 | seuil-vert | Number | - | non | Seuil au-dessus duquel couleur = vert |
 | seuil-orange | Number | - | non | Seuil au-dessus duquel couleur = orange (en-dessous = rouge) |
+| col | Number | - | non | Largeur en colonnes DSFR (1-12), actif uniquement dans un \`<gouv-kpi-group>\` |
+
+### Grouper des KPIs : \`<gouv-kpi-group>\`
+Utiliser \`<gouv-kpi-group>\` pour disposer plusieurs KPIs en grille responsive :
+\`\`\`html
+<gouv-kpi-group cols="3">
+  <gouv-kpi source="data" valeur="sum:population" label="Population totale" col="6"></gouv-kpi>
+  <gouv-kpi source="data" valeur="avg:score" label="Score moyen" col="3"></gouv-kpi>
+  <gouv-kpi source="data" valeur="count" label="Nombre" col="3"></gouv-kpi>
+</gouv-kpi-group>
+\`\`\`
+- \`cols\` : nombre de colonnes par defaut (chaque KPI occupe 12/cols colonnes)
+- \`col\` sur chaque gouv-kpi : override individuel (1-12)
+- \`gap\` : espacement entre KPIs (sm, md, lg)
+- Responsive automatique : empile en mobile
 
 ### Logique des couleurs
 1. Si \`couleur\` est defini : applique cette couleur directement
@@ -864,6 +889,55 @@ Attend un tableau d'objets. L'attribut \`valeur\` determine comment extraire/agr
   couleur="bleu"
   tendance="+12">
 </gouv-kpi>
+\`\`\``,
+  },
+
+  gouvKpiGroup: {
+    id: 'gouvKpiGroup',
+    name: 'gouv-kpi-group',
+    description: 'Conteneur grille responsive pour grouper plusieurs KPIs',
+    trigger: ['grouper', 'grille', 'kpi-group', 'plusieurs kpi', 'groupe', 'dashboard kpi', 'colonnes kpi'],
+    content: `## <gouv-kpi-group> - Groupe de KPIs en grille
+
+Conteneur qui dispose plusieurs \`<gouv-kpi>\` dans une grille CSS 12 colonnes responsive.
+
+### Attributs
+| Attribut | Type | Defaut | Requis | Description |
+|----------|------|--------|--------|-------------|
+| cols | Number | \`3\` | non | Nombre de colonnes par defaut (1-12) |
+| gap | String | \`"md"\` | non | Espacement : sm (0.5rem), md (1rem), lg (1.5rem) |
+| aria-label | String | \`""\` | non | Label accessible pour le groupe |
+
+### Fonctionnement
+- Grille CSS 12 colonnes (systeme DSFR)
+- Chaque enfant occupe \`Math.floor(12 / cols)\` colonnes par defaut
+- L'attribut \`col\` sur un enfant \`<gouv-kpi>\` override la largeur (1-12)
+- Responsive : empile en mobile (<768px), grille complete en desktop
+- \`role="group"\` automatique pour l'accessibilite
+
+### Exemples
+\`\`\`html
+<!-- 3 KPIs egaux -->
+<gouv-kpi-group cols="3">
+  <gouv-kpi source="data" valeur="count" label="Total"></gouv-kpi>
+  <gouv-kpi source="data" valeur="avg:score" label="Moyenne"></gouv-kpi>
+  <gouv-kpi source="data" valeur="max:score" label="Maximum"></gouv-kpi>
+</gouv-kpi-group>
+
+<!-- KPIs avec largeurs differentes -->
+<gouv-kpi-group>
+  <gouv-kpi source="data" valeur="sum:ca" label="CA total" col="6"></gouv-kpi>
+  <gouv-kpi source="data" valeur="avg:marge" label="Marge moyenne" col="3"></gouv-kpi>
+  <gouv-kpi source="data" valeur="count" label="Transactions" col="3"></gouv-kpi>
+</gouv-kpi-group>
+
+<!-- 4 KPIs avec espacement large -->
+<gouv-kpi-group cols="4" gap="lg">
+  <gouv-kpi source="data" valeur="sum:population" label="Population" format="nombre"></gouv-kpi>
+  <gouv-kpi source="data" valeur="avg:score" label="Score moyen" format="pourcentage"></gouv-kpi>
+  <gouv-kpi source="data" valeur="min:prix" label="Prix min" format="euro"></gouv-kpi>
+  <gouv-kpi source="data" valeur="max:prix" label="Prix max" format="euro"></gouv-kpi>
+</gouv-kpi-group>
 \`\`\``,
   },
 

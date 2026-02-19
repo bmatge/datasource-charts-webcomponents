@@ -71,6 +71,10 @@ export class GouvKpi extends SourceSubscriberMixin(LitElement) {
   @property({ type: String })
   couleur: KpiColor | '' = '';
 
+  /** Largeur en colonnes DSFR (1-12). Significatif uniquement dans un <gouv-kpi-group>. */
+  @property({ type: Number, reflect: true })
+  col?: number;
+
   // Utilise le Light DOM pour bénéficier des styles DSFR
   createRenderRoot() {
     return this;

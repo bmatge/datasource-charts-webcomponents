@@ -44,6 +44,17 @@
             <tr><td><code>couleur</code></td><td>String</td><td>Couleur forcee : <code>vert</code>, <code>orange</code>, <code>rouge</code>, <code>bleu</code></td></tr>
             <tr><td><code>seuil-vert</code></td><td>Number</td><td>Seuil au-dessus duquel la couleur est verte</td></tr>
             <tr><td><code>seuil-orange</code></td><td>Number</td><td>Seuil au-dessus duquel la couleur est orange</td></tr>
+            <tr><td><code>col</code></td><td>Number</td><td>Largeur en colonnes (1-12), actif uniquement dans un <code>&lt;gouv-kpi-group&gt;</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="fr-mt-4w">gouv-kpi-group - Attributs</h2>
+        <table class="attr-table">
+          <thead><tr><th>Attribut</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>cols</code></td><td>Number</td><td>Nombre de colonnes par defaut (1-12, defaut: 3)</td></tr>
+            <tr><td><code>gap</code></td><td>String</td><td>Espacement : <code>sm</code> (0.5rem), <code>md</code> (1rem, defaut), <code>lg</code> (1.5rem)</td></tr>
+            <tr><td><code>aria-label</code></td><td>String</td><td>Label accessible du groupe</td></tr>
           </tbody>
         </table>
 
@@ -115,13 +126,57 @@
         </section>
 
         <section class="demo-section">
-          <h3>5. Tableau de bord complet</h3>
+          <h3>5. Tableau de bord complet (CSS manuel)</h3>
           <div class="kpi-grid">
             <gouv-kpi source="meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre"></gouv-kpi>
             <gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
             <gouv-kpi source="sites" valeur="avg:score_dsfr" label="DSFR moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
             <gouv-kpi source="sites" valeur="count:certificat_valide:false" label="Certificats expires" icone="ri-shield-cross-line" couleur="rouge"></gouv-kpi>
           </div>
+        </section>
+
+        <h2 class="fr-mt-4w">Grouper des KPIs avec gouv-kpi-group</h2>
+
+        <section class="demo-section">
+          <h3>6. Colonnes egales (cols="4")</h3>
+          <gouv-kpi-group cols="4">
+            <gouv-kpi source="meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_dsfr" label="DSFR moyen" format="pourcentage" seuil-vert="80" seuil-orange="50"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="count:certificat_valide:false" label="Certificats expires" icone="ri-shield-cross-line" couleur="rouge"></gouv-kpi>
+          </gouv-kpi-group>
+          <div class="code-block"><pre>&lt;gouv-kpi-group cols="4"&gt;
+  &lt;gouv-kpi source="meta" valeur="total" label="Sites suivis"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="avg:score_dsfr" label="DSFR moyen"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="count:certificat_valide:false" label="Expires"&gt;&lt;/gouv-kpi&gt;
+&lt;/gouv-kpi-group&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>7. Largeurs personnalisees (col)</h3>
+          <gouv-kpi-group>
+            <gouv-kpi source="meta" valeur="total" label="Sites suivis" icone="ri-global-line" format="nombre" col="6"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen" format="pourcentage" seuil-vert="80" seuil-orange="50" col="3"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur RGAA" format="pourcentage" couleur="vert" col="3"></gouv-kpi>
+          </gouv-kpi-group>
+          <div class="code-block"><pre>&lt;gouv-kpi-group&gt;
+  &lt;gouv-kpi source="meta" valeur="total" label="Sites suivis" col="6"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="avg:score_rgaa" label="RGAA moyen" col="3"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur RGAA" col="3"&gt;&lt;/gouv-kpi&gt;
+&lt;/gouv-kpi-group&gt;</pre></div>
+        </section>
+
+        <section class="demo-section">
+          <h3>8. Espacement large (gap="lg")</h3>
+          <gouv-kpi-group cols="2" gap="lg">
+            <gouv-kpi source="sites" valeur="min:score_rgaa" label="Plus bas RGAA" format="pourcentage" couleur="rouge"></gouv-kpi>
+            <gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur RGAA" format="pourcentage" couleur="vert"></gouv-kpi>
+          </gouv-kpi-group>
+          <div class="code-block"><pre>&lt;gouv-kpi-group cols="2" gap="lg"&gt;
+  &lt;gouv-kpi source="sites" valeur="min:score_rgaa" label="Plus bas RGAA" couleur="rouge"&gt;&lt;/gouv-kpi&gt;
+  &lt;gouv-kpi source="sites" valeur="max:score_rgaa" label="Meilleur RGAA" couleur="vert"&gt;&lt;/gouv-kpi&gt;
+&lt;/gouv-kpi-group&gt;</pre></div>
         </section>
     </div>
   </app-layout-demo>
