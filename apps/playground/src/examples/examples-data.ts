@@ -99,30 +99,30 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'direct-datalist': `<!--
-  Tableau — Maires de France (dataset complet)
-  Mode : gouv-source (api-type="tabular") → gouv-datalist
+  Tableau — Maires de France (pagination serveur)
+  Mode : gouv-source (api-type="tabular", server-side) → gouv-datalist
   Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge automatiquement toutes les pages avant affichage
+  Chaque page est chargee a la demande depuis l'API (pas de chargement complet)
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Maires de France</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
+    <br>34 874 enregistrements — pagination serveur (20 par page)
   </p>
 
   <gouv-source id="data"
     api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+    resource="2876a346-d50c-4911-934e-19ee07b0e503"
+    server-side
+    page-size="20">
   </gouv-source>
 
   <gouv-datalist source="data"
     colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
-    recherche="true"
-    filtres="Libellé du département"
     tri="Nom de l'élu:asc"
-    pagination="10"
+    pagination="20"
     export="csv">
   </gouv-datalist>
 </div>`,
