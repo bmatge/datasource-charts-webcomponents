@@ -43,6 +43,7 @@
   "license": "MIT",
   "dependencies": {
     "@gouvfr/dsfr-chart": "^2.0.4",
+    "@types/topojson-specification": "^1.0.5",
     "d3-geo": "^3.1.1",
     "lit": "^3.1.0",
     "topojson-client": "^3.1.0",

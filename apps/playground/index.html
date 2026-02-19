@@ -42,49 +42,46 @@
     <select id="example-select" class="fr-select fr-select--sm" style="width: auto; display: inline-block;">
       <optgroup label="Mode direct (gouv-source)">
         <option value="direct-bar">Barres — Fiscalite locale</option>
-        <option value="direct-line">Courbe — Industrie du futur</option>
-        <option value="direct-pie">Camembert — Poids demographique</option>
-        <option value="direct-radar">Radar — Beneficiaires</option>
-        <option value="direct-gauge">Jauge — Taxe fonciere</option>
-        <option value="direct-scatter">Nuage — Investissement</option>
-        <option value="direct-barline">Barres + ligne — Investissements</option>
-        <option value="direct-map">Carte — Beneficiaires</option>
         <option value="direct-kpi">KPI — Industrie du futur</option>
         <option value="direct-datalist">Tableau — Elus municipaux</option>
       </optgroup>
       <optgroup label="Avec requete (gouv-query)">
         <option value="query-bar">Barres — Beneficiaires agreges</option>
-        <option value="query-line">Courbe — Taux moyen TFB</option>
         <option value="query-pie">Camembert — Elus par categorie</option>
-        <option value="query-radar">Radar — Investissement moyen</option>
-        <option value="query-gauge">Jauge — Taux moyen regional</option>
-        <option value="query-scatter">Nuage — TFB vs TH</option>
-        <option value="query-barline">Barres + ligne — TFB et TH</option>
         <option value="query-map">Carte — Taux TFB</option>
-        <option value="query-kpi">KPI — Statistiques des elus</option>
-        <option value="query-datalist">Tableau — Elus filtres</option>
       </optgroup>
       <optgroup label="Avec normalisation (gouv-normalize)">
         <option value="normalize-bar">Barres — LOVAC vacants par dept</option>
         <option value="normalize-pie">Camembert — LOVAC vacants >2 ans</option>
-        <option value="normalize-line">Courbe — LOVAC parc logements</option>
         <option value="normalize-datalist">Tableau — LOVAC donnees nettoyees</option>
       </optgroup>
       <optgroup label="Affichage dynamique (gouv-display)">
         <option value="direct-display">Cartes — Industrie du futur</option>
-        <option value="query-display">Cartes — Elus municipaux filtres</option>
+        <option value="query-display">Cartes — Communes filtrees</option>
         <option value="normalize-display">Tuiles — LOVAC logements vacants</option>
       </optgroup>
       <optgroup label="Avec recherche (gouv-search)">
-        <option value="search-datalist">Tableau — Elus avec recherche</option>
+        <option value="search-datalist">Tableau — Rappels avec recherche</option>
         <option value="search-display">Cartes — Industrie recherchee</option>
-        <option value="search-facets-display">Cartes — Elus recherche + facettes</option>
         <option value="search-kpi-chart">KPI + Barres — Recherche dynamique</option>
       </optgroup>
       <optgroup label="Avec facettes (gouv-facets)">
         <option value="facets-datalist">Tableau — Elus avec facettes</option>
         <option value="facets-bar">Barres — Industrie du futur filtree</option>
         <option value="facets-map">Carte + KPI — Fiscalite par region</option>
+      </optgroup>
+      <optgroup label="Pagination serveur">
+        <option value="server-paginate-datalist">Tableau — Maires pagination serveur</option>
+        <option value="server-paginate-display">Cartes — Maires pagination serveur</option>
+        <option value="paginate-kpi-global">Pagination + KPI globaux</option>
+      </optgroup>
+      <optgroup label="Server-side (recherche + tri serveur)">
+        <option value="server-side-ods">Recherche serveur — Rappels (ODS)</option>
+        <option value="server-side-tabular-tri">Tri serveur — Communes (Tabular)</option>
+        <option value="server-facets-display">Facettes serveur — Industrie (ODS)</option>
+      </optgroup>
+      <optgroup label="Carte du monde (gouv-world-map)">
+        <option value="direct-worldmap">Carte — PIB par pays</option>
       </optgroup>
     </select>
     <a href="../../guide/guide.html#exemples" class="fr-link fr-link--sm fr-ml-2w" style="white-space: nowrap;">

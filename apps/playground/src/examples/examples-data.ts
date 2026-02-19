@@ -1,19 +1,21 @@
 /**
  * Playground examples data
  *
- * 30 exemples organises en 5 modes de construction :
+ * 25 exemples organises en 9 categories :
  *
  * Mode direct       : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
  * Mode requete      : gouv-source → gouv-query → composant
  * Mode normalisation : gouv-source → gouv-normalize → gouv-query → composant
- * Mode facettes     : gouv-source → gouv-normalize → gouv-facets → composant
  * Mode display      : gouv-source → gouv-display (template HTML dynamique)
+ * Mode recherche    : gouv-source → gouv-search → composant
+ * Mode facettes     : gouv-source → gouv-normalize → gouv-facets → composant
+ * Pagination serveur : gouv-source paginate → composant
+ * Server-side       : gouv-source server-side → composant
+ * Carte du monde    : gouv-source → gouv-world-map
  *
- * Sources de donnees alternees :
- *  - API 1 : Fiscalite locale des particuliers (data.economie.gouv.fr)
- *  - API 2 : Registre des elus municipaux (tabular-api.data.gouv.fr)
- *  - API 3 : Industrie du futur (data.economie.gouv.fr)
- *  - API 4 : LOVAC logements vacants (tabular-api.data.gouv.fr)
+ * Sources de donnees :
+ *  - OpenDataSoft : Fiscalite locale, Industrie du futur, RappelConso (data.economie.gouv.fr)
+ *  - Tabular API  : Registre des maires, Code officiel geographique, LOVAC (tabular-api.data.gouv.fr)
  */
 export const examples: Record<string, string> = {
 
@@ -26,7 +28,7 @@ export const examples: Record<string, string> = {
   'direct-bar': `<!--
   Barres — Taux de taxe fonciere par commune
   Mode direct : gouv-source → gouv-dsfr-chart (bar)
-  Source : Fiscalite locale des particuliers
+  Source : Fiscalite locale des particuliers (OpenDataSoft)
 -->
 
 <div class="fr-container fr-my-4w">
@@ -35,9 +37,10 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Fiscalite locale des particuliers
   </p>
 
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=15"
-    transform="results">
+  <gouv-source id="data" api-type="opendatasoft"
+    dataset-id="fiscalite-locale-des-particuliers"
+    base-url="https://data.economie.gouv.fr"
+    limit="15">
   </gouv-source>
 
   <gouv-dsfr-chart source="data"
@@ -49,201 +52,10 @@ export const examples: Record<string, string> = {
   </gouv-dsfr-chart>
 </div>`,
 
-  'direct-line': `<!--
-  Courbe — Beneficiaires Industrie du futur par departement
-  Mode direct : gouv-source → gouv-dsfr-chart (line)
-  Source : Industrie du futur
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Beneficiaires Industrie du futur</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=20"
-    transform="results">
-  </gouv-source>
-
-  <gouv-dsfr-chart source="data"
-    type="line"
-    label-field="nom_departement"
-    value-field="nombre_beneficiaires"
-    selected-palette="default">
-  </gouv-dsfr-chart>
-</div>`,
-
-  'direct-pie': `<!--
-  Camembert — Poids demographique par commune
-  Mode direct : gouv-source → gouv-dsfr-chart (pie)
-  Source : Fiscalite locale des particuliers
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Poids demographique par commune</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=8"
-    transform="results">
-  </gouv-source>
-
-  <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="data"
-      type="pie"
-      label-field="libcom"
-      value-field="mpoid"
-      selected-palette="categorical">
-    </gouv-dsfr-chart>
-  </div>
-</div>`,
-
-  'direct-radar': `<!--
-  Radar — Beneficiaires par region
-  Mode direct : gouv-source → gouv-dsfr-chart (radar)
-  Source : Industrie du futur
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Profil des beneficiaires par region</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=6"
-    transform="results">
-  </gouv-source>
-
-  <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="data"
-      type="radar"
-      label-field="nom_region"
-      value-field="nombre_beneficiaires"
-      selected-palette="default">
-    </gouv-dsfr-chart>
-  </div>
-</div>`,
-
-  'direct-gauge': `<!--
-  Jauge — Taux de taxe fonciere d'une commune
-  Mode direct : gouv-source → gouv-dsfr-chart (gauge)
-  Source : Fiscalite locale des particuliers (1 enregistrement)
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Taux de taxe fonciere</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=1"
-    transform="results">
-  </gouv-source>
-
-  <div style="max-width: 300px; margin: 0 auto;">
-    <gouv-dsfr-chart source="data"
-      type="gauge"
-      value-field="taux_global_tfb">
-    </gouv-dsfr-chart>
-  </div>
-
-  <div class="fr-callout fr-mt-4w">
-    <p class="fr-callout__text">
-      La jauge utilise la valeur du premier enregistrement.
-      Ici le taux de taxe fonciere (0-100%) est naturellement adapte.
-    </p>
-  </div>
-</div>`,
-
-  'direct-scatter': `<!--
-  Nuage de points — Investissement vs participation de l'Etat
-  Mode direct : gouv-source → gouv-dsfr-chart (scatter)
-  Source : Industrie du futur
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Investissement vs participation de l'Etat</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-dsfr-chart source="data"
-    type="scatter"
-    label-field="montant_investissement"
-    value-field="montant_participation_etat"
-    selected-palette="categorical">
-  </gouv-dsfr-chart>
-</div>`,
-
-  'direct-barline': `<!--
-  Barres + ligne — Investissement et participation par departement
-  Mode direct : gouv-source → gouv-dsfr-chart (bar-line)
-  Source : Industrie du futur
-  Utilise value-field (barres) et value-field-2 (ligne)
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Investissement et participation de l'Etat</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=15"
-    transform="results">
-  </gouv-source>
-
-  <gouv-dsfr-chart source="data"
-    type="bar-line"
-    label-field="nom_departement"
-    value-field="montant_investissement"
-    value-field-2="montant_participation_etat"
-    name='["Investissement", "Participation Etat"]'
-    unit-tooltip="EUR"
-    selected-palette="categorical">
-  </gouv-dsfr-chart>
-</div>`,
-
-  'direct-map': `<!--
-  Carte — Beneficiaires par departement
-  Mode direct : gouv-source → gouv-dsfr-chart (map)
-  Source : Industrie du futur
-  Utilise code-field pour les codes departement
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Beneficiaires Industrie du futur par departement</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-dsfr-chart source="data"
-    type="map"
-    code-field="code_departement"
-    value-field="nombre_beneficiaires"
-    selected-palette="sequentialAscending">
-  </gouv-dsfr-chart>
-</div>`,
-
   'direct-kpi': `<!--
   KPI — Indicateurs cles Industrie du futur
   Mode direct : gouv-source → gouv-kpi (x4)
-  Source : Industrie du futur
+  Source : Industrie du futur (OpenDataSoft)
   Chaque KPI calcule une agregation sur les donnees brutes
 -->
 
@@ -253,9 +65,9 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+  <gouv-source id="data" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
@@ -467,57 +279,10 @@ export const examples: Record<string, string> = {
   // et/ou agrege avant de les transmettre au composant de visualisation.
   // =====================================================================
 
-  'query-tabular-pie': `<!--
-  Camembert — Tous les maires par categorie (dataset complet, multi-page)
-  Mode requete : gouv-source (api-type="tabular") → gouv-query → gouv-dsfr-chart (pie)
-  Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge automatiquement TOUTES les pages (par tranches de 100)
-  puis gouv-query compte par categorie socio-professionnelle.
-  Permet d'agreger sur l'ensemble d'un dataset, pas seulement les 100 premiers.
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Maires par categorie — Dataset complet (34 874)</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Chargement multi-page automatique : toutes les pages sont recuperees avant aggregation
-  </p>
-
-  <gouv-source id="src"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-source>
-
-  <gouv-query id="q" source="src"
-    group-by="Libellé de la catégorie socio-professionnelle"
-    aggregate="Nom de l'élu:count:nombre"
-    order-by="nombre:desc"
-    limit="10">
-  </gouv-query>
-
-  <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="q"
-      type="pie"
-      label-field="Libellé de la catégorie socio-professionnelle"
-      value-field="nombre"
-      selected-palette="categorical">
-    </gouv-dsfr-chart>
-  </div>
-
-  <div class="fr-callout fr-mt-4w">
-    <p class="fr-callout__text">
-      Avec <code>api-type="tabular"</code>, <code>gouv-source</code> recupere automatiquement
-      toutes les pages du dataset (100 records par page). Le chargement peut prendre quelques secondes
-      pour les gros datasets. Les agregations (group-by, count, sum...) sont ensuite appliquees
-      par <code>gouv-query</code> sur l'ensemble des donnees.
-    </p>
-  </div>
-</div>`,
-
   'query-bar': `<!--
   Barres — Beneficiaires agreges par region
   Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (bar)
-  Source : Industrie du futur
+  Source : Industrie du futur (OpenDataSoft)
   gouv-query regroupe par region et somme les beneficiaires
 -->
 
@@ -527,9 +292,9 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+  <gouv-source id="data" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-query id="q-bar" source="data"
@@ -544,39 +309,6 @@ export const examples: Record<string, string> = {
     label-field="nom_region"
     value-field="beneficiaires"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
-</div>`,
-
-  'query-line': `<!--
-  Courbe — Taux moyen de taxe fonciere par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (line)
-  Source : Fiscalite locale des particuliers
-  gouv-query calcule la moyenne du taux TFB par region
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Taux moyen de taxe fonciere par region</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-query id="q-line" source="data"
-    group-by="libreg"
-    aggregate="taux_global_tfb:avg:taux_moyen"
-    order-by="taux_moyen:desc">
-  </gouv-query>
-
-  <gouv-dsfr-chart source="q-line"
-    type="line"
-    label-field="libreg"
-    value-field="taux_moyen"
-    unit-tooltip="%"
-    selected-palette="default">
   </gouv-dsfr-chart>
 </div>`,
 
@@ -616,144 +348,10 @@ export const examples: Record<string, string> = {
   </div>
 </div>`,
 
-  'query-radar': `<!--
-  Radar — Investissement moyen par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (radar)
-  Source : Industrie du futur
-  gouv-query calcule l'investissement moyen par region
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Investissement moyen par region</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Industrie du futur
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-query id="q-radar" source="data"
-    group-by="nom_region"
-    aggregate="montant_investissement:avg:investissement"
-    limit="6">
-  </gouv-query>
-
-  <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="q-radar"
-      type="radar"
-      label-field="nom_region"
-      value-field="investissement"
-      selected-palette="default">
-    </gouv-dsfr-chart>
-  </div>
-</div>`,
-
-  'query-gauge': `<!--
-  Jauge — Taux moyen TFB le plus eleve par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (gauge)
-  Source : Fiscalite locale des particuliers
-  gouv-query calcule la moyenne par region et prend le max (limit=1)
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Region au taux moyen TFB le plus eleve</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-query id="q-gauge" source="data"
-    group-by="libreg"
-    aggregate="taux_global_tfb:avg:taux_moyen"
-    order-by="taux_moyen:desc"
-    limit="1">
-  </gouv-query>
-
-  <div style="max-width: 300px; margin: 0 auto;">
-    <gouv-dsfr-chart source="q-gauge"
-      type="gauge"
-      value-field="taux_moyen">
-    </gouv-dsfr-chart>
-  </div>
-</div>`,
-
-  'query-scatter': `<!--
-  Nuage de points — TFB vs TH moyens par departement
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (scatter)
-  Source : Fiscalite locale des particuliers
-  gouv-query calcule les moyennes TFB et TH par departement
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Taux TFB vs TH par departement</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-query id="q-scatter" source="data"
-    group-by="libdep"
-    aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
-    limit="30">
-  </gouv-query>
-
-  <gouv-dsfr-chart source="q-scatter"
-    type="scatter"
-    label-field="tfb"
-    value-field="th"
-    selected-palette="categorical">
-  </gouv-dsfr-chart>
-</div>`,
-
-  'query-barline': `<!--
-  Barres + ligne — TFB et TH moyens par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (bar-line)
-  Source : Fiscalite locale des particuliers
-  gouv-query calcule les moyennes TFB (barres) et TH (ligne) par region
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Taux moyens TFB et TH par region</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-  </p>
-
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
-  </gouv-source>
-
-  <gouv-query id="q-barline" source="data"
-    group-by="libreg"
-    aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
-    order-by="tfb:desc">
-  </gouv-query>
-
-  <gouv-dsfr-chart source="q-barline"
-    type="bar-line"
-    label-field="libreg"
-    value-field="tfb"
-    value-field-2="th"
-    name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
-    unit-tooltip="%"
-    selected-palette="categorical">
-  </gouv-dsfr-chart>
-</div>`,
-
   'query-map': `<!--
   Carte — Taux TFB moyen par departement
   Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (map)
-  Source : Fiscalite locale des particuliers
+  Source : Fiscalite locale des particuliers (OpenDataSoft)
   gouv-query calcule la moyenne TFB par departement (code dep)
 -->
 
@@ -763,9 +361,9 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Fiscalite locale des particuliers
   </p>
 
-  <gouv-source id="data"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
+  <gouv-source id="data" api-type="opendatasoft"
+    dataset-id="fiscalite-locale-des-particuliers"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-query id="q-map" source="data"
@@ -779,85 +377,6 @@ export const examples: Record<string, string> = {
     value-field="taux"
     selected-palette="sequentialAscending">
   </gouv-dsfr-chart>
-</div>`,
-
-  'query-kpi': `<!--
-  KPI — Statistiques des maires avec filtre (dataset complet)
-  Mode requete : gouv-source (api-type="tabular") → gouv-query (filtre) → gouv-kpi
-  Source : Registre des maires (tabular-api) — 34 874 records
-  Compare le total des maires au nombre de femmes maires
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Statistiques des maires</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
-  </p>
-
-  <gouv-source id="data"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-source>
-
-  <!-- Filtre client-side : uniquement les femmes -->
-  <gouv-query id="q-femmes" source="data"
-    filter="Code sexe:eq:F">
-  </gouv-query>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-    <gouv-kpi source="data"
-      valeur="count"
-      label="Total des maires"
-      format="nombre">
-    </gouv-kpi>
-
-    <gouv-kpi source="q-femmes"
-      valeur="count"
-      label="Dont femmes"
-      format="nombre"
-      couleur="bleu">
-    </gouv-kpi>
-  </div>
-
-  <div class="fr-callout fr-mt-4w">
-    <p class="fr-callout__text">
-      <code>gouv-query</code> filtre cote client avec <code>Code sexe:eq:F</code>
-      pour isoler les femmes maires. Les deux KPI partagent la meme source.
-    </p>
-  </div>
-</div>`,
-
-  'query-datalist': `<!--
-  Tableau — Maires filtres par departement (dataset complet)
-  Mode requete : gouv-source (api-type="tabular") → gouv-query (filtre) → gouv-datalist
-  Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge tout, gouv-query filtre par departement
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Maires — Departement de l'Ain</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
-  </p>
-
-  <gouv-source id="data"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-source>
-
-  <gouv-query id="q-datalist" source="data"
-    filter="Libellé du département:contains:Ain">
-  </gouv-query>
-
-  <gouv-datalist source="q-datalist"
-    colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé de la commune:Commune"
-    recherche="true"
-    tri="Nom de l'élu:asc"
-    pagination="10"
-    export="csv">
-  </gouv-datalist>
 </div>`,
 
   // =====================================================================
@@ -950,46 +469,6 @@ export const examples: Record<string, string> = {
       selected-palette="categorical">
     </gouv-dsfr-chart>
   </div>
-</div>`,
-
-  'normalize-line': `<!--
-  Courbe — Parc total de logements prives par departement
-  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (line)
-  Source : LOVAC - Logements vacants (tabular-api)
-  Montre les 20 plus grands parcs de logements departementaux.
-  Les nombres bruts sont en string avec milliers espaces (" 293 837   ").
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Parc de logements prives par departement (top 20)</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
-    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
-  </p>
-
-  <gouv-source id="raw"
-    url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
-    transform="data">
-  </gouv-source>
-
-  <!-- Nettoyage : trim cles/valeurs + conversion numerique ciblee + renommage -->
-  <gouv-normalize id="clean" source="raw"
-    trim
-    numeric="pp_total_24, pp_vacant_25"
-    rename="LIB_DEP:Departement | pp_total_24:Logements 2024 | pp_vacant_25:Vacants 2025">
-  </gouv-normalize>
-
-  <gouv-query id="top" source="clean"
-    order-by="Logements 2024:desc"
-    limit="20">
-  </gouv-query>
-
-  <gouv-dsfr-chart source="top"
-    type="line"
-    label-field="Departement"
-    value-field="Logements 2024"
-    selected-palette="default">
-  </gouv-dsfr-chart>
 </div>`,
 
   'normalize-datalist': `<!--
@@ -1093,7 +572,7 @@ export const examples: Record<string, string> = {
   'facets-bar': `<!--
   Barres — Beneficiaires Industrie du futur filtres par region
   Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (bar)
-  Source : Industrie du futur
+  Source : Industrie du futur (OpenDataSoft)
   gouv-facets filtre par region, gouv-query agrege ensuite les donnees filtrees
 -->
 
@@ -1104,9 +583,9 @@ export const examples: Record<string, string> = {
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → gouv-dsfr-chart
   </p>
 
-  <gouv-source id="raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+  <gouv-source id="raw" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
@@ -1291,7 +770,7 @@ export const examples: Record<string, string> = {
 </div>`,
 
   // =====================================================================
-  // MODE RECHERCHE — gouv-source → gouv-normalize → gouv-search → composant
+  // MODE RECHERCHE — gouv-source → gouv-search → composant
   // gouv-search affiche un champ de recherche DSFR et filtre les donnees
   // en amont. Se combine naturellement avec gouv-facets et gouv-display.
   // =====================================================================
@@ -1379,66 +858,10 @@ export const examples: Record<string, string> = {
   </gouv-display>
 </div>`,
 
-  'search-facets-display': `<!--
-  Recherche + facettes + cartes — Maires (dataset complet)
-  Pipeline : gouv-source (api-type="tabular") → gouv-normalize → gouv-search → gouv-facets → gouv-display
-  Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge toutes les pages, gouv-search et gouv-facets operent sur le dataset complet
--->
-
-<div class="fr-container fr-my-4w">
-  <h2>Recherche + facettes — Maires de France</h2>
-  <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : <strong>gouv-source</strong> (auto-pagination) → gouv-normalize → <strong>gouv-search</strong> → gouv-facets → gouv-display
-    <br>34 874 enregistrements charges automatiquement
-  </p>
-
-  <gouv-source id="raw"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
-  </gouv-source>
-
-  <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie"
-    trim>
-  </gouv-normalize>
-
-  <gouv-search id="searched" source="clean"
-    fields="Nom, Prenom, Departement, Commune"
-    placeholder="Rechercher un maire..."
-    operator="words"
-    count>
-  </gouv-search>
-
-  <gouv-facets id="filtered" source="searched"
-    fields="Departement, Categorie"
-    labels="Departement:Departement | Categorie:Categorie socio-pro"
-    display="Departement:multiselect | Categorie:select"
-    cols="6">
-  </gouv-facets>
-
-  <gouv-display source="filtered" cols="3" pagination="9">
-    <template>
-      <div class="fr-card">
-        <div class="fr-card__body">
-          <div class="fr-card__content">
-            <h3 class="fr-card__title">{{Prenom}} {{Nom}}</h3>
-            <p class="fr-card__desc">{{Commune}}</p>
-          </div>
-          <div class="fr-card__footer">
-            <p class="fr-badge fr-badge--sm fr-badge--blue-france">{{Departement}}</p>
-          </div>
-        </div>
-      </div>
-    </template>
-  </gouv-display>
-</div>`,
-
   'search-kpi-chart': `<!--
   Recherche + KPI + graphique — Industrie du futur
   Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-kpi + gouv-query → gouv-dsfr-chart
-  Source : Industrie du futur
+  Source : Industrie du futur (OpenDataSoft)
   Les KPI et le graphique se recalculent en temps reel selon la recherche
 -->
 
@@ -1449,9 +872,9 @@ export const examples: Record<string, string> = {
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → KPI + graphique
   </p>
 
-  <gouv-source id="raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
-    transform="results">
+  <gouv-source id="raw" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
@@ -1505,7 +928,7 @@ export const examples: Record<string, string> = {
   'facets-map': `<!--
   Carte + KPI — Fiscalite locale filtree par region et departement
   Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (map) + gouv-kpi
-  Source : Fiscalite locale des particuliers
+  Source : Fiscalite locale des particuliers (OpenDataSoft)
   gouv-facets filtre par region, la carte et les KPI refletent les donnees filtrees
 -->
 
@@ -1516,9 +939,9 @@ export const examples: Record<string, string> = {
     <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → carte + KPI
   </p>
 
-  <gouv-source id="raw"
-    url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records?limit=100"
-    transform="results">
+  <gouv-source id="raw" api-type="opendatasoft"
+    dataset-id="fiscalite-locale-des-particuliers"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
@@ -1569,9 +992,11 @@ export const examples: Record<string, string> = {
   </gouv-dsfr-chart>
 </div>`,
 
-  // ────────────────────────────────────────────────────────────────────
-  // Server-side mode
-  // ────────────────────────────────────────────────────────────────────
+  // =====================================================================
+  // SERVER-SIDE — gouv-source server-side → composant
+  // gouv-source ne charge qu'une page a la fois et ecoute les commandes
+  // des composants en aval (pagination, recherche, tri, facettes).
+  // =====================================================================
 
   'server-side-ods': `<!--
   Server-side ODS — Recherche + pagination serveur
@@ -1628,7 +1053,7 @@ export const examples: Record<string, string> = {
   'server-side-tabular-tri': `<!--
   Server-side Tabular — Tri serveur
   Mode: gouv-source (server-side tabular) -> gouv-datalist (server-tri)
-  Source: Tabular API data.gouv.fr - Base Sirene (etablissements)
+  Source: Tabular API data.gouv.fr - Code officiel geographique (communes)
 -->
 
 <div class="fr-container fr-my-4w">
@@ -1713,6 +1138,10 @@ export const examples: Record<string, string> = {
     </p>
   </div>
 </div>`,
+
+  // =====================================================================
+  // CARTE DU MONDE — gouv-source → gouv-world-map
+  // =====================================================================
 
   'direct-worldmap': `<!--
   Carte du monde — PIB par pays (donnees embarquees)
