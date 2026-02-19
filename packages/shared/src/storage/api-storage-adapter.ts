@@ -19,6 +19,59 @@ import { syncItems, deleteItem, setSyncBaseUrl } from './sync-queue.js';
 import type { Source } from '../types/source.js';
 import { serializeSourceForServer } from '../types/source.js';
 
+// ---- Server-to-local normalization ----
+
+/** Fields managed by the server — must NOT be packed into configJson on round-trip. */
+const SERVER_ONLY_FIELDS = new Set([
+  'config_json', 'configJson', 'data_json', 'dataJson',
+  'record_count', 'owner_id', 'created_at', 'updated_at',
+  'api_key_encrypted', '_owned', '_permissions',
+]);
+
+/**
+ * Flatten a server-format item to client-format (flat fields).
+ *
+ * Server items have config_json (packed blob), data_json, record_count, etc.
+ * Client items have flat fields (url, apiUrl, apiKey, data, recordCount, etc.).
+ *
+ * Without this normalization, the save hook would re-serialize server items
+ * through serializeConnectionForServer(), causing config_json to be nested
+ * inside configJson (double-nesting) — corrupting data on each round-trip.
+ */
+function flattenServerItem(item: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...item };
+
+  // Unpack config_json → flat fields
+  const configJson = result.config_json ?? result.configJson;
+  if (configJson && typeof configJson === 'object') {
+    const cfg = configJson as Record<string, unknown>;
+    for (const [k, v] of Object.entries(cfg)) {
+      // Only set if not already present at top level
+      if (result[k] === undefined || result[k] === null) {
+        result[k] = v;
+      }
+    }
+  }
+
+  // Unpack data_json → data
+  const dataJson = result.data_json ?? result.dataJson;
+  if (dataJson != null && !result.data) {
+    result.data = dataJson;
+  }
+
+  // Unpack record_count → recordCount
+  if (result.record_count !== undefined && result.recordCount === undefined) {
+    result.recordCount = result.record_count;
+  }
+
+  // Remove server-only fields to prevent re-packing
+  for (const key of SERVER_ONLY_FIELDS) {
+    delete result[key];
+  }
+
+  return result;
+}
+
 // ---- Merge helpers (repair incomplete server data from pre-serialization-fix) ----
 
 /**
@@ -54,14 +107,15 @@ function hasLocalConfig(item: Record<string, unknown>, key: string): boolean {
  * fields weren't packed into the JSON blob. When local has complete data for such items,
  * prefer the local version. The repaired data will be re-synced to the server via the
  * saveToStorage hook (which triggers save → syncItems with correct serialization).
+ *
+ * All items are normalized to flat-field format (via flattenServerItem) to prevent
+ * double-nesting when the save hook re-serializes them.
  */
 function mergeServerWithLocal(
   serverItems: Record<string, unknown>[],
   localItems: Record<string, unknown>[],
   key: string,
 ): Record<string, unknown>[] {
-  if (localItems.length === 0) return serverItems;
-
   const localById = new Map<string, Record<string, unknown>>();
   for (const item of localItems) {
     if (item.id) localById.set(item.id as string, item);
@@ -69,19 +123,19 @@ function mergeServerWithLocal(
 
   return serverItems.map(serverItem => {
     const id = serverItem.id as string;
-    if (!id) return serverItem;
+    if (!id) return flattenServerItem(serverItem);
 
-    // Server item already has complete config → use as-is
-    if (hasCompleteServerConfig(serverItem)) return serverItem;
-
-    // Server item is incomplete — check if local has better data
-    const localItem = localById.get(id);
-    if (localItem && hasLocalConfig(localItem, key)) {
-      console.info(`[ApiStorageAdapter] Repaired ${key} item ${id} from local data`);
-      return localItem;
+    // Server item is incomplete (null config_json) — prefer local if available
+    if (!hasCompleteServerConfig(serverItem)) {
+      const localItem = localById.get(id);
+      if (localItem && hasLocalConfig(localItem, key)) {
+        console.info(`[ApiStorageAdapter] Repaired ${key} item ${id} from local data`);
+        return localItem;
+      }
     }
 
-    return serverItem;
+    // Flatten server item to client format (prevents double-nesting on re-save)
+    return flattenServerItem(serverItem);
   });
 }
 

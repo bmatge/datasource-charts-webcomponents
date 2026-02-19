@@ -170,7 +170,7 @@ describe('ApiStorageAdapter', () => {
       expect((result as Record<string, unknown>[])[0].recordCount).toBe(42);
     });
 
-    it('uses server data when config_json is complete', async () => {
+    it('flattens server config_json to top-level fields (prevents double-nesting)', async () => {
       const localConn = {
         id: 'conn-1', name: 'Old Name', type: 'grist',
         url: 'https://old.url', status: 'connected',
@@ -182,6 +182,7 @@ describe('ApiStorageAdapter', () => {
         id: 'conn-1', name: 'New Name', type: 'grist',
         config_json: { url: 'https://grist.numerique.gouv.fr', apiKey: null, isPublic: true },
         status: 'connected',
+        owner_id: 'user-1', _owned: true,
       };
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
@@ -189,15 +190,50 @@ describe('ApiStorageAdapter', () => {
       });
 
       const result = await adapter.load(STORAGE_KEYS.CONNECTIONS, []);
+      const conn = (result as Record<string, unknown>[])[0];
 
-      // Should use server data (config_json is complete)
-      expect((result as Record<string, unknown>[])[0].name).toBe('New Name');
-      expect((result as Record<string, unknown>[])[0].config_json).toEqual({
-        url: 'https://grist.numerique.gouv.fr', apiKey: null, isPublic: true,
-      });
+      // Server data should be flattened to client format
+      expect(conn.name).toBe('New Name');
+      expect(conn.url).toBe('https://grist.numerique.gouv.fr');
+      expect(conn.apiKey).toBeNull();
+      expect(conn.isPublic).toBe(true);
+      // Server-only fields must be stripped (prevent re-packing into configJson)
+      expect(conn.config_json).toBeUndefined();
+      expect(conn.owner_id).toBeUndefined();
+      expect(conn._owned).toBeUndefined();
     });
 
-    it('keeps server data when no local counterpart exists', async () => {
+    it('flattens server source with data_json and record_count', async () => {
+      localStorage.removeItem(STORAGE_KEYS.SOURCES);
+
+      const serverSource = {
+        id: 'src-1', name: 'My Source', type: 'api',
+        config_json: { apiUrl: 'https://example.com/api', method: 'GET' },
+        data_json: [{ a: 1 }, { a: 2 }],
+        record_count: 42,
+        owner_id: 'user-1',
+      };
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve([serverSource]),
+      });
+
+      const result = await adapter.load(STORAGE_KEYS.SOURCES, []);
+      const src = (result as Record<string, unknown>[])[0];
+
+      // Flattened fields
+      expect(src.apiUrl).toBe('https://example.com/api');
+      expect(src.method).toBe('GET');
+      expect(src.data).toEqual([{ a: 1 }, { a: 2 }]);
+      expect(src.recordCount).toBe(42);
+      // Server-only fields stripped
+      expect(src.config_json).toBeUndefined();
+      expect(src.data_json).toBeUndefined();
+      expect(src.record_count).toBeUndefined();
+      expect(src.owner_id).toBeUndefined();
+    });
+
+    it('keeps server data when no local counterpart exists (still flattened)', async () => {
       // Empty local storage
       localStorage.removeItem(STORAGE_KEYS.CONNECTIONS);
 
@@ -212,9 +248,10 @@ describe('ApiStorageAdapter', () => {
 
       const result = await adapter.load(STORAGE_KEYS.CONNECTIONS, []);
 
-      // No local data to repair from — use server as-is
+      // No local data to repair from — still flattened (server-only fields removed)
       expect(result).toHaveLength(1);
-      expect((result as Record<string, unknown>[])[0].config_json).toBeNull();
+      expect((result as Record<string, unknown>[])[0].config_json).toBeUndefined();
+      expect((result as Record<string, unknown>[])[0].owner_id).toBeUndefined();
     });
 
     it('does not merge for favorites (non-config resources)', async () => {
