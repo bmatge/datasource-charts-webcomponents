@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { sendWidgetBeacon } from '../utils/beacon.js';
@@ -98,6 +98,10 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   private _serverPageSize = 0;
   private _previousPage = 1;
   private _popstateHandler: (() => void) | null = null;
+
+  /** Message annonce par la live region (lecteurs d'ecran) */
+  @state()
+  private _liveAnnouncement = '';
 
   // Light DOM pour les styles DSFR
   createRenderRoot() {
@@ -298,12 +302,20 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
     if (this.urlSync) this._syncPageUrl();
   }
 
+  private _announce(message: string) {
+    this._liveAnnouncement = '';
+    requestAnimationFrame(() => { this._liveAnnouncement = message; });
+  }
+
   private _handleSort(key: string) {
+    const columns = this.parseColumns();
+    const label = columns.find(c => c.key === key)?.label ?? key;
     if (this._sort?.key === key) {
       this._sort = { key, direction: this._sort.direction === 'asc' ? 'desc' : 'asc' };
     } else {
       this._sort = { key, direction: 'asc' };
     }
+    this._announce(`Tri par ${label}, ordre ${this._sort.direction === 'asc' ? 'croissant' : 'decroissant'}`);
 
     // In server-tri mode, delegate sorting to the upstream source
     if (this.serverTri && this.source) {
@@ -316,6 +328,8 @@ export class GouvDatalist extends SourceSubscriberMixin(LitElement) {
   private _handlePageChange(page: number) {
     this._previousPage = this._currentPage;
     this._currentPage = page;
+    const totalPages = this._getTotalPages();
+    this._announce(`Page ${page} sur ${totalPages}`);
     // En mode serveur, demander la page a la source
     if (this._serverPagination && this.source) {
       dispatchSourceCommand(this.source, { page });
@@ -521,7 +535,7 @@ ${bodyRows}
           <tbody>
             ${paginatedData.length === 0 ? html`
               <tr>
-                <td colspan="${columns.length}" class="gouv-datalist__empty">
+                <td colspan="${columns.length}" class="gouv-datalist__empty" role="status">
                   Aucune donnée à afficher
                 </td>
               </tr>
@@ -553,21 +567,21 @@ ${bodyRows}
             <button class="fr-pagination__link fr-pagination__link--first"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(1)}"
-              aria-label="Premiere page" type="button">Premiere page</button>
+              aria-label="Premi\u00e8re page" type="button">Premi\u00e8re page</button>
           </li>
           <li>
             <button class="fr-pagination__link fr-pagination__link--prev"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(this._currentPage - 1)}"
-              aria-label="Page precedente" type="button">Page precedente</button>
+              aria-label="Page pr\u00e9c\u00e9dente" type="button">Page pr\u00e9c\u00e9dente</button>
           </li>
           ${pages.map(page => html`
             <li>
               <button
                 class="fr-pagination__link ${page === this._currentPage ? 'fr-pagination__link--active' : ''}"
                 @click="${() => this._handlePageChange(page)}"
-                aria-current="${page === this._currentPage ? 'page' : 'false'}"
-                aria-label="Page ${page}"
+                aria-current="${page === this._currentPage ? 'page' : nothing}"
+                aria-label="Page ${page} sur ${totalPages}"
                 type="button"
               >${page}</button>
             </li>
@@ -582,7 +596,7 @@ ${bodyRows}
             <button class="fr-pagination__link fr-pagination__link--last"
               ?disabled="${this._currentPage === totalPages}"
               @click="${() => this._handlePageChange(totalPages)}"
-              aria-label="Derniere page" type="button">Derniere page</button>
+              aria-label="Derni\u00e8re page" type="button">Derni\u00e8re page</button>
           </li>
         </ul>
       </nav>
@@ -603,18 +617,19 @@ ${bodyRows}
         ${this._renderFilters(columns, filterableColumns)}
         ${this._renderToolbar()}
 
+        <div aria-live="polite" aria-atomic="true" class="fr-sr-only">${this._liveAnnouncement}</div>
         ${this._sourceLoading ? html`
-          <div class="gouv-datalist__loading" aria-live="polite">
+          <div class="gouv-datalist__loading" aria-live="polite" aria-busy="true">
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement des données...
           </div>
         ` : this._sourceError && !(this._serverPagination && this._data.length > 0) ? html`
-          <div class="gouv-datalist__error" aria-live="assertive">
+          <div class="gouv-datalist__error" aria-live="assertive" role="alert">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
             Erreur: ${this._sourceError.message}
           </div>
         ` : html`
-          <p class="fr-text--sm" aria-live="polite">
+          <p class="fr-text--sm" aria-live="polite" aria-atomic="true" role="status">
             ${totalFiltered} résultat${totalFiltered > 1 ? 's' : ''}
             ${!this._serverPagination && (this._searchQuery || Object.values(this._activeFilters).some(v => v)) ? ' (filtré)' : ''}
           </p>

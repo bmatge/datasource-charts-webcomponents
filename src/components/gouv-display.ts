@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SourceSubscriberMixin } from '../utils/source-subscriber.js';
 import { getByPath } from '../utils/json-path.js';
@@ -18,6 +18,7 @@ import { getDataMeta, dispatchSourceCommand } from '../utils/data-bridge.js';
  * - {{champ}}           : valeur echappee (HTML-safe)
  * - {{{champ}}}         : valeur brute (non echappee)
  * - {{champ|defaut}}    : valeur avec fallback si null/undefined
+ * - {{champ:number}}    : valeur formatee avec separateur de milliers (ex: 32 073 247)
  * - {{champ.sous.cle}}  : acces aux proprietes imbriquees
  * - {{$index}}          : index de l'element (0-based)
  *
@@ -89,6 +90,10 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
 
   private _hashScrollDone = false;
   private _popstateHandler: (() => void) | null = null;
+
+  /** Message annonce par la live region (lecteurs d'ecran) */
+  @state()
+  private _liveAnnouncement = '';
 
   // Light DOM pour les styles DSFR
   createRenderRoot() {
@@ -175,7 +180,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     return result;
   }
 
-  /** Resout une expression : champ, champ.nested, champ|defaut, $index, $uid */
+  /** Resout une expression : champ, champ:format, champ|defaut, champ:format|defaut, $index, $uid */
   private _resolveExpression(item: Record<string, unknown>, expr: string, index: number): string {
     // Variable speciale : $index
     if (expr === '$index') return String(index);
@@ -192,8 +197,31 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
       defaultValue = expr.substring(pipeIndex + 1).trim();
     }
 
+    // Gestion du format : champ:format
+    let format = '';
+    const colonIndex = fieldPath.indexOf(':');
+    if (colonIndex !== -1) {
+      format = fieldPath.substring(colonIndex + 1).trim();
+      fieldPath = fieldPath.substring(0, colonIndex).trim();
+    }
+
     const value = getByPath(item, fieldPath);
     if (value === null || value === undefined) return defaultValue;
+
+    if (format) {
+      return this._formatValue(value, format);
+    }
+    return String(value);
+  }
+
+  /** Applique un format a une valeur. Formats supportes : number */
+  private _formatValue(value: unknown, format: string): string {
+    if (format === 'number') {
+      const num = typeof value === 'number' ? value : parseFloat(String(value));
+      if (!isNaN(num)) {
+        return num.toLocaleString('fr-FR');
+      }
+    }
     return String(value);
   }
 
@@ -247,8 +275,15 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
     window.history.replaceState(null, '', newUrl);
   }
 
+  private _announce(message: string) {
+    this._liveAnnouncement = '';
+    requestAnimationFrame(() => { this._liveAnnouncement = message; });
+  }
+
   private _handlePageChange(page: number) {
     this._currentPage = page;
+    const totalPages = this._getTotalPages();
+    this._announce(`Page ${page} sur ${totalPages}`);
     // En mode serveur, demander la page a la source
     if (this._serverPagination && this.source) {
       dispatchSourceCommand(this.source, { page });
@@ -309,21 +344,21 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
             <button class="fr-pagination__link fr-pagination__link--first"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(1)}"
-              aria-label="Premiere page" type="button">Premiere page</button>
+              aria-label="Premi\u00e8re page" type="button">Premi\u00e8re page</button>
           </li>
           <li>
             <button class="fr-pagination__link fr-pagination__link--prev"
               ?disabled="${this._currentPage === 1}"
               @click="${() => this._handlePageChange(this._currentPage - 1)}"
-              aria-label="Page precedente" type="button">Page precedente</button>
+              aria-label="Page pr\u00e9c\u00e9dente" type="button">Page pr\u00e9c\u00e9dente</button>
           </li>
           ${pages.map(page => html`
             <li>
               <button
                 class="fr-pagination__link ${page === this._currentPage ? 'fr-pagination__link--active' : ''}"
                 @click="${() => this._handlePageChange(page)}"
-                aria-current="${page === this._currentPage ? 'page' : 'false'}"
-                aria-label="Page ${page}"
+                aria-current="${page === this._currentPage ? 'page' : nothing}"
+                aria-label="Page ${page} sur ${totalPages}"
                 type="button"
               >${page}</button>
             </li>
@@ -338,7 +373,7 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
             <button class="fr-pagination__link fr-pagination__link--last"
               ?disabled="${this._currentPage === totalPages}"
               @click="${() => this._handlePageChange(totalPages)}"
-              aria-label="Derniere page" type="button">Derniere page</button>
+              aria-label="Derni\u00e8re page" type="button">Derni\u00e8re page</button>
           </li>
         </ul>
       </nav>
@@ -356,22 +391,23 @@ export class GouvDisplay extends SourceSubscriberMixin(LitElement) {
 
     return html`
       <div class="gouv-display" role="region" aria-label="${this.getAttribute('aria-label') || 'Liste de resultats'}">
+        <div aria-live="polite" aria-atomic="true" class="fr-sr-only">${this._liveAnnouncement}</div>
         ${this._sourceLoading ? html`
-          <div class="gouv-display__loading" aria-live="polite">
+          <div class="gouv-display__loading" aria-live="polite" aria-busy="true">
             <span class="fr-icon-loader-4-line" aria-hidden="true"></span>
             Chargement...
           </div>
         ` : this._sourceError ? html`
-          <div class="gouv-display__error" aria-live="assertive">
+          <div class="gouv-display__error" aria-live="assertive" role="alert">
             <span class="fr-icon-error-line" aria-hidden="true"></span>
             Erreur de chargement
           </div>
         ` : totalItems === 0 ? html`
-          <div class="gouv-display__empty" aria-live="polite">
+          <div class="gouv-display__empty" aria-live="polite" role="status">
             ${this.empty}
           </div>
         ` : html`
-          <p class="fr-text--sm fr-mb-1w" aria-live="polite">
+          <p class="fr-text--sm fr-mb-1w" aria-live="polite" aria-atomic="true" role="status">
             ${totalItems} resultat${totalItems > 1 ? 's' : ''}
           </p>
           ${this._renderGrid(paginatedData)}
