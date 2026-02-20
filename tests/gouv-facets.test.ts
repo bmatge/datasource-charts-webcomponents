@@ -1540,4 +1540,115 @@ describe('GouvFacets', () => {
       warnSpy.mockRestore();
     });
   });
+
+  describe('accessibility: aria-modal and inert', () => {
+    it('multiselect panel has aria-modal="true"', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:multiselect';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      (facets as any)._openMultiselectField = 'type';
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderMultiselectGroup(group);
+      // Template should contain aria-modal="true" on the dialog
+      const rendered = JSON.stringify(result);
+      expect(rendered).toContain('aria-modal');
+    });
+
+    it('radio panel has aria-modal="true"', () => {
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:radio';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+      (facets as any)._openMultiselectField = 'type';
+
+      const group = facets._facetGroups.find(g => g.field === 'type')!;
+      const result = (facets as any)._renderRadioGroup(group);
+      const rendered = JSON.stringify(result);
+      expect(rendered).toContain('aria-modal');
+    });
+
+    it('_setBackgroundInert sets inert on body children', () => {
+      // Create a sibling element in body
+      const sibling = document.createElement('div');
+      sibling.id = 'bg-sibling';
+      document.body.appendChild(sibling);
+      // Attach facets to body so it's a body child too
+      document.body.appendChild(facets);
+
+      (facets as any)._setBackgroundInert(true);
+      expect(sibling.hasAttribute('inert')).toBe(true);
+      // The element containing facets should NOT be inert
+      expect(facets.hasAttribute('inert')).toBe(false);
+
+      (facets as any)._setBackgroundInert(false);
+      expect(sibling.hasAttribute('inert')).toBe(false);
+
+      document.body.removeChild(sibling);
+      document.body.removeChild(facets);
+    });
+
+    it('_toggleMultiselectDropdown sets inert on open, removes on close', () => {
+      const sibling = document.createElement('div');
+      sibling.id = 'bg-sibling2';
+      document.body.appendChild(sibling);
+      document.body.appendChild(facets);
+
+      facets.id = 'test-facets';
+      facets.source = 'test-source';
+      facets.fields = 'type';
+      facets.display = 'type:multiselect';
+      facets.connectedCallback();
+      dispatchDataLoaded('test-source', SAMPLE_DATA);
+
+      // Open dropdown
+      (facets as any)._toggleMultiselectDropdown('type');
+      expect(sibling.hasAttribute('inert')).toBe(true);
+
+      // Close dropdown
+      (facets as any)._toggleMultiselectDropdown('type');
+      expect(sibling.hasAttribute('inert')).toBe(false);
+
+      document.body.removeChild(sibling);
+      document.body.removeChild(facets);
+    });
+
+    it('Escape key removes inert from background', () => {
+      const sibling = document.createElement('div');
+      sibling.id = 'bg-sibling3';
+      document.body.appendChild(sibling);
+      document.body.appendChild(facets);
+
+      (facets as any)._openMultiselectField = 'type';
+      (facets as any)._setBackgroundInert(true);
+
+      (facets as any)._handleMultiselectKeydown('type', new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(facets._openMultiselectField).toBeNull();
+      expect(sibling.hasAttribute('inert')).toBe(false);
+
+      document.body.removeChild(sibling);
+      document.body.removeChild(facets);
+    });
+
+    it('disconnectedCallback removes inert from background', () => {
+      const sibling = document.createElement('div');
+      sibling.id = 'bg-sibling4';
+      document.body.appendChild(sibling);
+      document.body.appendChild(facets);
+
+      (facets as any)._setBackgroundInert(true);
+      expect(sibling.hasAttribute('inert')).toBe(true);
+
+      facets.disconnectedCallback();
+      expect(sibling.hasAttribute('inert')).toBe(false);
+
+      document.body.removeChild(sibling);
+      document.body.removeChild(facets);
+    });
+  });
 });

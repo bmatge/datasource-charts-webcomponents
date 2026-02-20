@@ -174,6 +174,7 @@ export class GouvFacets extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._setBackgroundInert(false);
     document.removeEventListener('click', this._onClickOutsideMultiselect);
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
@@ -748,8 +749,10 @@ export class GouvFacets extends LitElement {
   private _toggleMultiselectDropdown(field: string) {
     if (this._openMultiselectField === field) {
       this._openMultiselectField = null;
+      this._setBackgroundInert(false);
     } else {
       this._openMultiselectField = field;
+      this._setBackgroundInert(true);
       this.updateComplete.then(() => {
         const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
         const firstFocusable = panel?.querySelector('button, input, select, [tabindex]') as HTMLElement;
@@ -771,9 +774,27 @@ export class GouvFacets extends LitElement {
     requestAnimationFrame(() => { this._liveAnnouncement = message; });
   }
 
+  /**
+   * Set or remove the `inert` attribute on background content when a dialog opens/closes.
+   * This confines NVDA's virtual cursor to the dialog, preventing it from reading
+   * page content behind the panel (complements aria-modal="true").
+   */
+  private _setBackgroundInert(active: boolean) {
+    const host = this.closest('gouv-facets') ?? this;
+    document.querySelectorAll('body > *').forEach(el => {
+      if (el.contains(host)) return; // skip our own ancestor
+      if (active) {
+        el.setAttribute('inert', '');
+      } else {
+        el.removeAttribute('inert');
+      }
+    });
+  }
+
   private _handleMultiselectKeydown(field: string, e: KeyboardEvent) {
     if (e.key === 'Escape') {
       this._openMultiselectField = null;
+      this._setBackgroundInert(false);
       const trigger = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-trigger`) as HTMLElement;
       trigger?.focus();
       return;
@@ -829,6 +850,7 @@ export class GouvFacets extends LitElement {
     const wrapper = this.querySelector(`[data-multiselect="${field}"]`);
     if (wrapper?.contains(relatedTarget)) return; // focus stays inside wrapper
     this._openMultiselectField = null;
+    this._setBackgroundInert(false);
   }
 
   private _onClickOutsideMultiselect = (e: MouseEvent) => {
@@ -837,6 +859,7 @@ export class GouvFacets extends LitElement {
     const panel = this.querySelector(`[data-multiselect="${this._openMultiselectField}"]`);
     if (panel && !panel.contains(target)) {
       this._openMultiselectField = null;
+      this._setBackgroundInert(false);
     }
   };
 
@@ -1148,7 +1171,7 @@ export class GouvFacets extends LitElement {
         </button>
         ${isOpen ? html`
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
-               role="dialog" aria-label="${group.label}"
+               role="dialog" aria-modal="true" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
             <div aria-live="polite" class="fr-sr-only">${this._liveAnnouncement}</div>
             <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left ${selected.size > 0 ? 'fr-icon-close-circle-line' : 'fr-icon-check-line'} gouv-facets__multiselect-toggle"
@@ -1225,7 +1248,7 @@ export class GouvFacets extends LitElement {
         </button>
         ${isOpen ? html`
           <div class="gouv-facets__multiselect-panel" id="${uid}-panel"
-               role="dialog" aria-label="${group.label}"
+               role="dialog" aria-modal="true" aria-label="${group.label}"
                @click="${(e: Event) => e.stopPropagation()}">
             <div aria-live="polite" class="fr-sr-only">${this._liveAnnouncement}</div>
             ${selectedValue ? html`
