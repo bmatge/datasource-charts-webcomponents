@@ -1,53 +1,53 @@
 /**
- * Accessible data table (RGAA compliance).
- * Updates the accessibility preview below the chart preview.
+ * Updates the gouv-chart-a11y preview in the builder.
+ * Uses the actual library component instead of manual DOM manipulation.
  */
 
 import { state } from '../state.js';
+import { dispatchDataLoaded } from '../../../../src/utils/data-bridge.js';
+
+const PREVIEW_SOURCE_ID = 'builder-preview';
 
 /**
- * Update the accessibility preview section.
- * Shows/hides based on a11yEnabled state and populates table + description.
+ * Update the gouv-chart-a11y preview component.
+ * Shows/hides based on a11yEnabled, sets attributes from state,
+ * and feeds data via the data bridge.
  */
 export function updateAccessibleTable(): void {
-  const preview = document.getElementById('a11y-preview');
-  if (!preview) return;
+  const el = document.getElementById('a11y-preview') as HTMLElement | null;
+  if (!el) return;
 
-  // Show/hide entire section
-  preview.style.display = state.a11yEnabled ? 'block' : 'none';
+  // Show/hide
+  el.style.display = state.a11yEnabled ? '' : 'none';
   if (!state.a11yEnabled) return;
 
-  // Description
-  const descEl = document.getElementById('a11y-preview-description');
-  if (descEl) {
-    descEl.style.display = state.a11yDescription ? 'block' : 'none';
-    descEl.textContent = state.a11yDescription || '';
+  // Sync boolean attributes
+  if (state.a11yTable) {
+    el.setAttribute('table', '');
+  } else {
+    el.removeAttribute('table');
   }
 
-  // Table
-  const tableWrapper = document.getElementById('a11y-preview-table-wrapper');
-  if (tableWrapper) {
-    tableWrapper.style.display = state.a11yTable ? 'block' : 'none';
+  if (state.a11yDownload) {
+    el.setAttribute('download', '');
+  } else {
+    el.removeAttribute('download');
   }
 
-  const tbody = document.querySelector('#accessible-table tbody');
-  if (tbody && state.a11yTable) {
-    tbody.innerHTML = '';
-
-    state.data.forEach(d => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${(d[state.labelField] as string) || 'N/A'}</td>
-        <td>${((d.value as number) || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+  // Sync description attribute
+  if (state.a11yDescription) {
+    el.setAttribute('description', state.a11yDescription);
+  } else {
+    el.removeAttribute('description');
   }
 
-  // Download button
-  const downloadBtn = document.getElementById('a11y-preview-download') as HTMLButtonElement | null;
-  if (downloadBtn) {
-    downloadBtn.style.display = state.a11yDownload ? 'inline-flex' : 'none';
-    downloadBtn.disabled = state.data.length === 0;
+  // Sync label-field for table column headers
+  if (state.labelField) {
+    el.setAttribute('label-field', state.labelField);
+  } else {
+    el.removeAttribute('label-field');
   }
+
+  // Feed data to the component via data bridge
+  dispatchDataLoaded(PREVIEW_SOURCE_ID, state.data);
 }

@@ -1,114 +1,117 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { updateAccessibleTable } from '../../../apps/builder/src/ui/accessible-table';
 import { state } from '../../../apps/builder/src/state';
 
+// Mock data-bridge to verify dispatchDataLoaded calls
+vi.mock('../../../src/utils/data-bridge', () => ({
+  dispatchDataLoaded: vi.fn(),
+}));
+import { dispatchDataLoaded } from '../../../src/utils/data-bridge';
+
 describe('updateAccessibleTable', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     state.data = [];
     state.labelField = '';
-    document.body.innerHTML = '<table id="accessible-table"><tbody></tbody></table>';
+    state.a11yEnabled = false;
+    state.a11yTable = true;
+    state.a11yDownload = true;
+    state.a11yDescription = '';
+    document.body.innerHTML = '<gouv-chart-a11y id="a11y-preview" source="builder-preview" no-auto-aria style="display: none;"></gouv-chart-a11y>';
   });
 
-  it('should do nothing when tbody is missing', () => {
+  it('should do nothing when element is missing', () => {
     document.body.innerHTML = '';
-    state.data = [{ name: 'Test', value: 10 }];
-    state.labelField = 'name';
-
+    state.a11yEnabled = true;
     expect(() => updateAccessibleTable()).not.toThrow();
   });
 
-  it('should clear existing rows', () => {
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    tbody.innerHTML = '<tr><td>Old</td><td>999</td></tr><tr><td>Stale</td><td>0</td></tr>';
-    expect(tbody.querySelectorAll('tr')).toHaveLength(2);
-
-    state.data = [{ label: 'New', value: 42 }];
-    state.labelField = 'label';
+  it('should hide element when a11yEnabled is false', () => {
+    state.a11yEnabled = false;
     updateAccessibleTable();
-
-    expect(tbody.querySelectorAll('tr')).toHaveLength(1);
-    expect(tbody.textContent).not.toContain('Old');
-    expect(tbody.textContent).not.toContain('Stale');
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.style.display).toBe('none');
+    expect(dispatchDataLoaded).not.toHaveBeenCalled();
   });
 
-  it('should create rows from state.data using state.labelField', () => {
+  it('should show element when a11yEnabled is true', () => {
+    state.a11yEnabled = true;
+    state.data = [{ name: 'Test', value: 10 }];
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.style.display).toBe('');
+  });
+
+  it('should set table attribute when a11yTable is true', () => {
+    state.a11yEnabled = true;
+    state.a11yTable = true;
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.hasAttribute('table')).toBe(true);
+  });
+
+  it('should remove table attribute when a11yTable is false', () => {
+    state.a11yEnabled = true;
+    state.a11yTable = false;
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.hasAttribute('table')).toBe(false);
+  });
+
+  it('should set download attribute when a11yDownload is true', () => {
+    state.a11yEnabled = true;
+    state.a11yDownload = true;
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.hasAttribute('download')).toBe(true);
+  });
+
+  it('should remove download attribute when a11yDownload is false', () => {
+    state.a11yEnabled = true;
+    state.a11yDownload = false;
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.hasAttribute('download')).toBe(false);
+  });
+
+  it('should set description attribute when provided', () => {
+    state.a11yEnabled = true;
+    state.a11yDescription = 'Mon graphique montre les donnees.';
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.getAttribute('description')).toBe('Mon graphique montre les donnees.');
+  });
+
+  it('should remove description attribute when empty', () => {
+    state.a11yEnabled = true;
+    state.a11yDescription = '';
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.hasAttribute('description')).toBe(false);
+  });
+
+  it('should set label-field from state', () => {
+    state.a11yEnabled = true;
     state.labelField = 'region';
+    updateAccessibleTable();
+    const el = document.getElementById('a11y-preview')!;
+    expect(el.getAttribute('label-field')).toBe('region');
+  });
+
+  it('should dispatch data to builder-preview source', () => {
+    state.a11yEnabled = true;
     state.data = [
       { region: 'Bretagne', value: 100 },
       { region: 'Normandie', value: 200 },
-      { region: 'Occitanie', value: 300 },
     ];
-
     updateAccessibleTable();
-
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    const rows = tbody.querySelectorAll('tr');
-    expect(rows).toHaveLength(3);
-
-    const firstRowCells = rows[0].querySelectorAll('td');
-    expect(firstRowCells[0].textContent).toBe('Bretagne');
-
-    const secondRowCells = rows[1].querySelectorAll('td');
-    expect(secondRowCells[0].textContent).toBe('Normandie');
-
-    const thirdRowCells = rows[2].querySelectorAll('td');
-    expect(thirdRowCells[0].textContent).toBe('Occitanie');
+    expect(dispatchDataLoaded).toHaveBeenCalledWith('builder-preview', state.data);
   });
 
-  it('should show "N/A" for missing label values', () => {
-    state.labelField = 'region';
-    state.data = [
-      { region: '', value: 50 },
-      { value: 75 },
-    ];
-
-    updateAccessibleTable();
-
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    const rows = tbody.querySelectorAll('tr');
-
-    expect(rows[0].querySelectorAll('td')[0].textContent).toBe('N/A');
-    expect(rows[1].querySelectorAll('td')[0].textContent).toBe('N/A');
-  });
-
-  it('should show 0 for missing value', () => {
-    state.labelField = 'name';
-    state.data = [
-      { name: 'NoValue' },
-      { name: 'NullValue', value: undefined },
-    ];
-
-    updateAccessibleTable();
-
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    const rows = tbody.querySelectorAll('tr');
-
-    expect(rows[0].querySelectorAll('td')[1].textContent).toBe('0');
-    expect(rows[1].querySelectorAll('td')[1].textContent).toBe('0');
-  });
-
-  it('should format numbers with fr-FR locale', () => {
-    state.labelField = 'name';
-    state.data = [
-      { name: 'Big', value: 1234567.891 },
-    ];
-
-    updateAccessibleTable();
-
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    const cell = tbody.querySelector('tr td:nth-child(2)')!;
-    const formatted = (1234567.891).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
-    expect(cell.textContent).toBe(formatted);
-  });
-
-  it('should handle empty data array', () => {
+  it('should dispatch empty array when no data', () => {
+    state.a11yEnabled = true;
     state.data = [];
-    state.labelField = 'name';
-
     updateAccessibleTable();
-
-    const tbody = document.querySelector('#accessible-table tbody')!;
-    expect(tbody.querySelectorAll('tr')).toHaveLength(0);
-    expect(tbody.innerHTML).toBe('');
+    expect(dispatchDataLoaded).toHaveBeenCalledWith('builder-preview', []);
   });
 });

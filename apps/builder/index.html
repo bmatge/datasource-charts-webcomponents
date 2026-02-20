@@ -575,24 +575,10 @@
           </div>
         </div>
 
-        <!-- Apercu accessibilite -->
-        <div id="a11y-preview" style="display: none;">
-          <details class="fr-accordion">
-            <summary class="fr-accordion__btn">Accessibilite : donnees et description</summary>
-            <div class="fr-accordion__content">
-              <p id="a11y-preview-description" class="fr-text--sm fr-mb-2w" style="display: none;"></p>
-              <div id="a11y-preview-table-wrapper" class="fr-table fr-mb-2w">
-                <table class="fr-table" id="accessible-table">
-                  <thead><tr><th>Categorie</th><th>Valeur</th></tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-              <button id="a11y-preview-download" class="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left fr-icon-download-line" disabled>
-                Telecharger en CSV
-              </button>
-            </div>
-          </details>
-        </div>
+        <!-- Apercu accessibilite (composant reel) -->
+        <gouv-chart-a11y id="a11y-preview" source="builder-preview"
+          no-auto-aria table download style="display: none;">
+        </gouv-chart-a11y>
       </div>
 
       <!-- Onglet Code -->
