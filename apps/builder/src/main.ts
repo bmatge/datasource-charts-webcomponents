@@ -116,11 +116,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Raw data (CSV download) toggle
-  const rawDataToggle = document.getElementById('raw-data-toggle') as HTMLInputElement | null;
-  if (rawDataToggle) {
-    rawDataToggle.addEventListener('change', (e) => {
-      state.rawDataEnabled = (e.target as HTMLInputElement).checked;
+  // Accessibility companion toggle + sub-options
+  const a11yToggle = document.getElementById('a11y-toggle') as HTMLInputElement | null;
+  const a11yOptions = document.getElementById('a11y-options') as HTMLElement | null;
+  if (a11yToggle) {
+    a11yToggle.addEventListener('change', (e) => {
+      state.a11yEnabled = (e.target as HTMLInputElement).checked;
+      if (a11yOptions) a11yOptions.style.display = state.a11yEnabled ? 'block' : 'none';
+    });
+  }
+  const a11yTableEl = document.getElementById('a11y-table') as HTMLInputElement | null;
+  if (a11yTableEl) {
+    a11yTableEl.addEventListener('change', (e) => {
+      state.a11yTable = (e.target as HTMLInputElement).checked;
+    });
+  }
+  const a11yDownloadEl = document.getElementById('a11y-download') as HTMLInputElement | null;
+  if (a11yDownloadEl) {
+    a11yDownloadEl.addEventListener('change', (e) => {
+      state.a11yDownload = (e.target as HTMLInputElement).checked;
+    });
+  }
+  const a11yDescEl = document.getElementById('a11y-description') as HTMLTextAreaElement | null;
+  if (a11yDescEl) {
+    a11yDescEl.addEventListener('input', (e) => {
+      state.a11yDescription = (e.target as HTMLTextAreaElement).value;
     });
   }
 

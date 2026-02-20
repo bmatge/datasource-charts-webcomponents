@@ -54,6 +54,65 @@ describe('GouvDisplay', () => {
     });
   });
 
+  describe('_formatValue', () => {
+    it('formats integer with thousand separators', () => {
+      const result = (display as any)._formatValue(32073247, 'number');
+      // French locale uses narrow no-break space (U+202F) or non-breaking space as group separator
+      expect(result.replace(/\s/g, ' ')).toBe('32 073 247');
+    });
+
+    it('formats float with thousand separators and decimal', () => {
+      const result = (display as any)._formatValue(1234567.89, 'number');
+      expect(result.replace(/\s/g, ' ')).toMatch(/1 234 567/);
+    });
+
+    it('formats string that looks like a number', () => {
+      const result = (display as any)._formatValue('5000', 'number');
+      expect(result.replace(/\s/g, ' ')).toBe('5 000');
+    });
+
+    it('returns string as-is for non-numeric value', () => {
+      expect((display as any)._formatValue('hello', 'number')).toBe('hello');
+    });
+
+    it('returns string for unknown format', () => {
+      expect((display as any)._formatValue(42, 'unknown')).toBe('42');
+    });
+
+    it('formats zero', () => {
+      expect((display as any)._formatValue(0, 'number')).toBe('0');
+    });
+
+    it('formats negative number', () => {
+      const result = (display as any)._formatValue(-12345, 'number');
+      // Normalize all whitespace to regular space for comparison
+      const normalized = result.replace(/\s/g, ' ');
+      expect(normalized).toContain('12 345');
+      expect(normalized.startsWith('-')).toBe(true);
+    });
+  });
+
+  describe('_resolveExpression with format', () => {
+    const item = { montant: 32073247, nom: 'Test', empty: null };
+
+    it('formats field with :number', () => {
+      const result = (display as any)._resolveExpression(item, 'montant:number', 0);
+      expect(result.replace(/\s/g, ' ')).toBe('32 073 247');
+    });
+
+    it('returns default when field is null with format', () => {
+      expect((display as any)._resolveExpression(item, 'empty:number|0', 0)).toBe('0');
+    });
+
+    it('returns default when field is missing with format', () => {
+      expect((display as any)._resolveExpression(item, 'absent:number|N/A', 0)).toBe('N/A');
+    });
+
+    it('does not apply format to non-format fields', () => {
+      expect((display as any)._resolveExpression(item, 'nom', 0)).toBe('Test');
+    });
+  });
+
   describe('_renderItem', () => {
     const item = { nom: 'Site A', score: 85 };
 
@@ -92,6 +151,13 @@ describe('GouvDisplay', () => {
       (display as any)._templateContent = '<p>{{missing|N/A}}</p>';
       const result = (display as any)._renderItem(item, 0);
       expect(result).toBe('<p>N/A</p>');
+    });
+
+    it('formats number with :number in template', () => {
+      const numItem = { montant: 1234567 };
+      (display as any)._templateContent = '<p>{{montant:number}} EUR</p>';
+      const result = (display as any)._renderItem(numItem, 0);
+      expect(result.replace(/\s/g, ' ')).toContain('1 234 567 EUR');
     });
   });
 

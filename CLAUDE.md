@@ -86,7 +86,7 @@ gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► don
      ▼
   gouv-dsfr-chart / gouv-datalist / gouv-kpi / gouv-display
          │
-         └──► gouv-raw-data (companion optionnel, telechargement CSV + ARIA)
+         └──► gouv-chart-a11y (companion accessibilite : tableau, CSV, description)
 ```
 
 **Regles** :
@@ -108,8 +108,8 @@ gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► don
 <gouv-dsfr-chart id="mon-graph" source="data" type="bar"
   label-field="region" value-field="total">
 </gouv-dsfr-chart>
-<!-- Optionnel : telechargement CSV accessible -->
-<gouv-raw-data for="mon-graph" source="data"></gouv-raw-data>
+<!-- Optionnel : accessibilite du graphique -->
+<gouv-chart-a11y for="mon-graph" source="data" table download></gouv-chart-a11y>
 ```
 
 Pour les cas sans transformation (datalist, display), gouv-query peut etre omis :

@@ -288,11 +288,11 @@ const expectedSum = 23300;
 
 | Paramètre | Code attendu |
 |-----------|--------------|
-| `raw-data-toggle` | `<gouv-raw-data for="..." source="...">` |
+| `a11y-toggle` | `<gouv-chart-a11y for="..." source="..." table download>` |
 
 **Test manuel** :
-1. Cocher "Ajouter téléchargement CSV"
-2. ✅ Code contient `<gouv-raw-data>`
+1. Cocher "Ajouter accessibilite (tableau + CSV)"
+2. ✅ Code contient `<gouv-chart-a11y>`
 
 ---
 

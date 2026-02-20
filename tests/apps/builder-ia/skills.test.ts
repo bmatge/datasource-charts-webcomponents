@@ -16,7 +16,7 @@ import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
 import { GouvFacets } from '../../../src/components/gouv-facets.js';
 import { GouvDisplay } from '../../../src/components/gouv-display.js';
 import { GouvSearch } from '../../../src/components/gouv-search.js';
-import { GouvRawData } from '../../../src/components/gouv-raw-data.js';
+import { GouvChartA11y } from '../../../src/components/gouv-chart-a11y.js';
 import { GouvKpiGroup } from '../../../src/components/gouv-kpi-group.js';
 
 // Type/constant imports for alignment checks
@@ -69,7 +69,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('chartTypes');
     expect(SKILLS).toHaveProperty('dsfrColors');
     expect(SKILLS).toHaveProperty('apiProviders');
-    expect(SKILLS).toHaveProperty('gouvRawData');
+    expect(SKILLS).toHaveProperty('gouvChartA11y');
     expect(SKILLS).toHaveProperty('troubleshooting');
   });
 
@@ -249,8 +249,8 @@ describe('builder-ia skills', () => {
         assertAttributesCovered(GouvDisplay as unknown as typeof GouvSource, 'gouvDisplay', 'gouv-display');
       });
 
-      it('gouvRawData skill covers all <gouv-raw-data> attributes', () => {
-        assertAttributesCovered(GouvRawData as unknown as typeof GouvSource, 'gouvRawData', 'gouv-raw-data');
+      it('gouvChartA11y skill covers all <gouv-chart-a11y> attributes', () => {
+        assertAttributesCovered(GouvChartA11y as unknown as typeof GouvSource, 'gouvChartA11y', 'gouv-chart-a11y');
       });
 
       it('gouvKpiGroup skill covers all <gouv-kpi-group> attributes', () => {

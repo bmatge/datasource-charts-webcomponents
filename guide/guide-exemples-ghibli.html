@@ -223,7 +223,7 @@
             y-min="0"
             y-max="100">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-score" source="by-score"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-score" source="by-score" table download></gouv-chart-a11y>
         </div>
 
         <div class="chart-card">
@@ -236,7 +236,7 @@
             horizontal
             unit-tooltip=" min">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-duration" source="by-duration"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-duration" source="by-duration" table download></gouv-chart-a11y>
         </div>
 
         <!-- Realisateurs -->
@@ -251,7 +251,7 @@
               value-field="id__count"
               selected-palette="categorical">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="chart-dir-count" source="by-director-count"></gouv-raw-data>
+            <gouv-chart-a11y for="chart-dir-count" source="by-director-count" table download></gouv-chart-a11y>
           </div>
 
           <div class="chart-card">
@@ -265,7 +265,7 @@
               y-min="0"
               y-max="100">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="chart-dir-score" source="by-director-score"></gouv-raw-data>
+            <gouv-chart-a11y for="chart-dir-score" source="by-director-score" table download></gouv-chart-a11y>
           </div>
         </div>
 
@@ -284,7 +284,7 @@
               y-min="0"
               y-max="100">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="chart-recent-score" source="recent-films"></gouv-raw-data>
+            <gouv-chart-a11y for="chart-recent-score" source="recent-films" table download></gouv-chart-a11y>
           </div>
 
           <div class="chart-card">
@@ -296,7 +296,7 @@
               selected-palette="divergentAscending"
               unit-tooltip=" min">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="chart-recent-duration" source="recent-films"></gouv-raw-data>
+            <gouv-chart-a11y for="chart-recent-duration" source="recent-films" table download></gouv-chart-a11y>
           </div>
         </div>
 
@@ -331,7 +331,7 @@
           2&times; <code>gouv-kpi</code> +
           6&times; <code>gouv-dsfr-chart</code> +
           <code>gouv-datalist</code> +
-          6&times; <code>gouv-raw-data</code>
+          6&times; <code>gouv-chart-a11y</code>
         </div>
 
         <!-- Code source -->
@@ -405,7 +405,7 @@
   selected-palette="sequentialAscending"
   horizontal unit-tooltip="%" y-min="0" y-max="100"&gt;
 &lt;/gouv-dsfr-chart&gt;
-&lt;gouv-raw-data for="chart-score" source="by-score"&gt;&lt;/gouv-raw-data&gt;
+&lt;gouv-chart-a11y for="chart-score" source="by-score" table download&gt;&lt;/gouv-chart-a11y&gt;
 
 &lt;!-- Duree des films (barres horizontales) --&gt;
 &lt;gouv-dsfr-chart id="chart-duration" source="by-duration"
@@ -413,7 +413,7 @@
   selected-palette="divergentAscending"
   horizontal unit-tooltip=" min"&gt;
 &lt;/gouv-dsfr-chart&gt;
-&lt;gouv-raw-data for="chart-duration" source="by-duration"&gt;&lt;/gouv-raw-data&gt;
+&lt;gouv-chart-a11y for="chart-duration" source="by-duration" table download&gt;&lt;/gouv-chart-a11y&gt;
 
 &lt;!-- Nb films par realisateur (camembert) --&gt;
 &lt;gouv-dsfr-chart id="chart-dir-count" source="by-director-count"
@@ -463,7 +463,7 @@
           <li><strong>Queries multiples sur une seule source</strong> : 6 <code>gouv-query</code> derivent chacun une vue differente des memes donnees (tri, group-by, aggregate, where) — tout en client-side.</li>
           <li><strong>KPI avec agregation inline</strong> : <code>gouv-kpi valeur="avg:rt_score"</code> calcule la moyenne directement, sans query intermediaire.</li>
           <li><strong>Facettes et tableau interactif</strong> : <code>gouv-facets</code> en mode select filtre par realisateur et producteur, <code>gouv-datalist</code> ajoute la recherche, le tri et l'export CSV.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-raw-data</code> sur chaque graphique pour le telechargement CSV.</li>
+          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique pour le telechargement CSV.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
           <li><strong>CORS natif</strong> : l'API Ghibli autorise les requetes cross-origin — pas besoin de proxy. Pour les APIs sans CORS, utiliser <code>use-proxy</code> pour router via <code>/cors-proxy</code>.</li>
         </ul>

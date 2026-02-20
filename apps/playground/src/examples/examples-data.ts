@@ -208,66 +208,64 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'paginate-kpi-global': `<!--
-  Pagination serveur + KPI globaux — Maires de France
-  Double source : gouv-source (paginate) pour navigation + gouv-source (tabular) + gouv-query pour KPI
-  Source : Registre des maires (tabular-api) — 34 874 records
+  Pagination serveur + KPI — Industrie du futur
+  Double source : gouv-source (server-side) pour navigation + gouv-source (ODS) pour KPI
+  Source : Industrie du futur (OpenDataSoft) — 101 records
   La datalist navigue page par page, les KPI portent sur le dataset complet
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Maires de France — Pagination + KPI globaux</h2>
+  <h2>Industrie du futur — Pagination + KPI</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Double source : pagination serveur pour la navigation, agregation globale pour les KPI
+    Source : data.economie.gouv.fr — Industrie du futur
+    <br>Double source : pagination serveur pour la navigation, agregation pour les KPI
   </p>
 
   <!-- Source 1 : pagination serveur pour la navigation -->
-  <gouv-source id="browse"
-    url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
-    paginate page-size="20">
+  <gouv-source id="browse" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr"
+    server-side page-size="20">
   </gouv-source>
 
-  <!-- Source 2 : chargement complet pour les KPI globaux -->
-  <gouv-source id="elus"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  <!-- Source 2 : chargement complet pour les KPI globaux (101 records) -->
+  <gouv-source id="all" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
-
-  <gouv-query id="global-stats" source="elus"
-    aggregate="Nom de l'\u00e9lu:count:total">
-  </gouv-query>
-
-  <gouv-query id="global-femmes" source="elus"
-    filter="Code sexe:eq:F"
-    aggregate="Nom de l'\u00e9lu:count:total_femmes">
-  </gouv-query>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-    <gouv-kpi source="global-stats"
-      valeur="sum:total"
-      label="Total des maires"
+    <gouv-kpi source="all"
+      valeur="count"
+      label="Projets"
       format="nombre">
     </gouv-kpi>
 
-    <gouv-kpi source="global-femmes"
-      valeur="sum:total_femmes"
-      label="Dont femmes"
+    <gouv-kpi source="all"
+      valeur="sum:nombre_beneficiaires"
+      label="Total beneficiaires"
       format="nombre"
       couleur="bleu">
+    </gouv-kpi>
+
+    <gouv-kpi source="all"
+      valeur="sum:montant_investissement"
+      label="Investissement total"
+      format="euro"
+      couleur="vert">
     </gouv-kpi>
   </div>
 
   <gouv-datalist source="browse"
-    colonnes="Nom de l'\u00e9lu:Nom, Pr\u00e9nom de l'\u00e9lu:Prenom, Libell\u00e9 du d\u00e9partement:Departement, Libell\u00e9 de la commune:Commune"
-    tri="Nom de l'\u00e9lu:asc"
+    colonnes="nom_departement:Departement, nom_region:Region, nombre_beneficiaires:Beneficiaires, montant_investissement:Investissement"
     pagination="20">
   </gouv-datalist>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Pattern double source :</strong> <code>gouv-source paginate</code> charge une page a la fois
-      pour la navigation (20 records). En parallele, <code>gouv-source api-type="tabular"</code>
-      charge le dataset complet (34 874 records) et <code>gouv-query</code> agrege pour les KPI globaux.
+      <strong>Pattern double source :</strong> <code>gouv-source server-side</code> charge une page a la fois
+      pour la navigation (20 records). En parallele, une seconde <code>gouv-source</code>
+      charge le dataset complet (101 records) et les <code>gouv-kpi</code> agregent pour les indicateurs globaux.
       Les deux sources fonctionnent independamment.
     </p>
   </div>
@@ -313,36 +311,36 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'query-pie': `<!--
-  Camembert — Maires par categorie socio-professionnelle (dataset complet)
-  Mode requete : gouv-source (api-type="tabular") → gouv-query → gouv-dsfr-chart (pie)
-  Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge toutes les pages, gouv-query regroupe par categorie
+  Camembert — Investissement Industrie du futur par region
+  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
+  Source : Industrie du futur (OpenDataSoft) — 101 records
+  gouv-query regroupe par region et somme les investissements
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Maires par categorie socio-professionnelle</h2>
+  <h2>Investissement Industrie du futur par region</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
+    Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="src"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  <gouv-source id="src" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-query id="q-pie" source="src"
-    group-by="Libellé de la catégorie socio-professionnelle"
-    aggregate="Code sexe:count:nombre"
-    order-by="nombre:desc"
-    limit="8">
+    group-by="nom_region"
+    aggregate="montant_investissement:sum:investissement"
+    order-by="investissement:desc"
+    limit="10">
   </gouv-query>
 
   <div style="max-width: 500px; margin: 0 auto;">
     <gouv-dsfr-chart source="q-pie"
       type="pie"
-      label-field="Libellé de la catégorie socio-professionnelle"
-      value-field="nombre"
+      label-field="nom_region"
+      value-field="investissement"
+      unit-tooltip="EUR"
       selected-palette="categorical">
     </gouv-dsfr-chart>
   </div>
@@ -528,42 +526,42 @@ export const examples: Record<string, string> = {
   // =====================================================================
 
   'facets-datalist': `<!--
-  Tableau filtrable — Maires avec facettes (dataset complet)
-  Pipeline : gouv-source (api-type="tabular") → gouv-normalize → gouv-facets → gouv-datalist
-  Source : Registre des maires (tabular-api) — 34 874 records
-  gouv-source charge automatiquement toutes les pages, les facettes couvrent l'ensemble du dataset
+  Tableau filtrable — Industrie du futur avec facettes
+  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-datalist
+  Source : Industrie du futur (OpenDataSoft) — 101 records
+  gouv-facets affiche des filtres interactifs, gouv-datalist le tableau filtre
 -->
 
 <div class="fr-container fr-my-4w">
-  <h2>Maires de France — exploration par facettes</h2>
+  <h2>Industrie du futur — exploration par facettes</h2>
   <p class="fr-text--sm fr-text--light">
-    Source : tabular-api.data.gouv.fr — Repertoire national des elus (maires)
-    <br>Pipeline : <strong>gouv-source</strong> (auto-pagination) → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
-    <br>34 874 enregistrements charges automatiquement (pagination multi-page)
+    Source : data.economie.gouv.fr — Industrie du futur
+    <br>Pipeline : <strong>gouv-source</strong> → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
   </p>
 
-  <gouv-source id="raw"
-    api-type="tabular"
-    resource="2876a346-d50c-4911-934e-19ee07b0e503">
+  <gouv-source id="raw" api-type="opendatasoft"
+    dataset-id="industrie-du-futur"
+    base-url="https://data.economie.gouv.fr">
   </gouv-source>
 
   <gouv-normalize id="clean" source="raw"
-    rename="Nom de l'élu:Nom | Prénom de l'élu:Prenom | Libellé du département:Departement | Libellé de la commune:Commune | Libellé de la catégorie socio-professionnelle:Categorie | Code sexe:Sexe"
+    numeric="nombre_beneficiaires, montant_investissement"
+    rename="nom_region:Region | nom_departement:Departement | mesure_light:Mesure"
     trim>
   </gouv-normalize>
 
-  <!-- Facettes : multiselect, select et radio avec colonnage DSFR -->
+  <!-- Facettes : multiselect et select avec colonnage DSFR -->
   <gouv-facets id="filtered" source="clean"
-    fields="Departement, Categorie, Sexe"
-    labels="Departement:Departement | Categorie:Categorie socio-pro | Sexe:Sexe"
-    display="Departement:multiselect | Categorie:select | Sexe:radio"
-    cols="4">
+    fields="Region, Mesure"
+    labels="Region:Region | Mesure:Type de mesure"
+    display="Region:multiselect | Mesure:select"
+    cols="6">
   </gouv-facets>
 
   <gouv-datalist source="filtered"
-    colonnes="Nom, Prenom, Commune, Departement, Categorie"
+    colonnes="Departement, Region, nombre_beneficiaires:Beneficiaires, montant_investissement:Investissement"
     recherche="true"
-    tri="Nom:asc"
+    tri="Departement:asc"
     pagination="10"
     export="csv">
   </gouv-datalist>
@@ -1084,15 +1082,17 @@ export const examples: Record<string, string> = {
 </div>`,
 
   'server-facets-display': `<!--
-  Server-facets ODS — Recherche + facettes + cartes
-  Mode: gouv-source (server-side ODS) + gouv-search (server-search) + gouv-facets (server-facets) -> gouv-display
+  Server-facets ODS — Recherche + facettes + normalize + cartes
+  Mode: gouv-source (server-side ODS) + gouv-search + gouv-normalize + gouv-facets (server-facets) -> gouv-display
   Source: OpenDataSoft - Industrie du futur (data.economie.gouv.fr)
+  gouv-normalize arrondit les montants pour un affichage propre
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Facettes serveur ODS — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Facettes dynamiques + recherche full-text, pagination serveur
+    <br>Pipeline : gouv-source server-side → gouv-search → <strong>gouv-normalize</strong> (round) → gouv-facets server-facets → gouv-display
   </p>
 
   <gouv-source id="q" server-side page-size="12"
@@ -1106,11 +1106,16 @@ export const examples: Record<string, string> = {
     count>
   </gouv-search>
 
-  <gouv-facets id="filtered" source="q"
+  <!-- Arrondir les montants (supprimer les decimales parasites) -->
+  <gouv-normalize id="clean" source="q"
+    round="montant_investissement, montant_participation_etat">
+  </gouv-normalize>
+
+  <gouv-facets id="filtered" source="clean"
     server-facets
-    fields="nom_region,type_aide"
-    labels="nom_region:Region | type_aide:Type d'aide"
-    display="nom_region:multiselect | type_aide:select"
+    fields="nom_region"
+    labels="nom_region:Region"
+    display="nom_region:multiselect"
     cols="6">
   </gouv-facets>
 
@@ -1119,10 +1124,13 @@ export const examples: Record<string, string> = {
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <h3 class="fr-card__title">{{nom_entreprise}}</h3>
-            <p class="fr-card__desc">{{nom_departement}} — {{nom_region}}</p>
+            <h3 class="fr-card__title">{{nombre_beneficiaires}} beneficiaires</h3>
+            <p class="fr-card__desc">
+              Investissement de {{montant_investissement:number}} \u20ac
+              dont {{montant_participation_etat:number}} \u20ac finances par l'Etat
+            </p>
             <div class="fr-card__start">
-              <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">{{type_aide}}</p>
+              <p class="fr-badge fr-badge--sm fr-badge--green-emeraude">{{nom_region}}</p>
             </div>
           </div>
         </div>
@@ -1132,9 +1140,11 @@ export const examples: Record<string, string> = {
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Facettes serveur ODS</strong> : <code>gouv-facets server-facets</code> fetche les valeurs
-      de facettes depuis l'API ODS <code>/facets</code>. Les compteurs se mettent a jour dynamiquement
-      selon la recherche et les selections cross-facet. Chaque selection declenche un re-fetch serveur.
+      <strong>Facettes serveur + normalize + format</strong> : <code>gouv-normalize round</code> arrondit les montants
+      (supprime les decimales parasites type <code>32073247.27</code> → <code>32073247</code>).
+      <code>{{champ:number}}</code> dans le template gouv-display ajoute les separateurs de milliers
+      (<code>32073247</code> → <code>32 073 247</code>).
+      <code>gouv-facets server-facets</code> fetche les valeurs de facettes depuis l'API ODS.
     </p>
   </div>
 </div>`,

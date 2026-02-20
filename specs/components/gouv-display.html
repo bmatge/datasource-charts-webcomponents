@@ -46,6 +46,8 @@
             <tr><td><code>empty</code></td><td>String</td><td>Message quand aucune donnee (defaut: "Aucun resultat")</td></tr>
             <tr><td><code>gap</code></td><td>String</td><td>Classe CSS de gap pour la grille (defaut: "fr-grid-row--gutters")</td></tr>
             <tr><td><code>uid-field</code></td><td>String</td><td>Champ de donnees a utiliser comme identifiant unique par element (vide = index)</td></tr>
+            <tr><td><code>url-sync</code></td><td>Boolean</td><td>Synchronise le numero de page dans l'URL via replaceState</td></tr>
+            <tr><td><code>url-page-param</code></td><td>String</td><td>Nom du parametre URL pour la page (defaut: "page")</td></tr>
           </tbody>
         </table>
 
@@ -59,6 +61,8 @@
             <tr><td><code>{{champ}}</code></td><td>Valeur echappee (HTML-safe)</td></tr>
             <tr><td><code>{{{champ}}}</code></td><td>Valeur brute (non echappee)</td></tr>
             <tr><td><code>{{champ|defaut}}</code></td><td>Valeur avec fallback si null/undefined</td></tr>
+            <tr><td><code>{{champ:number}}</code></td><td>Valeur avec separateurs de milliers (ex: 32073247 &rarr; 32 073 247)</td></tr>
+            <tr><td><code>{{champ:number|0}}</code></td><td>Format number + fallback si null/undefined</td></tr>
             <tr><td><code>{{champ.sous.cle}}</code></td><td>Acces aux proprietes imbriquees</td></tr>
             <tr><td><code>{{$index}}</code></td><td>Index de l'element (0-based)</td></tr>
             <tr><td><code>{{$uid}}</code></td><td>Identifiant unique de l'element</td></tr>

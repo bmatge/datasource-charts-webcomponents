@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-raw-data — Exemples - Guide - gouv-widgets</title>
+  <title>gouv-chart-a11y — Exemples - Guide - gouv-widgets</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
@@ -44,35 +44,40 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-download-2-line fr-mr-1w"></i>gouv-raw-data</h1>
+        <h1><i class="ri-accessibility-line fr-mr-1w"></i>gouv-chart-a11y</h1>
         <p class="fr-text--lead">
-          <code>gouv-raw-data</code> propose un bouton de telechargement CSV des donnees
-          associees a une visualisation. Il ameliore l'accessibilite en offrant une alternative
-          textuelle aux graphiques pour les utilisateurs de lecteur d'ecran.
+          <code>gouv-chart-a11y</code> est le companion d'accessibilite unifie pour les
+          visualisations. Il offre trois alternatives accessibles aux graphiques :
+          tableau de donnees, telechargement CSV et description textuelle.
         </p>
 
         <!-- Principe d'accessibilite -->
         <h2>Pourquoi ce composant ?</h2>
         <p>
           Les graphiques (canvas, SVG) sont difficilement interpretables par les lecteurs d'ecran.
-          <code>gouv-raw-data</code> resout ce probleme en :
+          <code>gouv-chart-a11y</code> resout ce probleme en offrant :
         </p>
         <ol>
-          <li>Proposant un <strong>bouton de telechargement CSV</strong> des donnees brutes</li>
-          <li>Creant un <strong>lien ARIA automatique</strong> entre le graphique et le bouton via <code>aria-describedby</code></li>
-          <li>Permettant au lecteur d'ecran d'<strong>annoncer la disponibilite du telechargement</strong> quand il lit le graphique</li>
+          <li>Un <strong>tableau HTML accessible</strong> avec les donnees du graphique</li>
+          <li>Un <strong>bouton de telechargement CSV</strong> des donnees brutes</li>
+          <li>Une <strong>description textuelle</strong> libre du contenu du graphique</li>
         </ol>
+        <p>
+          Via l'attribut <code>for</code>, il injecte automatiquement un <strong>skip link</strong>
+          dans le graphique cible (visible au focus clavier), pose <code>aria-describedby</code> vers
+          un resume concis et <code>aria-details</code> vers le tableau de donnees.
+        </p>
 
         <!-- Usage basique -->
         <h2>Usage basique</h2>
-        <p>Placez <code>gouv-raw-data</code> juste apres votre composant de visualisation.
-          L'attribut <code>for</code> cree automatiquement la liaison ARIA.</p>
+        <p>Placez <code>gouv-chart-a11y</code> juste apres votre composant de visualisation.
+          L'attribut <code>for</code> cree automatiquement la liaison ARIA et le skip link.</p>
 
         <div class="example-container">
           <gouv-dsfr-chart id="guide-chart" source="sites-par-statut" type="bar"
             label-field="statut" value-field="total" titre="Sites par statut">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="guide-chart" source="sites-par-statut"></gouv-raw-data>
+          <gouv-chart-a11y for="guide-chart" source="sites-par-statut" table download></gouv-chart-a11y>
         </div>
 
         <section class="fr-accordion fr-mt-1w">
@@ -89,28 +94,28 @@
 &lt;gouv-dsfr-chart id="mon-graph" source="data" type="bar"
   label-field="region" value-field="total"&gt;
 &lt;/gouv-dsfr-chart&gt;
-&lt;gouv-raw-data for="mon-graph" source="data"&gt;&lt;/gouv-raw-data&gt;</pre>
+&lt;gouv-chart-a11y for="mon-graph" source="data" table download&gt;&lt;/gouv-chart-a11y&gt;</pre>
           </div>
         </section>
 
-        <!-- Personnalisation -->
-        <h2>Personnalisation</h2>
-        <p>Par defaut, le bouton est icone seul. Ajoutez <code>button-label</code> pour afficher un texte visible :</p>
+        <!-- Avec description -->
+        <h2>Avec description textuelle</h2>
+        <p>Ajoutez <code>description</code> pour fournir une transcription du graphique :</p>
 
         <div class="example-container">
-          <gouv-raw-data for="guide-chart" source="sites-par-statut"
-            filename="sites-statut-export.csv"
-            button-label="Exporter en CSV">
-          </gouv-raw-data>
+          <gouv-chart-a11y for="guide-chart" source="sites-par-statut"
+            table download
+            description="Ce graphique montre la repartition des sites par statut. Les sites actifs sont majoritaires.">
+          </gouv-chart-a11y>
         </div>
 
         <section class="fr-accordion fr-mt-1w">
-          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-custom">Code source</button></h3>
-          <div class="fr-collapse" id="code-custom">
-<pre>&lt;gouv-raw-data for="mon-graph" source="data"
-  filename="export-regions.csv"
-  button-label="Exporter en CSV"&gt;
-&lt;/gouv-raw-data&gt;</pre>
+          <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-desc">Code source</button></h3>
+          <div class="fr-collapse" id="code-desc">
+<pre>&lt;gouv-chart-a11y for="mon-graph" source="data"
+  table download
+  description="Ce graphique montre la repartition par region."&gt;
+&lt;/gouv-chart-a11y&gt;</pre>
           </div>
         </section>
 
@@ -118,20 +123,15 @@
         <h2>Mode manuel (no-auto-aria)</h2>
         <p>
           Si vous gerez les attributs ARIA manuellement, ajoutez <code>no-auto-aria</code>
-          pour desactiver l'injection automatique :
+          pour desactiver l'injection automatique du skip link et des attributs ARIA :
         </p>
 
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-manual">Code source</button></h3>
           <div class="fr-collapse" id="code-manual">
-<pre>&lt;gouv-dsfr-chart id="mon-graph"
-  aria-describedby="dl-custom"
-  source="data" type="pie"&gt;
-&lt;/gouv-dsfr-chart&gt;
-
-&lt;gouv-raw-data id="dl-custom" source="data"
-  no-auto-aria&gt;
-&lt;/gouv-raw-data&gt;</pre>
+<pre>&lt;gouv-chart-a11y source="data"
+  no-auto-aria table download&gt;
+&lt;/gouv-chart-a11y&gt;</pre>
           </div>
         </section>
 
@@ -141,13 +141,18 @@
           <thead><tr><th>Attribut</th><th>Type</th><th>Defaut</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>source</code></td><td>String</td><td><code>""</code></td><td>ID du composant source de donnees</td></tr>
-            <tr><td><code>for</code></td><td>String</td><td><code>""</code></td><td>ID de l'element cible pour liaison ARIA</td></tr>
+            <tr><td><code>for</code></td><td>String</td><td><code>""</code></td><td>ID de l'element cible pour skip link + ARIA</td></tr>
+            <tr><td><code>table</code></td><td>Boolean</td><td><code>false</code></td><td>Active le tableau de donnees</td></tr>
+            <tr><td><code>download</code></td><td>Boolean</td><td><code>false</code></td><td>Active le bouton CSV</td></tr>
             <tr><td><code>filename</code></td><td>String</td><td><code>"donnees.csv"</code></td><td>Nom du fichier telecharge</td></tr>
-            <tr><td><code>label</code></td><td>String</td><td><code>"Telecharger les donnees (CSV)"</code></td><td>Libelle d'accessibilite (title + aria)</td></tr>
-            <tr><td><code>button-label</code></td><td>String</td><td><code>""</code></td><td>Texte visible dans le bouton. Si vide, bouton icone seul</td></tr>
-            <tr><td><code>no-auto-aria</code></td><td>Boolean</td><td><code>false</code></td><td>Desactive l'injection ARIA automatique</td></tr>
+            <tr><td><code>description</code></td><td>String</td><td><code>""</code></td><td>Description textuelle du graphique</td></tr>
+            <tr><td><code>label-field</code></td><td>String</td><td><code>""</code></td><td>Colonne pour les labels du tableau</td></tr>
+            <tr><td><code>value-field</code></td><td>String</td><td><code>""</code></td><td>Colonne(s) pour les valeurs (separees par virgules)</td></tr>
+            <tr><td><code>label</code></td><td>String</td><td><code>""</code></td><td>Libelle personnalise de la section accessible</td></tr>
+            <tr><td><code>no-auto-aria</code></td><td>Boolean</td><td><code>false</code></td><td>Desactive ARIA automatique et skip link</td></tr>
           </tbody>
         </table>
+        <p class="fr-text--sm fr-mt-1w">Si ni <code>table</code>, ni <code>download</code>, ni <code>description</code> ne sont definis, les trois sont actives par defaut.</p>
 
       </div>
     </div>

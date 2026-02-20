@@ -196,7 +196,7 @@
             label-field="TIME_PERIOD" value-field="value"
             unit-tooltip=" €" selected-palette="default">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-evol" source="q-evolution"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-evol" source="q-evolution" table download></gouv-chart-a11y>
         </div>
 
         <!-- Deciles D1 et D9 -->
@@ -242,7 +242,7 @@
             label-field="PCS" value-field="value"
             horizontal unit-tooltip=" €" selected-palette="categorical">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-pcs" source="q-pcs"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-pcs" source="q-pcs" table download></gouv-chart-a11y>
         </div>
 
         <!-- Par age -->
@@ -259,7 +259,7 @@
             label-field="AGE" value-field="value"
             unit-tooltip=" €" selected-palette="sequentialAscending">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-age" source="q-age"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-age" source="q-age" table download></gouv-chart-a11y>
         </div>
 
         <!-- Par statut d'activite + nombre de menages -->
@@ -404,7 +404,7 @@
   label-field="TIME_PERIOD" value-field="value"
   unit-tooltip=" €" selected-palette="default"&gt;
 &lt;/gouv-dsfr-chart&gt;
-&lt;gouv-raw-data for="chart-evol" source="q-evolution"&gt;&lt;/gouv-raw-data&gt;
+&lt;gouv-chart-a11y for="chart-evol" source="q-evolution" table download&gt;&lt;/gouv-chart-a11y&gt;
 
 &lt;!-- Par PCS (bar horizontal) --&gt;
 &lt;gouv-query id="q-pcs" source="data"
@@ -453,7 +453,7 @@
           <li><strong>Decodage INSEE via replace-fields</strong> : les codes de dimension (PCS <code>3</code>, AGE <code>Y30T39</code>, etc.) sont convertis en libelles humains directement dans le pipeline, sans JavaScript.</li>
           <li><strong>Filtres declaratifs</strong> : chaque <code>gouv-query</code> filtre par indicateur, periode, PCS, age, etc. avec la syntaxe colon.</li>
           <li><strong>Visualisations variees</strong> : KPIs, courbes d'evolution, barres horizontales, barres verticales, tableaux avec export CSV.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-raw-data</code> sur chaque graphique permet le telechargement CSV pour les lecteurs d'ecran.</li>
+          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique permet le telechargement CSV pour les lecteurs d'ecran.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
         </ul>
 

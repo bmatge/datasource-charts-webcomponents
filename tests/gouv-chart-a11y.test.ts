@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { GouvRawData } from '../src/components/gouv-raw-data.js';
+import { GouvChartA11y } from '../src/components/gouv-chart-a11y.js';
 import {
   clearDataCache,
   dispatchDataLoaded,
@@ -7,21 +7,20 @@ import {
   dispatchDataError,
 } from '../src/utils/data-bridge.js';
 
-const SOURCE_ID = 'test-raw-src';
+const SOURCE_ID = 'test-a11y-src';
 
-describe('GouvRawData', () => {
-  let comp: GouvRawData;
+describe('GouvChartA11y', () => {
+  let comp: GouvChartA11y;
 
   beforeEach(() => {
     clearDataCache(SOURCE_ID);
-    comp = new GouvRawData();
+    comp = new GouvChartA11y();
   });
 
   afterEach(() => {
     if (comp.isConnected) {
       comp.disconnectedCallback();
     }
-    // Clean up any DOM elements created for ARIA tests
     document.querySelectorAll('[data-test-target]').forEach(el => el.remove());
   });
 
@@ -38,16 +37,32 @@ describe('GouvRawData', () => {
       expect(comp.for).toBe('');
     });
 
+    it('table defaults to false', () => {
+      expect(comp.table).toBe(false);
+    });
+
+    it('download defaults to false', () => {
+      expect(comp.download).toBe(false);
+    });
+
     it('filename defaults to donnees.csv', () => {
       expect(comp.filename).toBe('donnees.csv');
     });
 
-    it('label defaults to Telecharger les donnees (CSV)', () => {
-      expect(comp.label).toBe('Telecharger les donnees (CSV)');
+    it('description defaults to empty string', () => {
+      expect(comp.description).toBe('');
     });
 
-    it('buttonLabel defaults to empty string', () => {
-      expect(comp.buttonLabel).toBe('');
+    it('labelField defaults to empty string', () => {
+      expect(comp.labelField).toBe('');
+    });
+
+    it('valueField defaults to empty string', () => {
+      expect(comp.valueField).toBe('');
+    });
+
+    it('label defaults to empty string', () => {
+      expect(comp.label).toBe('');
     });
 
     it('noAutoAria defaults to false', () => {
@@ -77,7 +92,8 @@ describe('GouvRawData', () => {
       comp.for = 'chart1';
       comp.connectedCallback();
 
-      expect(target.getAttribute('aria-describedby')).toContain(comp.id);
+      const describedBy = target.getAttribute('aria-describedby') || '';
+      expect(describedBy).toContain(`${comp.id}-desc`);
     });
 
     it('generates auto id if component has no id', () => {
@@ -85,14 +101,14 @@ describe('GouvRawData', () => {
       comp.for = 'chart1';
       comp.connectedCallback();
 
-      expect(comp.id).toMatch(/^gouv-raw-data-\d+$/);
-      expect(target.getAttribute('aria-describedby')).toBe(comp.id);
+      expect(comp.id).toMatch(/^gouv-chart-a11y-\d+$/);
+      expect(target.getAttribute('aria-describedby')).toBe(`${comp.id}-desc`);
     });
 
     it('removes aria-describedby on disconnectedCallback', () => {
       comp.for = 'chart1';
       comp.connectedCallback();
-      expect(target.getAttribute('aria-describedby')).toContain(comp.id);
+      expect(target.getAttribute('aria-describedby')).toContain(`${comp.id}-desc`);
 
       comp.disconnectedCallback();
       expect(target.hasAttribute('aria-describedby')).toBe(false);
@@ -124,16 +140,16 @@ describe('GouvRawData', () => {
 
       const value = target.getAttribute('aria-describedby')!;
       expect(value).toContain('existing-id');
-      expect(value).toContain(comp.id);
+      expect(value).toContain(`${comp.id}-desc`);
     });
 
     it('does not duplicate id in aria-describedby', () => {
       comp.id = 'dl-data';
       comp.for = 'chart1';
-      target.setAttribute('aria-describedby', 'dl-data');
+      target.setAttribute('aria-describedby', 'dl-data-desc');
       comp.connectedCallback();
 
-      expect(target.getAttribute('aria-describedby')).toBe('dl-data');
+      expect(target.getAttribute('aria-describedby')).toBe('dl-data-desc');
     });
 
     it('cleans up only its own id from aria-describedby on disconnect', () => {
@@ -143,7 +159,7 @@ describe('GouvRawData', () => {
 
       const before = target.getAttribute('aria-describedby')!;
       expect(before).toContain('other-id');
-      expect(before).toContain(comp.id);
+      expect(before).toContain(`${comp.id}-desc`);
 
       comp.disconnectedCallback();
       expect(target.getAttribute('aria-describedby')).toBe('other-id');
@@ -157,17 +173,14 @@ describe('GouvRawData', () => {
 
       comp.for = 'chart1';
       comp.connectedCallback();
-      expect(target.getAttribute('aria-describedby')).toContain(comp.id);
+      expect(target.getAttribute('aria-describedby')).toContain(`${comp.id}-desc`);
 
-      // Simulate attribute change
       const changedProps = new Map([['for', 'chart1']]);
       comp.for = 'chart2';
       comp.updated(changedProps);
 
-      // Old target cleaned
       expect(target.hasAttribute('aria-describedby')).toBe(false);
-      // New target linked
-      expect(target2.getAttribute('aria-describedby')).toContain(comp.id);
+      expect(target2.getAttribute('aria-describedby')).toContain(`${comp.id}-desc`);
 
       target2.remove();
     });
@@ -175,13 +188,114 @@ describe('GouvRawData', () => {
     it('removes ARIA when noAutoAria changes to true', () => {
       comp.for = 'chart1';
       comp.connectedCallback();
-      expect(target.getAttribute('aria-describedby')).toContain(comp.id);
+      expect(target.getAttribute('aria-describedby')).toContain(`${comp.id}-desc`);
 
       const changedProps = new Map([['noAutoAria', false]]);
       comp.noAutoAria = true;
       comp.updated(changedProps);
 
       expect(target.hasAttribute('aria-describedby')).toBe(false);
+    });
+
+    it('sets aria-details when table is enabled', () => {
+      comp.for = 'chart1';
+      comp.table = true;
+      comp.connectedCallback();
+
+      expect(target.getAttribute('aria-details')).toBe(`${comp.id}-table`);
+    });
+
+    it('does not set aria-details when table is disabled and other features are set', () => {
+      comp.for = 'chart1';
+      comp.download = true;
+      comp.connectedCallback();
+
+      expect(target.hasAttribute('aria-details')).toBe(false);
+    });
+
+    it('sets aria-details in default mode (all features active)', () => {
+      comp.for = 'chart1';
+      // No features explicitly set → all active by default
+      comp.connectedCallback();
+
+      expect(target.getAttribute('aria-details')).toBe(`${comp.id}-table`);
+    });
+
+    it('cleans up aria-details on disconnect', () => {
+      comp.for = 'chart1';
+      comp.table = true;
+      comp.connectedCallback();
+      expect(target.getAttribute('aria-details')).toBe(`${comp.id}-table`);
+
+      comp.disconnectedCallback();
+      expect(target.hasAttribute('aria-details')).toBe(false);
+    });
+  });
+
+  // =========================================================================
+  // Skip link injection
+  // =========================================================================
+
+  describe('skip link', () => {
+    let target: HTMLDivElement;
+
+    beforeEach(() => {
+      target = document.createElement('div');
+      target.id = 'chart-skip';
+      target.setAttribute('data-test-target', '');
+      document.body.appendChild(target);
+    });
+
+    afterEach(() => {
+      target.remove();
+    });
+
+    it('injects a skip link into the target element', () => {
+      comp.for = 'chart-skip';
+      comp.connectedCallback();
+
+      const link = target.querySelector('a.gouv-chart-a11y__skiplink');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe(`#${comp.id}`);
+      expect(link!.textContent).toBe('Voir les donnees accessibles');
+    });
+
+    it('injects skip link as first child', () => {
+      target.innerHTML = '<p>Existing content</p>';
+      comp.for = 'chart-skip';
+      comp.connectedCallback();
+
+      expect(target.firstChild).toBeInstanceOf(HTMLAnchorElement);
+    });
+
+    it('removes skip link on disconnect', () => {
+      comp.for = 'chart-skip';
+      comp.connectedCallback();
+      expect(target.querySelector('a.gouv-chart-a11y__skiplink')).not.toBeNull();
+
+      comp.disconnectedCallback();
+      expect(target.querySelector('a.gouv-chart-a11y__skiplink')).toBeNull();
+    });
+
+    it('does not inject skip link when no-auto-aria is set', () => {
+      comp.for = 'chart-skip';
+      comp.noAutoAria = true;
+      comp.connectedCallback();
+
+      expect(target.querySelector('a.gouv-chart-a11y__skiplink')).toBeNull();
+    });
+
+    it('does not crash when target does not exist', () => {
+      comp.for = 'nonexistent';
+      expect(() => comp.connectedCallback()).not.toThrow();
+    });
+
+    it('has data-gouv-a11y-link attribute', () => {
+      comp.for = 'chart-skip';
+      comp.connectedCallback();
+
+      const link = target.querySelector('a.gouv-chart-a11y__skiplink');
+      expect(link!.getAttribute('data-gouv-a11y-link')).toBe(comp.id);
     });
   });
 
@@ -266,7 +380,6 @@ describe('GouvRawData', () => {
 
     it('triggers download with correct filename', () => {
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-      // jsdom doesn't have URL.createObjectURL, so we mock it on globalThis
       const origCreate = globalThis.URL.createObjectURL;
       const origRevoke = globalThis.URL.revokeObjectURL;
       globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
@@ -329,11 +442,113 @@ describe('GouvRawData', () => {
   });
 
   // =========================================================================
+  // Table column selection
+  // =========================================================================
+
+  describe('table columns', () => {
+    it('returns all columns when no field attributes set', () => {
+      const data = [{ a: 1, b: 2, c: 3 }];
+      const cols = (comp as any)._getColumns(data);
+      expect(cols).toEqual(['a', 'b', 'c']);
+    });
+
+    it('uses label-field and value-field when set', () => {
+      comp.labelField = 'region';
+      comp.valueField = 'population';
+      const data = [{ region: 'IDF', population: 12000, code: '75' }];
+      const cols = (comp as any)._getColumns(data);
+      expect(cols).toEqual(['region', 'population']);
+    });
+
+    it('supports multiple value fields separated by commas', () => {
+      comp.labelField = 'region';
+      comp.valueField = 'pop, budget';
+      const data = [{ region: 'IDF', pop: 12000, budget: 500 }];
+      const cols = (comp as any)._getColumns(data);
+      expect(cols).toEqual(['region', 'pop', 'budget']);
+    });
+
+    it('returns empty array for empty data', () => {
+      const cols = (comp as any)._getColumns([]);
+      expect(cols).toEqual([]);
+    });
+  });
+
+  // =========================================================================
+  // Auto description
+  // =========================================================================
+
+  describe('auto description', () => {
+    it('returns no-data message when empty', () => {
+      const desc = (comp as any)._getAutoDescription(false, []);
+      expect(desc).toBe('Aucune donnee disponible.');
+    });
+
+    it('includes row count', () => {
+      const data = [{ a: 1 }, { a: 2 }, { a: 3 }];
+      const desc = (comp as any)._getAutoDescription(true, data);
+      expect(desc).toContain('3 lignes');
+    });
+
+    it('includes user description when provided', () => {
+      comp.description = 'Un graphique important.';
+      const desc = (comp as any)._getAutoDescription(true, [{ a: 1 }]);
+      expect(desc).toContain('Un graphique important.');
+    });
+
+    it('mentions CSV download when enabled', () => {
+      comp.download = true;
+      const desc = (comp as any)._getAutoDescription(true, [{ a: 1 }]);
+      expect(desc).toContain('Telechargement CSV disponible.');
+    });
+
+    it('mentions table when enabled', () => {
+      comp.table = true;
+      const desc = (comp as any)._getAutoDescription(true, [{ a: 1 }]);
+      expect(desc).toContain('Tableau de donnees disponible.');
+    });
+  });
+
+  // =========================================================================
+  // Default behavior (all features active)
+  // =========================================================================
+
+  describe('default behavior', () => {
+    it('shows all features when none explicitly set', () => {
+      expect((comp as any)._showAll).toBe(true);
+      expect((comp as any)._showTable).toBe(true);
+      expect((comp as any)._showDownload).toBe(true);
+    });
+
+    it('does not show all when table is explicitly set', () => {
+      comp.table = true;
+      expect((comp as any)._showAll).toBe(false);
+      expect((comp as any)._showTable).toBe(true);
+      expect((comp as any)._showDownload).toBe(false);
+    });
+
+    it('does not show all when download is explicitly set', () => {
+      comp.download = true;
+      expect((comp as any)._showAll).toBe(false);
+      expect((comp as any)._showTable).toBe(false);
+      expect((comp as any)._showDownload).toBe(true);
+    });
+
+    it('does not show all when description is explicitly set', () => {
+      comp.description = 'Some text';
+      expect((comp as any)._showAll).toBe(false);
+      expect((comp as any)._showDescription).toBe(true);
+      expect((comp as any)._showTable).toBe(false);
+      expect((comp as any)._showDownload).toBe(false);
+    });
+  });
+
+  // =========================================================================
   // Render
   // =========================================================================
 
   describe('render', () => {
-    it('renders a button', () => {
+    it('renders a section with role complementary', () => {
       const result = comp.render();
       expect(result).toBeDefined();
     });

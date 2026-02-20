@@ -1143,6 +1143,8 @@ Les placeholders sont remplaces pour chaque element de donnees :
 | \`{{champ}}\` | Valeur echappee (HTML-safe) |
 | \`{{{champ}}}\` | Valeur brute (non echappee — utiliser avec precaution) |
 | \`{{champ|defaut}}\` | Valeur avec fallback si null/undefined |
+| \`{{champ:number}}\` | Valeur avec separateur de milliers (ex: 32073247 → 32 073 247) |
+| \`{{champ:number|0}}\` | Format number + fallback si null |
 | \`{{champ.sous.cle}}\` | Acces aux proprietes imbriquees (dot notation) |
 | \`{{$index}}\` | Index de l'element dans le tableau (0-based) |
 | \`{{$uid}}\` | Identifiant unique de l'element (base sur uid-field ou index) |
@@ -1197,6 +1199,20 @@ Quand la page est 1, le parametre est supprime de l'URL. Compatible avec les aut
         <div class="fr-tile__content">
           <h3 class="fr-tile__title">{{nom}}</h3>
           <p class="fr-tile__desc">{{description|Pas de description}}</p>
+        </div>
+      </div>
+    </div>
+  </template>
+</gouv-display>
+
+<!-- Montants avec separateurs de milliers -->
+<gouv-display source="data" cols="3" pagination="12">
+  <template>
+    <div class="fr-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">{{nom}}</h3>
+          <p class="fr-card__desc">Budget : {{montant:number}} \u20ac</p>
         </div>
       </div>
     </div>
@@ -1324,15 +1340,15 @@ Ils communiquent via un bus evenementiel interne : \`source="id-de-la-source"\`.
 </gouv-dsfr-chart>
 \`\`\`
 
-### Accessibilite : ajouter gouv-raw-data
-Pour ameliorer l'accessibilite, ajoutez \`gouv-raw-data\` apres chaque visualisation :
+### Accessibilite : ajouter gouv-chart-a11y
+Pour ameliorer l'accessibilite, ajoutez \`gouv-chart-a11y\` apres chaque visualisation :
 \`\`\`html
 <gouv-dsfr-chart id="mon-graph" source="top10" type="bar"
   label-field="region" value-field="population__sum">
 </gouv-dsfr-chart>
-<gouv-raw-data for="mon-graph" source="top10"></gouv-raw-data>
+<gouv-chart-a11y for="mon-graph" source="top10" table download></gouv-chart-a11y>
 \`\`\`
-L'attribut \`for\` pose automatiquement \`aria-describedby\` sur le graphique cible.
+L'attribut \`for\` injecte un skip link et pose \`aria-describedby\` + \`aria-details\` sur le graphique cible.
 
 ### Pipeline simplifie : Source -> Visualisation (sans transformation)
 \`\`\`html
@@ -1820,67 +1836,83 @@ APIs avec CORS natif (pas de proxy necessaire) :
   },
 
   // ---------------------------------------------------------------------------
-  // gouv-raw-data : accessibilite et telechargement CSV
+  // gouv-chart-a11y : companion d'accessibilite unifie
   // ---------------------------------------------------------------------------
 
-  gouvRawData: {
-    id: 'gouvRawData',
-    name: 'gouv-raw-data',
-    description: 'Composant accessibilite : telechargement CSV des donnees associees a une visualisation',
-    trigger: ['raw-data', 'telecharger', 'download', 'csv', 'accessibilite', 'a11y', 'lecteur ecran', 'screen reader', 'aria'],
-    content: `## gouv-raw-data — Telechargement CSV accessible
+  gouvChartA11y: {
+    id: 'gouvChartA11y',
+    name: 'gouv-chart-a11y',
+    description: 'Composant accessibilite unifie : tableau de donnees, telechargement CSV et description textuelle',
+    trigger: ['raw-data', 'telecharger', 'download', 'csv', 'accessibilite', 'a11y', 'lecteur ecran', 'screen reader', 'aria', 'tableau accessible', 'table', 'description graphique', 'chart-a11y'],
+    content: `## gouv-chart-a11y — Companion d'accessibilite unifie
 
-Composant companion qui propose un bouton de telechargement des donnees brutes (CSV)
-associees a un composant de visualisation. Il ameliore l'accessibilite en offrant une
-alternative textuelle aux graphiques pour les utilisateurs de lecteur d'ecran.
+Composant companion qui ameliore l'accessibilite d'une visualisation en offrant
+trois alternatives activables independamment :
+1. **Tableau accessible** (\`table\`) : table HTML avec les donnees du graphique
+2. **Telechargement CSV** (\`download\`) : bouton pour exporter les donnees brutes
+3. **Description textuelle** (\`description\`) : transcription libre du contenu du graphique
+
+Le contenu est replie dans un accordeon DSFR par defaut.
 
 ### Attributs
 
 | Attribut | Type | Defaut | Description |
 |----------|------|--------|-------------|
-| source | String | \`""\` | ID du gouv-source ou gouv-query dont les donnees seront exportees |
-| for | String | \`""\` | ID de l'element cible (graphique, tableau...) pour la liaison ARIA automatique |
+| source | String | \`""\` | ID du gouv-source ou gouv-query |
+| for | String | \`""\` | ID de l'element cible pour la liaison ARIA + skip link |
+| table | Boolean | \`false\` | Active l'affichage du tableau de donnees |
+| download | Boolean | \`false\` | Active le bouton de telechargement CSV |
 | filename | String | \`"donnees.csv"\` | Nom du fichier CSV telecharge |
-| label | String | \`"Telecharger les donnees (CSV)"\` | Libelle d'accessibilite du bouton (title + aria) |
-| button-label | String | \`""\` | Texte visible dans le bouton. Si vide, bouton icone seul |
-| no-auto-aria | Boolean | \`false\` | Desactive l'injection automatique d'aria-describedby |
+| description | String | \`""\` | Description textuelle du graphique |
+| label-field | String | \`""\` | Colonne pour les labels du tableau |
+| value-field | String | \`""\` | Colonne(s) pour les valeurs du tableau (separees par virgules) |
+| label | String | \`""\` | Libelle personnalise de la section accessible |
+| no-auto-aria | Boolean | \`false\` | Desactive ARIA automatique et skip link |
+
+Si ni \`table\`, ni \`download\`, ni \`description\` ne sont definis, les trois sont affiches par defaut.
 
 ### Fonctionnement ARIA (attribut \`for\`)
 
 Quand \`for="mon-graph"\` est defini :
-1. Le composant genere automatiquement un \`id\` s'il n'en a pas
-2. Il pose \`aria-describedby="gouv-raw-data-N"\` sur l'element \`#mon-graph\`
-3. Le lecteur d'ecran annonce la description du bouton en lisant le graphique
-4. A la deconnexion, l'attribut ARIA est nettoye
+1. Un **skip link** est injecte dans le graphique cible (visible au focus clavier)
+2. \`aria-describedby\` pointe vers un resume concis dans le composant
+3. \`aria-details\` pointe vers le tableau de donnees (si \`table\` est active)
+4. A la deconnexion, tout est nettoye automatiquement
 
 ### Exemple basique
 \`\`\`html
 <gouv-dsfr-chart id="mon-graph" source="data" type="bar"
   label-field="region" value-field="total">
 </gouv-dsfr-chart>
-<gouv-raw-data for="mon-graph" source="data"></gouv-raw-data>
+<gouv-chart-a11y for="mon-graph" source="data" table download></gouv-chart-a11y>
 \`\`\`
 
-### Avec texte visible et nom de fichier personnalise
+### Avec description textuelle
 \`\`\`html
-<gouv-raw-data for="mon-graph" source="data"
-  filename="export-regions.csv"
-  button-label="Exporter en CSV">
-</gouv-raw-data>
+<gouv-chart-a11y for="mon-graph" source="data"
+  table download
+  description="Ce graphique montre la repartition par region. L'Ile-de-France est en tete.">
+</gouv-chart-a11y>
+\`\`\`
+
+### Avec colonnes personnalisees
+\`\`\`html
+<gouv-chart-a11y for="mon-graph" source="data"
+  table download
+  label-field="region" value-field="population,budget"
+  filename="export-regions.csv">
+</gouv-chart-a11y>
 \`\`\`
 
 ### Mode manuel (sans ARIA automatique)
 \`\`\`html
-<gouv-dsfr-chart id="mon-graph" aria-describedby="dl-custom"
-  source="data" type="pie">
-</gouv-dsfr-chart>
-<gouv-raw-data id="dl-custom" source="data" no-auto-aria></gouv-raw-data>
+<gouv-chart-a11y source="data" no-auto-aria table download></gouv-chart-a11y>
 \`\`\`
 
 ### Notes
-- Le bouton est desactive tant que les donnees ne sont pas chargees
+- Le contenu est dans un accordeon DSFR (replie par defaut)
 - Le CSV utilise le separateur \`;\` (standard francais)
-- Toutes les colonnes des donnees sont exportees automatiquement
+- Le tableau est limite a 100 lignes ; le CSV contient toutes les donnees
 - Compatible avec tous les composants de rendu (chart, datalist, display, kpi)`,
   },
 

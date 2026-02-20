@@ -26,10 +26,14 @@ import { updateAccessibleTable } from './accessible-table.js';
 const ODS_PAGE_SIZE = 100;
 const ODS_MAX_PAGES = 10;
 
-/** Generate optional gouv-raw-data element for CSV download accessibility */
-function generateRawDataElement(sourceId: string, chartId: string): string {
-  if (!state.rawDataEnabled) return '';
-  return `\n  <gouv-raw-data for="${chartId}" source="${sourceId}"></gouv-raw-data>`;
+/** Generate optional gouv-chart-a11y element for accessible data companion */
+function generateA11yElement(sourceId: string, chartId: string): string {
+  if (!state.a11yEnabled) return '';
+  const attrs: string[] = [`for="${chartId}"`, `source="${sourceId}"`];
+  if (state.a11yTable) attrs.push('table');
+  if (state.a11yDownload) attrs.push('download');
+  if (state.a11yDescription) attrs.push(`description="${state.a11yDescription.replace(/"/g, '&quot;')}"`);
+  return `\n  <gouv-chart-a11y ${attrs.join(' ')}></gouv-chart-a11y>`;
 }
 
 /**
@@ -1232,7 +1236,7 @@ ${middlewareHtml}${queryElement}
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>${generateRawDataElement(chartSource, 'chart')}
+  </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
   codeEl.textContent = code;
@@ -1535,7 +1539,7 @@ ${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>${generateRawDataElement(chartSource, 'chart')}
+  </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
   codeEl.textContent = code;

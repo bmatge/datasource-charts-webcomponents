@@ -54,14 +54,14 @@ Une suite d'outils web pour **generer le code HTML du volet 1 sans le connaitre*
 | `gouv-kpi` | Indicateur chiffre cle avec formatage, couleurs conditionnelles et icones |
 | `gouv-display` | Affichage libre de donnees via template HTML personnalise |
 | `gouv-world-map` | Carte du monde coloree par valeurs (choropleth) |
-| `gouv-raw-data` | Bouton de telechargement CSV des donnees (companion accessibilite) |
+| `gouv-chart-a11y` | Companion d'accessibilite unifie (tableau, CSV, description) |
 
 Les composants se chainent de facon declarative :
 
 ```
 gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart / gouv-kpi / gouv-datalist / gouv-display / gouv-world-map
                                            → gouv-facets / gouv-search (filtres interactifs)
-                                           → gouv-raw-data (telechargement CSV accessible)
+                                           → gouv-chart-a11y (accessibilite : tableau, CSV, description)
 ```
 
 ## Utilisation

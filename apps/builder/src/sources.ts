@@ -228,10 +228,10 @@ export function loadFieldsFromLocalData(): void {
     if (generationModeSection) generationModeSection.style.display = 'none';
   }
 
-  // Show/hide raw-data option (available for dynamic sources)
-  const rawDataSection = document.getElementById('section-raw-data') as HTMLElement | null;
-  if (rawDataSection) {
-    rawDataSection.style.display = (source?.type === 'grist' || source?.type === 'api') ? 'block' : 'none';
+  // Show/hide accessibility option (available for dynamic sources)
+  const a11ySection = document.getElementById('section-a11y') as HTMLElement | null;
+  if (a11ySection) {
+    a11ySection.style.display = (source?.type === 'grist' || source?.type === 'api') ? 'block' : 'none';
   }
   updateMiddlewareSections();
 
@@ -374,9 +374,17 @@ export function loadFavoriteState(): void {
     const refreshInput = document.getElementById('refresh-interval') as HTMLInputElement | null;
     if (refreshInput && state.refreshInterval) refreshInput.value = String(state.refreshInterval);
 
-    // Restore raw data toggle
-    const rawDataToggle = document.getElementById('raw-data-toggle') as HTMLInputElement | null;
-    if (rawDataToggle) rawDataToggle.checked = state.rawDataEnabled || false;
+    // Restore accessibility toggles
+    const a11yToggle = document.getElementById('a11y-toggle') as HTMLInputElement | null;
+    if (a11yToggle) a11yToggle.checked = state.a11yEnabled || false;
+    const a11yOpts = document.getElementById('a11y-options') as HTMLElement | null;
+    if (a11yOpts) a11yOpts.style.display = state.a11yEnabled ? 'block' : 'none';
+    const a11yTableEl = document.getElementById('a11y-table') as HTMLInputElement | null;
+    if (a11yTableEl) a11yTableEl.checked = state.a11yTable;
+    const a11yDownloadEl = document.getElementById('a11y-download') as HTMLInputElement | null;
+    if (a11yDownloadEl) a11yDownloadEl.checked = state.a11yDownload;
+    const a11yDescEl = document.getElementById('a11y-description') as HTMLTextAreaElement | null;
+    if (a11yDescEl) a11yDescEl.value = state.a11yDescription || '';
 
     // Update fields if available
     if (state.fields && state.fields.length > 0) {

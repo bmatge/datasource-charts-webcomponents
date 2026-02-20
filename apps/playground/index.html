@@ -43,12 +43,17 @@
       <optgroup label="Mode direct (gouv-source)">
         <option value="direct-bar">Barres — Fiscalite locale</option>
         <option value="direct-kpi">KPI — Industrie du futur</option>
-        <option value="direct-datalist">Tableau — Elus municipaux</option>
+        <option value="direct-datalist">Tableau — Maires de France (server-side)</option>
+      </optgroup>
+      <optgroup label="Pagination serveur">
+        <option value="server-paginate-datalist">Tableau — Maires pagination serveur</option>
+        <option value="server-paginate-display">Cartes — Maires pagination serveur</option>
+        <option value="paginate-kpi-global">Pagination + KPI — Industrie du futur</option>
       </optgroup>
       <optgroup label="Avec requete (gouv-query)">
-        <option value="query-bar">Barres — Beneficiaires agreges</option>
-        <option value="query-pie">Camembert — Elus par categorie</option>
-        <option value="query-map">Carte — Taux TFB</option>
+        <option value="query-bar">Barres — Beneficiaires par region</option>
+        <option value="query-pie">Camembert — Investissement par region</option>
+        <option value="query-map">Carte — Taux TFB par departement</option>
       </optgroup>
       <optgroup label="Avec normalisation (gouv-normalize)">
         <option value="normalize-bar">Barres — LOVAC vacants par dept</option>
@@ -56,29 +61,24 @@
         <option value="normalize-datalist">Tableau — LOVAC donnees nettoyees</option>
       </optgroup>
       <optgroup label="Affichage dynamique (gouv-display)">
-        <option value="direct-display">Cartes — Industrie du futur</option>
-        <option value="query-display">Cartes — Communes filtrees</option>
+        <option value="direct-display">Cartes — Industrie du futur (server-side)</option>
+        <option value="query-display">Cartes — Communes de l'Ain (server-side)</option>
         <option value="normalize-display">Tuiles — LOVAC logements vacants</option>
       </optgroup>
       <optgroup label="Avec recherche (gouv-search)">
-        <option value="search-datalist">Tableau — Rappels avec recherche</option>
-        <option value="search-display">Cartes — Industrie recherchee</option>
+        <option value="search-datalist">Tableau — Rappels produits (recherche serveur)</option>
+        <option value="search-display">Cartes — Industrie (recherche serveur)</option>
         <option value="search-kpi-chart">KPI + Barres — Recherche dynamique</option>
       </optgroup>
       <optgroup label="Avec facettes (gouv-facets)">
-        <option value="facets-datalist">Tableau — Elus avec facettes</option>
-        <option value="facets-bar">Barres — Industrie du futur filtree</option>
+        <option value="facets-datalist">Tableau — Industrie avec facettes</option>
+        <option value="facets-bar">Barres — Industrie filtree par region</option>
         <option value="facets-map">Carte + KPI — Fiscalite par region</option>
-      </optgroup>
-      <optgroup label="Pagination serveur">
-        <option value="server-paginate-datalist">Tableau — Maires pagination serveur</option>
-        <option value="server-paginate-display">Cartes — Maires pagination serveur</option>
-        <option value="paginate-kpi-global">Pagination + KPI globaux</option>
       </optgroup>
       <optgroup label="Server-side (recherche + tri serveur)">
         <option value="server-side-ods">Recherche serveur — Rappels (ODS)</option>
         <option value="server-side-tabular-tri">Tri serveur — Communes (Tabular)</option>
-        <option value="server-facets-display">Facettes serveur — Industrie (ODS)</option>
+        <option value="server-facets-display">Facettes serveur + normalize — Industrie (ODS)</option>
       </optgroup>
       <optgroup label="Carte du monde (gouv-world-map)">
         <option value="direct-worldmap">Carte — PIB par pays</option>

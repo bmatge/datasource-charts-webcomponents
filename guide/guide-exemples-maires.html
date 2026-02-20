@@ -203,7 +203,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
               label-field="Sexe" value-field="Nombre"
               selected-palette="categorical">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="chart-sexe" source="d-sexe"></gouv-raw-data>
+            <gouv-chart-a11y for="chart-sexe" source="d-sexe" table download></gouv-chart-a11y>
           </div>
 
           <div class="chart-card">
@@ -227,7 +227,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
             selected-palette="sequentialDescending"
             unit-tooltip=" maires">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-csp" source="d-csp"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-csp" source="d-csp" table download></gouv-chart-a11y>
         </div>
 
         <!-- CSP x Sexe -->
@@ -266,7 +266,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
             selected-palette="categorical"
             unit-tooltip=" maires">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-region" source="d-region"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-region" source="d-region" table download></gouv-chart-a11y>
         </div>
 
         <!-- Top 15 departements -->
@@ -278,7 +278,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
             selected-palette="sequentialDescending"
             unit-tooltip=" maires">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-dept" source="d-dept-top"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-dept" source="d-dept-top" table download></gouv-chart-a11y>
         </div>
 
         <!-- Parite par region -->
@@ -292,7 +292,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
             selected-palette="sequentialAscending"
             unit-tooltip=" femmes maires">
           </gouv-dsfr-chart>
-          <gouv-raw-data for="chart-parite" source="d-parite"></gouv-raw-data>
+          <gouv-chart-a11y for="chart-parite" source="d-parite" table download></gouv-chart-a11y>
         </div>
 
         <!-- Explorez les donnees -->
@@ -444,7 +444,7 @@ gouv-source "s-browse" (tabular, server-side, 15/p) --> gouv-normalize (rename +
           <li><strong>Facettes a valeurs pre-calculees</strong> : <code>gouv-facets static-values</code> affiche les valeurs de facettes sans les calculer depuis les donnees. Les selections envoient des commandes WHERE a la source Tabular pour le filtrage server-side.</li>
           <li><strong>Cartes paginees server-side</strong> : <code>gouv-display</code> avec <code>pagination="15"</code> + <code>gouv-source server-side page-size="15"</code> ne charge que 15 fiches a la fois.</li>
           <li><strong>Decodage dans les cartes</strong> : <code>gouv-normalize</code> renomme les colonnes et decode <code>Code sexe</code> en <code>Homme/Femme</code> via <code>replace-fields</code>.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-raw-data</code> sur chaque graphique pour le telechargement CSV.</li>
+          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique pour le telechargement CSV.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
           <li><strong>Limitation</strong> : les donnees pre-calculees (graphiques, facettes) sont un instantane (dec. 2025). Pour des donnees en temps reel, il faudrait un backend d'agregation ou une API supportant group-by.</li>
         </ul>

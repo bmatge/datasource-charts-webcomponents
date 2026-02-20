@@ -39,7 +39,7 @@
             <tr><td><code>source</code></td><td>String</td><td>ID du <code>&lt;gouv-source&gt;</code> (requis)</td></tr>
             <tr><td><code>valeur</code></td><td>String</td><td>Expression de calcul : <code>"champ"</code>, <code>"avg:champ"</code>, <code>"count:champ:valeur"</code></td></tr>
             <tr><td><code>label</code></td><td>String</td><td>Libelle affiche sous la valeur</td></tr>
-            <tr><td><code>format</code></td><td>String</td><td>Format : <code>nombre</code>, <code>pourcentage</code>, <code>euro</code>, <code>decimal</code></td></tr>
+            <tr><td><code>format</code></td><td>String</td><td>Format d'affichage (defaut : <code>nombre</code>)</td></tr>
             <tr><td><code>icone</code></td><td>String</td><td>Classe d'icone Remix Icon (ex: <code>ri-global-line</code>)</td></tr>
             <tr><td><code>couleur</code></td><td>String</td><td>Couleur forcee : <code>vert</code>, <code>orange</code>, <code>rouge</code>, <code>bleu</code></td></tr>
             <tr><td><code>seuil-vert</code></td><td>Number</td><td>Seuil au-dessus duquel la couleur est verte</td></tr>
@@ -66,6 +66,18 @@
           <li><code>min:champ</code> / <code>max:champ</code> : Min/max</li>
           <li><code>count:champ:valeur</code> : Compte les occurrences ou valeur = valeur</li>
         </ul>
+
+        <h2 class="fr-mt-4w">Formats d'affichage</h2>
+        <table class="attr-table">
+          <thead><tr><th>Format</th><th>Exemple (valeur : 32073247.5)</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>nombre</code></td><td>32 073 248</td><td>Entier avec separateurs de milliers (arrondi)</td></tr>
+            <tr><td><code>euro</code></td><td>32 073 248 &euro;</td><td>Montant en euros avec separateurs de milliers</td></tr>
+            <tr><td><code>pourcentage</code></td><td>75,5 %</td><td>Pourcentage (divise par 100, 1 decimale max)</td></tr>
+            <tr><td><code>decimal</code></td><td>32 073 247,50</td><td>Nombre decimal (1 a 2 decimales)</td></tr>
+          </tbody>
+        </table>
+        <p class="fr-text--sm fr-text--light">Tous les formats utilisent la locale francaise (separateur de milliers = espace, decimales = virgule).</p>
 
         <h2 class="fr-mt-4w">Exemples</h2>
 

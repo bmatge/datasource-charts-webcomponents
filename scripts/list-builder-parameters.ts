@@ -151,7 +151,7 @@ function categorizeParameter(id: string): string {
     return '6. Configuration des données';
   if (id.includes('title') || id.includes('subtitle') || id.includes('palette') || id.includes('kpi'))
     return '7. Apparence';
-  if (id.includes('raw-data')) return '8. Accessibilité';
+  if (id.includes('a11y')) return '8. Accessibilité';
   return '9. Autres';
 }
 

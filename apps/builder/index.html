@@ -518,13 +518,28 @@
         </div>
       </div>
 
-      <!-- Option accessibilite : telechargement CSV -->
-      <div class="config-section" id="section-raw-data" style="display: none;">
+      <!-- Option accessibilite -->
+      <div class="config-section" id="section-a11y" style="display: none;">
         <div class="fr-checkbox-group fr-checkbox-group--sm">
-          <input type="checkbox" id="raw-data-toggle">
-          <label class="fr-label" for="raw-data-toggle">
-            <i class="ri-download-2-line fr-mr-1w" aria-hidden="true"></i>Ajouter telechargement CSV (accessibilite)
+          <input type="checkbox" id="a11y-toggle">
+          <label class="fr-label" for="a11y-toggle">
+            <i class="ri-accessibility-line fr-mr-1w" aria-hidden="true"></i>Ajouter accessibilite
           </label>
+        </div>
+        <div id="a11y-options" style="display: none; margin-left: 1.5rem; margin-top: 0.5rem;">
+          <div class="fr-checkbox-group fr-checkbox-group--sm fr-mb-1w">
+            <input type="checkbox" id="a11y-table" checked>
+            <label class="fr-label" for="a11y-table">Tableau de donnees</label>
+          </div>
+          <div class="fr-checkbox-group fr-checkbox-group--sm fr-mb-1w">
+            <input type="checkbox" id="a11y-download" checked>
+            <label class="fr-label" for="a11y-download">Telechargement CSV</label>
+          </div>
+          <div class="fr-input-group fr-input-group--sm">
+            <label class="fr-label" for="a11y-description">Description (optionnelle)</label>
+            <textarea class="fr-input fr-input--sm" id="a11y-description" rows="2"
+              placeholder="Ex : Ce graphique montre la repartition par region..."></textarea>
+          </div>
         </div>
       </div>
 
@@ -560,16 +575,24 @@
           </div>
         </div>
 
-        <!-- Tableau accessible -->
-        <details class="fr-accordion">
-          <summary class="fr-accordion__btn">Donnees en tableau (accessibilite RGAA)</summary>
-          <div class="fr-accordion__content">
-            <table class="fr-table" id="accessible-table">
-              <thead><tr><th>Categorie</th><th>Valeur</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </details>
+        <!-- Apercu accessibilite -->
+        <div id="a11y-preview" style="display: none;">
+          <details class="fr-accordion">
+            <summary class="fr-accordion__btn">Accessibilite : donnees et description</summary>
+            <div class="fr-accordion__content">
+              <p id="a11y-preview-description" class="fr-text--sm fr-mb-2w" style="display: none;"></p>
+              <div id="a11y-preview-table-wrapper" class="fr-table fr-mb-2w">
+                <table class="fr-table" id="accessible-table">
+                  <thead><tr><th>Categorie</th><th>Valeur</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <button id="a11y-preview-download" class="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left fr-icon-download-line" disabled>
+                Telecharger en CSV
+              </button>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- Onglet Code -->

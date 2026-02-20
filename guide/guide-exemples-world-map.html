@@ -197,7 +197,7 @@ gouv-source "src-pays"                         --> gouv-kpi (count pays)</div>
               selected-palette="sequentialDescending"
               unit-tooltip="M">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="bar-top15" source="top15"></gouv-raw-data>
+            <gouv-chart-a11y for="bar-top15" source="top15" table download></gouv-chart-a11y>
           </div>
 
           <!-- Pie chart : repartition top 8 -->
@@ -212,7 +212,7 @@ gouv-source "src-pays"                         --> gouv-kpi (count pays)</div>
               selected-palette="categorical"
               unit-tooltip="M">
             </gouv-dsfr-chart>
-            <gouv-raw-data for="pie-pays" source="top8"></gouv-raw-data>
+            <gouv-chart-a11y for="pie-pays" source="top8" table download></gouv-chart-a11y>
           </div>
         </div>
 
@@ -319,7 +319,7 @@ gouv-source "src-pays"                         --> gouv-kpi (count pays)</div>
           <li><strong>Agregation server-side</strong> : <code>gouv-source</code> utilise <code>select</code> avec <code>sum()</code> et <code>count()</code>, <code>group-by</code> et <code>order-by</code> pour agreger directement cote serveur OpenDataSoft.</li>
           <li><strong>Pipeline de transformation</strong> : <code>gouv-query</code> applique <code>limit</code> et <code>order-by</code> sur les donnees agregees pour alimenter les graphiques top 15 et top 8, tandis que la carte recoit toutes les donnees.</li>
           <li><strong>KPI derives</strong> : <code>valeur="count:pays"</code> compte le nombre de valeurs distinctes du champ <code>pays</code> sans source supplementaire.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-raw-data</code> sur chaque graphique pour le telechargement CSV.</li>
+          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique pour le telechargement CSV.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
         </ul>
 

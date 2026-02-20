@@ -29,7 +29,7 @@
           { id: "exemples-search", label: "gouv-search", href: "guide-exemples-search.html" },
           { id: "exemples-facets", label: "gouv-facets", href: "guide-exemples-facets.html" },
           { id: "exemples-display", label: "gouv-display", href: "guide-exemples-display.html" },
-          { id: "exemples-raw-data", label: "gouv-raw-data", href: "guide-exemples-raw-data.html" }
+          { id: "exemples-chart-a11y", label: "gouv-chart-a11y", href: "guide-exemples-chart-a11y.html" }
         ]
       },
       {

@@ -76,6 +76,10 @@ export class GouvNormalize extends LitElement {
   @property({ type: String })
   flatten = '';
 
+  /** Arrondit les champs numeriques a l'entier (ou a N decimales). Format: "champ1, champ2" ou "champ1:2, champ2:0" */
+  @property({ type: String })
+  round = '';
+
   /** Met toutes les cles en minuscules */
   @property({ type: Boolean, attribute: 'lowercase-keys' })
   lowercaseKeys = false;
@@ -123,7 +127,7 @@ export class GouvNormalize extends LitElement {
     }
 
     // Re-traiter si les regles de normalisation changent
-    const normalizationAttrs = ['flatten', 'numeric', 'numericAuto', 'rename', 'trim', 'stripHtml', 'replace', 'replaceFields', 'lowercaseKeys'];
+    const normalizationAttrs = ['flatten', 'numeric', 'numericAuto', 'round', 'rename', 'trim', 'stripHtml', 'replace', 'replaceFields', 'lowercaseKeys'];
     const hasNormalizationChange = normalizationAttrs.some(attr => changedProperties.has(attr));
     if (hasNormalizationChange) {
       const cachedData = this.source ? getDataCache(this.source) : undefined;
@@ -196,6 +200,7 @@ export class GouvNormalize extends LitElement {
       }
 
       const numericFields = this._parseNumericFields();
+      const roundFields = this._parseRoundFields();
       const renameMap = this._parsePipeMap(this.rename);
       const replaceMap = this._parsePipeMap(this.replace);
       const replaceFieldsMap = this._parseReplaceFields(this.replaceFields);
@@ -204,7 +209,7 @@ export class GouvNormalize extends LitElement {
         if (row === null || row === undefined || typeof row !== 'object') {
           return row;
         }
-        return this._normalizeRow(row as Record<string, unknown>, numericFields, renameMap, replaceMap, replaceFieldsMap);
+        return this._normalizeRow(row as Record<string, unknown>, numericFields, roundFields, renameMap, replaceMap, replaceFieldsMap);
       });
 
       dispatchDataLoaded(this.id, result);
@@ -223,6 +228,7 @@ export class GouvNormalize extends LitElement {
   private _normalizeRow(
     row: Record<string, unknown>,
     numericFields: Set<string>,
+    roundFields: Map<string, number>,
     renameMap: Map<string, string>,
     replaceMap: Map<string, string>,
     replaceFieldsMap: Map<string, Map<string, string>>
@@ -277,10 +283,21 @@ export class GouvNormalize extends LitElement {
         }
       }
 
-      // 5. Rename key (uses trimmed key for map lookup)
+      // 5. Round numeric values
+      if (roundFields.has(key) && typeof normalizedValue === 'number' && isFinite(normalizedValue)) {
+        const decimals = roundFields.get(key)!;
+        if (decimals === 0) {
+          normalizedValue = Math.round(normalizedValue);
+        } else {
+          const factor = 10 ** decimals;
+          normalizedValue = Math.round(normalizedValue * factor) / factor;
+        }
+      }
+
+      // 6. Rename key (uses trimmed key for map lookup)
       const finalKey = renameMap.get(key) ?? key;
 
-      // 6. Lowercase keys
+      // 7. Lowercase keys
       const outputKey = this.lowercaseKeys ? finalKey.toLowerCase() : finalKey;
 
       result[outputKey] = normalizedValue;
@@ -323,6 +340,25 @@ export class GouvNormalize extends LitElement {
     return new Set(
       this.numeric.split(',').map(f => f.trim()).filter(Boolean)
     );
+  }
+
+  /** Parse l'attribut round en Map<champ, decimales>. Format: "champ1, champ2" (0 decimales) ou "champ1:2, champ2:1" */
+  _parseRoundFields(): Map<string, number> {
+    const map = new Map<string, number>();
+    if (!this.round) return map;
+    for (const entry of this.round.split(',')) {
+      const trimmed = entry.trim();
+      if (!trimmed) continue;
+      const colonIdx = trimmed.indexOf(':');
+      if (colonIdx === -1) {
+        map.set(trimmed, 0);
+      } else {
+        const field = trimmed.substring(0, colonIdx).trim();
+        const decimals = parseInt(trimmed.substring(colonIdx + 1).trim(), 10);
+        if (field) map.set(field, isNaN(decimals) ? 0 : decimals);
+      }
+    }
+    return map;
   }
 
   /** Parse l'attribut replace-fields en Map<champ, Map<pattern, remplacement>> */

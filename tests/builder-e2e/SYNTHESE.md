@@ -136,7 +136,7 @@ if (!result.passed) {
 - **Normalization** : flatten, trim, numeric-auto, rename, strip-html, replace, lowercase-keys
 - **Facettes** : configuration des champs, max-values, sort, hide-empty
 - **Mode génération** : embedded vs dynamic, refresh interval
-- **Accessibilité** : raw-data-toggle (CSV download)
+- **Accessibilité** : a11y-toggle (tableau + CSV)
 
 ---
 

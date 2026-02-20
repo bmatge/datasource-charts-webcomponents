@@ -490,6 +490,110 @@ describe('GouvNormalize', () => {
     });
   });
 
+  describe('Round', () => {
+    it('parses round fields without decimals (defaults to 0)', () => {
+      normalize.round = 'montant, prix';
+      const fields = normalize._parseRoundFields();
+      expect(fields.get('montant')).toBe(0);
+      expect(fields.get('prix')).toBe(0);
+    });
+
+    it('parses round fields with explicit decimals', () => {
+      normalize.round = 'montant:0, taux:2, score:1';
+      const fields = normalize._parseRoundFields();
+      expect(fields.get('montant')).toBe(0);
+      expect(fields.get('taux')).toBe(2);
+      expect(fields.get('score')).toBe(1);
+    });
+
+    it('returns empty map for empty round attribute', () => {
+      normalize.round = '';
+      const fields = normalize._parseRoundFields();
+      expect(fields.size).toBe(0);
+    });
+
+    it('rounds float values to integers by default', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.round = 'montant, participation';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { nom: 'A', montant: 32073247.27, participation: 8525121.11 },
+        { nom: 'B', montant: 1500.5, participation: 999.49 },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].montant).toBe(32073247);
+      expect(result[0].participation).toBe(8525121);
+      expect(result[1].montant).toBe(1501);
+      expect(result[1].participation).toBe(999);
+      expect(result[0].nom).toBe('A');
+    });
+
+    it('rounds to specified number of decimals', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.round = 'taux:2';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { taux: 3.14159 },
+        { taux: 2.005 },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].taux).toBe(3.14);
+      expect(result[1].taux).toBeCloseTo(2.01, 1);
+    });
+
+    it('does not affect non-numeric values', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.round = 'montant';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { montant: 'not a number', nom: 'test' },
+        { montant: null, nom: 'test2' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].montant).toBe('not a number');
+      expect(result[1].montant).toBeNull();
+    });
+
+    it('does not affect fields not in round list', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.round = 'montant';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { montant: 1234.56, taux: 3.14159 },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].montant).toBe(1235);
+      expect(result[0].taux).toBe(3.14159);
+    });
+
+    it('combines with numeric conversion', () => {
+      normalize.id = 'test-normalize';
+      normalize.source = 'test-source';
+      normalize.numeric = 'montant';
+      normalize.round = 'montant';
+
+      normalize.connectedCallback();
+      dispatchDataLoaded('test-source', [
+        { montant: '32073247.27' },
+      ]);
+
+      const result = getDataCache('test-normalize') as Record<string, unknown>[];
+      expect(result[0].montant).toBe(32073247);
+    });
+  });
+
   describe('Lowercase keys', () => {
     it('converts all keys to lowercase when lowercaseKeys is true', () => {
       normalize.id = 'test-normalize';

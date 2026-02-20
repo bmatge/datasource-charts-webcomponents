@@ -70,6 +70,8 @@
           <li><strong>Caracteres speciaux</strong> : balises HTML, espaces superflus dans les valeurs</li>
           <li><strong>Libelles peu clairs</strong> : cles d'API cryptiques a renommer pour la lisibilite</li>
           <li><strong>Valeurs manquantes</strong> : remplacer <code>N/A</code>, <code>n.d.</code>, <code>-</code> par des valeurs exploitables</li>
+          <li><strong>Decimales parasites</strong> : arrondir <code>32073247.269999996</code> a <code>32073247</code></li>
+          <li><strong>Objets imbriques</strong> : aplatir un sous-objet pour remonter ses cles au premier niveau</li>
         </ul>
 
         <h2>Attributs</h2>
@@ -85,6 +87,8 @@
             <tr><td><code>strip-html</code></td><td>Boolean</td><td><code>false</code></td><td>Supprime les balises HTML des valeurs string.</td></tr>
             <tr><td><code>replace</code></td><td>String</td><td><code>""</code></td><td>Remplacement global de valeurs : <code>"N/A: | n.d.: | -:0"</code></td></tr>
             <tr><td><code>replace-fields</code></td><td>String</td><td><code>""</code></td><td>Remplacement cible par champ : <code>"CHAMP:ancien:nouveau | CHAMP2:a:n"</code>. Ne remplace que dans le champ specifie. Combinable avec <code>replace</code>.</td></tr>
+            <tr><td><code>flatten</code></td><td>String</td><td><code>""</code></td><td>Cle du sous-objet a aplatir au premier niveau. Supporte la dot notation (<code>"data.attributes"</code>).</td></tr>
+            <tr><td><code>round</code></td><td>String</td><td><code>""</code></td><td>Arrondit les champs numeriques. Format : <code>"champ1, champ2"</code> (0 decimales) ou <code>"champ1:2, champ2:0"</code> (N decimales).</td></tr>
             <tr><td><code>lowercase-keys</code></td><td>Boolean</td><td><code>false</code></td><td>Met toutes les cles en minuscules.</td></tr>
           </tbody>
         </table>
