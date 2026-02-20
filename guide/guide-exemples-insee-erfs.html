@@ -127,7 +127,8 @@
         <!-- 1. Fetch API INSEE Melodi -->
         <gouv-source id="raw"
           url="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL"
-          transform="observations">
+          transform="observations"
+          use-proxy>
         </gouv-source>
 
         <!-- 2. Aplatir .dimensions -->
@@ -341,7 +342,7 @@
         <div class="source-note">
           <strong>Source :</strong> INSEE — Enquete Revenus Fiscaux et Sociaux (ERFS), series longues menages<br>
           <strong>API :</strong> <a href="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL" target="_blank" rel="noopener">api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL</a><br>
-          <strong>Pipeline 100% declaratif :</strong> <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &times;3 (flatten) + <code>replace-fields</code> (decodage INSEE) &rarr; <code>gouv-query</code> &rarr; visualisations
+          <strong>Pipeline 100% declaratif :</strong> <code>gouv-source use-proxy</code> &rarr; <code>gouv-normalize</code> &times;3 (flatten) + <code>replace-fields</code> (decodage INSEE) &rarr; <code>gouv-query</code> &rarr; visualisations
         </div>
 
         <!-- Code source -->
@@ -351,7 +352,8 @@
 <pre class="example-code">&lt;!-- 1. Fetch API INSEE Melodi --&gt;
 &lt;gouv-source id="raw"
   url="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL"
-  transform="observations"&gt;
+  transform="observations"
+  use-proxy&gt;
 &lt;/gouv-source&gt;
 
 &lt;!-- 2. Aplatir .dimensions --&gt;
@@ -448,7 +450,7 @@
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>1 seule source HTTP</strong> : <code>gouv-source</code> fetch l'API INSEE Melodi, <code>transform="observations"</code> extrait le tableau d'observations.</li>
+          <li><strong>1 seule source HTTP</strong> : <code>gouv-source</code> fetch l'API INSEE Melodi via <code>use-proxy</code> (l'API INSEE ne supporte pas le CORS), <code>transform="observations"</code> extrait le tableau d'observations.</li>
           <li><strong>Aplatissement progressif</strong> : 3 <code>gouv-normalize</code> successifs aplatissent les objets imbriques (<code>dimensions</code> &rarr; <code>measures</code> &rarr; <code>OBS_VALUE_NIVEAU</code>).</li>
           <li><strong>Decodage INSEE via replace-fields</strong> : les codes de dimension (PCS <code>3</code>, AGE <code>Y30T39</code>, etc.) sont convertis en libelles humains directement dans le pipeline, sans JavaScript.</li>
           <li><strong>Filtres declaratifs</strong> : chaque <code>gouv-query</code> filtre par indicateur, periode, PCS, age, etc. avec la syntaxe colon.</li>
