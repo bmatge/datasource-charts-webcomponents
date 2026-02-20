@@ -128,7 +128,7 @@ export class GouvChartA11y extends SourceSubscriberMixin(LitElement) {
     if (!target) return;
 
     const link = document.createElement('a');
-    link.href = `#${this.id}`;
+    link.href = `#${this.id}-section`;
     link.className = 'gouv-chart-a11y__skiplink';
     link.textContent = 'Voir les donnees accessibles';
     link.setAttribute('data-gouv-a11y-link', this.id);
@@ -277,6 +277,7 @@ export class GouvChartA11y extends SourceSubscriberMixin(LitElement) {
 
     return html`
       <section class="gouv-chart-a11y"
+               id="${this.id}-section"
                role="complementary"
                aria-label="${sectionLabel}">
 
