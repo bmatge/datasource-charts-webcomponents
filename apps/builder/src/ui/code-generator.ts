@@ -36,6 +36,24 @@ function generateA11yElement(sourceId: string, chartId: string): string {
   return `\n  <gouv-chart-a11y ${attrs.join(' ')}></gouv-chart-a11y>`;
 }
 
+/** Generate a11y block for embedded code (inline data via gouv-source) */
+function generateEmbeddedA11y(chartId: string): string {
+  if (!state.a11yEnabled) return '';
+  const dataJson = JSON.stringify(state.data).replace(/'/g, '&#39;');
+  const attrs: string[] = [`for="${chartId}"`, `source="a11y-data"`];
+  if (state.a11yTable) attrs.push('table');
+  if (state.a11yDownload) attrs.push('download');
+  if (state.a11yDescription) attrs.push(`description="${state.a11yDescription.replace(/"/g, '&quot;')}"`);
+  return `\n  <gouv-source id="a11y-data" data='${dataJson}'></gouv-source>` +
+         `\n  <gouv-chart-a11y ${attrs.join(' ')}></gouv-chart-a11y>`;
+}
+
+/** gouv-widgets dependency line for embedded code when a11y is enabled */
+function a11yDep(): string {
+  if (!state.a11yEnabled) return '';
+  return `\n<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>`;
+}
+
 /**
  * Fetch all results from an ODS API URL, handling pagination automatically.
  * ODS APIs cap at 100 records per request. When the URL requests more,
@@ -703,7 +721,7 @@ export function generateCodeForLocalData(): void {
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>
+  </gouv-datalist>${generateEmbeddedA11y('my-table')}
 </div>
 
 <script>
@@ -727,17 +745,17 @@ datalist.onSourceData(data);
 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
 
-  <scatter-chart
+  <scatter-chart id="chart"
     x='${escapeSingleQuotes(JSON.stringify([xValues]))}'
     y='${escapeSingleQuotes(JSON.stringify([yValues]))}'
     name='${escapeSingleQuotes(JSON.stringify([`${state.labelField} vs ${state.valueField}`]))}'
     selected-palette="${state.palette}">
-  </scatter-chart>
+  </scatter-chart>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript('scatter-chart')}`;
     codeEl.textContent = code;
     return;
@@ -780,18 +798,18 @@ datalist.onSourceData(data);
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-  <map-chart
+  <map-chart id="chart"
     data='${JSON.stringify(mapData)}'
     name="${escapeHtml(state.title || 'Donn\u00e9es')}"
     date="${today}"
     value="${avgValue}"
     selected-palette="${mapPalette}"
-  ></map-chart>
+  ></map-chart>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript('map-chart')}`;
     codeEl.textContent = mapCode;
     return;
@@ -826,18 +844,18 @@ datalist.onSourceData(data);
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <${dsfrTag}
+  <${dsfrTag} id="chart"
     x='${escapeSingleQuotes(x)}'
     y='${escapeSingleQuotes(y)}'
     name='${escapeSingleQuotes(seriesNames)}'
     selected-palette="${state.palette}"${extraStr}>
-  </${dsfrTag}>
+  </${dsfrTag}>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript(dsfrTag)}`;
 
   codeEl.textContent = code;
@@ -1169,10 +1187,11 @@ export function generateDynamicCode(): void {
   </gouv-source>
 ${middlewareHtml}
   <gouv-datalist
+    id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>
+  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
     codeEl.textContent = code;
     return;
@@ -1356,11 +1375,12 @@ export function generateDynamicCodeForApi(): void {
   </gouv-query>
 ${facets.element}
   <gouv-datalist
+    id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     server-tri
     pagination="20">
-  </gouv-datalist>
+  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
       codeEl.textContent = code;
       return;
@@ -1402,11 +1422,12 @@ ${facets.element}
   </gouv-query>
 ${facets.element}
   <gouv-datalist
+    id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     server-tri
     pagination="20">
-  </gouv-datalist>
+  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
       codeEl.textContent = code;
       return;
@@ -1434,10 +1455,11 @@ ${facets.element}
   </gouv-source>
 ${middlewareHtml}
   <gouv-datalist
+    id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>
+  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
     codeEl.textContent = code;
     return;
@@ -1675,7 +1697,7 @@ loadGauge();
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>
+  </gouv-datalist>${generateEmbeddedA11y('my-table')}
 </div>
 
 <script>
@@ -1702,12 +1724,12 @@ loadTable();
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-  <div id="scatter-container"></div>
+  <div id="scatter-container"></div>${generateEmbeddedA11y('scatter-container')}
 </div>
 
 <script type="module">
@@ -1749,12 +1771,12 @@ loadChart();
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-  <div id="map-container"></div>
+  <div id="map-container"></div>${generateEmbeddedA11y('map-container')}
 </div>
 
 <script type="module">
@@ -1824,12 +1846,12 @@ loadMap();
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
-<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
+<script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>${a11yDep()}
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(state.title)}</h2>
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
-  <div id="chart-container"></div>
+  <div id="chart-container"></div>${generateEmbeddedA11y('chart-container')}
 </div>
 
 <script type="module">
