@@ -821,7 +821,16 @@ export class GouvFacets extends LitElement {
     // Arrow key navigation between checkboxes/radios
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') {
       const panel = this.querySelector(`[data-multiselect="${field}"] .gouv-facets__multiselect-panel`);
-      if (!panel) return;
+
+      // Panel closed: ArrowDown/ArrowUp on trigger opens the dropdown (select-like UX for NVDA)
+      if (!panel) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          this._toggleMultiselectDropdown(field);
+        }
+        return;
+      }
+
       const inputs = [...panel.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]')];
       if (inputs.length === 0) return;
 

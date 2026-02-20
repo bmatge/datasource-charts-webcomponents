@@ -1177,6 +1177,20 @@ describe('GouvFacets', () => {
       (facets as any)._handleMultiselectKeydown('region', new KeyboardEvent('keydown', { key: 'Enter' }));
       expect(facets._openMultiselectField).toBe('region');
     });
+
+    it('ArrowDown opens dropdown when panel is closed', () => {
+      (facets as any)._openMultiselectField = null;
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', cancelable: true });
+      (facets as any)._handleMultiselectKeydown('region', event);
+      expect(facets._openMultiselectField).toBe('region');
+    });
+
+    it('ArrowUp opens dropdown when panel is closed', () => {
+      (facets as any)._openMultiselectField = null;
+      const event = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true });
+      (facets as any)._handleMultiselectKeydown('region', event);
+      expect(facets._openMultiselectField).toBe('region');
+    });
   });
 
   describe('_onClickOutsideMultiselect', () => {
