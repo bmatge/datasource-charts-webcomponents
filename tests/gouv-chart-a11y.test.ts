@@ -256,7 +256,7 @@ describe('GouvChartA11y', () => {
 
       const link = target.querySelector('a.gouv-chart-a11y__skiplink');
       expect(link).not.toBeNull();
-      expect(link!.getAttribute('href')).toBe(`#${comp.id}`);
+      expect(link!.getAttribute('href')).toBe(`#${comp.id}-section`);
       expect(link!.textContent).toBe('Voir les donnees accessibles');
     });
 
