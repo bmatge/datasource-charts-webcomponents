@@ -44,8 +44,8 @@
           <code>gouv-facets</code> affiche des filtres a facettes interactifs conformes DSFR (checkboxes, selects, multiselects, radios) et filtre les donnees en amont avant de les redistribuer aux composants en aval. Deux modes : <strong>client-side</strong> (calcul local) et <strong>server-facets</strong> (API ODS).
         </p>
 
-        <h2>Mode client-side</h2>
-        <p>En mode client-side (defaut), <code>gouv-facets</code> recoit toutes les donnees, detecte automatiquement les champs filtrables, calcule les compteurs localement, et filtre les donnees avant de les redistribuer.</p>
+        <h2>Mode server-facets</h2>
+        <p>En mode <code>server-facets</code>, le calcul des facettes est delegue a l'API (ODS, Grist). L'attribut <code>fields</code> est requis car l'auto-detection n'est pas possible. Les compteurs se mettent a jour dynamiquement sur le dataset complet cote serveur.</p>
 
         <!-- facets-datalist -->
         <h4>Tableau filtrable — Rappels de produits avec facettes serveur</h4>

@@ -111,6 +111,8 @@
             <tr><td><code>display</code></td><td>String</td><td><code>""</code></td><td>Mode d'affichage par facette : <code>"field:select | field2:multiselect"</code>. Modes : <code>checkbox</code> (defaut), <code>select</code>, <code>multiselect</code>, <code>radio</code>.</td></tr>
             <tr><td><code>hide-counts</code></td><td>Boolean</td><td><code>false</code></td><td>Masquer les compteurs a cote de chaque valeur de facette.</td></tr>
             <tr><td><code>cols</code></td><td>String</td><td><code>""</code></td><td>Colonnage DSFR des facettes. Global : <code>"6"</code> (2 par ligne), <code>"4"</code> (3 par ligne). Par facette : <code>"region:4 | type:6"</code> (defaut fr-col-6 pour les non-specifies).</td></tr>
+            <tr><td><code>server-facets</code></td><td>Boolean</td><td><code>false</code></td><td>Deleguer le calcul des facettes au serveur via l'adapter (ODS, Grist). L'attribut <code>fields</code> est requis (pas d'auto-detection).</td></tr>
+            <tr><td><code>static-values</code></td><td>String</td><td><code>""</code></td><td>Valeurs de facettes pre-calculees (JSON). Affiche les valeurs sans les calculer depuis les donnees, les selections envoient des commandes WHERE a la source. Ex : <code>'{"sexe":["F","M"]}'</code>. Les compteurs sont masques automatiquement.</td></tr>
           </tbody>
         </table>
 
