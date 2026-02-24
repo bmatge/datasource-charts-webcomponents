@@ -6,11 +6,6 @@
 import type { Source } from '@gouv-widgets/shared';
 export { PROXY_BASE_URL } from '@gouv-widgets/shared';
 
-// Chart.js loaded via CDN - use global reference
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Chart = (window as any).Chart as unknown;
-export { Chart };
-
 /** Favorites localStorage key */
 export const FAVORITES_KEY = 'gouv-widgets-favorites';
 
@@ -129,7 +124,6 @@ export interface BuilderState {
   color2: string;
   data: DataRecord[];
   data2: DataRecord[];
-  chartInstance: unknown;
   generationMode: GenerationMode;
   refreshInterval: number;
   advancedMode: boolean;
@@ -169,7 +163,6 @@ export const state: BuilderState = {
   color2: '#E1000F',
   data: [],
   data2: [],
-  chartInstance: null,
   generationMode: 'embedded',
   refreshInterval: 0,
   advancedMode: false,

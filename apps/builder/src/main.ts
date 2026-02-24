@@ -77,13 +77,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const copyCodeBtn = document.getElementById('copy-code-btn');
   if (copyCodeBtn) copyCodeBtn.addEventListener('click', copyCode);
 
-  // Input changes
+  // Input changes (title/subtitle update state only — preview updates on "Generer")
   const chartTitleInput = document.getElementById('chart-title') as HTMLInputElement | null;
   if (chartTitleInput) {
     chartTitleInput.addEventListener('input', (e) => {
       state.title = (e.target as HTMLInputElement).value;
-      const previewTitle = document.getElementById('preview-title');
-      if (previewTitle) previewTitle.textContent = (e.target as HTMLInputElement).value;
     });
   }
 
@@ -91,8 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (chartSubtitleInput) {
     chartSubtitleInput.addEventListener('input', (e) => {
       state.subtitle = (e.target as HTMLInputElement).value;
-      const previewSubtitle = document.getElementById('preview-subtitle');
-      if (previewSubtitle) previewSubtitle.textContent = (e.target as HTMLInputElement).value;
     });
   }
 

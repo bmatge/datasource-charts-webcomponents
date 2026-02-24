@@ -38,7 +38,6 @@ describe('builder state', () => {
     expect(state.fields).toEqual([]);
     expect(state.data).toEqual([]);
     expect(state.data2).toEqual([]);
-    expect(state.chartInstance).toBeNull();
   });
 
   it('should support all chart types', () => {

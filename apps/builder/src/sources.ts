@@ -8,7 +8,6 @@ import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMess
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
-import { renderChart } from './ui/chart-renderer.js';
 import { generateCodeForLocalData } from './ui/code-generator.js';
 import { updateMiddlewareSections, autoEnableNormalizeForGrist } from './ui/normalize-config.js';
 
@@ -354,14 +353,10 @@ export function loadFavoriteState(): void {
 
     const titleInput = document.getElementById('chart-title') as HTMLInputElement | null;
     const subtitleInput = document.getElementById('chart-subtitle') as HTMLInputElement | null;
-    const previewTitle = document.getElementById('preview-title');
-    const previewSubtitle = document.getElementById('preview-subtitle');
     const paletteSelect = document.getElementById('chart-palette') as HTMLSelectElement | null;
 
     if (titleInput) titleInput.value = state.title || '';
     if (subtitleInput) subtitleInput.value = state.subtitle || '';
-    if (previewTitle) previewTitle.textContent = state.title || 'Mon graphique';
-    if (previewSubtitle) previewSubtitle.textContent = state.subtitle || '';
     if (paletteSelect) paletteSelect.value = state.palette || 'categorical';
 
     // Restore generation mode
@@ -426,7 +421,6 @@ export function loadFavoriteState(): void {
     // Re-generate the chart (with delay for DOM to update)
     if (state.data && state.data.length > 0) {
       setTimeout(() => {
-        renderChart();
         generateCodeForLocalData();
 
         // Show "Voir les donnees" button

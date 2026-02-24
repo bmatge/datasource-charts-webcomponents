@@ -20,8 +20,15 @@ import {
   getProvider,
 } from '@gouv-widgets/shared';
 import { state, PROXY_BASE_URL } from '../state.js';
-import { renderChart } from './chart-renderer.js';
+import { renderPreview } from './preview.js';
 import { updateAccessibleTable } from './accessible-table.js';
+
+/** Write the generated code to the code panel AND render it in the preview iframe. */
+function displayGeneratedCode(code: string): void {
+  const codeEl = document.getElementById('generated-code');
+  if (codeEl) codeEl.textContent = code;
+  renderPreview(code);
+}
 
 const ODS_PAGE_SIZE = 100;
 const ODS_MAX_PAGES = 10;
@@ -412,7 +419,6 @@ export async function generateChart(): Promise<void> {
       try {
         state.data = await fetchOdsResults(apiUrl);
         state.localData = state.data as Record<string, unknown>[];
-        renderChart();
         generateCode(apiUrl);
       } catch (error) {
         toastError('Erreur lors du chargement des donn\u00e9es : ' + (error as Error).message);
@@ -422,10 +428,13 @@ export async function generateChart(): Promise<void> {
   }
 
   // Check if using local data
-  // For API sources with an apiUrl, prefer server-side aggregation (more accurate
-  // than client-side aggregation on the limited local data sample)
-  const isApiSource = state.savedSource?.type === 'api' && state.apiUrl;
-  if (state.sourceType === 'saved' && state.localData && state.localData.length > 0 && !isApiSource) {
+  // For ODS API sources, prefer server-side aggregation (more accurate
+  // than client-side aggregation on the limited local data sample).
+  // Non-ODS APIs (Tabular, Generic) use client-side aggregation because
+  // fetchOdsResults() only handles ODS response format (json.results).
+  const isOdsApiSource = state.savedSource?.type === 'api' && state.apiUrl
+    && detectProvider(state.apiUrl).id === 'opendatasoft';
+  if (state.sourceType === 'saved' && state.localData && state.localData.length > 0 && !isOdsApiSource) {
     generateChartFromLocalData();
     return;
   }
@@ -480,9 +489,6 @@ export async function generateChart(): Promise<void> {
     const rawDataEl = document.getElementById('raw-data');
     if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
 
-    // Render chart or KPI
-    renderChart();
-
     // Generate code: dynamic mode uses gouv-source components, embedded uses inline JS
     if (state.generationMode === 'dynamic' && state.savedSource?.type === 'api') {
       generateDynamicCodeForApi();
@@ -514,8 +520,6 @@ export function generateChartFromLocalData(): void {
 
     const rawDataEl = document.getElementById('raw-data');
     if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
-
-    renderChart();
 
     if (state.generationMode === 'dynamic') {
       if (state.savedSource?.type === 'grist') {
@@ -610,9 +614,6 @@ export function generateChartFromLocalData(): void {
   const rawDataEl = document.getElementById('raw-data');
   if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
 
-  // Render chart
-  renderChart();
-
   // Generate code based on mode
   if (state.generationMode === 'dynamic') {
     if (state.savedSource?.type === 'grist') {
@@ -634,9 +635,6 @@ export function generateChartFromLocalData(): void {
  * Generate embedded HTML+JS code for local data.
  */
 export function generateCodeForLocalData(): void {
-  const codeEl = document.getElementById('generated-code');
-  if (!codeEl) return;
-
   // Handle KPI type
   if (state.chartType === 'kpi') {
     const value = state.data[0]?.value || 0;
@@ -674,7 +672,7 @@ export function generateCodeForLocalData(): void {
     <span class="kpi-label">${escapeHtml(state.title)}</span>
   </div>
 </div>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -694,7 +692,7 @@ export function generateCodeForLocalData(): void {
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
   <gauge-chart percent="${value}" init="0" target="100"></gauge-chart>
 </div>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -732,7 +730,7 @@ const data = ${JSON.stringify(state.localData?.slice(0, 500) || [], null, 2)};
 const datalist = document.getElementById('my-table');
 datalist.onSourceData(data);
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -757,7 +755,7 @@ datalist.onSourceData(data);
     selected-palette="${state.palette}">
   </scatter-chart>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript('scatter-chart')}`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -811,7 +809,7 @@ datalist.onSourceData(data);
     selected-palette="${mapPalette}"
   ></map-chart>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript('map-chart')}`;
-    codeEl.textContent = mapCode;
+    displayGeneratedCode(mapCode);
     return;
   }
 
@@ -858,7 +856,7 @@ datalist.onSourceData(data);
   </${dsfrTag}>${generateEmbeddedA11y('chart')}
 </div>${dsfrDeferredScript(dsfrTag)}`;
 
-  codeEl.textContent = code;
+  displayGeneratedCode(code);
 }
 
 
@@ -1124,9 +1122,6 @@ export function generateDynamicCode(): void {
   const source = state.savedSource;
   if (!source || source.type !== 'grist') return;
 
-  const codeEl = document.getElementById('generated-code');
-  if (!codeEl) return;
-
   // Build full proxy URL via ProviderConfig knownHosts
   const gristProvider = getProvider('grist');
   let proxyUrl = source.apiUrl || '';
@@ -1193,7 +1188,7 @@ ${middlewareHtml}
     pagination="10">
   </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1258,7 +1253,7 @@ ${middlewareHtml}${queryElement}
   </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
-  codeEl.textContent = code;
+  displayGeneratedCode(code);
 }
 
 /**
@@ -1267,9 +1262,6 @@ ${middlewareHtml}${queryElement}
 export function generateDynamicCodeForApi(): void {
   const source = state.savedSource;
   if (!source || source.type !== 'api') return;
-
-  const codeEl = document.getElementById('generated-code');
-  if (!codeEl) return;
 
   // Detect provider and extract resource IDs using centralized infrastructure
   const provider = source.apiUrl ? detectProvider(source.apiUrl) : getProvider('generic');
@@ -1326,7 +1318,7 @@ export function generateDynamicCodeForApi(): void {
     label="${escapeHtml(state.title)}"${formatAttr}>
   </gouv-kpi>
 </div>`;
-      codeEl.textContent = code;
+      displayGeneratedCode(code);
       return;
     }
     // Non-ODS: fallback to embedded code with current data
@@ -1382,7 +1374,7 @@ ${facets.element}
     pagination="20">
   </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
-      codeEl.textContent = code;
+      displayGeneratedCode(code);
       return;
     }
 
@@ -1429,7 +1421,7 @@ ${facets.element}
     pagination="20">
   </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
-      codeEl.textContent = code;
+      displayGeneratedCode(code);
       return;
     }
 
@@ -1461,7 +1453,7 @@ ${middlewareHtml}
     pagination="10">
   </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1564,16 +1556,13 @@ ${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
   </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
-  codeEl.textContent = code;
+  displayGeneratedCode(code);
 }
 
 /**
  * Generate HTML+JS code for API-fetched data.
  */
 export function generateCode(apiUrl: string): void {
-  const codeEl = document.getElementById('generated-code');
-  if (!codeEl) return;
-
   // Handle KPI type
   if (state.chartType === 'kpi') {
     const variantSelect = document.getElementById('kpi-variant') as HTMLSelectElement | null;
@@ -1636,7 +1625,7 @@ async function loadKPI() {
 
 loadKPI();
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1671,7 +1660,7 @@ async function loadGauge() {
 
 loadGauge();
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1712,7 +1701,7 @@ async function loadTable() {
 
 loadTable();
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1753,7 +1742,7 @@ async function loadChart() {
 
 loadChart();
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1824,7 +1813,7 @@ async function loadMap() {
 
 loadMap();
 <\/script>`;
-    codeEl.textContent = code;
+    displayGeneratedCode(code);
     return;
   }
 
@@ -1882,5 +1871,5 @@ async function loadChart() {
 loadChart();
 <\/script>`;
 
-  codeEl.textContent = code;
+  displayGeneratedCode(code);
 }

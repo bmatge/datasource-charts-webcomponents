@@ -4,7 +4,6 @@
 
 import { state, type DatalistColumn } from '../state.js';
 import { openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
-import { renderChart } from './chart-renderer.js';
 
 /**
  * Initialize datalist columns from current fields (all visible, labels = names).
@@ -78,7 +77,6 @@ export function saveColumnsModal(): void {
 
   state.datalistColumns = columns;
   closeModal('datalist-columns-modal');
-  renderChart();
 }
 
 /**
@@ -96,28 +94,28 @@ export function setupDatalistListeners(): void {
   if (rechercheEl) {
     rechercheEl.addEventListener('change', () => {
       state.datalistRecherche = rechercheEl.checked;
-      renderChart();
+
     });
   }
 
   if (filtresEl) {
     filtresEl.addEventListener('change', () => {
       state.datalistFiltres = filtresEl.checked;
-      renderChart();
+
     });
   }
 
   if (exportEl) {
     exportEl.addEventListener('change', () => {
       state.datalistExportCsv = exportEl.checked;
-      renderChart();
+
     });
   }
 
   if (exportHtmlEl) {
     exportHtmlEl.addEventListener('change', () => {
       state.datalistExportHtml = exportHtmlEl.checked;
-      renderChart();
+
     });
   }
 

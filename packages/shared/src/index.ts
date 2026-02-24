@@ -9,7 +9,7 @@ export { DSFR_COLORS, PALETTE_PRIMARY_COLOR, PALETTE_COLORS } from './constants/
 export type { PaletteType } from './constants/dsfr-palettes.js';
 
 // Templates / CDN
-export { CDN_VERSIONS, CDN_URLS } from './templates/cdn-versions.js';
+export { CDN_VERSIONS, CDN_URLS, getPreviewHTML } from './templates/cdn-versions.js';
 
 // Charts
 export { DSFR_TAG_MAP, normalizeChartType, isValidChartType } from './charts/chart-types.js';

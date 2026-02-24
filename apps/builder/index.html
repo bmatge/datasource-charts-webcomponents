@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>gouv-widgets — Generateur de graphiques</title>
-  <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
+  <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}.modal-overlay{display:none}</style>
 
   <!-- DSFR -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
@@ -564,14 +564,16 @@
       <!-- Onglet Apercu -->
       <div slot="preview">
         <div class="preview-chart">
-          <h2 id="preview-title">Mon graphique</h2>
-          <p class="subtitle" id="preview-subtitle"></p>
           <div class="chart-container">
             <div class="empty-state" id="empty-state">
               <i class="ri-bar-chart-box-line"></i>
               <p>Configurez votre graphique et cliquez sur "Generer"</p>
             </div>
-            <canvas id="preview-canvas" style="display: none;"></canvas>
+            <iframe id="preview-iframe"
+              sandbox="allow-scripts allow-same-origin"
+              title="Apercu du graphique"
+              style="display: none; width: 100%; border: none; min-height: 400px; border-radius: 4px; background: white;">
+            </iframe>
           </div>
         </div>
 
