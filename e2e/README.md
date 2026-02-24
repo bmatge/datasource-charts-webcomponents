@@ -4,16 +4,19 @@ Tests end-to-end (E2E) avec Playwright.
 
 ## Contenu
 
-| Fichier | Description |
-|---------|-------------|
-| `smoke.spec.ts` | Tests de fonctionnement de base |
-| `accessibility.spec.ts` | Tests d'accessibilite WCAG (Axe) |
-| `auth.db.spec.ts` | Tests d'authentification (mode base de donnees) |
-| `sharing.db.spec.ts` | Tests de partage entre utilisateurs |
-| `migration.db.spec.ts` | Tests de migration localStorage vers BDD |
-| `grist-widgets.spec.ts` | Tests d'integration Grist |
-| `industrie-du-futur.spec.ts` | Test avec donnees reelles |
-| `screenshots/` | Captures d'ecran generees par les tests |
+| Fichier | Description | Tests |
+|---------|-------------|-------|
+| `smoke.spec.ts` | Tests de fonctionnement de base (chargement des apps) | 7 |
+| `accessibility.spec.ts` | Tests d'accessibilite WCAG (Axe) | var. |
+| `specs-live.spec.ts` | Pages specs : widgets live + pages doc-only | 11 |
+| `guide-examples.spec.ts` | Pages guide : lazy-loaded + direct | 11 |
+| `playground-examples.spec.ts` | Playground : 25 exemples + structure | 27 |
+| `industrie-du-futur.spec.ts` | Test avec donnees reelles (16 graphiques) | 21 |
+| `auth.db.spec.ts` | Tests d'authentification (mode base de donnees) | var. |
+| `sharing.db.spec.ts` | Tests de partage entre utilisateurs | var. |
+| `migration.db.spec.ts` | Tests de migration localStorage vers BDD | var. |
+| `grist-widgets.spec.ts` | Tests d'integration Grist | var. |
+| `screenshots/` | Captures d'ecran generees par les tests | — |
 
 ## Pre-requis
 
@@ -29,3 +32,92 @@ npx playwright test e2e/smoke.spec.ts          # Un test specifique
 ```
 
 Voir aussi `tests/builder-e2e/` pour les tests exhaustifs du builder (110 combinaisons).
+
+---
+
+## Tests specs, guide et playground
+
+Ces 3 fichiers de test verifient que toutes les pages de documentation (specs, guide)
+et le playground affichent correctement leurs exemples de widgets apres la normalisation
+des appels API (`server-*` attributes).
+
+### specs-live.spec.ts — Pages specs (11 tests)
+
+Verifie que chaque page de specification affiche les bons composants :
+
+| Page | Type | Verification |
+|------|------|-------------|
+| `gouv-dsfr-chart.html` | Donnees locales | 5 `gouv-dsfr-chart`, inner `bar-chart`/`line-chart`/`pie-chart`/`radar-chart` |
+| `gouv-kpi.html` | Donnees locales | >=8 `gouv-kpi`, >=3 `gouv-kpi-group` |
+| `gouv-datalist.html` | Donnees locales | >=4 `gouv-datalist` |
+| `gouv-display.html` | Donnees locales | >=3 `gouv-display` |
+| `gouv-chart-a11y.html` | Donnees locales | >=2 `gouv-chart-a11y`, >=1 `gouv-dsfr-chart` |
+| `gouv-facets.html` | API ODS | >=4 `gouv-facets`, >=3 `gouv-datalist`, >=1 `gouv-dsfr-chart`, >=2 `gouv-kpi` |
+| `gouv-search.html` | API ODS | >=3 `gouv-search`, >=1 `gouv-datalist` |
+| `gouv-world-map.html` | API + topojson | >=1 `gouv-world-map`, SVG rendu |
+| `gouv-source.html` | Doc-only | Page charge, layout present, pas d'erreurs console |
+| `gouv-query.html` | Doc-only | Idem |
+| `gouv-normalize.html` | Doc-only | Idem |
+
+Timeouts : 60s (donnees locales), 120s (API externes). Screenshots dans `screenshots/specs/`.
+
+### guide-examples.spec.ts — Pages guide (11 tests)
+
+**Pages lazy-loaded (6 tests)** — utilisent `IntersectionObserver` pour charger les exemples au scroll :
+
+| Page | Exemples attendus |
+|------|------------------|
+| `guide-exemples-source.html` | >=11 |
+| `guide-exemples-query.html` | >=15 |
+| `guide-exemples-normalize.html` | >=3 |
+| `guide-exemples-search.html` | >=4 |
+| `guide-exemples-facets.html` | >=5 |
+| `guide-exemples-display.html` | >=4 |
+
+Strategie : scroll incremental (400px par pas, 3 passes) pour declencher tous les observers,
+puis verification que les `.example-container` ont ete crees avec un `gouv-source` chacun.
+
+**Pages directes (5 tests)** — widgets directement dans le HTML :
+
+| Page | Widgets verifies |
+|------|-----------------|
+| `guide-exemples-chart-a11y.html` | `gouv-chart-a11y`, `gouv-dsfr-chart` |
+| `guide-exemples-ghibli.html` | `gouv-kpi`, `gouv-dsfr-chart` |
+| `guide-exemples-maires.html` | `gouv-kpi`, `gouv-dsfr-chart` |
+| `guide-exemples-world-map.html` | `gouv-world-map`, `gouv-dsfr-chart` |
+| `guide-exemples-insee-erfs.html` | `gouv-dsfr-chart`, `gouv-kpi` |
+
+Timeout : 120s. Screenshots dans `screenshots/guide/`.
+
+### playground-examples.spec.ts — Playground (27 tests)
+
+**Tests structurels (2 tests)** :
+- Le `<select id="example-select">` contient 25 options
+- Les boutons run/reset/deps/copy/save sont presents
+
+**Tests des 25 exemples** — pour chaque cle, charge `?example=<key>` puis :
+1. Verifie que CodeMirror contient du code
+2. Clique "Executer"
+3. Accede a l'iframe `#preview-frame` via `page.frameLocator()`
+4. Verifie que `gouv-source` est present dans l'iframe
+5. Verifie que le widget visuel principal est present
+6. Screenshot viewport
+
+Les exemples API soft-fail avec warning (reseau), l'exemple inline (`direct-worldmap`) hard-fail.
+
+Timeout : 120s. Screenshots dans `screenshots/playground/`.
+
+### Lancer les 3 fichiers
+
+```bash
+# Pre-requis : serveur de dev sur port 5173
+npm run dev
+
+# Lancer les 3 fichiers de test
+npx playwright test e2e/specs-live.spec.ts e2e/guide-examples.spec.ts e2e/playground-examples.spec.ts
+
+# Verifier les screenshots
+ls e2e/screenshots/specs/ e2e/screenshots/guide/ e2e/screenshots/playground/
+```
+
+Resultats attendus : 49 tests, 47 screenshots.
