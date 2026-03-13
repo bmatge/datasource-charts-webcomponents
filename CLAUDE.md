@@ -222,9 +222,11 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 ## Proxy
 
 - Dev : Vite proxy (configure dans vite.config.ts de chaque app)
-- Production : chartsbuilder.matge.com (nginx)
+- Production : proxy nginx, domaine configurable via `VITE_PROXY_URL` (defaut : `chartsbuilder.matge.com`)
 - Tauri : proxy distant via detection `window.__TAURI__`
-- Configurable via `VITE_PROXY_URL`
+- `PROXY_BASE_URL` dans `packages/shared/src/api/proxy-config.ts` lit `VITE_PROXY_URL` au build time (source de verite unique)
+- `APP_DOMAIN` dans `.env` configure Traefik (docker-compose.yml) et les scripts de deploiement
+- Voir `.env.example` pour toutes les variables
 
 ## Beacon de tracking
 

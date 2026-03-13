@@ -30,4 +30,4 @@ echo ""
 echo "Status:"
 docker compose ps
 echo ""
-echo "URL: https://chartsbuilder.matge.com"
+echo "URL: https://${APP_DOMAIN:-chartsbuilder.matge.com}"

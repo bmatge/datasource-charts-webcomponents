@@ -12,7 +12,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['tests/**/*.test.ts'],
-    pool: 'forks',
+    pool: 'threads',
+    testTimeout: 10000,
     server: {
       deps: {
         inline: [/lit/, /@lit/],

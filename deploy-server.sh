@@ -45,7 +45,7 @@ echo ""
 echo "Status:"
 docker compose -f docker-compose.yml -f docker-compose.db.yml ps
 echo ""
-echo "URL: https://chartsbuilder.matge.com"
+echo "URL: https://${APP_DOMAIN:-chartsbuilder.matge.com}"
 echo ""
 echo "Le premier utilisateur enregistre recevra le role admin."
 echo "Inscription: cliquer sur 'Connexion' dans le header de l'app."

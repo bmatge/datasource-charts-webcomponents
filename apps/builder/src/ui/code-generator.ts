@@ -1234,7 +1234,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <!-- Source de donnees (via proxy chartsbuilder.matge.com) -->
+  <!-- Source de donnees (via proxy CORS) -->
   <gouv-source
     id="chart-data"
     url="${proxyUrl}"

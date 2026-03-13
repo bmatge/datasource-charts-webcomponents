@@ -17,7 +17,7 @@
  *   - Fallback gracieux en mode Records + client-side si endpoint SQL indisponible
  *
  * Le base-url passe en attribut doit deja inclure le proxy si necessaire
- * (ex: https://chartsbuilder.matge.com/grist-gouv-proxy/api/docs/xxx/tables/yyy/records).
+ * (ex: https://<proxy-domain>/grist-gouv-proxy/api/docs/xxx/tables/yyy/records).
  */
 
 import type {

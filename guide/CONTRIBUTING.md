@@ -36,6 +36,18 @@ npm run dev --workspace=@gouv-widgets/app-favorites
 npm run dev --workspace=@gouv-widgets/app-monitoring
 ```
 
+### MCP server
+
+Le serveur MCP (Model Context Protocol) expose les skills gouv-widgets aux outils IA :
+
+```bash
+cd mcp-server
+npm ci && npm run build
+node dist/index.js              # mode stdio (Claude Desktop, Claude Code)
+node dist/index.js --http       # mode HTTP (Claude.ai, port 3001)
+node dist/index.js --url https://mon-domaine.gouv.fr  # URL custom
+```
+
 ### Package shared
 
 ```bash
@@ -169,11 +181,24 @@ docker compose up -d --build
 
 Le conteneur utilise un volume `beacon-logs` pour persister les donnees de monitoring entre redemarrages.
 
-## Proxy
+## Proxy et variables d'environnement
 
-En dev, les proxys CORS sont geres par Vite (`vite.config.ts`).
-En production, ils sont geres par nginx (`nginx.conf`).
-L'URL du proxy est configurable via la variable d'environnement `VITE_PROXY_URL`.
+En dev, les proxys CORS sont geres par Vite (`vite.config.ts`). Aucune configuration requise.
+
+En production, ils sont geres par nginx (`nginx.conf`). Le domaine est configurable :
+
+```bash
+# Copier le fichier d'exemple et adapter
+cp .env.example .env
+```
+
+| Variable | Description | Defaut |
+|----------|-------------|--------|
+| `APP_DOMAIN` | Domaine de production (Traefik) | `chartsbuilder.matge.com` |
+| `VITE_PROXY_URL` | URL du proxy CORS (build time) | `https://${APP_DOMAIN}` |
+| `JWT_SECRET` | Cle JWT (mode serveur) | Auto-genere |
+
+`VITE_PROXY_URL` est la variable cle : elle determine l'URL du proxy, du fichier JS de la librairie, et du beacon de tracking. Elle est injectee au build time par Vite dans `PROXY_BASE_URL` (`packages/shared/src/api/proxy-config.ts`).
 
 ## Release
 

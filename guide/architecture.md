@@ -155,7 +155,7 @@ Sites tiers (gouv.fr, codepen, etc.)
     |
     |-- sendWidgetBeacon('gouv-dsfr-chart', 'bar')   (fetch no-cors)
     v
-chartsbuilder.matge.com/beacon                       (nginx return 204, log beacon.log)
+<proxy-domain>/beacon                                 (nginx return 204, log beacon.log)
     |
     |-- parse-beacon-logs.sh (cron 5min ou trigger /api/refresh-monitoring)
     v
@@ -207,23 +207,23 @@ En local (`localhost:5173`), le serveur Vite agit comme proxy inverse. Les route
 
 ### 4.2 Mode production (proxy externe)
 
-En production, les requetes sont dirigees vers `https://chartsbuilder.matge.com` qui fait office de proxy nginx. Le domaine est configurable via la variable d'environnement `VITE_PROXY_URL`.
+En production, les requetes sont dirigees vers le proxy nginx dont l'URL est configurable via la variable d'environnement `VITE_PROXY_URL` (build time). Par defaut : `https://chartsbuilder.matge.com`.
 
-`getProxyConfig()` retourne `baseUrl: 'https://chartsbuilder.matge.com'` (ou la valeur de `VITE_PROXY_URL`).
+`PROXY_BASE_URL` (dans `packages/shared/src/api/proxy-config.ts`) lit `VITE_PROXY_URL` au build time et sert de source de verite unique pour l'URL du proxy. `getProxyConfig()` retourne `baseUrl: PROXY_BASE_URL`.
 
 ### 4.3 Mode Tauri (application desktop)
 
-Detecte par la presence de `window.__TAURI__`. Le mode Tauri utilise toujours le proxy externe (`chartsbuilder.matge.com`) car l'application desktop n'a pas de serveur local.
+Detecte par la presence de `window.__TAURI__`. Le mode Tauri utilise toujours le proxy externe (valeur de `PROXY_BASE_URL`) car l'application desktop n'a pas de serveur local.
 
 ### Recapitulatif
 
 ```
                     Dev (Vite)              Production               Tauri
-Grist           /grist-proxy/...      chartsbuilder.../grist-proxy/...    idem prod
-Albert          /albert-proxy/...     chartsbuilder.../albert-proxy/...   idem prod
-Tabular         /tabular-proxy/...    chartsbuilder.../tabular-proxy/...  idem prod
+Grist           /grist-proxy/...      <proxy>/grist-proxy/...             idem prod
+Albert          /albert-proxy/...     <proxy>/albert-proxy/...            idem prod
+Tabular         /tabular-proxy/...    <proxy>/tabular-proxy/...           idem prod
 Detection       localhost:5173        (defaut)                            window.__TAURI__
-baseUrl         '' (relatif)          VITE_PROXY_URL ou defaut            defaut distant
+baseUrl         '' (relatif)          VITE_PROXY_URL ou defaut            PROXY_BASE_URL
 ```
 
 ---

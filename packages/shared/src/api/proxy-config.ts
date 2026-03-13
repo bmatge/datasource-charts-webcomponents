@@ -14,8 +14,10 @@ export interface ProxyConfig {
   };
 }
 
-/** Production proxy base URL (single source of truth) */
-export const PROXY_BASE_URL = 'https://chartsbuilder.matge.com';
+/** Default production proxy base URL (overridable via VITE_PROXY_URL at build time) */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _meta = import.meta as any;
+export const PROXY_BASE_URL: string = _meta.env?.VITE_PROXY_URL || 'https://chartsbuilder.matge.com';
 
 /** Default production proxy configuration */
 export const DEFAULT_PROXY_CONFIG: ProxyConfig = {
@@ -61,13 +63,9 @@ export function getProxyConfig(): ProxyConfig {
     return { baseUrl: DEFAULT_PROXY_CONFIG.baseUrl, endpoints };
   }
 
-  // Production web: configurable via env variable
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const meta = import.meta as any;
-  const customProxyUrl: string | undefined = meta.env?.VITE_PROXY_URL;
-
+  // Production web: uses PROXY_BASE_URL (already respects VITE_PROXY_URL)
   return {
-    baseUrl: customProxyUrl || DEFAULT_PROXY_CONFIG.baseUrl,
+    baseUrl: PROXY_BASE_URL,
     endpoints
   };
 }
