@@ -51,5 +51,5 @@ src/
 ## Build
 
 ```bash
-npm run build    # Genere dist/gouv-widgets.esm.js et dist/gouv-widgets.umd.js
+npm run build    # Genere dist/gouv-widgets.{core,world-map,full}.{esm,umd}.js
 ```

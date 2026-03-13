@@ -242,14 +242,21 @@ baseUrl         '' (relatif)          VITE_PROXY_URL ou defaut            PROXY_
 
 ### 5.2 Build de la bibliotheque
 
-Le fichier `vite.config.ts` racine configure Vite en mode `lib` :
+Le script `scripts/build-lib.ts` produit trois bundles via Vite en mode `lib` :
 
-- **Point d'entree** : `src/index.ts`
-- **Nom global** : `GouvWidgets`
-- **Formats de sortie** :
-  - `dist/gouv-widgets.esm.js` (ES modules)
-  - `dist/gouv-widgets.umd.js` (UMD, utilisable via `<script>`)
-- **Types** : `dist/index.d.ts` (genere par `tsc`)
+| Bundle | Contenu | Taille (gzip) |
+|--------|---------|---------------|
+| `gouv-widgets.core.{esm,umd}.js` | Tous les composants sauf `gouv-world-map` | ~52 Ko |
+| `gouv-widgets.world-map.{esm,umd}.js` | `gouv-world-map` (d3-geo, topojson) | ~30 Ko |
+| `gouv-widgets.{esm,umd}.js` | Tout-en-un (core + world-map) | ~70 Ko |
+
+Le TopoJSON (`dist/data/world-countries-110m.json`) est charge par `fetch` a l'execution au lieu d'etre inline en base64.
+
+La source du JS dans le code genere est configurable via `VITE_LIB_URL` :
+- Non defini → self-hosted (`${PROXY_BASE_URL}/dist`)
+- `"unpkg"` → `https://unpkg.com/gouv-widgets/dist`
+- `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/gouv-widgets/dist`
+- URL custom → utilisee telle quelle
 
 ### 5.3 Build des apps
 

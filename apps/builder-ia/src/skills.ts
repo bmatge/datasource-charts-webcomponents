@@ -10,7 +10,7 @@
  * Tests in tests/apps/builder-ia/skills.test.ts verify alignment automatically.
  */
 
-import { CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { CDN_URLS, PROXY_BASE_URL, LIB_URL } from '@gouv-widgets/shared';
 import type { Source } from './state.js';
 
 /** A single skill definition */
@@ -1484,7 +1484,7 @@ Toujours inclure ces 6 dependances dans cet ordre exact :
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
 <!-- gouv-widgets (obligatoire) -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 \`\`\`
 
 ### Exemple de snippet complet
@@ -1494,7 +1494,7 @@ Toujours inclure ces 6 dependances dans cet ordre exact :
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <gouv-source id="data" url="VOTRE_URL_API" transform="results"></gouv-source>
 <gouv-dsfr-chart source="data" type="bar" label-field="CHAMP_LABEL" value-field="CHAMP_VALEUR"></gouv-dsfr-chart>

@@ -13,13 +13,31 @@ import type { ContinentName } from '../data/continent-lookup.js';
 
 // Lazy-loaded topology cache
 let topologyCache: Topology | null = null;
+
+// TopoJSON asset filename — kept as a variable so Vite does not
+// detect it as a static asset and inline it as base64 (~140 KB).
+const TOPO_ASSET = 'world-countries-110m.json';
+
 async function loadTopology(): Promise<Topology> {
   if (topologyCache) return topologyCache;
-  // Resolve path relative to the component's module URL
-  const url = new URL('../data/world-countries-110m.json', import.meta.url).href;
-  const resp = await fetch(url);
-  topologyCache = await resp.json() as Topology;
-  return topologyCache;
+  // Try loading from data/ relative to the library script location,
+  // then fall back to /data/ (served by public/ in dev or by the host in prod).
+  const scriptBase = import.meta.url.replace(/\/[^/]+$/, '');
+  const candidates = [
+    `${scriptBase}/data/${TOPO_ASSET}`,
+    `${scriptBase}/../data/${TOPO_ASSET}`,
+    `/data/${TOPO_ASSET}`,
+  ];
+  for (const url of candidates) {
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) {
+        topologyCache = await resp.json() as Topology;
+        return topologyCache;
+      }
+    } catch { /* try next */ }
+  }
+  throw new Error(`Could not load ${TOPO_ASSET} from any candidate path`);
 }
 
 const WIDTH = 960;

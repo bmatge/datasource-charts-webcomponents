@@ -6,8 +6,24 @@
   "main": "dist/gouv-widgets.umd.js",
   "module": "dist/gouv-widgets.esm.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/gouv-widgets.esm.js",
+      "require": "./dist/gouv-widgets.umd.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/gouv-widgets.core.esm.js",
+      "require": "./dist/gouv-widgets.core.umd.js"
+    },
+    "./world-map": {
+      "import": "./dist/gouv-widgets.world-map.esm.js",
+      "require": "./dist/gouv-widgets.world-map.umd.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist/gouv-widgets.*.js",
+    "dist/data/"
   ],
   "workspaces": [
     "packages/*",
@@ -16,7 +32,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && vite-node scripts/build-skills-json.ts",
+    "build": "tsc && vite-node scripts/build-lib.ts && vite-node scripts/build-skills-json.ts",
     "build:shared": "npm run build --workspace=@gouv-widgets/shared",
     "build:apps": "npm run build --workspace=@gouv-widgets/app-favorites && npm run build --workspace=@gouv-widgets/app-playground && npm run build --workspace=@gouv-widgets/app-sources && npm run build --workspace=@gouv-widgets/app-builder-ia && npm run build --workspace=@gouv-widgets/app-builder && npm run build --workspace=@gouv-widgets/app-dashboard && npm run build --workspace=@gouv-widgets/app-monitoring && npm run build --workspace=@gouv-widgets/app-grist-widgets",
     "build:all": "npm run build:shared && npm run build && npm run build:apps",
@@ -30,7 +46,8 @@
     "build:app": "node scripts/build-app.js",
     "build:server": "npm run build --workspace=@gouv-widgets/server",
     "dev:server": "npm run dev --workspace=@gouv-widgets/server",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prepublishOnly": "npm run build:shared && npm run build"
   },
   "keywords": [
     "web-components",

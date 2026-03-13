@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth, CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth, CDN_URLS, LIB_URL } from '@gouv-widgets/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -17,7 +17,7 @@ const DEPS_BLOCK = `<!-- Dependances (DSFR + DSFR Chart + gouv-widgets) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 `;
 
@@ -26,7 +26,7 @@ const DEPS_LINE_RE = /^[ \t]*(<link[^>]*(dsfr|DSFRChart)[^>]*>|<script[^>]*(dsfr
 const DEPS_COMMENT_RE = /^[ \t]*<!--\s*Dependances[^>]*-->\s*\n?/gm;
 
 function hasDeps(code: string): boolean {
-  return DEPS_LINE_RE.test(code) || /gouv-widgets\.(umd|esm)\.js/.test(code);
+  return DEPS_LINE_RE.test(code) || /gouv-widgets\.(core\.)?(umd|esm)\.js/.test(code);
 }
 
 function addDeps(code: string): string {

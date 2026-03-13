@@ -12,6 +12,7 @@ vi.mock('@gouv-widgets/shared', () => ({
   confirmDialog: vi.fn(),
   getApiAdapter: vi.fn(() => null),
   PROXY_BASE_URL: 'https://chartsbuilder.matge.com',
+  LIB_URL: 'https://chartsbuilder.matge.com/dist',
   CDN_URLS: {
     dsfrCss: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css',
     dsfrUtilityCss: 'https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css',

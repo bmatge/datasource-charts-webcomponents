@@ -4,7 +4,7 @@
  */
 
 import type { Source } from '@gouv-widgets/shared';
-export { PROXY_BASE_URL } from '@gouv-widgets/shared';
+export { PROXY_BASE_URL, LIB_URL } from '@gouv-widgets/shared';
 
 /** Favorites localStorage key */
 export const FAVORITES_KEY = 'gouv-widgets-favorites';

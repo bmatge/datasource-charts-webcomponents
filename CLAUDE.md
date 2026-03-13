@@ -219,14 +219,32 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 - Tabular API : tabular-api.data.gouv.fr
 - INSEE Melodi : api.insee.fr/melodi (catalogue-donnees.insee.fr)
 
-## Proxy
+## Proxy et URLs
 
 - Dev : Vite proxy (configure dans vite.config.ts de chaque app)
 - Production : proxy nginx, domaine configurable via `VITE_PROXY_URL` (defaut : `chartsbuilder.matge.com`)
 - Tauri : proxy distant via detection `window.__TAURI__`
 - `PROXY_BASE_URL` dans `packages/shared/src/api/proxy-config.ts` lit `VITE_PROXY_URL` au build time (source de verite unique)
+- `LIB_URL` dans `packages/shared/src/api/proxy-config.ts` lit `VITE_LIB_URL` au build time (URL du JS dans le code genere)
+  - Non defini → `${PROXY_BASE_URL}/dist` (self-hosted)
+  - `"unpkg"` → `https://unpkg.com/gouv-widgets/dist`
+  - `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/gouv-widgets/dist`
 - `APP_DOMAIN` dans `.env` configure Traefik (docker-compose.yml) et les scripts de deploiement
 - Voir `.env.example` pour toutes les variables
+
+## Bundles de la bibliotheque
+
+Le build (`scripts/build-lib.ts`) produit 3 bundles dans `dist/` :
+
+| Bundle | Contenu | Taille gzip |
+|--------|---------|-------------|
+| `gouv-widgets.core.{esm,umd}.js` | Tous composants sauf `gouv-world-map` | ~52 Ko |
+| `gouv-widgets.world-map.{esm,umd}.js` | `gouv-world-map` (d3-geo, topojson) | ~30 Ko |
+| `gouv-widgets.{esm,umd}.js` | Tout-en-un | ~70 Ko |
+
+Le code genere par les builders et le playground utilise le **core** bundle par defaut.
+Le TopoJSON (`dist/data/world-countries-110m.json`) est charge par fetch a l'execution.
+Publication npm : `npm publish` via workflow GitHub Actions sur tag `v*`.
 
 ## Beacon de tracking
 

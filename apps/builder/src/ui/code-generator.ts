@@ -19,7 +19,7 @@ import {
   extractResourceIds,
   getProvider,
 } from '@gouv-widgets/shared';
-import { state, PROXY_BASE_URL } from '../state.js';
+import { state, PROXY_BASE_URL, LIB_URL } from '../state.js';
 import { renderPreview } from './preview.js';
 import { updateAccessibleTable } from './accessible-table.js';
 
@@ -58,7 +58,7 @@ function generateEmbeddedA11y(chartId: string): string {
 /** gouv-widgets dependency line for embedded code when a11y is enabled */
 function a11yDep(): string {
   if (!state.a11yEnabled) return '';
-  return `\n<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>`;
+  return `\n<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>`;
 }
 
 /**
@@ -709,7 +709,7 @@ export function generateCodeForLocalData(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1169,7 +1169,7 @@ export function generateDynamicCode(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1228,7 +1228,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 
 <!-- Dependances JS -->
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1302,7 +1302,7 @@ export function generateDynamicCodeForApi(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <gouv-source
@@ -1346,7 +1346,7 @@ export function generateDynamicCodeForApi(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1393,7 +1393,7 @@ ${facets.element}
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1435,7 +1435,7 @@ ${facets.element}
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1538,7 +1538,7 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 
 <!-- Dependances JS -->
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
@@ -1676,7 +1676,7 @@ loadGauge();
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}

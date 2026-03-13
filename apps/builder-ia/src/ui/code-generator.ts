@@ -3,7 +3,7 @@
  */
 
 import {
-  escapeHtml, DSFR_COLORS, isValidDeptCode, PROXY_BASE_URL, CDN_URLS,
+  escapeHtml, DSFR_COLORS, isValidDeptCode, LIB_URL, CDN_URLS,
   detectProvider, extractResourceIds, filterToOdsql, formatKPIValue,
 } from '@gouv-widgets/shared';
 import { state } from '../state.js';
@@ -328,7 +328,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
@@ -378,7 +378,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
@@ -425,7 +425,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
@@ -506,7 +506,7 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
@@ -549,7 +549,7 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
@@ -596,7 +596,7 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
@@ -628,7 +628,7 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
@@ -700,7 +700,7 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
@@ -753,7 +753,7 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${PROXY_BASE_URL}/dist/gouv-widgets.umd.js"><\/script>
+<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>

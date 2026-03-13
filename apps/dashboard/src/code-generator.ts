@@ -2,7 +2,7 @@
  * Dashboard app - Code generation
  */
 
-import { escapeHtml, CDN_URLS, PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { escapeHtml, CDN_URLS, LIB_URL } from '@gouv-widgets/shared';
 import { state, getRowColumns } from './state.js';
 import type { Widget } from './state.js';
 
@@ -63,7 +63,7 @@ export function generateHTMLCode(): string {
   <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
   <!-- gouv-widgets -->
-  <script type="module" src="${PROXY_BASE_URL}/dist/gouv-widgets.esm.js"><\/script>
+  <script type="module" src="${LIB_URL}/gouv-widgets.core.esm.js"><\/script>
 </head>
 <body>
   <div class="fr-container fr-my-4w">

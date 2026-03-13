@@ -19,7 +19,7 @@ export type { DSFRChartType } from './charts/chart-types.js';
 export { filterToOdsql, applyLocalFilter } from './query/filter-translator.js';
 
 // API / Proxy
-export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG, PROXY_BASE_URL } from './api/proxy-config.js';
+export { getProxyConfig, isViteDevMode, isTauriMode, DEFAULT_PROXY_CONFIG, PROXY_BASE_URL, LIB_URL } from './api/proxy-config.js';
 export type { ProxyConfig } from './api/proxy-config.js';
 export { getProxyUrl, getProxiedUrl, getExternalProxyUrl, buildCorsProxyRequest } from './api/proxy.js';
 export { fetchWithTimeout, httpErrorMessage } from './api/fetch-helpers.js';

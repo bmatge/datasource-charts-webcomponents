@@ -68,14 +68,38 @@ gouv-source -> gouv-normalize -> gouv-query -> gouv-dsfr-chart / gouv-kpi / gouv
 
 ### Integration via CDN
 
+Trois bundles sont disponibles selon les besoins :
+
+| Bundle | Contenu | Taille (gzip) |
+|--------|---------|---------------|
+| `gouv-widgets.core.umd.js` | Tous les composants sauf carte du monde | ~52 Ko |
+| `gouv-widgets.world-map.umd.js` | Composant `gouv-world-map` (d3-geo) | ~30 Ko |
+| `gouv-widgets.umd.js` | Tout-en-un (core + world-map) | ~70 Ko |
+
+Les bundles ESM equivalents (`.esm.js`) sont aussi disponibles pour `<script type="module">`.
+
 ```html
 <!-- DSFR -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
 <!-- DSFR Chart -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-<!-- gouv-widgets (remplacer par l'URL de votre instance) -->
-<script type="module" src="https://<votre-domaine>/dist/gouv-widgets.esm.js"></script>
+
+<!-- gouv-widgets : choisir UNE des options ci-dessous -->
+
+<!-- Option 1 : npm CDN (recommande) -->
+<script src="https://unpkg.com/gouv-widgets/dist/gouv-widgets.core.umd.js"></script>
+
+<!-- Option 2 : jsdelivr CDN -->
+<script src="https://cdn.jsdelivr.net/npm/gouv-widgets/dist/gouv-widgets.core.umd.js"></script>
+
+<!-- Option 3 : self-hosted -->
+<script src="https://<votre-domaine>/dist/gouv-widgets.core.umd.js"></script>
+```
+
+Pour la carte du monde, ajouter aussi :
+```html
+<script src="https://unpkg.com/gouv-widgets/dist/gouv-widgets.world-map.umd.js"></script>
 ```
 
 ### Exemple minimal
