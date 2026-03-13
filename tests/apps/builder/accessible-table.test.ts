@@ -2,15 +2,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { updateAccessibleTable } from '../../../apps/builder/src/ui/accessible-table';
 import { state } from '../../../apps/builder/src/state';
 
-// Mock data-bridge to verify dispatchDataLoaded calls
-vi.mock('../../../src/utils/data-bridge', () => ({
-  dispatchDataLoaded: vi.fn(),
-}));
-import { dispatchDataLoaded } from '../../../src/utils/data-bridge';
-
 describe('updateAccessibleTable', () => {
+  let capturedEvents: CustomEvent[];
+  let handler: EventListener;
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    capturedEvents = [];
+    // Remove previous listener if any
+    if (handler) document.removeEventListener('gouv-data-loaded', handler);
+    handler = ((e: CustomEvent) => {
+      capturedEvents.push(e);
+    }) as EventListener;
+    document.addEventListener('gouv-data-loaded', handler);
+
     state.data = [];
     state.labelField = '';
     state.a11yEnabled = false;
@@ -31,7 +35,7 @@ describe('updateAccessibleTable', () => {
     updateAccessibleTable();
     const el = document.getElementById('a11y-preview')!;
     expect(el.style.display).toBe('none');
-    expect(dispatchDataLoaded).not.toHaveBeenCalled();
+    expect(capturedEvents).toHaveLength(0);
   });
 
   it('should show element when a11yEnabled is true', () => {
@@ -105,13 +109,17 @@ describe('updateAccessibleTable', () => {
       { region: 'Normandie', value: 200 },
     ];
     updateAccessibleTable();
-    expect(dispatchDataLoaded).toHaveBeenCalledWith('builder-preview', state.data);
+    expect(capturedEvents).toHaveLength(1);
+    expect(capturedEvents[0].detail.sourceId).toBe('builder-preview');
+    expect(capturedEvents[0].detail.data).toEqual(state.data);
   });
 
   it('should dispatch empty array when no data', () => {
     state.a11yEnabled = true;
     state.data = [];
     updateAccessibleTable();
-    expect(dispatchDataLoaded).toHaveBeenCalledWith('builder-preview', []);
+    expect(capturedEvents).toHaveLength(1);
+    expect(capturedEvents[0].detail.sourceId).toBe('builder-preview');
+    expect(capturedEvents[0].detail.data).toEqual([]);
   });
 });

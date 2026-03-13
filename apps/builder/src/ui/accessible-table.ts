@@ -4,9 +4,22 @@
  */
 
 import { state } from '../state.js';
-import { dispatchDataLoaded } from '../../../../src/utils/data-bridge.js';
 
 const PREVIEW_SOURCE_ID = 'builder-preview';
+
+/**
+ * Dispatch data to gouv-chart-a11y via the data bridge custom event.
+ * Inlined here to avoid importing from outside the builder rootDir.
+ */
+function dispatchDataLoaded(sourceId: string, data: unknown): void {
+  document.dispatchEvent(
+    new CustomEvent('gouv-data-loaded', {
+      bubbles: true,
+      composed: true,
+      detail: { sourceId, data },
+    })
+  );
+}
 
 /**
  * Update the gouv-chart-a11y preview component.
