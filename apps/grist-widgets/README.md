@@ -166,7 +166,7 @@ import grist from 'grist-plugin-api';
 grist.ready();
 grist.onRecords((records) => {
   // Dispatcher les données vers les composants gouv-*
-  GouvWidgets.dispatchDataLoaded('grist', records);
+  DsfrData.dispatchDataLoaded('grist', records);
 });
 
 // Afficher le panneau d'options
