@@ -9,7 +9,7 @@ Un cas d'usage tres frequent est l'enrichissement de donnees metier avec un refe
 
 ## Objectif
 
-Creer un composant `dsfr-data-join` (actuellement `gouv-join` en attendant le renommage)
+Creer un composant `dsfr-data-join` (actuellement `dsfr-data-join` en attendant le renommage)
 qui effectue une **jointure declarative en HTML** entre deux sources de donnees, sur une cle
 commune (pivot).
 
@@ -123,7 +123,7 @@ par le serveur avant d'arriver au join.
 ### Architecture du composant
 
 ```typescript
-@customElement('dsfr-data-join')  // ou gouv-join en attendant le renommage
+@customElement('dsfr-data-join')  // ou dsfr-data-join en attendant le renommage
 export class DsfrDataJoin extends LitElement {
   @property() left: string = '';
   @property() right: string = '';
@@ -141,11 +141,11 @@ export class DsfrDataJoin extends LitElement {
 
 ### Algorithme de jointure
 
-1. Ecouter les evenements `gouv-data` des deux sources (left et right)
+1. Ecouter les evenements `dsfr-data-loaded` des deux sources (left et right)
 2. Quand les deux cotes sont disponibles, construire un index (Map) sur la cle right
 3. Iterer sur left, chercher la correspondance dans l'index right
 4. Fusionner les champs selon `fields` et `prefix-right`
-5. Emettre l'evenement `gouv-data` avec le resultat joint
+5. Emettre l'evenement `dsfr-data-loaded` avec le resultat joint
 
 ```typescript
 private _performJoin(leftData: Row[], rightData: Row[]): Row[] {
@@ -194,7 +194,7 @@ private _performJoin(leftData: Row[], rightData: Row[]): Row[] {
 ### Integration dans le pipeline
 
 Le composant doit :
-- Implementer la meme interface de sortie que `dsfr-data-source` et `dsfr-data-query` (propriete `records`, evenement `gouv-data`)
+- Implementer la meme interface de sortie que `dsfr-data-source` et `dsfr-data-query` (propriete `records`, evenement `dsfr-data-loaded`)
 - Pouvoir etre consomme par n'importe quel composant d'affichage (`dsfr-data-chart`, `dsfr-data-list`, `dsfr-data-kpi`, etc.)
 - Re-executer la jointure quand l'une des sources emet de nouvelles donnees (pagination, filtre modifie)
 

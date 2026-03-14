@@ -120,7 +120,7 @@ Le builder IA utilise un systeme de skills (blocs de connaissances injectes dans
 - Chaque attribut HTML d'un composant est documente dans son skill (via introspection Lit)
 - Tous les types de graphiques, operateurs de filtre et fonctions d'agregation sont couverts
 
-Quand on ajoute ou modifie un attribut dans un composant `gouv-*`, il faut mettre a jour le skill correspondant dans `apps/builder-ia/src/skills.ts`.
+Quand on ajoute ou modifie un attribut dans un composant `dsfr-data-*`, il faut mettre a jour le skill correspondant dans `apps/builder-ia/src/skills.ts`.
 
 ## Conventions
 
@@ -132,7 +132,7 @@ Quand on ajoute ou modifie un attribut dans un composant `gouv-*`, il faut mettr
 
 ### Nommage
 
-- Composants web : prefixe `gouv-` (public) ou `app-` (layout interne)
+- Composants web : prefixe `dsfr-data-` (public) ou `app-` (layout interne)
 - Fichiers : kebab-case (`chart-renderer.ts`)
 - Interfaces/types : PascalCase (`ChartConfig`, `AppState`)
 - Fonctions : camelCase (`renderChart`, `loadSavedSources`)

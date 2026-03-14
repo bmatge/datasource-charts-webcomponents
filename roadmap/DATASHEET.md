@@ -6,7 +6,7 @@ Bibliotheque de Web Components HTML5 pour integrer des graphiques dynamiques, ac
 
 ### Volet 1 — Composants web (pour developpeurs et integrateurs)
 
-Une collection de balises HTML `<gouv-*>` qui s'enchainent de maniere declarative pour former un pipeline de donnees complet :
+Une collection de balises HTML `<dsfr-data-*>` qui s'enchainent de maniere declarative pour former un pipeline de donnees complet :
 
 ```
 Source de donnees → Nettoyage → Requetage → Visualisation

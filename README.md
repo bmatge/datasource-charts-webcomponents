@@ -16,7 +16,7 @@ Le projet s'articule en **deux volets independants** :
 
 ### Volet 1 -- Composants web (pour developpeurs et integrateurs)
 
-Des balises HTML `<gouv-*>` qui s'enchainent pour former un pipeline de donnees declaratif :
+Des balises HTML `<dsfr-data-*>` qui s'enchainent pour former un pipeline de donnees declaratif :
 
 ```
 Source de donnees -> Nettoyage -> Requetage -> Visualisation
