@@ -1,15 +1,33 @@
 # roadmap/
 
-Documentation d'architecture et plans d'evolution du projet.
+Plans d'evolution, audits techniques et feature requests du projet dsfr-data.
 
-## Contenu
+## Epics (plans de refactoring)
+
+| Fichier | Description | Statut |
+|---------|-------------|--------|
+| `EPIC_PROVIDER_CONFIG.md` | Centraliser la configuration des providers API (ProviderConfig) | En cours |
+| `EPIC_SEPARATION_OF_CONCERNS.md` | Clarifier les responsabilites dsfr-data-source vs dsfr-data-query | En cours |
+| `EPIC_GRIST_API_FULL.md` | Exploiter pleinement l'API Grist (SQL, group-by, aggregation) | En cours |
+| `EPIC-decommission-shadow-source.md` | Supprimer la retrocompatibilite shadow source dans dsfr-data-query | En cours |
+
+## Feature requests
+
+| Fichier | Description | Statut |
+|---------|-------------|--------|
+| `ISSUE-rename-gouv-to-dsfr-data.md` | Renommer gouv-* en dsfr-data-* (alignement DSFR) | Fait |
+| `ISSUE-dsfr-data-join.md` | Nouveau composant dsfr-data-join (jointure de sources) | A faire |
+
+## Audits techniques
 
 | Fichier | Description |
 |---------|-------------|
-| `EPIC_PROVIDER_CONFIG.md` | Plan de refactoring du systeme de configuration des providers API |
-| `EPIC_SEPARATION_OF_CONCERNS.md` | Plan de separation des responsabilites (composants, apps, shared) |
-| `SOURCE_API_MANAGEMENT_AUDIT.md` | Audit de la gestion des sources et APIs |
+| `SOURCE_API_MANAGEMENT_AUDIT.md` | Audit de la gestion des APIs dispersee dans le code |
+| `AUDIT-STORAGE.md` | Audit du systeme de stockage (localStorage + SQLite) |
+| `DATASHEET.md` | Fiche produit : positionnement, comparatif, composants |
 
-## Notes
+## Bug reports
 
-Ces documents sont des plans de travail en cours. Ils decrivent les decisions d'architecture et les etapes de refactoring prevues.
+| Fichier | Description |
+|---------|-------------|
+| `BUG-REPORT-spec-pages.md` | Exemples casses dans les specs/guide apres decommission shadow source |

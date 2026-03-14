@@ -518,7 +518,7 @@ DB_PATH=./data/dsfr-data.db
 # ou
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=gouv_widgets
+DB_NAME=dsfr_data
 DB_USER=root
 DB_PASSWORD=***
 ```

@@ -166,7 +166,7 @@ L'adapter expose aussi `fetchColumns()` et `fetchTables()` pour l'introspection 
 
 - TypeScript strict mode
 - Composants Lit (LitElement, html, css)
-- Nommage : `gouv-*` pour les composants publics, `app-*` pour les layouts
+- Nommage : `dsfr-data-*` pour les composants publics, `app-*` pour les layouts
 - Tests : fichiers `*.test.ts` dans `/tests/`
 - Pas d'emoji dans le code sauf demande explicite
 - Imports partages via `@dsfr-data/shared`
@@ -191,7 +191,7 @@ Utilitaires partages entre toutes les apps :
 
 Le builder-IA (`apps/builder-ia/`) utilise un systeme de skills : des blocs de connaissances injectes dans le prompt de l'IA selon le contexte. Les skills sont definis dans `apps/builder-ia/src/skills.ts`.
 
-**Regle importante** : quand on ajoute/modifie un attribut, un type de graphique, un operateur de filtre ou une fonction d'agregation dans un composant `gouv-*`, il faut mettre a jour le skill correspondant dans `skills.ts`.
+**Regle importante** : quand on ajoute/modifie un attribut, un type de graphique, un operateur de filtre ou une fonction d'agregation dans un composant `dsfr-data-*`, il faut mettre a jour le skill correspondant dans `skills.ts`.
 
 Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient automatiquement que :
 - Chaque attribut HTML d'un composant est documente dans son skill (via introspection Lit `elementProperties`)
@@ -248,7 +248,7 @@ Publication npm : `npm publish` via workflow GitHub Actions sur tag `v*`.
 
 ## Beacon de tracking
 
-Chaque composant `gouv-*` envoie un beacon fire-and-forget a l'initialisation (`connectedCallback`) via `sendWidgetBeacon()` dans `src/utils/beacon.ts`. Le beacon transmet le nom du composant, le type de graphique et l'origine de la page (`window.location.origin` via le parametre `r=`) au proxy nginx qui les enregistre dans `beacon.log`. Un script periodique (`scripts/parse-beacon-logs.sh`) transforme ces logs en `monitoring-data.json` consomme par l'app monitoring.
+Chaque composant `dsfr-data-*` envoie un beacon fire-and-forget a l'initialisation (`connectedCallback`) via `sendWidgetBeacon()` dans `src/utils/beacon.ts`. Le beacon transmet le nom du composant, le type de graphique et l'origine de la page (`window.location.origin` via le parametre `r=`) au proxy nginx qui les enregistre dans `beacon.log`. Un script periodique (`scripts/parse-beacon-logs.sh`) transforme ces logs en `monitoring-data.json` consomme par l'app monitoring.
 
 - Le parametre `r=` envoie `window.location.origin` pour identifier le site deployeur (plus fiable que le header HTTP Referer qui depend du Referrer-Policy du site)
 - Les parsers (sh et js) preferent `$arg_r` et tombent en fallback sur `$http_referer` pour compatibilite avec les anciens logs
@@ -376,21 +376,10 @@ Cette exposition permet aux tests de :
 - Comparer les resultats avec les valeurs attendues
 - Valider la coherence entre donnees source et resultats affiches
 
-### Documentation complete
+### Documentation
 
 - `tests/builder-e2e/README.md` : Guide d'utilisation des tests
-- `tests/builder-e2e/RESULTAT_TESTS.md` : Resultats detailles des tests
-- `tests/builder-e2e/QUICK_START.md` : Demarrage rapide et troubleshooting
-- `tests/builder-e2e/FIX_TESTS.md` : Guide de resolution des problemes
-- `tests/builder-e2e/SYNTHESE.md` : Synthese et vue d'ensemble
 - `tests/builder-e2e/TESTING_MATRIX.md` : Matrice complete des parametres a tester
-
-### Utilitaires de test
-
-- `data-consistency-checker.ts` : Calcul des valeurs attendues et verification de coherence
-- `inspect-builder.spec.ts` : Outil de diagnostic de la structure du builder
-- `simple-test.spec.ts` : Tests de base (elements UI, options disponibles)
-- `quick-audit.spec.ts` : Tests critiques de validation des parametres
 
 ## Notes importantes
 

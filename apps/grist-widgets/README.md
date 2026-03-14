@@ -165,7 +165,7 @@ import grist from 'grist-plugin-api';
 // Écouter les changements de données
 grist.ready();
 grist.onRecords((records) => {
-  // Dispatcher les données vers les composants gouv-*
+  // Dispatcher les données vers les composants dsfr-data-*
   DsfrData.dispatchDataLoaded('grist', records);
 });
 
