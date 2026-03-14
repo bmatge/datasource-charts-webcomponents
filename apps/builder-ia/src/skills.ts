@@ -6,7 +6,7 @@
  * - External AI tools via MCP server
  *
  * IMPORTANT: when adding/modifying an attribute, chart type, filter operator
- * or aggregation function in a gouv-* component, update the corresponding skill.
+ * or aggregation function in a dsfr-data-* component, update the corresponding skill.
  * Tests in tests/apps/builder-ia/skills.test.ts verify alignment automatically.
  */
 
