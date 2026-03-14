@@ -1,4 +1,4 @@
-name: Deploy Grist Widgets to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
       - 'apps/grist-widgets/**'
       - 'src/**'
       - 'packages/shared/**'
+      - 'specs/**'
+      - 'guide/**'
       - '.github/workflows/deploy-grist-widgets.yml'
   workflow_dispatch:
 
@@ -41,11 +43,51 @@ jobs:
       - name: Build shared package
         run: npm run build:shared
 
-      - name: Build library (generate UMD)
+      - name: Build library (generate ESM + UMD)
         run: npm run build
 
       - name: Build grist-widgets
         run: npm run build --workspace=@dsfr-data/app-grist-widgets
+
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p _site
+
+          # Grist widgets (chart/ and datalist/)
+          cp -r apps/grist-widgets/dist/* _site/
+
+          # Library bundles (needed by specs and guide pages)
+          cp -r dist/ _site/dist/
+
+          # Specs pages
+          cp -r specs/ _site/specs/
+
+          # Guide pages
+          cp -r guide/ _site/guide/
+
+          # Root index.html (redirect to specs)
+          cat > _site/index.html << 'HEREDOC'
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0;url=specs/index.html">
+            <title>dsfr-data</title>
+          </head>
+          <body>
+            <p>Redirection vers <a href="specs/index.html">la documentation</a>...</p>
+          </body>
+          </html>
+          HEREDOC
+
+      - name: Fix absolute paths for GitHub Pages
+        run: |
+          # Get the repository name for the base path
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+
+          # Replace /dist/ absolute paths with GitHub Pages base path
+          find _site/specs/ _site/guide/ -name '*.html' -exec \
+            sed -i "s|src=\"/dist/|src=\"/${REPO_NAME}/dist/|g" {} +
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -53,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './apps/grist-widgets/dist'
+          path: './_site'
 
   deploy:
     environment:

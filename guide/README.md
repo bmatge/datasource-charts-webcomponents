@@ -8,7 +8,6 @@ Documentation utilisateur et exemples d'utilisation des composants dsfr-data.
 |---------|-------------|
 | `USER-GUIDE.md` | Guide utilisateur complet (6 parcours pas a pas) |
 | `CONTRIBUTING.md` | Guide de contribution pour les developpeurs |
-| `architecture.md` | Vue d'ensemble de l'architecture technique |
 | `guide*.html` | Pages HTML interactives de demonstration des composants |
 | `images/` | Captures d'ecran et diagrammes |
 
@@ -16,4 +15,4 @@ Documentation utilisateur et exemples d'utilisation des composants dsfr-data.
 
 - **Communicants** : parcours builder pour creer un graphique sans coder
 - **Integrateurs web** : exemples HTML copier/coller pour integrer les composants
-- **Developpeurs** : architecture technique et guide de contribution
+- **Developpeurs** : [architecture technique](../ARCHITECTURE.md) et guide de contribution
