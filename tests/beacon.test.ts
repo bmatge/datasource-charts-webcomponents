@@ -42,7 +42,7 @@ describe('sendWidgetBeacon', () => {
   it('skips on localhost', async () => {
     // jsdom defaults to localhost
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
     expect(imageSrcs).toHaveLength(0);
   });
 
@@ -54,7 +54,7 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
     expect(imageSrcs).toHaveLength(0);
 
     Object.defineProperty(window, 'location', {
@@ -70,7 +70,7 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
     expect(imageSrcs).toHaveLength(0);
 
     Object.defineProperty(window, 'location', {
@@ -86,12 +86,12 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
 
     expect(imageSrcs).toHaveLength(1);
     const url = new URL(imageSrcs[0]);
     expect(url.pathname).toBe('/beacon');
-    expect(url.searchParams.get('c')).toBe('gouv-kpi');
+    expect(url.searchParams.get('c')).toBe('dsfr-data-kpi');
     expect(url.searchParams.get('r')).toBe('https://example.gouv.fr');
 
     Object.defineProperty(window, 'location', {
@@ -107,11 +107,11 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-dsfr-chart', 'bar');
+    sendWidgetBeacon('dsfr-data-chart', 'bar');
 
     expect(imageSrcs).toHaveLength(1);
     const url = new URL(imageSrcs[0]);
-    expect(url.searchParams.get('c')).toBe('gouv-dsfr-chart');
+    expect(url.searchParams.get('c')).toBe('dsfr-data-chart');
     expect(url.searchParams.get('t')).toBe('bar');
 
     Object.defineProperty(window, 'location', {
@@ -127,9 +127,9 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
-    sendWidgetBeacon('gouv-kpi');
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
 
     expect(imageSrcs).toHaveLength(1);
 
@@ -146,8 +146,8 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
-    sendWidgetBeacon('gouv-datalist');
+    sendWidgetBeacon('dsfr-data-kpi');
+    sendWidgetBeacon('dsfr-data-list');
 
     expect(imageSrcs).toHaveLength(2);
 
@@ -164,8 +164,8 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-dsfr-chart', 'bar');
-    sendWidgetBeacon('gouv-dsfr-chart', 'line');
+    sendWidgetBeacon('dsfr-data-chart', 'bar');
+    sendWidgetBeacon('dsfr-data-chart', 'line');
 
     expect(imageSrcs).toHaveLength(2);
 
@@ -182,7 +182,7 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
 
     // Pixel was sent synchronously
     expect(imageSrcs).toHaveLength(1);
@@ -202,7 +202,7 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-kpi');
+    sendWidgetBeacon('dsfr-data-kpi');
 
     // In DB mode, the beacon is sent via fetch (async), not via Image pixel (sync)
     // So no synchronous Image.src assignment should have happened
@@ -222,7 +222,7 @@ describe('sendWidgetBeacon', () => {
     });
 
     const sendWidgetBeacon = await loadBeacon();
-    sendWidgetBeacon('gouv-dsfr-chart', 'line');
+    sendWidgetBeacon('dsfr-data-chart', 'line');
 
     // Without DB mode, pixel is created synchronously
     expect(imageSrcs).toHaveLength(1);

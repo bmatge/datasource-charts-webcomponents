@@ -3,7 +3,7 @@
  * Delegates to the shared getPreviewHTML and adds runPreview helper.
  */
 
-import { getPreviewHTML } from '@gouv-widgets/shared';
+import { getPreviewHTML } from '@dsfr-data/shared';
 export { getPreviewHTML };
 
 export function runPreview(editor: { getValue(): string }, iframeId: string): void {

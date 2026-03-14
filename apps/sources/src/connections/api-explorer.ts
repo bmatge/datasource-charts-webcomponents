@@ -7,7 +7,7 @@ import {
   getProxiedUrl,
   saveToStorage,
   STORAGE_KEYS,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 
 import { state } from '../state.js';
 import type { Source } from '../state.js';

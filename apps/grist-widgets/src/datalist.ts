@@ -11,7 +11,7 @@
 import './styles/grist-widgets.css';
 import { onGristOptions, detectGristApi, getGristApiInfo } from './shared/grist-bridge.js';
 import { createOptionsPanel, type OptionDef } from './shared/grist-options-panel.js';
-import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { PROXY_BASE_URL } from '@dsfr-data/shared';
 
 const GRIST_SOURCE_ID = 'grist';
 
@@ -53,7 +53,7 @@ let columnsDetermined = false;
 
 function applyOptions(opts: Record<string, unknown>) {
   currentOptions = { ...currentOptions, ...opts };
-  const datalist = document.querySelector('gouv-datalist');
+  const datalist = document.querySelector('dsfr-data-list');
   if (!datalist) return;
 
   if (opts.pagination !== undefined) datalist.setAttribute('pagination', String(opts.pagination));
@@ -93,7 +93,7 @@ function generateFixedHtml(): string {
   const data = GouvWidgets.getDataCache(GRIST_SOURCE_ID) as Record<string, unknown>[] | undefined;
   if (!data || data.length === 0) return '';
 
-  const datalist = document.querySelector('gouv-datalist');
+  const datalist = document.querySelector('dsfr-data-list');
   const colonnes = datalist?.getAttribute('colonnes') || '';
   const pagination = datalist?.getAttribute('pagination') || '20';
   const hasRecherche = datalist?.hasAttribute('recherche');
@@ -104,19 +104,19 @@ function generateFixedHtml(): string {
   const jsonData = JSON.stringify(data);
 
   const deps = [
-    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<!-- Dependances dsfr-data (a ajouter dans le <head> si absentes) -->',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
-    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>',
   ];
 
   return `${deps.join('\n')}
 
 <!-- Widget tableau -->
-<gouv-datalist source="export" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></gouv-datalist>
+<dsfr-data-list source="export" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></dsfr-data-list>
 <script>
-  customElements.whenDefined('gouv-datalist').then(function() {
+  customElements.whenDefined('dsfr-data-list').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
@@ -132,7 +132,7 @@ function generateDynamicHtml(): string {
 
   const proxyUrl = `${PROXY_BASE_URL}/grist-gouv-proxy/api/docs/${docId}/tables/${tableId}/records`;
 
-  const datalist = document.querySelector('gouv-datalist');
+  const datalist = document.querySelector('dsfr-data-list');
   const pagination = datalist?.getAttribute('pagination') || '20';
   const hasRecherche = datalist?.hasAttribute('recherche');
   const exportAttr = datalist?.getAttribute('export') || '';
@@ -144,24 +144,24 @@ function generateDynamicHtml(): string {
   const colonnes = dataColumnKeys.map(k => `fields.${k}:${k}`).join(' | ');
 
   const deps = [
-    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<!-- Dependances dsfr-data (a ajouter dans le <head> si absentes) -->',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
-    '<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>',
+    '<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>',
   ];
 
   return `${deps.join('\n')}
 
 <!-- Source Grist (document public requis) -->
-<gouv-source
+<dsfr-data-source
   id="grist-data"
   url="${proxyUrl}"
   transform="records">
-</gouv-source>
+</dsfr-data-source>
 
 <!-- Widget tableau -->
-<gouv-datalist source="grist-data" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></gouv-datalist>`;
+<dsfr-data-list source="grist-data" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></dsfr-data-list>`;
 }
 
 function updateCodePanel() {
@@ -244,7 +244,7 @@ function autoConfigureColumns(data: Record<string, unknown>[]) {
   const keys = Object.keys(first).filter(k => k !== 'id');
   const colonnes = keys.map(k => `${k}:${k}`).join(' | ');
 
-  const datalist = document.querySelector('gouv-datalist');
+  const datalist = document.querySelector('dsfr-data-list');
   if (datalist) {
     datalist.setAttribute('colonnes', colonnes);
   }
@@ -283,7 +283,7 @@ onGristOptions((opts) => {
   applyOptions(opts);
 });
 
-document.addEventListener('gouv-data-loaded', () => {
+document.addEventListener('dsfr-data-loaded', () => {
   const empty = document.getElementById('empty-state');
   const container = document.getElementById('datalist-container');
   const panel = document.getElementById('options-panel');

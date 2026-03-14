@@ -45,7 +45,7 @@ code-generator.ts du builder (L1160-1168, apiUrl.includes())
 Provider	Mecanisme	Page size	Max records	Params URL	Response keys
 ODS	Offset-based (offset + limit)	100	1000 (10 pages)	offset, limit	results, total_count
 Tabular	Page-based + links.next cursor	100	50000 (500 pages)	page, page_size	data, meta.total, links.next
-gouv-source	Page-based hardcode	20	illimite	page, page_size	data, meta.{page,page_size,total}
+dsfr-data-source	Page-based hardcode	20	illimite	page, page_size	data, meta.{page,page_size,total}
 Les constantes ODS (ODS_PAGE_SIZE=100, ODS_MAX_PAGES=10) sont dupliquees entre l'adapter (opendatasoft-adapter.ts L25-28) et le builder (code-generator.ts L19-20), avec une fonction fetchOdsResults() dans le builder qui est un copier-coller de l'adapter.
 
 6. Structure de reponse API : connaissances disseminees
@@ -55,13 +55,13 @@ Total	json.total_count	json.meta.total	N/A (pas de total)
 Page suivante	Offset calcule	json.links.next (URL)	N/A
 Facettes serveur	/facets endpoint dedie	Non supporte	Non supporte
 Aggregation serveur	ODSQL (select, group_by, where)	Non supportee (client-side)	Non supportee (client-side)
-Format de filtre	ODSQL (field = "value", AND)	Colon syntax (field:op:value, , )	Colon syntax (via gouv-query generic)
+Format de filtre	ODSQL (field = "value", AND)	Colon syntax (field:op:value, , )	Colon syntax (via dsfr-data-query generic)
 Champs nested	Non (plats)	Non (plats)	Oui (fields.X) → flatten requis
 Ces connaissances sont eparpillees dans :
 
 Les 3 adapters (opendatasoft-adapter.ts, tabular-adapter.ts, generic-adapter.ts) -- bien centralise pour les composants
-gouv-source.ts L172-183 -- hardcode Tabular (json.meta, json.data)
-gouv-query.ts L757 -- hardcode Tabular (fallback json.data)
+dsfr-data-source.ts L172-183 -- hardcode Tabular (json.meta, json.data)
+dsfr-data-query.ts L757 -- hardcode Tabular (fallback json.data)
 code-generator.ts du builder -- tout re-implemente sans utiliser les adapters
 api-explorer.ts -- detection heuristique multi-pattern
 7. Facettes : 3 modes, decides au cas par cas dans le code generator
@@ -73,26 +73,26 @@ Tabular datalist	{ staticValues: computed }	if (tabularInfoDl)	L1374
 ODS chart	undefined (apres query)	apres generateOdsQueryCode	L1469
 Tabular chart	undefined (apres query)	apres generateTabularQueryCode	L1482
 Generic	undefined (via middleware)	else branch	L1486
-Dans les composants, gouv-facets.ts gere correctement les 3 modes via l'adapter, mais le code generator ignore completement le systeme d'adapters et reimplemente toute la logique.
+Dans les composants, dsfr-data-facets.ts gere correctement les 3 modes via l'adapter, mais le code generator ignore completement le systeme d'adapters et reimplemente toute la logique.
 
 8. Resolution des chemins de champs : 3 logiques differentes
 Contexte	Logique	Fichier
 Grist dynamique	isFlattened ? labelField : 'fields.' + labelField	code-generator.ts L1177
 API dynamique	isFlattened ? labelField : fullPath || labelField	code-generator.ts L1305
 Local (embedded)	labelField direct (pas de fullPath)	code-generator.ts L558+
-gouv-facets	_resolveValue() avec split sur .	gouv-facets.ts L343
-gouv-query generic	row[field] plat uniquement	gouv-query.ts L434+
+dsfr-data-facets	_resolveValue() avec split sur .	dsfr-data-facets.ts L343
+dsfr-data-query generic	row[field] plat uniquement	dsfr-data-query.ts L434+
 9. Auth : header Grist construit 9 fois
 Le pattern Authorization: Bearer ${apiKey} est repete 9 fois dans grist-explorer.ts et connection-manager.ts. Pas de helper centralise.
 
 10. Ce qui fonctionne bien (a garder)
-Le systeme d'adapters dans gouv-query est bien concu :
+Le systeme d'adapters dans dsfr-data-query est bien concu :
 
 AdapterCapabilities declare les capacites (serverFetch, serverFacets, serverSearch, serverGroupBy, serverOrderBy, whereFormat)
 AdapterParams passe tout l'etat necessaire
 FetchResult.needsClientProcessing distingue ODS (server-side aggregation) de Tabular (client-side)
 ADAPTER_REGISTRY avec registerAdapter() pour l'extensibilite
-Les facettes dans gouv-facets.ts utilisent adapter.capabilities.serverFacets pour router
+Les facettes dans dsfr-data-facets.ts utilisent adapter.capabilities.serverFacets pour router
 Proprietes necessaires pour un ProviderConfig centralise
 En synthetisant tous les ecarts ci-dessus :
 
@@ -184,15 +184,15 @@ interface ProviderConfig {
   // --- Code generation ---
   /** Composants necessaires dans le pipeline genere */
   pipeline: {
-    usesGouvSource: boolean;       // true pour Grist/Generic, false pour ODS/Tabular
-    usesGouvQuery: boolean;        // true sauf pour embedded
-    usesGouvNormalize: boolean;    // true pour Grist
+    usesDsfrDataSource: boolean;       // true pour Grist/Generic, false pour ODS/Tabular
+    usesDsfrDataQuery: boolean;        // true sauf pour embedded
+    usesDsfrDataNormalize: boolean;    // true pour Grist
     queryApiType?: string;         // 'opendatasoft' | 'tabular' | undefined
   };
   /** Prefixe de champ pour les paths nested */
   fieldPrefix: string;             // 'fields.' pour Grist sans flatten, '' sinon
   /** Dependencies DSFR Chart necessaires */
   needsDsfrChart: boolean;
-  /** Dependencies gouv-widgets necessaires */
-  needsGouvWidgets: boolean;
+  /** Dependencies dsfr-data necessaires */
+  needsDsfrData: boolean;
 }

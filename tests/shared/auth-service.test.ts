@@ -221,7 +221,7 @@ describe('AuthService', () => {
 
   describe('auto-migration', () => {
     it('migrates localStorage data on first login', async () => {
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify([{ id: 'src-1', name: 'Test' }]));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify([{ id: 'src-1', name: 'Test' }]));
 
       const user = { id: '1', email: 'a@b.com', displayName: 'A', role: 'admin' };
       let migrateCalled = false;
@@ -247,7 +247,7 @@ describe('AuthService', () => {
 
     it('skips migration if already migrated', async () => {
       localStorage.setItem('gw-migrated', '1');
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify([{ id: 'src-1' }]));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify([{ id: 'src-1' }]));
 
       const user = { id: '1', email: 'a@b.com', displayName: 'A', role: 'admin' };
 

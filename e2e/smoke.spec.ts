@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Smoke tests', () => {
   test('Hub (index.html) loads correctly', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/Charts builder|gouv-widgets/i);
+    await expect(page).toHaveTitle(/Charts builder|dsfr-data/i);
     await expect(page.locator('body')).toBeVisible();
   });
 

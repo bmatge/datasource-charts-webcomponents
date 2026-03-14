@@ -7,20 +7,20 @@ import {
 import type { Source } from '../../../apps/builder-ia/src/state';
 
 // Component imports for introspection
-import { GouvSource } from '../../../src/components/gouv-source.js';
-import { GouvQuery } from '../../../src/components/gouv-query.js';
-import { GouvKpi } from '../../../src/components/gouv-kpi.js';
-import { GouvDatalist } from '../../../src/components/gouv-datalist.js';
-import { GouvDsfrChart } from '../../../src/components/gouv-dsfr-chart.js';
-import { GouvNormalize } from '../../../src/components/gouv-normalize.js';
-import { GouvFacets } from '../../../src/components/gouv-facets.js';
-import { GouvDisplay } from '../../../src/components/gouv-display.js';
-import { GouvSearch } from '../../../src/components/gouv-search.js';
-import { GouvChartA11y } from '../../../src/components/gouv-chart-a11y.js';
-import { GouvKpiGroup } from '../../../src/components/gouv-kpi-group.js';
+import { DsfrDataSource } from '../../../src/components/dsfr-data-source.js';
+import { DsfrDataQuery } from '../../../src/components/dsfr-data-query.js';
+import { DsfrDataKpi } from '../../../src/components/dsfr-data-kpi.js';
+import { DsfrDataList } from '../../../src/components/dsfr-data-list.js';
+import { DsfrDataChart } from '../../../src/components/dsfr-data-chart.js';
+import { DsfrDataNormalize } from '../../../src/components/dsfr-data-normalize.js';
+import { DsfrDataFacets } from '../../../src/components/dsfr-data-facets.js';
+import { DsfrDataDisplay } from '../../../src/components/dsfr-data-display.js';
+import { DsfrDataSearch } from '../../../src/components/dsfr-data-search.js';
+import { DsfrDataA11y } from '../../../src/components/dsfr-data-a11y.js';
+import { DsfrDataKpiGroup } from '../../../src/components/dsfr-data-kpi-group.js';
 
 // Type/constant imports for alignment checks
-import type { FilterOperator, AggregateFunction } from '../../../src/components/gouv-query.js';
+import type { FilterOperator, AggregateFunction } from '../../../src/components/dsfr-data-query.js';
 
 /**
  * Extract HTML attribute names from a Lit component class via elementProperties.
@@ -28,7 +28,7 @@ import type { FilterOperator, AggregateFunction } from '../../../src/components/
  * - If attribute option is a string → use it (explicit mapping)
  * - Otherwise → Lit lowercases the property name
  */
-function getHtmlAttributes(ComponentClass: typeof GouvSource): Set<string> {
+function getHtmlAttributes(ComponentClass: typeof DsfrDataSource): Set<string> {
   const attrs = new Set<string>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props = (ComponentClass as any).elementProperties as Map<string, { attribute?: string | false }> | undefined;
@@ -52,16 +52,16 @@ describe('builder-ia skills', () => {
   it('should have expected skill IDs', () => {
     expect(SKILLS).toHaveProperty('createChartAction');
     expect(SKILLS).toHaveProperty('reloadDataAction');
-    expect(SKILLS).toHaveProperty('gouvSource');
-    expect(SKILLS).toHaveProperty('gouvQuery');
-    expect(SKILLS).toHaveProperty('gouvNormalize');
-    expect(SKILLS).toHaveProperty('gouvFacets');
-    expect(SKILLS).toHaveProperty('gouvSearch');
-    expect(SKILLS).toHaveProperty('gouvKpi');
-    expect(SKILLS).toHaveProperty('gouvKpiGroup');
-    expect(SKILLS).toHaveProperty('gouvDsfrChart');
-    expect(SKILLS).toHaveProperty('gouvDatalist');
-    expect(SKILLS).toHaveProperty('gouvDisplay');
+    expect(SKILLS).toHaveProperty('dsfrDataSource');
+    expect(SKILLS).toHaveProperty('dsfrDataQuery');
+    expect(SKILLS).toHaveProperty('dsfrDataNormalize');
+    expect(SKILLS).toHaveProperty('dsfrDataFacets');
+    expect(SKILLS).toHaveProperty('dsfrDataSearch');
+    expect(SKILLS).toHaveProperty('dsfrDataKpi');
+    expect(SKILLS).toHaveProperty('dsfrDataKpiGroup');
+    expect(SKILLS).toHaveProperty('dsfrDataChart');
+    expect(SKILLS).toHaveProperty('dsfrDataList');
+    expect(SKILLS).toHaveProperty('dsfrDataDisplay');
     expect(SKILLS).toHaveProperty('dsfrChartNative');
     expect(SKILLS).toHaveProperty('compositionPatterns');
     expect(SKILLS).toHaveProperty('odsql');
@@ -69,7 +69,7 @@ describe('builder-ia skills', () => {
     expect(SKILLS).toHaveProperty('chartTypes');
     expect(SKILLS).toHaveProperty('dsfrColors');
     expect(SKILLS).toHaveProperty('apiProviders');
-    expect(SKILLS).toHaveProperty('gouvChartA11y');
+    expect(SKILLS).toHaveProperty('dsfrDataA11y');
     expect(SKILLS).toHaveProperty('troubleshooting');
   });
 
@@ -89,10 +89,10 @@ describe('builder-ia skills', () => {
       expect(result).toEqual([]);
     });
 
-    it('should match gouvDsfrChart skill for "graphique" keyword', () => {
+    it('should match dsfrDataChart skill for "graphique" keyword', () => {
       const result = getRelevantSkills('je veux un graphique', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvDsfrChart');
+      expect(ids).toContain('dsfrDataChart');
     });
 
     it('should match dsfrColors skill for "couleur" keyword', () => {
@@ -101,17 +101,17 @@ describe('builder-ia skills', () => {
       expect(ids).toContain('dsfrColors');
     });
 
-    it('should match gouvQuery skill for "filtre" keyword', () => {
+    it('should match dsfrDataQuery skill for "filtre" keyword', () => {
       const result = getRelevantSkills('ajoute un filtre', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvQuery');
+      expect(ids).toContain('dsfrDataQuery');
     });
 
     it('should match multiple skills for a complex message', () => {
       const result = getRelevantSkills('fais un graphique avec un filtre sur les couleurs', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvDsfrChart');
-      expect(ids).toContain('gouvQuery');
+      expect(ids).toContain('dsfrDataChart');
+      expect(ids).toContain('dsfrDataQuery');
       expect(ids).toContain('dsfrColors');
     });
 
@@ -139,27 +139,27 @@ describe('builder-ia skills', () => {
     it('should be case-insensitive', () => {
       const result = getRelevantSkills('GRAPHIQUE EN BARRES', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvDsfrChart');
+      expect(ids).toContain('dsfrDataChart');
     });
 
-    it('should auto-include gouvQuery for KPI with filtering context', () => {
+    it('should auto-include dsfrDataQuery for KPI with filtering context', () => {
       const result = getRelevantSkills('kpi prix moyen dans le departement 48', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvQuery');
-      expect(ids).toContain('gouvKpi');
+      expect(ids).toContain('dsfrDataQuery');
+      expect(ids).toContain('dsfrDataKpi');
     });
 
-    it('should auto-include gouvQuery for chart with region filter', () => {
+    it('should auto-include dsfrDataQuery for chart with region filter', () => {
       const result = getRelevantSkills('graphique barres pour la region IDF', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvQuery');
-      expect(ids).toContain('gouvDsfrChart');
+      expect(ids).toContain('dsfrDataQuery');
+      expect(ids).toContain('dsfrDataChart');
     });
 
-    it('should match gouvQuery for "departement" keyword', () => {
+    it('should match dsfrDataQuery for "departement" keyword', () => {
       const result = getRelevantSkills('filtre par departement', null);
       const ids = result.map(s => s.id);
-      expect(ids).toContain('gouvQuery');
+      expect(ids).toContain('dsfrDataQuery');
     });
   });
 
@@ -196,7 +196,7 @@ describe('builder-ia skills', () => {
      * Check that every HTML attribute of a component is mentioned in the skill content.
      */
     function assertAttributesCovered(
-      componentClass: typeof GouvSource,
+      componentClass: typeof DsfrDataSource,
       skillId: string,
       componentName: string,
     ) {
@@ -213,61 +213,61 @@ describe('builder-ia skills', () => {
     }
 
     describe('attribute coverage', () => {
-      it('gouvSource skill covers all <gouv-source> attributes', () => {
-        assertAttributesCovered(GouvSource, 'gouvSource', 'gouv-source');
+      it('dsfrDataSource skill covers all <dsfr-data-source> attributes', () => {
+        assertAttributesCovered(DsfrDataSource, 'dsfrDataSource', 'dsfr-data-source');
       });
 
-      it('gouvQuery skill covers all <gouv-query> attributes', () => {
-        assertAttributesCovered(GouvQuery as unknown as typeof GouvSource, 'gouvQuery', 'gouv-query');
+      it('dsfrDataQuery skill covers all <dsfr-data-query> attributes', () => {
+        assertAttributesCovered(DsfrDataQuery as unknown as typeof DsfrDataSource, 'dsfrDataQuery', 'dsfr-data-query');
       });
 
-      it('gouvKpi skill covers all <gouv-kpi> attributes', () => {
-        assertAttributesCovered(GouvKpi as unknown as typeof GouvSource, 'gouvKpi', 'gouv-kpi');
+      it('dsfrDataKpi skill covers all <dsfr-data-kpi> attributes', () => {
+        assertAttributesCovered(DsfrDataKpi as unknown as typeof DsfrDataSource, 'dsfrDataKpi', 'dsfr-data-kpi');
       });
 
-      it('gouvDatalist skill covers all <gouv-datalist> attributes', () => {
-        assertAttributesCovered(GouvDatalist as unknown as typeof GouvSource, 'gouvDatalist', 'gouv-datalist');
+      it('dsfrDataList skill covers all <dsfr-data-list> attributes', () => {
+        assertAttributesCovered(DsfrDataList as unknown as typeof DsfrDataSource, 'dsfrDataList', 'dsfr-data-list');
       });
 
-      it('gouvNormalize skill covers all <gouv-normalize> attributes', () => {
-        assertAttributesCovered(GouvNormalize as unknown as typeof GouvSource, 'gouvNormalize', 'gouv-normalize');
+      it('dsfrDataNormalize skill covers all <dsfr-data-normalize> attributes', () => {
+        assertAttributesCovered(DsfrDataNormalize as unknown as typeof DsfrDataSource, 'dsfrDataNormalize', 'dsfr-data-normalize');
       });
 
-      it('gouvFacets skill covers all <gouv-facets> attributes', () => {
-        assertAttributesCovered(GouvFacets as unknown as typeof GouvSource, 'gouvFacets', 'gouv-facets');
+      it('dsfrDataFacets skill covers all <dsfr-data-facets> attributes', () => {
+        assertAttributesCovered(DsfrDataFacets as unknown as typeof DsfrDataSource, 'dsfrDataFacets', 'dsfr-data-facets');
       });
 
-      it('gouvSearch skill covers all <gouv-search> attributes', () => {
-        assertAttributesCovered(GouvSearch as unknown as typeof GouvSource, 'gouvSearch', 'gouv-search');
+      it('dsfrDataSearch skill covers all <dsfr-data-search> attributes', () => {
+        assertAttributesCovered(DsfrDataSearch as unknown as typeof DsfrDataSource, 'dsfrDataSearch', 'dsfr-data-search');
       });
 
-      it('gouvDsfrChart skill covers all <gouv-dsfr-chart> attributes', () => {
-        assertAttributesCovered(GouvDsfrChart as unknown as typeof GouvSource, 'gouvDsfrChart', 'gouv-dsfr-chart');
+      it('dsfrDataChart skill covers all <dsfr-data-chart> attributes', () => {
+        assertAttributesCovered(DsfrDataChart as unknown as typeof DsfrDataSource, 'dsfrDataChart', 'dsfr-data-chart');
       });
 
-      it('gouvDisplay skill covers all <gouv-display> attributes', () => {
-        assertAttributesCovered(GouvDisplay as unknown as typeof GouvSource, 'gouvDisplay', 'gouv-display');
+      it('dsfrDataDisplay skill covers all <dsfr-data-display> attributes', () => {
+        assertAttributesCovered(DsfrDataDisplay as unknown as typeof DsfrDataSource, 'dsfrDataDisplay', 'dsfr-data-display');
       });
 
-      it('gouvChartA11y skill covers all <gouv-chart-a11y> attributes', () => {
-        assertAttributesCovered(GouvChartA11y as unknown as typeof GouvSource, 'gouvChartA11y', 'gouv-chart-a11y');
+      it('dsfrDataA11y skill covers all <dsfr-data-a11y> attributes', () => {
+        assertAttributesCovered(DsfrDataA11y as unknown as typeof DsfrDataSource, 'dsfrDataA11y', 'dsfr-data-a11y');
       });
 
-      it('gouvKpiGroup skill covers all <gouv-kpi-group> attributes', () => {
-        assertAttributesCovered(GouvKpiGroup as unknown as typeof GouvSource, 'gouvKpiGroup', 'gouv-kpi-group');
+      it('dsfrDataKpiGroup skill covers all <dsfr-data-kpi-group> attributes', () => {
+        assertAttributesCovered(DsfrDataKpiGroup as unknown as typeof DsfrDataSource, 'dsfrDataKpiGroup', 'dsfr-data-kpi-group');
       });
     });
 
     describe('chart types coverage', () => {
-      // These must match the DSFRChartType union in gouv-dsfr-chart.ts
+      // These must match the DSFRChartType union in dsfr-data-chart.ts
       const DSFR_CHART_TYPES = ['line', 'bar', 'pie', 'radar', 'gauge', 'scatter', 'bar-line', 'map', 'map-reg'];
 
-      it('gouvDsfrChart skill mentions all supported chart types', () => {
-        const content = SKILLS.gouvDsfrChart.content;
+      it('dsfrDataChart skill mentions all supported chart types', () => {
+        const content = SKILLS.dsfrDataChart.content;
         for (const type of DSFR_CHART_TYPES) {
           expect(
             content.includes(type),
-            `Skill "gouvDsfrChart" should mention chart type "${type}"`
+            `Skill "dsfrDataChart" should mention chart type "${type}"`
           ).toBe(true);
         }
       });
@@ -284,34 +284,34 @@ describe('builder-ia skills', () => {
     });
 
     describe('filter operators coverage', () => {
-      // Must match the FilterOperator type in gouv-query.ts
+      // Must match the FilterOperator type in dsfr-data-query.ts
       const FILTER_OPERATORS: FilterOperator[] = [
         'eq', 'neq', 'gt', 'gte', 'lt', 'lte',
         'contains', 'notcontains', 'in', 'notin',
         'isnull', 'isnotnull',
       ];
 
-      it('gouvQuery skill documents all filter operators', () => {
-        const content = SKILLS.gouvQuery.content;
+      it('dsfrDataQuery skill documents all filter operators', () => {
+        const content = SKILLS.dsfrDataQuery.content;
         for (const op of FILTER_OPERATORS) {
           expect(
             content.includes(op),
-            `Skill "gouvQuery" should document filter operator "${op}"`
+            `Skill "dsfrDataQuery" should document filter operator "${op}"`
           ).toBe(true);
         }
       });
     });
 
     describe('aggregation functions coverage', () => {
-      // Must match the AggregateFunction type in gouv-query.ts
+      // Must match the AggregateFunction type in dsfr-data-query.ts
       const AGG_FUNCTIONS: AggregateFunction[] = ['count', 'sum', 'avg', 'min', 'max'];
 
-      it('gouvQuery skill documents all aggregation functions', () => {
-        const content = SKILLS.gouvQuery.content;
+      it('dsfrDataQuery skill documents all aggregation functions', () => {
+        const content = SKILLS.dsfrDataQuery.content;
         for (const fn of AGG_FUNCTIONS) {
           expect(
             content.includes(fn),
-            `Skill "gouvQuery" should document aggregation function "${fn}"`
+            `Skill "dsfrDataQuery" should document aggregation function "${fn}"`
           ).toBe(true);
         }
       });
@@ -320,16 +320,16 @@ describe('builder-ia skills', () => {
     describe('exported components coverage', () => {
       // Map of exported component classes to their expected skill ID
       const COMPONENT_SKILL_MAP: Record<string, string> = {
-        'GouvSource': 'gouvSource',
-        'GouvQuery': 'gouvQuery',
-        'GouvNormalize': 'gouvNormalize',
-        'GouvFacets': 'gouvFacets',
-        'GouvSearch': 'gouvSearch',
-        'GouvKpi': 'gouvKpi',
-        'GouvKpiGroup': 'gouvKpiGroup',
-        'GouvDatalist': 'gouvDatalist',
-        'GouvDisplay': 'gouvDisplay',
-        'GouvDsfrChart': 'gouvDsfrChart',
+        'DsfrDataSource': 'dsfrDataSource',
+        'DsfrDataQuery': 'dsfrDataQuery',
+        'DsfrDataNormalize': 'dsfrDataNormalize',
+        'DsfrDataFacets': 'dsfrDataFacets',
+        'DsfrDataSearch': 'dsfrDataSearch',
+        'DsfrDataKpi': 'dsfrDataKpi',
+        'DsfrDataKpiGroup': 'dsfrDataKpiGroup',
+        'DsfrDataList': 'dsfrDataList',
+        'DsfrDataDisplay': 'dsfrDataDisplay',
+        'DsfrDataChart': 'dsfrDataChart',
       };
 
       it('every data component has a corresponding skill', () => {
@@ -358,12 +358,12 @@ describe('builder-ia skills', () => {
         }
       });
 
-      it('gouvDsfrChart skill documents all DSFR Chart palettes', () => {
-        const content = SKILLS.gouvDsfrChart.content;
+      it('dsfrDataChart skill documents all DSFR Chart palettes', () => {
+        const content = SKILLS.dsfrDataChart.content;
         for (const palette of DSFR_PALETTES) {
           expect(
             content.includes(palette),
-            `Skill "gouvDsfrChart" should document palette "${palette}"`
+            `Skill "dsfrDataChart" should document palette "${palette}"`
           ).toBe(true);
         }
       });

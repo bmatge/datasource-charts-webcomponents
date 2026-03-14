@@ -8,7 +8,7 @@
  * Old logs (5 fields) are still supported via fallback to $http_referer.
  *
  * Example:
- *   2026-02-07T10:23:45+00:00|https://ministere.gouv.fr/stats|gouv-dsfr-chart|bar|1.2.3.4|https://ministere.gouv.fr
+ *   2026-02-07T10:23:45+00:00|https://ministere.gouv.fr/stats|dsfr-data-chart|bar|1.2.3.4|https://ministere.gouv.fr
  *
  * Usage:
  *   node scripts/parse-beacon-logs.js [beacon.log] [output.json]

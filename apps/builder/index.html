@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-widgets — Generateur de graphiques</title>
+  <title>dsfr-data — Generateur de graphiques</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}.modal-overlay{display:none}</style>
 
   <!-- DSFR -->
@@ -14,8 +14,8 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 
-  <!-- Composants gouv-widgets -->
-  <script type="module" src="../../dist/gouv-widgets.esm.js"></script>
+  <!-- Composants dsfr-data -->
+  <script type="module" src="../../dist/dsfr-data.esm.js"></script>
 
   <!-- DSFR Chart (pour les cartes et jauges) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css" integrity="sha384-987+TUcyVaQAI/PaEqYIGNqku/bHSkNVAqOfNxyS1eE9SxeeH2Ue4FQZ3kKtnWfM" crossorigin="anonymous">
@@ -88,7 +88,7 @@
             <input type="radio" id="mode-dynamic" name="generation-mode" value="dynamic">
             <label class="fr-label" for="mode-dynamic">
               Chargement dynamique
-              <span class="fr-hint-text">Utilise &lt;gouv-source&gt;, &lt;gouv-query&gt; et &lt;gouv-dsfr-chart&gt; pour charger les donnees en temps reel</span>
+              <span class="fr-hint-text">Utilise &lt;dsfr-data-source&gt;, &lt;dsfr-data-query&gt; et &lt;dsfr-data-chart&gt; pour charger les donnees en temps reel</span>
             </label>
           </div>
 
@@ -373,13 +373,13 @@
           <label class="fr-toggle__label" for="advanced-mode-toggle" data-fr-checked-label="Active" data-fr-unchecked-label="Desactive">
             Mode avance (filtres & requetes)
           </label>
-          <p class="fr-hint-text" id="advanced-mode-hint">Utilisez gouv-query pour filtrer et transformer les donnees</p>
+          <p class="fr-hint-text" id="advanced-mode-hint">Utilisez dsfr-data-query pour filtrer et transformer les donnees</p>
         </div>
 
         <!-- Options avancees (masquees par defaut) -->
         <div id="advanced-query-options" class="fr-mt-2w" style="display: none;">
           <div class="fr-alert fr-alert--info fr-alert--sm fr-mb-2w">
-            <p>Le mode avance utilise <code>&lt;gouv-query&gt;</code> pour filtrer, regrouper et agreger les donnees cote client avant de les afficher.</p>
+            <p>Le mode avance utilise <code>&lt;dsfr-data-query&gt;</code> pour filtrer, regrouper et agreger les donnees cote client avant de les afficher.</p>
           </div>
 
           <!-- Filtres -->
@@ -578,9 +578,9 @@
         </div>
 
         <!-- Apercu accessibilite (composant reel) -->
-        <gouv-chart-a11y id="a11y-preview" source="builder-preview"
+        <dsfr-data-a11y id="a11y-preview" source="builder-preview"
           no-auto-aria table download style="display: none;">
-        </gouv-chart-a11y>
+        </dsfr-data-a11y>
       </div>
 
       <!-- Onglet Code -->

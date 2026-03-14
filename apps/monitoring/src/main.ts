@@ -1,8 +1,8 @@
 /**
- * Monitoring app - tracks where gouv-widgets are deployed.
+ * Monitoring app - tracks where dsfr-data are deployed.
  */
 
-import { escapeHtml } from '@gouv-widgets/shared';
+import { escapeHtml } from '@dsfr-data/shared';
 import {
   fetchMonitoringData,
   triggerRefresh,

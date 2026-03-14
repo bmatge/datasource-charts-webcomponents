@@ -1,4 +1,4 @@
-# Fiche produit — gouv-widgets
+# Fiche produit — dsfr-data
 
 ## QUOI ? (Le produit)
 
@@ -14,15 +14,15 @@ Source de donnees → Nettoyage → Requetage → Visualisation
 
 | Composant | Role |
 |---|---|
-| `<gouv-source>` | Connecter n'importe quelle API REST, charger les donnees |
-| `<gouv-normalize>` | Nettoyer : conversion numerique, renommage, trim |
-| `<gouv-query>` | Filtrer, trier, regrouper, agreger les donnees |
-| `<gouv-facets>` | Ajouter des filtres interactifs (checkbox, select, radio) |
-| `<gouv-search>` | Ajouter une recherche plein texte |
-| `<gouv-dsfr-chart>` | Rendre un graphique DSFR (barres, courbes, camembert, carte, radar, jauge...) |
-| `<gouv-kpi>` | Afficher un indicateur chiffre avec seuils de couleur |
-| `<gouv-datalist>` | Afficher un tableau avec tri, pagination, export CSV |
-| `<gouv-display>` | Template HTML libre pour cartes, fiches, grilles |
+| `<dsfr-data-source>` | Connecter n'importe quelle API REST, charger les donnees |
+| `<dsfr-data-normalize>` | Nettoyer : conversion numerique, renommage, trim |
+| `<dsfr-data-query>` | Filtrer, trier, regrouper, agreger les donnees |
+| `<dsfr-data-facets>` | Ajouter des filtres interactifs (checkbox, select, radio) |
+| `<dsfr-data-search>` | Ajouter une recherche plein texte |
+| `<dsfr-data-chart>` | Rendre un graphique DSFR (barres, courbes, camembert, carte, radar, jauge...) |
+| `<dsfr-data-kpi>` | Afficher un indicateur chiffre avec seuils de couleur |
+| `<dsfr-data-list>` | Afficher un tableau avec tri, pagination, export CSV |
+| `<dsfr-data-display>` | Template HTML libre pour cartes, fiches, grilles |
 
 **Caracteristiques cles :**
 
@@ -72,7 +72,7 @@ Les sites gouvernementaux illustrent leurs articles de donnees avec :
 
 Ces outils repondent a un **besoin different** :
 
-| | Metabase / Superset | gouv-widgets |
+| | Metabase / Superset | dsfr-data |
 |---|---|---|
 | **Finalite** | Plateforme de BI : exploration, analyse, reporting interne, publication de dashboards autonomes | Composants embarques : integrer un graphique dans une page web existante |
 | **Modele** | L'utilisateur va **vers la plateforme** (URL dediee, dashboard pleine page) | Le graphique va **vers le site** de l'utilisateur (balise HTML dans le CMS) |
@@ -84,18 +84,18 @@ Ces outils repondent a un **besoin different** :
 | **Accessibilite** | Variable, depend de l'outil | RGAA/WCAG 2 AA par construction |
 | **Poids** | Application complete embarquee dans l'iframe | ~50 Ko |
 
-**En resume :** Metabase/Superset sont des **plateformes de dataviz**. gouv-widgets est une **boite a outils d'integration**. Ce ne sont pas des concurrents, ce sont des outils **complementaires** qui interviennent a des moments differents de la chaine de valeur des donnees publiques.
+**En resume :** Metabase/Superset sont des **plateformes de dataviz**. dsfr-data est une **boite a outils d'integration**. Ce ne sont pas des concurrents, ce sont des outils **complementaires** qui interviennent a des moments differents de la chaine de valeur des donnees publiques.
 
 ### Pourquoi ne pas "juste utiliser Chart.js avec un wrapper" ?
 
 - Chart.js produit un `<canvas>` — **non accessible** (le RGAA exige des alternatives textuelles structurees, pas un bitmap)
 - Chart.js n'a pas de mode declaratif HTML — il faut **ecrire du JavaScript**, ce qui exclut les communicants
 - Chart.js n'est **pas conforme DSFR** — il faudrait reimplementer les couleurs, typos, tokens, responsive
-- DSFR Chart existe justement pour repondre a ces exigences — gouv-widgets s'appuie dessus plutot que de reinventer
+- DSFR Chart existe justement pour repondre a ces exigences — dsfr-data s'appuie dessus plutot que de reinventer
 
 ### La vraie valeur ajoutee
 
-gouv-widgets ne reinvente pas les graphiques. Il resout le **dernier kilometre** : comment un agent public non technique transforme une donnee ouverte en graphique conforme, accessible, dynamique et embarque dans son site, **sans dependre d'une plateforme, d'un developpeur ou d'une infra**.
+dsfr-data ne reinvente pas les graphiques. Il resout le **dernier kilometre** : comment un agent public non technique transforme une donnee ouverte en graphique conforme, accessible, dynamique et embarque dans son site, **sans dependre d'une plateforme, d'un developpeur ou d'une infra**.
 
 ---
 
@@ -128,23 +128,23 @@ gouv-widgets ne reinvente pas les graphiques. Il resout le **dernier kilometre**
 
 ```html
 <!-- Source de donnees -->
-<gouv-source id="data"
+<dsfr-data-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/mon-dataset/records?limit=100"
   transform="results">
-</gouv-source>
+</dsfr-data-source>
 
 <!-- Agregation par region -->
-<gouv-query id="q" source="data"
+<dsfr-data-query id="q" source="data"
   group-by="nom_region"
   aggregate="nombre_beneficiaires:sum:beneficiaires"
   order-by="beneficiaires:desc" limit="10">
-</gouv-query>
+</dsfr-data-query>
 
 <!-- Graphique en barres -->
-<gouv-dsfr-chart source="q" type="bar"
+<dsfr-data-chart source="q" type="bar"
   label-field="nom_region" value-field="beneficiaires"
   titre="Beneficiaires par region">
-</gouv-dsfr-chart>
+</dsfr-data-chart>
 ```
 
 ---
@@ -194,7 +194,7 @@ gouv-widgets ne reinvente pas les graphiques. Il resout le **dernier kilometre**
 
 ### Comparaison avec l'alternative plateforme BI
 
-| Poste | Plateforme BI (Metabase/Superset) | gouv-widgets |
+| Poste | Plateforme BI (Metabase/Superset) | dsfr-data |
 |---|---|---|
 | Infrastructure serveur | Obligatoire (BDD + backend + auth) | Aucune |
 | Formation utilisateurs | BI + SQL | Copier-coller HTML |

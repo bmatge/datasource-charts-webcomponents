@@ -77,15 +77,15 @@ export const INSEE_CONFIG: ProviderConfig = {
   },
 
   codeGen: {
-    usesGouvSource: true,
-    usesGouvQuery: true,
-    usesGouvNormalize: false,  // adapter flattens observations internally
+    usesDsfrDataSource: true,
+    usesDsfrDataQuery: true,
+    usesDsfrDataNormalize: false,  // adapter flattens observations internally
     sourceApiType: 'insee',
     fieldPrefix: '',
     dependencies: {
       dsfr: true,
       dsfrChart: true,
-      gouvWidgets: true,
+      dsfrData: true,
     },
   },
 };

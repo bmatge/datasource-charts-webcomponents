@@ -66,10 +66,10 @@ describe('localStorage helpers', () => {
 
   describe('STORAGE_KEYS', () => {
     it('should have expected keys', () => {
-      expect(STORAGE_KEYS.FAVORITES).toBe('gouv-widgets-favorites');
-      expect(STORAGE_KEYS.CONNECTIONS).toBe('gouv_widgets_connections');
-      expect(STORAGE_KEYS.SOURCES).toBe('gouv_widgets_sources');
-      expect(STORAGE_KEYS.SELECTED_SOURCE).toBe('gouv_widgets_selected_source');
+      expect(STORAGE_KEYS.FAVORITES).toBe('dsfr-data-favorites');
+      expect(STORAGE_KEYS.CONNECTIONS).toBe('dsfr-data-connections');
+      expect(STORAGE_KEYS.SOURCES).toBe('dsfr-data-sources');
+      expect(STORAGE_KEYS.SELECTED_SOURCE).toBe('dsfr-data-selected-source');
     });
   });
 });

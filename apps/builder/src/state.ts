@@ -3,11 +3,11 @@
  * Defines interfaces, types, and the singleton state object.
  */
 
-import type { Source } from '@gouv-widgets/shared';
-export { PROXY_BASE_URL, LIB_URL } from '@gouv-widgets/shared';
+import type { Source } from '@dsfr-data/shared';
+export { PROXY_BASE_URL, LIB_URL } from '@dsfr-data/shared';
 
 /** Favorites localStorage key */
-export const FAVORITES_KEY = 'gouv-widgets-favorites';
+export const FAVORITES_KEY = 'dsfr-data-favorites';
 
 /** Supported chart types */
 export type ChartType =
@@ -83,8 +83,8 @@ export interface Field {
   sample: unknown;
 }
 
-// Source is imported from @gouv-widgets/shared (unified interface)
-export type { Source } from '@gouv-widgets/shared';
+// Source is imported from @dsfr-data/shared (unified interface)
+export type { Source } from '@dsfr-data/shared';
 
 /** A single data record (aggregated result) */
 export interface DataRecord {

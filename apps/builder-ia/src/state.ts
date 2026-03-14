@@ -2,10 +2,10 @@
  * Application state for Builder IA
  */
 
-import type { Source } from '@gouv-widgets/shared';
+import type { Source } from '@dsfr-data/shared';
 
-// Source is imported from @gouv-widgets/shared (unified interface)
-export type { Source } from '@gouv-widgets/shared';
+// Source is imported from @dsfr-data/shared (unified interface)
+export type { Source } from '@dsfr-data/shared';
 
 /** Analyzed field metadata */
 export interface Field {

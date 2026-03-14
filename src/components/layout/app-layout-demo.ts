@@ -19,9 +19,9 @@ interface MenuItem {
  *
  * @example
  * <app-layout-demo
- *   title="gouv-source"
+ *   title="dsfr-data-source"
  *   icon="ri-database-2-line"
- *   active-path="components/gouv-source"
+ *   active-path="components/dsfr-data-source"
  *   base-path="../../">
  *   <div slot="content">
  *     <p class="fr-text--lead">Description...</p>
@@ -45,7 +45,7 @@ export class AppLayoutDemo extends LitElement {
 
   /**
    * Chemin actif pour la mise en surbrillance dans le sidemenu
-   * (ex: 'overview', 'components/gouv-source', 'charts/bar-chart')
+   * (ex: 'overview', 'components/dsfr-data-source', 'charts/bar-chart')
    */
   @property({ type: String, attribute: 'active-path' })
   activePath = '';
@@ -112,20 +112,20 @@ export class AppLayoutDemo extends LitElement {
       },
       {
         id: 'components',
-        label: 'Composants gouv-widgets',
+        label: 'Composants dsfr-data',
         href: '#',
         children: [
-          { id: 'components/gouv-source', label: 'gouv-source', href: 'components/gouv-source.html' },
-          { id: 'components/gouv-normalize', label: 'gouv-normalize', href: 'components/gouv-normalize.html' },
-          { id: 'components/gouv-query', label: 'gouv-query', href: 'components/gouv-query.html' },
-          { id: 'components/gouv-facets', label: 'gouv-facets', href: 'components/gouv-facets.html' },
-          { id: 'components/gouv-search', label: 'gouv-search', href: 'components/gouv-search.html' },
-          { id: 'components/gouv-kpi', label: 'gouv-kpi', href: 'components/gouv-kpi.html' },
-          { id: 'components/gouv-datalist', label: 'gouv-datalist', href: 'components/gouv-datalist.html' },
-          { id: 'components/gouv-display', label: 'gouv-display', href: 'components/gouv-display.html' },
-          { id: 'components/gouv-world-map', label: 'gouv-world-map', href: 'components/gouv-world-map.html' },
-          { id: 'components/gouv-chart-a11y', label: 'gouv-chart-a11y', href: 'components/gouv-chart-a11y.html' },
-          { id: 'components/gouv-dsfr-chart', label: 'gouv-dsfr-chart', href: 'components/gouv-dsfr-chart.html' },
+          { id: 'components/dsfr-data-source', label: 'dsfr-data-source', href: 'components/dsfr-data-source.html' },
+          { id: 'components/dsfr-data-normalize', label: 'dsfr-data-normalize', href: 'components/dsfr-data-normalize.html' },
+          { id: 'components/dsfr-data-query', label: 'dsfr-data-query', href: 'components/dsfr-data-query.html' },
+          { id: 'components/dsfr-data-facets', label: 'dsfr-data-facets', href: 'components/dsfr-data-facets.html' },
+          { id: 'components/dsfr-data-search', label: 'dsfr-data-search', href: 'components/dsfr-data-search.html' },
+          { id: 'components/dsfr-data-kpi', label: 'dsfr-data-kpi', href: 'components/dsfr-data-kpi.html' },
+          { id: 'components/dsfr-data-list', label: 'dsfr-data-list', href: 'components/dsfr-data-list.html' },
+          { id: 'components/dsfr-data-display', label: 'dsfr-data-display', href: 'components/dsfr-data-display.html' },
+          { id: 'components/dsfr-data-world-map', label: 'dsfr-data-world-map', href: 'components/dsfr-data-world-map.html' },
+          { id: 'components/dsfr-data-a11y', label: 'dsfr-data-a11y', href: 'components/dsfr-data-a11y.html' },
+          { id: 'components/dsfr-data-chart', label: 'dsfr-data-chart', href: 'components/dsfr-data-chart.html' },
         ]
       },
       {
@@ -203,7 +203,7 @@ export class AppLayoutDemo extends LitElement {
 
     if (parts.length > 1) {
       // Add section (components or charts)
-      const section = parts[0] === 'components' ? 'Composants gouv-widgets' : 'Composants dsfr-charts';
+      const section = parts[0] === 'components' ? 'Composants dsfr-data' : 'Composants dsfr-charts';
       breadcrumbItems.push({ label: section, href: '#' });
     }
 

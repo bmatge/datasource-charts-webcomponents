@@ -4,7 +4,7 @@ Packages npm partages entre les applications du monorepo.
 
 ## Packages
 
-### shared/ (`@gouv-widgets/shared`)
+### shared/ (`@dsfr-data/shared`)
 
 Bibliotheque d'utilitaires communs importee par toutes les apps.
 

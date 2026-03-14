@@ -88,7 +88,7 @@ npm run build:shared       # Build le package shared
 ### Lancer le serveur de dev
 
 ```bash
-npm run dev --workspace=@gouv-widgets/app-grist-widgets
+npm run dev --workspace=@dsfr-data/app-grist-widgets
 ```
 
 Le serveur démarre sur `http://localhost:5173/` (ou 5174 si le port est occupé).
@@ -112,14 +112,14 @@ Le serveur démarre sur `http://localhost:5173/` (ou 5174 si le port est occupé
 ### Build local
 
 ```bash
-npm run build --workspace=@gouv-widgets/app-grist-widgets
+npm run build --workspace=@dsfr-data/app-grist-widgets
 ```
 
 Génère le dossier `dist/` avec :
 - `chart/` : Widget multi-types (graphiques + cartes + KPI)
 - `datalist/` : Widget tableau
 - `assets/` : JavaScript et CSS bundlés
-- `lib/gouv-widgets.umd.js` : build UMD de la bibliothèque
+- `lib/dsfr-data.umd.js` : build UMD de la bibliothèque
 - `manifest.json` : manifeste Grist
 
 ### Déploiement automatique
@@ -129,8 +129,8 @@ Le workflow `.github/workflows/deploy-grist-widgets.yml` déploie automatiquemen
 - De déclenchement manuel (workflow_dispatch)
 
 Le déploiement :
-1. Build le package `@gouv-widgets/shared`
-2. Build la lib principale (génère `dist/gouv-widgets.umd.js`)
+1. Build le package `@dsfr-data/shared`
+2. Build la lib principale (génère `dist/dsfr-data.umd.js`)
 3. Build les grist-widgets
 4. Déploie `apps/grist-widgets/dist/` sur GitHub Pages
 
@@ -179,7 +179,7 @@ grist.onEditOptions(() => {
 
 - **@gouvfr/dsfr** : Design System de l'État Français
 - **@gouvfr/dsfr-chart** : Composants Vue de graphiques DSFR
-- **gouv-widgets** : Web Components Lit (build UMD)
+- **dsfr-data** : Web Components Lit (build UMD)
 - **grist-plugin-api** : API Plugin Grist
 
 ## Licence

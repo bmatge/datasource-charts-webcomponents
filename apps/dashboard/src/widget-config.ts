@@ -2,7 +2,7 @@
  * Dashboard app - Widget configuration modal
  */
 
-import { escapeHtml } from '@gouv-widgets/shared';
+import { escapeHtml } from '@dsfr-data/shared';
 import { state } from './state.js';
 import { renderWidget } from './widgets.js';
 import { updateGeneratedCode } from './code-generator.js';

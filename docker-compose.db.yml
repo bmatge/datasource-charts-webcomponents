@@ -15,7 +15,7 @@ services:
     environment:
       - GOUV_WIDGETS_MODE=database
       - JWT_SECRET=${JWT_SECRET}
-      - DB_PATH=/app/server/data/gouv-widgets.db
+      - DB_PATH=/app/server/data/dsfr-data.db
 
 volumes:
   beacon-logs:

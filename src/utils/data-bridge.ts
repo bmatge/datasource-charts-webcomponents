@@ -1,6 +1,6 @@
 /**
  * Data Bridge - Système de communication inter-composants
- * Permet aux composants gouv-* de partager des données via un système d'événements
+ * Permet aux composants dsfr-data-* de partager des données via un système d'événements
  */
 
 export interface DataLoadedEvent {
@@ -31,16 +31,16 @@ export interface SourceCommandEvent {
   where?: string;      // recherche serveur (ODSQL pour ODS)
   whereKey?: string;   // identifie la source du where (permet merge multi-sources)
   orderBy?: string;    // tri serveur ("field:direction")
-  groupBy?: string;    // group-by serveur (delegue par gouv-query)
-  aggregate?: string;  // agregation serveur (delegue par gouv-query)
+  groupBy?: string;    // group-by serveur (delegue par dsfr-data-query)
+  aggregate?: string;  // agregation serveur (delegue par dsfr-data-query)
 }
 
 // Noms des événements custom
 export const DATA_EVENTS = {
-  LOADED: 'gouv-data-loaded',
-  ERROR: 'gouv-data-error',
-  LOADING: 'gouv-data-loading',
-  SOURCE_COMMAND: 'gouv-source-command'
+  LOADED: 'dsfr-data-loaded',
+  ERROR: 'dsfr-data-error',
+  LOADING: 'dsfr-data-loading',
+  SOURCE_COMMAND: 'dsfr-data-source-command'
 } as const;
 
 // Cache global des données par sourceId

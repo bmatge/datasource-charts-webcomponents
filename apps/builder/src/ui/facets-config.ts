@@ -3,7 +3,7 @@
  */
 
 import { state, type FacetFieldConfig } from '../state.js';
-import { openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
+import { openModal, closeModal, setupModalOverlayClose } from '@dsfr-data/shared';
 
 /**
  * Initialize facets fields from current state.fields (all inactive by default).

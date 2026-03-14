@@ -52,22 +52,22 @@ S'assurer que chaque paramètre :
 
 | Paramètre | Valeurs | Code généré attendu |
 |-----------|---------|---------------------|
-| Mode | `embedded` / `dynamic` | `<gouv-source>` si dynamic |
+| Mode | `embedded` / `dynamic` | `<dsfr-data-source>` si dynamic |
 | Refresh interval | 0-3600 (secondes) | `refresh="XX"` si > 0 |
 
 **Test manuel** :
 1. Sélectionner mode "dynamic"
 2. Définir refresh = 60
-3. ✅ Code contient `<gouv-source>`
+3. ✅ Code contient `<dsfr-data-source>`
 4. ✅ Code contient `refresh="60"`
 
 ---
 
-## 3️⃣ Nettoyage des données (gouv-normalize)
+## 3️⃣ Nettoyage des données (dsfr-data-normalize)
 
 | Paramètre | Type | Code attendu |
 |-----------|------|--------------|
-| `normalize-enabled` | toggle | `<gouv-normalize>` |
+| `normalize-enabled` | toggle | `<dsfr-data-normalize>` |
 | `flatten` | text | `flatten="..."` |
 | `trim` | checkbox | `trim` |
 | `numeric-auto` | checkbox | `numeric-auto` |
@@ -81,15 +81,15 @@ S'assurer que chaque paramètre :
 1. Activer normalize
 2. Cocher "trim" et "numeric-auto"
 3. Remplir flatten = "fields"
-4. ✅ Code contient `<gouv-normalize id="normalized-data" ... trim numeric-auto flatten="fields">`
+4. ✅ Code contient `<dsfr-data-normalize id="normalized-data" ... trim numeric-auto flatten="fields">`
 
 ---
 
-## 4️⃣ Filtres à facettes (gouv-facets)
+## 4️⃣ Filtres à facettes (dsfr-data-facets)
 
 | Paramètre | Type | Code attendu |
 |-----------|------|--------------|
-| `facets-enabled` | toggle | `<gouv-facets>` |
+| `facets-enabled` | toggle | `<dsfr-data-facets>` |
 | Fields configuration | modal | `fields="..."` |
 | `max-values` | number (2-50) | `max-values="..."` |
 | `sort` | select | `sort="count/-count/alpha/-alpha"` |
@@ -99,7 +99,7 @@ S'assurer que chaque paramètre :
 1. Activer facets
 2. Configurer 2 champs (region, code)
 3. Définir max-values = 10, sort = "alpha"
-4. ✅ Code contient `<gouv-facets ... fields="region, code" max-values="10" sort="alpha">`
+4. ✅ Code contient `<dsfr-data-facets ... fields="region, code" max-values="10" sort="alpha">`
 
 ---
 
@@ -117,7 +117,7 @@ S'assurer que chaque paramètre :
 | `gauge` | `<gauge-chart>` | `percent` | Non |
 | `kpi` | `<div class="kpi-card">` | variant classes | Non |
 | `map` | `<map-chart>` | `data`, `value`, `date` | Non |
-| `datalist` | `<gouv-datalist>` | `colonnes`, `pagination` | Non |
+| `datalist` | `<dsfr-data-list>` | `colonnes`, `pagination` | Non |
 
 **Test manuel pour chaque type** :
 1. Sélectionner le type
@@ -288,11 +288,11 @@ const expectedSum = 23300;
 
 | Paramètre | Code attendu |
 |-----------|--------------|
-| `a11y-toggle` | `<gouv-chart-a11y for="..." source="..." table download>` |
+| `a11y-toggle` | `<dsfr-data-a11y for="..." source="..." table download>` |
 
 **Test manuel** :
 1. Cocher "Ajouter accessibilite (tableau + CSV)"
-2. ✅ Code contient `<gouv-chart-a11y>`
+2. ✅ Code contient `<dsfr-data-a11y>`
 
 ---
 

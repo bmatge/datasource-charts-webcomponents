@@ -9,8 +9,8 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, ServerSideOverlay
 } from './api-adapter.js';
-import type { ProviderConfig } from '@gouv-widgets/shared';
-import { getProxyConfig, TABULAR_CONFIG } from '@gouv-widgets/shared';
+import type { ProviderConfig } from '@dsfr-data/shared';
+import { getProxyConfig, TABULAR_CONFIG } from '@dsfr-data/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -110,7 +110,7 @@ export class TabularAdapter implements ApiAdapter {
     // Avertir si pagination incomplete
     if (totalCount >= 0 && allResults.length < totalCount && allResults.length < requestedLimit) {
       console.warn(
-        `gouv-query: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
+        `dsfr-data-query: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
         `(limite de securite: ${TABULAR_MAX_PAGES} pages de ${TABULAR_PAGE_SIZE})`
       );
     }

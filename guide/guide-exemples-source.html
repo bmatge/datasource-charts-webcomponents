@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-source — Exemples - Guide - gouv-widgets</title>
+  <title>dsfr-data-source — Exemples - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -39,9 +39,9 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-database-2-line fr-mr-1w"></i>gouv-source</h1>
+        <h1><i class="ri-database-2-line fr-mr-1w"></i>dsfr-data-source</h1>
         <p class="fr-text--lead">
-          <code>gouv-source</code> recupere les donnees d'une API REST et les redistribue aux composants en aval.
+          <code>dsfr-data-source</code> recupere les donnees d'une API REST et les redistribue aux composants en aval.
           Ici les donnees sont transmises <strong>directement</strong> au composant de visualisation, sans transformation intermediaire.
         </p>
 
@@ -54,15 +54,15 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-d-bar">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
   base-url="https://data.economie.gouv.fr"
-  limit="15"&gt;&lt;/gouv-source&gt;
+  limit="15"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="bar"
+&lt;dsfr-data-chart source="data" type="bar"
   label-field="libcom" value-field="taux_global_tfb"
   unit-tooltip="%" selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -75,14 +75,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-line">Code source</button></h3>
           <div class="fr-collapse" id="code-d-line">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
-  limit="20"&gt;&lt;/gouv-source&gt;
+  limit="20"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="line"
+&lt;dsfr-data-chart source="data" type="line"
   label-field="nom_departement" value-field="nombre_beneficiaires"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -95,14 +95,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-pie">Code source</button></h3>
           <div class="fr-collapse" id="code-d-pie">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
   base-url="https://data.economie.gouv.fr"
-  limit="8"&gt;&lt;/gouv-source&gt;
+  limit="8"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="pie"
+&lt;dsfr-data-chart source="data" type="pie"
   label-field="libcom" value-field="mpoid"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -115,14 +115,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-radar">Code source</button></h3>
           <div class="fr-collapse" id="code-d-radar">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
-  limit="6"&gt;&lt;/gouv-source&gt;
+  limit="6"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="radar"
+&lt;dsfr-data-chart source="data" type="radar"
   label-field="nom_region" value-field="nombre_beneficiaires"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -135,14 +135,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-gauge">Code source</button></h3>
           <div class="fr-collapse" id="code-d-gauge">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
   base-url="https://data.economie.gouv.fr"
-  limit="1"&gt;&lt;/gouv-source&gt;
+  limit="1"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="gauge"
+&lt;dsfr-data-chart source="data" type="gauge"
   value-field="taux_global_tfb"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -155,14 +155,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-scatter">Code source</button></h3>
           <div class="fr-collapse" id="code-d-scatter">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="scatter"
+&lt;dsfr-data-chart source="data" type="scatter"
   label-field="montant_investissement"
   value-field="montant_participation_etat"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -175,17 +175,17 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-barline">Code source</button></h3>
           <div class="fr-collapse" id="code-d-barline">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
-  limit="15"&gt;&lt;/gouv-source&gt;
+  limit="15"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="bar-line"
+&lt;dsfr-data-chart source="data" type="bar-line"
   label-field="nom_departement"
   value-field="montant_investissement"
   value-field-2="montant_participation_etat"
   name='["Investissement", "Participation Etat"]'&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -198,14 +198,14 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-map">Code source</button></h3>
           <div class="fr-collapse" id="code-d-map">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart source="data" type="map"
+&lt;dsfr-data-chart source="data" type="map"
   code-field="code_departement" value-field="nombre_beneficiaires"
   selected-palette="sequentialAscending"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -218,19 +218,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-d-kpi">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;"&gt;
-  &lt;gouv-kpi source="data" valeur="sum:nombre_beneficiaires"
-    label="Total beneficiaires" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="data" valeur="avg:nombre_beneficiaires"
-    label="Moyenne" format="decimal"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="data" valeur="max:montant_investissement"
-    label="Investissement max" format="euro" couleur="vert"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="data" valeur="count"
-    label="Enregistrements" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="data" valeur="sum:nombre_beneficiaires"
+    label="Total beneficiaires" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="data" valeur="avg:nombre_beneficiaires"
+    label="Moyenne" format="decimal"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="data" valeur="max:montant_investissement"
+    label="Investissement max" format="euro" couleur="vert"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="data" valeur="count"
+    label="Enregistrements" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
@@ -244,24 +244,24 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-d-datalist">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="10"
-  order-by="date_publication:desc"&gt;&lt;/gouv-source&gt;
+  order-by="date_publication:desc"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist source="data"
+&lt;dsfr-data-list source="data"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="10" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <!-- Pagination serveur -->
         <h2 class="fr-mt-6w">Pagination serveur</h2>
         <p>
-          Avec l'attribut <code>paginate</code>, <code>gouv-source</code> active la pagination cote serveur :
+          Avec l'attribut <code>paginate</code>, <code>dsfr-data-source</code> active la pagination cote serveur :
           chaque changement de page declenche un nouvel appel API. Cela permet de naviguer dans des datasets
           de plusieurs dizaines de milliers d'enregistrements sans tout charger en memoire.
         </p>
@@ -274,18 +274,18 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-d-paginate">Code source</button></h3>
           <div class="fr-collapse" id="code-d-paginate">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="20"
   order-by="date_publication:desc"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist source="data"
+&lt;dsfr-data-list source="data"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 

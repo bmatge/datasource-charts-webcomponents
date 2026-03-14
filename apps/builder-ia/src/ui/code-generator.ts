@@ -5,7 +5,7 @@
 import {
   escapeHtml, DSFR_COLORS, isValidDeptCode, LIB_URL, CDN_URLS,
   detectProvider, extractResourceIds, filterToOdsql, formatKPIValue,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
 
@@ -46,7 +46,7 @@ function autoDetectCodeField(): string | undefined {
 /**
  * Returns true if the current source has more records than we fetched locally
  * (e.g. ODS returned total_count > 100). This means generated code should use
- * gouv-query with pagination instead of raw fetch or embedded data.
+ * dsfr-data-query with pagination instead of raw fetch or embedded data.
  */
 function needsPagination(): boolean {
   return !!(state.source?.recordCount
@@ -117,7 +117,7 @@ function generateKPICode(config: ChartConfig, data: AggregatedResult[]): string 
     }
     const apiUrl = `${state.source.apiUrl}?${params}`;
 
-    return `<!-- KPI genere avec gouv-widgets Builder IA -->
+    return `<!-- KPI genere avec dsfr-data Builder IA -->
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -181,7 +181,7 @@ loadKPI();
   }
 
   // Embedded-data variant
-  return `<!-- KPI genere avec gouv-widgets Builder IA -->
+  return `<!-- KPI genere avec dsfr-data Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} - valeur embarquee -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -219,7 +219,7 @@ loadKPI();
 function generateGaugeCode(config: ChartConfig, data: AggregatedResult[]): string {
   const gaugeValue = Math.round(data[0]?.value || 0);
 
-  return `<!-- Jauge generee avec gouv-widgets Builder IA -->
+  return `<!-- Jauge generee avec dsfr-data Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances (DSFR Chart) -->
@@ -242,7 +242,7 @@ function generateGaugeCode(config: ChartConfig, data: AggregatedResult[]): strin
 function generateScatterCode(config: ChartConfig, data: AggregatedResult[]): string {
   const scatterData = data.map(d => ({ x: parseFloat(d.label) || 0, y: d.value }));
 
-  return `<!-- Nuage de points genere avec gouv-widgets Builder IA -->
+  return `<!-- Nuage de points genere avec dsfr-data Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -305,21 +305,21 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
     }
   });
 
-  // API-dynamic variant using gouv-query + gouv-dsfr-chart (auto-pagination)
+  // API-dynamic variant using dsfr-data-query + dsfr-data-chart (auto-pagination)
   if (state.source?.type === 'api' && state.source?.apiUrl) {
     const provider = detectProvider(state.source.apiUrl);
     const resourceIds = extractResourceIds(state.source.apiUrl, provider);
     const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
     if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
-      // ODS source: use gouv-source + gouv-query for automatic pagination
+      // ODS source: use dsfr-data-source + dsfr-data-query for automatic pagination
       const baseUrl = apiBaseUrl;
       const datasetId = resourceIds.datasetId;
       const { selectExpr, resultField } = buildOdsSelect(config.aggregation || 'sum', config.valueField, codeField!);
       const whereAttr = config.where
         ? `\n    where="${filterToOdsql(config.where)}"` : '';
 
-      return `<!-- Carte generee avec gouv-widgets Builder IA -->
+      return `<!-- Carte generee avec dsfr-data Builder IA -->
 <!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -328,37 +328,37 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="map-src"
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
     select="${selectExpr}"
     group-by="${codeField}"${whereAttr}>
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="map-data"
     source="map-src">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     source="map-data"
     type="${config.type}"
     code-field="${codeField}"
     value-field="${resultField}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`;
     }
 
-    // Tabular source with pagination needed: use gouv-source + gouv-query
+    // Tabular source with pagination needed: use dsfr-data-source + dsfr-data-query
     if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
       const aggregateExpr = config.aggregation === 'count'
         ? `${codeField}:count`
@@ -369,7 +369,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
       const filterAttr = config.where
         ? `\n    filter="${config.where}"` : '';
 
-      return `<!-- Carte generee avec gouv-widgets Builder IA -->
+      return `<!-- Carte generee avec dsfr-data Builder IA -->
 <!-- Source API Tabular avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -378,37 +378,37 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="map-src"
     api-type="tabular"
     base-url="${apiBaseUrl}"
     resource="${resourceIds.resourceId}">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="map-data"
     source="map-src"
     group-by="${codeField}"
     aggregate="${aggregateExpr}"${filterAttr}>
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     source="map-data"
     type="${config.type}"
     code-field="${codeField}"
     value-field="${resultField}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`;
     }
 
-    // Non-ODS/Tabular API: fall back to gouv-source + gouv-dsfr-chart
+    // Non-ODS/Tabular API: fall back to dsfr-data-source + dsfr-data-chart
     let sourceUrl = state.source.apiUrl;
     if (config.where) {
       const url = new URL(sourceUrl);
@@ -416,7 +416,7 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
       sourceUrl = url.toString();
     }
 
-    return `<!-- Carte generee avec gouv-widgets Builder IA -->
+    return `<!-- Carte generee avec dsfr-data Builder IA -->
 <!-- Source API dynamique -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -425,32 +425,32 @@ function generateMapCode(config: ChartConfig, data: AggregatedResult[]): string 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Carte de France')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="map-data"
     url="${sourceUrl}"
     transform="results">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     source="map-data"
     type="${config.type}"
     code-field="${codeField}"
     value-field="${config.valueField}"
     name="${escapeHtml(config.title || 'Carte')}"
     selected-palette="${config.palette || 'sequentialAscending'}">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`;
   }
 
   // Embedded-data variant
   const mapTagEmbed = config.type === 'map-reg' ? 'map-chart-reg' : 'map-chart';
-  return `<!-- Carte generee avec gouv-widgets Builder IA -->
+  return `<!-- Carte generee avec dsfr-data Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -494,11 +494,11 @@ function generateDatalistCode(config: ChartConfig): string {
     const resourceIds = extractResourceIds(state.source.apiUrl, provider);
     const apiBaseUrl = new URL(state.source.apiUrl).origin;
 
-    // ODS with pagination: use gouv-source + gouv-query for server-side pagination
+    // ODS with pagination: use dsfr-data-source + dsfr-data-query for server-side pagination
     if (provider.id === 'opendatasoft' && resourceIds?.datasetId && needsPagination()) {
       const whereAttr = whereOds ? `\n    where="${whereOds}"` : '';
 
-      return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+      return `<!-- Tableau dynamique genere avec dsfr-data Builder IA -->
 <!-- Source API dynamique avec pagination serveur -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -506,42 +506,42 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-src"
     api-type="opendatasoft"
     base-url="${apiBaseUrl}"
     dataset-id="${resourceIds.datasetId}"${whereAttr}
     server-side
     page-size="${pagination}">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="table-data"
     source="table-src"
     server-side>
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-datalist
+  <dsfr-data-list
     source="table-data"
     colonnes="${colonnes}"
     recherche
     server-tri${triAttr}
     pagination="${pagination}"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`;
     }
 
-    // Tabular with pagination: use gouv-source + gouv-query for server-side pagination
+    // Tabular with pagination: use dsfr-data-source + dsfr-data-query for server-side pagination
     if (provider.id === 'tabular' && resourceIds?.resourceId && needsPagination()) {
       const whereAttr = config.where ? `\n    where="${config.where}"` : '';
 
-      return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+      return `<!-- Tableau dynamique genere avec dsfr-data Builder IA -->
 <!-- Source API Tabular avec pagination serveur -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -549,38 +549,38 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-src"
     api-type="tabular"
     base-url="${apiBaseUrl}"
     resource="${resourceIds.resourceId}"${whereAttr}
     server-side
     page-size="${pagination}">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="table-data"
     source="table-src"
     server-side>
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-datalist
+  <dsfr-data-list
     source="table-data"
     colonnes="${colonnes}"
     recherche
     server-tri${triAttr}
     pagination="${pagination}"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`;
     }
 
-    // Standard API: use gouv-source
+    // Standard API: use dsfr-data-source
     let sourceUrl = state.source.apiUrl;
     if (whereOds) {
       const url = new URL(sourceUrl);
@@ -588,7 +588,7 @@ function generateDatalistCode(config: ChartConfig): string {
       sourceUrl = url.toString();
     }
 
-    return `<!-- Tableau dynamique genere avec gouv-widgets Builder IA -->
+    return `<!-- Tableau dynamique genere avec dsfr-data Builder IA -->
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -596,31 +596,31 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-data"
     url="${sourceUrl}"
     transform="records">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-datalist
+  <dsfr-data-list
     source="table-data"
     colonnes="${colonnes}"
     recherche${triAttr}
     pagination="${pagination}"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`;
   }
 
   // Embedded-data variant
   const rawData = state.localData || [];
-  return `<!-- Tableau genere avec gouv-widgets Builder IA -->
+  return `<!-- Tableau genere avec dsfr-data Builder IA -->
 <!-- Source : ${state.source?.name || 'Donnees locales'} - donnees embarquees -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -628,19 +628,19 @@ function generateDatalistCode(config: ChartConfig): string {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${config.title ? `<h2>${escapeHtml(config.title)}</h2>` : ''}
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-datalist
+  <dsfr-data-list
     id="my-table"
     colonnes="${colonnes}"
     recherche${triAttr}
     pagination="${pagination}"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>
 
 <script>
@@ -660,7 +660,7 @@ function generateStandardChartCode(config: ChartConfig, data: AggregatedResult[]
   const isMultiColor = ['pie', 'doughnut', 'radar'].includes(config.type);
   const colorsArray = JSON.stringify(DSFR_COLORS.slice(0, data.length || 10));
 
-  // ODS/Tabular with pagination needed: use gouv-query + gouv-dsfr-chart
+  // ODS/Tabular with pagination needed: use dsfr-data-query + dsfr-data-chart
   if (state.source?.type === 'api' && state.source?.apiUrl && needsPagination()) {
     const provider = detectProvider(state.source.apiUrl);
     const resourceIds = extractResourceIds(state.source.apiUrl, provider);
@@ -691,7 +691,7 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
   const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
   const horizontalAttr = config.type === 'horizontalBar' ? '\n    horizontal' : '';
 
-  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+  return `<!-- Graphique genere avec dsfr-data Builder IA -->
 <!-- Source API dynamique avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -700,33 +700,33 @@ function generateStandardChartCodeODS(config: ChartConfig, baseUrl: string, data
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="chart-src"
     api-type="opendatasoft"
     base-url="${baseUrl}"
     dataset-id="${datasetId}"
     select="${selectExpr}"
     group-by="${config.labelField}"${whereAttr}>
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="chart-data"
     source="chart-src"${orderAttr}>
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     source="chart-data"
     type="${chartType}"
     label-field="${config.labelField}"
     value-field="${resultField}"
     name="${escapeHtml(config.title || 'Mon graphique')}"${horizontalAttr}
     selected-palette="${config.palette || 'categorical'}">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`;
 }
 
@@ -744,7 +744,7 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
   const chartType = config.type === 'horizontalBar' ? 'bar' : (config.type === 'bar-line' ? 'bar' : config.type);
   const horizontalAttr = config.type === 'horizontalBar' ? '\n    horizontal' : '';
 
-  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+  return `<!-- Graphique genere avec dsfr-data Builder IA -->
 <!-- Source API Tabular avec pagination automatique -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -753,33 +753,33 @@ function generateStandardChartCodeTabular(config: ChartConfig, baseUrl: string, 
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   <h2>${escapeHtml(config.title || 'Mon graphique')}</h2>
   ${config.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(config.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="chart-src"
     api-type="tabular"
     base-url="${baseUrl}"
     resource="${resourceId}">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="chart-data"
     source="chart-src"
     group-by="${config.labelField}"
     aggregate="${aggregateExpr}"${filterAttr}${orderAttr}>
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     source="chart-data"
     type="${chartType}"
     label-field="${config.labelField}"
     value-field="${resultField}"
     name="${escapeHtml(config.title || 'Mon graphique')}"${horizontalAttr}
     selected-palette="${config.palette || 'categorical'}">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`;
 }
 
@@ -799,7 +799,7 @@ function generateStandardChartCodeAPI(config: ChartConfig, isMultiColor: boolean
 
   const apiUrl = `${state.source!.apiUrl}?${params}`;
 
-  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+  return `<!-- Graphique genere avec dsfr-data Builder IA -->
 <!-- Source API dynamique : les donnees se mettent a jour automatiquement -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -907,7 +907,7 @@ function generateStandardChartCodeEmbedded(config: ChartConfig, data: Aggregated
   }
   datasetsCode += ']';
 
-  return `<!-- Graphique genere avec gouv-widgets Builder IA -->
+  return `<!-- Graphique genere avec dsfr-data Builder IA -->
 <!-- Source : ${sourceName} (${sourceType}) - donnees embarquees -->
 ${hasSecondSeries ? '<!-- Note: Graphique multi-series -->' : ''}
 

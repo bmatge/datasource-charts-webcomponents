@@ -3,8 +3,8 @@
  * Contains interfaces, types, and the mutable singleton state object.
  */
 
-import { loadFromStorage, STORAGE_KEYS, migrateSource } from '@gouv-widgets/shared';
-import type { Source } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, migrateSource } from '@dsfr-data/shared';
+import type { Source } from '@dsfr-data/shared';
 
 // ============================================================
 // Types
@@ -56,8 +56,8 @@ export interface GristRecord {
   fields: Record<string, unknown>;
 }
 
-// Source is imported from @gouv-widgets/shared (unified interface)
-export type { Source } from '@gouv-widgets/shared';
+// Source is imported from @dsfr-data/shared (unified interface)
+export type { Source } from '@dsfr-data/shared';
 
 export interface SourcesState {
   connections: StoredConnection[];
@@ -81,7 +81,7 @@ export interface SourcesState {
 // ============================================================
 
 /** External proxy URL for production / Tauri builds */
-export { PROXY_BASE_URL as EXTERNAL_PROXY } from '@gouv-widgets/shared';
+export { PROXY_BASE_URL as EXTERNAL_PROXY } from '@dsfr-data/shared';
 
 // ============================================================
 // Normalize connections from backend API

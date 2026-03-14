@@ -4,7 +4,7 @@
  */
 
 import './styles/builder.css';
-import { initAuth } from '@gouv-widgets/shared';
+import { initAuth } from '@dsfr-data/shared';
 import { state } from './state.js';
 import {
   loadSavedSources,

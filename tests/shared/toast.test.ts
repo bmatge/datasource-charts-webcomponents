@@ -13,7 +13,7 @@ describe('toast', () => {
 
   it('should create a toast container on first call', () => {
     showToast('Hello');
-    const container = document.getElementById('gouv-toast-container');
+    const container = document.getElementById('dsfr-data-toast-container');
     expect(container).not.toBeNull();
     expect(container!.getAttribute('aria-live')).toBe('polite');
   });
@@ -21,7 +21,7 @@ describe('toast', () => {
   it('should reuse the existing container', () => {
     showToast('First');
     showToast('Second');
-    const containers = document.querySelectorAll('#gouv-toast-container');
+    const containers = document.querySelectorAll('#dsfr-data-toast-container');
     expect(containers).toHaveLength(1);
     expect(containers[0].querySelectorAll('.fr-alert')).toHaveLength(2);
   });

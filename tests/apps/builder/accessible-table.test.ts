@@ -9,11 +9,11 @@ describe('updateAccessibleTable', () => {
   beforeEach(() => {
     capturedEvents = [];
     // Remove previous listener if any
-    if (handler) document.removeEventListener('gouv-data-loaded', handler);
+    if (handler) document.removeEventListener('dsfr-data-loaded', handler);
     handler = ((e: CustomEvent) => {
       capturedEvents.push(e);
     }) as EventListener;
-    document.addEventListener('gouv-data-loaded', handler);
+    document.addEventListener('dsfr-data-loaded', handler);
 
     state.data = [];
     state.labelField = '';
@@ -21,7 +21,7 @@ describe('updateAccessibleTable', () => {
     state.a11yTable = true;
     state.a11yDownload = true;
     state.a11yDescription = '';
-    document.body.innerHTML = '<gouv-chart-a11y id="a11y-preview" source="builder-preview" no-auto-aria style="display: none;"></gouv-chart-a11y>';
+    document.body.innerHTML = '<dsfr-data-a11y id="a11y-preview" source="builder-preview" no-auto-aria style="display: none;"></dsfr-data-a11y>';
   });
 
   it('should do nothing when element is missing', () => {

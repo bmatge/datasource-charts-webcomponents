@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Industrie du Futur - gouv-widgets Builder</title>
+  <title>Test Industrie du Futur - dsfr-data Builder</title>
 
   <!-- Dependances CSS (DSFR) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
@@ -13,8 +13,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
 
-  <!-- gouv-widgets composants -->
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <!-- dsfr-data composants -->
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
 
   <style>
     body { font-family: Marianne, arial, sans-serif; margin: 0; padding: 0; }
@@ -41,16 +41,16 @@
   <div class="fr-container fr-my-4w">
     <h1 id="test-title">Test Industrie du Futur - Simulation Builder</h1>
     <p>Jeu de donnees : <code>industrie-du-futur</code> (data.economie.gouv.fr) - 101 departements</p>
-    <p>16 use cases : 2 par type de graphique (brut embedded + gouv-query dynamique)</p>
+    <p>16 use cases : 2 par type de graphique (brut embedded + dsfr-data-query dynamique)</p>
 
     <!-- ============================================================ -->
     <!-- SOURCE PARTAGEE pour tous les use cases "query" dynamiques    -->
     <!-- ============================================================ -->
-    <gouv-source
+    <dsfr-data-source
       id="industrie-raw"
       url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
       transform="results">
-    </gouv-source>
+    </dsfr-data-source>
 
 
     <!-- ============================================================ -->
@@ -67,20 +67,20 @@
         <div id="bar-brut-container" class="chart-container"></div>
       </section>
 
-      <!-- 2. BAR - QUERY (gouv-source + gouv-query + gouv-dsfr-chart) -->
+      <!-- 2. BAR - QUERY (dsfr-data-source + dsfr-data-query + dsfr-data-chart) -->
       <section id="bar-query" class="test-section" data-testid="bar-query">
-        <h3>2. BAR - Query (gouv-query)</h3>
+        <h3>2. BAR - Query (dsfr-data-query)</h3>
         <p class="test-label">Beneficiaires par region (group-by nom_region, aggregate sum)</p>
         <p class="test-expected">Attendu : AUVERGNE-RHONE-ALPES (1948), PAYS DE LA LOIRE (836), NOUVELLE-AQUITAINE (682), ILE-DE-FRANCE (656), ...</p>
-        <gouv-query
+        <dsfr-data-query
           id="bar-query-data"
           source="industrie-raw"
           group-by="nom_region"
           aggregate="nombre_beneficiaires:sum"
           order-by="nombre_beneficiaires__sum:desc"
           limit="10">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="bar-query-data"
           type="bar"
           label-field="nom_region"
@@ -88,7 +88,7 @@
           limit="0"
           title="Beneficiaires par region"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -109,10 +109,10 @@
 
       <!-- 4. HBAR - QUERY -->
       <section id="hbar-query" class="test-section" data-testid="hbar-query">
-        <h3>4. HBAR - Query (gouv-query)</h3>
+        <h3>4. HBAR - Query (dsfr-data-query)</h3>
         <p class="test-label">Investissement moyen par region (filtre code_departement non null)</p>
         <p class="test-expected">Attendu : Investissement moyen par departement, groupe par region, trie desc</p>
-        <gouv-query
+        <dsfr-data-query
           id="hbar-query-data"
           source="industrie-raw"
           filter="code_departement:isnotnull"
@@ -120,8 +120,8 @@
           aggregate="montant_investissement:avg"
           order-by="montant_investissement__avg:desc"
           limit="10">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="hbar-query-data"
           type="bar"
           horizontal
@@ -130,7 +130,7 @@
           limit="0"
           title="Investissement moyen par region"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -151,18 +151,18 @@
 
       <!-- 6. LINE - QUERY -->
       <section id="line-query" class="test-section" data-testid="line-query">
-        <h3>6. LINE - Query (gouv-query)</h3>
+        <h3>6. LINE - Query (dsfr-data-query)</h3>
         <p class="test-label">Investissement des departements ayant >= 100 beneficiaires</p>
         <p class="test-expected">Attendu : uniquement les departements avec >= 100 beneficiaires, investissement croissant</p>
-        <gouv-query
+        <dsfr-data-query
           id="line-query-data"
           source="industrie-raw"
           filter="nombre_beneficiaires:gte:100"
           group-by="nom_departement"
           aggregate="montant_investissement:sum"
           order-by="montant_investissement__sum:asc">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="line-query-data"
           type="line"
           label-field="nom_departement"
@@ -170,7 +170,7 @@
           limit="0"
           title="Investissement (dept. >= 100 benef.)"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -191,18 +191,18 @@
 
       <!-- 8. PIE - QUERY -->
       <section id="pie-query" class="test-section" data-testid="pie-query">
-        <h3>8. PIE - Query (gouv-query)</h3>
+        <h3>8. PIE - Query (dsfr-data-query)</h3>
         <p class="test-label">Investissement de 3 grandes regions (IDF, AURA, PDL)</p>
         <p class="test-expected">Attendu : 3 parts, AUVERGNE-RHONE-ALPES largement dominant</p>
-        <gouv-query
+        <dsfr-data-query
           id="pie-query-data"
           source="industrie-raw"
           filter="nom_region:in:ÎLE-DE-FRANCE|AUVERGNE-RHÔNE-ALPES|PAYS DE LA LOIRE"
           group-by="nom_region"
           aggregate="montant_investissement:sum"
           order-by="montant_investissement__sum:desc">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="pie-query-data"
           type="pie"
           label-field="nom_region"
@@ -210,7 +210,7 @@
           limit="0"
           title="Investissement 3 grandes regions"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -231,18 +231,18 @@
 
       <!-- 10. DOUGHNUT - QUERY -->
       <section id="doughnut-query" class="test-section" data-testid="doughnut-query">
-        <h3>10. DOUGHNUT - Query (gouv-query)</h3>
+        <h3>10. DOUGHNUT - Query (dsfr-data-query)</h3>
         <p class="test-label">Nombre de departements par region (count)</p>
         <p class="test-expected">Attendu : donut montrant combien de departements par region</p>
-        <gouv-query
+        <dsfr-data-query
           id="doughnut-query-data"
           source="industrie-raw"
           group-by="nom_region"
           aggregate="nombre_beneficiaires:count"
           order-by="nombre_beneficiaires__count:desc"
           limit="6">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="doughnut-query-data"
           type="pie"
           label-field="nom_region"
@@ -250,7 +250,7 @@
           limit="0"
           title="Departements par region (top 6)"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -271,10 +271,10 @@
 
       <!-- 12. RADAR - QUERY -->
       <section id="radar-query" class="test-section" data-testid="radar-query">
-        <h3>12. RADAR - Query (gouv-query)</h3>
+        <h3>12. RADAR - Query (dsfr-data-query)</h3>
         <p class="test-label">Departements de Bretagne, Normandie, Occitanie (beneficiaires)</p>
         <p class="test-expected">Attendu : radar avec les departements de 3 regions filtrees</p>
-        <gouv-query
+        <dsfr-data-query
           id="radar-query-data"
           source="industrie-raw"
           filter="nom_region:in:BRETAGNE|NORMANDIE|OCCITANIE"
@@ -282,8 +282,8 @@
           aggregate="nombre_beneficiaires:sum"
           order-by="nombre_beneficiaires__sum:desc"
           limit="8">
-        </gouv-query>
-        <gouv-dsfr-chart
+        </dsfr-data-query>
+        <dsfr-data-chart
           source="radar-query-data"
           type="radar"
           label-field="nom_departement"
@@ -291,7 +291,7 @@
           limit="0"
           title="Dept. Bretagne/Normandie/Occitanie"
           selected-palette="categorical">
-        </gouv-dsfr-chart>
+        </dsfr-data-chart>
       </section>
     </div>
 
@@ -310,20 +310,20 @@
         <div id="map-brut-container" class="chart-container"></div>
       </section>
 
-      <!-- 14. MAP - QUERY (gouv-dsfr-chart dynamique) -->
+      <!-- 14. MAP - QUERY (dsfr-data-chart dynamique) -->
       <section id="map-query" class="test-section" data-testid="map-query">
-        <h3>14. MAP - Query (gouv-dsfr-chart)</h3>
+        <h3>14. MAP - Query (dsfr-data-chart)</h3>
         <p class="test-label">Carte des investissements par departement</p>
         <p class="test-expected">Attendu : carte de France coloree par montant d'investissement</p>
         <div class="chart-container">
-          <gouv-dsfr-chart
+          <dsfr-data-chart
             source="industrie-raw"
             type="map"
             code-field="code_departement"
             value-field="montant_investissement"
             name="Investissements par departement"
             selected-palette="sequentialAscending">
-          </gouv-dsfr-chart>
+          </dsfr-data-chart>
         </div>
       </section>
     </div>
@@ -348,25 +348,25 @@
         </div>
       </section>
 
-      <!-- 16. KPI - QUERY (gouv-kpi avec gouv-query) -->
+      <!-- 16. KPI - QUERY (dsfr-data-kpi avec dsfr-data-query) -->
       <section id="kpi-query" class="test-section" data-testid="kpi-query">
-        <h3>16. KPI - Query (gouv-kpi)</h3>
+        <h3>16. KPI - Query (dsfr-data-kpi)</h3>
         <p class="test-label">Beneficiaires en Ile-de-France</p>
         <p class="test-expected">Attendu : 656 beneficiaires</p>
         <div class="chart-container" style="display:flex;align-items:center;justify-content:center;">
-          <gouv-query
+          <dsfr-data-query
             id="kpi-query-data"
             source="industrie-raw"
             filter="nom_region:eq:ÎLE-DE-FRANCE">
-          </gouv-query>
-          <gouv-kpi
+          </dsfr-data-query>
+          <dsfr-data-kpi
             source="kpi-query-data"
             valeur="sum:nombre_beneficiaires"
             label="Beneficiaires en Ile-de-France"
             format="nombre"
             icone="ri-group-line"
             couleur="bleu">
-          </gouv-kpi>
+          </dsfr-data-kpi>
         </div>
       </section>
     </div>

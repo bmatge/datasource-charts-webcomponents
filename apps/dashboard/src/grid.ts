@@ -2,7 +2,7 @@
  * Dashboard app - Grid management (per-row column control)
  */
 
-import { confirmDialog } from '@gouv-widgets/shared';
+import { confirmDialog } from '@dsfr-data/shared';
 import { state, getRowColumns, setRowColumns, removeRowFromLayout } from './state.js';
 import { initDropZones } from './drag-drop.js';
 import { renderWidget } from './widgets.js';

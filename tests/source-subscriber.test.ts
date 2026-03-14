@@ -37,7 +37,7 @@ describe('SourceSubscriberMixin integration via data-bridge', () => {
       if (event.detail.sourceId === 'test-src') onLoaded(event.detail.data);
       if (event.detail.sourceId === 'other-src') onOther(event.detail.data);
     };
-    document.addEventListener('gouv-data-loaded', handler);
+    document.addEventListener('dsfr-data-loaded', handler);
 
     dispatchDataLoaded('test-src', { items: [1] });
     dispatchDataLoaded('other-src', { items: [2] });
@@ -45,12 +45,12 @@ describe('SourceSubscriberMixin integration via data-bridge', () => {
     expect(onLoaded).toHaveBeenCalledWith({ items: [1] });
     expect(onOther).toHaveBeenCalledWith({ items: [2] });
 
-    document.removeEventListener('gouv-data-loaded', handler);
+    document.removeEventListener('dsfr-data-loaded', handler);
   });
 
   it('loading events are dispatched', () => {
     const handler = vi.fn();
-    document.addEventListener('gouv-data-loading', handler);
+    document.addEventListener('dsfr-data-loading', handler);
 
     dispatchDataLoading('test-src');
 
@@ -58,12 +58,12 @@ describe('SourceSubscriberMixin integration via data-bridge', () => {
     const event = handler.mock.calls[0][0] as CustomEvent;
     expect(event.detail.sourceId).toBe('test-src');
 
-    document.removeEventListener('gouv-data-loading', handler);
+    document.removeEventListener('dsfr-data-loading', handler);
   });
 
   it('error events carry the error object', () => {
     const handler = vi.fn();
-    document.addEventListener('gouv-data-error', handler);
+    document.addEventListener('dsfr-data-error', handler);
 
     const error = new Error('Network timeout');
     dispatchDataError('test-src', error);
@@ -72,7 +72,7 @@ describe('SourceSubscriberMixin integration via data-bridge', () => {
     const event = handler.mock.calls[0][0] as CustomEvent;
     expect(event.detail.error.message).toBe('Network timeout');
 
-    document.removeEventListener('gouv-data-error', handler);
+    document.removeEventListener('dsfr-data-error', handler);
   });
 
   it('data loaded also updates cache', () => {

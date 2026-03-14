@@ -1,7 +1,7 @@
 /**
  * Adapter registry — singleton instances of all API adapters.
  *
- * Extracted from api-adapter.ts so that both gouv-source and gouv-query
+ * Extracted from api-adapter.ts so that both dsfr-data-source and dsfr-data-query
  * can import getAdapter() without circular dependencies.
  */
 

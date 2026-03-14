@@ -18,7 +18,7 @@ import {
   detectProvider,
   extractResourceIds,
   getProvider,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 import { state, PROXY_BASE_URL, LIB_URL } from '../state.js';
 import { renderPreview } from './preview.js';
 import { updateAccessibleTable } from './accessible-table.js';
@@ -33,17 +33,17 @@ function displayGeneratedCode(code: string): void {
 const ODS_PAGE_SIZE = 100;
 const ODS_MAX_PAGES = 10;
 
-/** Generate optional gouv-chart-a11y element for accessible data companion */
+/** Generate optional dsfr-data-a11y element for accessible data companion */
 function generateA11yElement(sourceId: string, chartId: string): string {
   if (!state.a11yEnabled) return '';
   const attrs: string[] = [`for="${chartId}"`, `source="${sourceId}"`];
   if (state.a11yTable) attrs.push('table');
   if (state.a11yDownload) attrs.push('download');
   if (state.a11yDescription) attrs.push(`description="${state.a11yDescription.replace(/"/g, '&quot;')}"`);
-  return `\n  <gouv-chart-a11y ${attrs.join(' ')}></gouv-chart-a11y>`;
+  return `\n  <dsfr-data-a11y ${attrs.join(' ')}></dsfr-data-a11y>`;
 }
 
-/** Generate a11y block for embedded code (inline data via gouv-source) */
+/** Generate a11y block for embedded code (inline data via dsfr-data-source) */
 function generateEmbeddedA11y(chartId: string): string {
   if (!state.a11yEnabled) return '';
   const dataJson = JSON.stringify(state.data).replace(/'/g, '&#39;');
@@ -51,14 +51,14 @@ function generateEmbeddedA11y(chartId: string): string {
   if (state.a11yTable) attrs.push('table');
   if (state.a11yDownload) attrs.push('download');
   if (state.a11yDescription) attrs.push(`description="${state.a11yDescription.replace(/"/g, '&quot;')}"`);
-  return `\n  <gouv-source id="a11y-data" data='${dataJson}'></gouv-source>` +
-         `\n  <gouv-chart-a11y ${attrs.join(' ')}></gouv-chart-a11y>`;
+  return `\n  <dsfr-data-source id="a11y-data" data='${dataJson}'></dsfr-data-source>` +
+         `\n  <dsfr-data-a11y ${attrs.join(' ')}></dsfr-data-a11y>`;
 }
 
-/** gouv-widgets dependency line for embedded code when a11y is enabled */
+/** dsfr-data dependency line for embedded code when a11y is enabled */
 function a11yDep(): string {
   if (!state.a11yEnabled) return '';
-  return `\n<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>`;
+  return `\n<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>`;
 }
 
 /**
@@ -113,7 +113,7 @@ async function fetchOdsResults(baseUrl: string): Promise<Record<string, unknown>
   return allResults;
 }
 
-// DSFR_TAG_MAP imported from @gouv-widgets/shared
+// DSFR_TAG_MAP imported from @dsfr-data/shared
 
 /** Build DSFR Chart specific attributes from builder state */
 function dsfrChartAttrs(): string {
@@ -175,11 +175,11 @@ function dsfrDeferredScript(tagName: string): string {
 <\/script>`;
 }
 
-// filterToOdsql and applyLocalFilter imported from @gouv-widgets/shared
+// filterToOdsql and applyLocalFilter imported from @dsfr-data/shared
 
 /**
- * Generate optional middleware elements (gouv-normalize, gouv-facets)
- * to insert between gouv-source and gouv-query/gouv-dsfr-chart.
+ * Generate optional middleware elements (dsfr-data-normalize, dsfr-data-facets)
+ * to insert between dsfr-data-source and dsfr-data-query/dsfr-data-chart.
  * Returns the generated HTML and the final source ID for downstream components.
  */
 /**
@@ -195,7 +195,7 @@ export interface FacetsMode {
 }
 
 /**
- * Generate a <gouv-facets> element if facets are enabled and configured.
+ * Generate a <dsfr-data-facets> element if facets are enabled and configured.
  * Returns the generated HTML and the new source ID for downstream components,
  * or empty string/unchanged sourceId if facets are not enabled.
  */
@@ -257,10 +257,10 @@ export function generateFacetsElement(
 
   const element = `
   <!-- Filtres a facettes -->
-  <gouv-facets
+  <dsfr-data-facets
     id="${facetsId}"
     ${attrs.join('\n    ')}>
-  </gouv-facets>`;
+  </dsfr-data-facets>`;
 
   return { element, finalSourceId: facetsId };
 }
@@ -298,7 +298,7 @@ export function generateMiddlewareElements(
   let currentSourceId = sourceId;
   let elements = '';
 
-  // gouv-normalize
+  // dsfr-data-normalize
   if (state.normalizeConfig.enabled) {
     const normalizeId = 'normalized-data';
     const attrs: string[] = [`source="${currentSourceId}"`];
@@ -313,14 +313,14 @@ export function generateMiddlewareElements(
 
     elements += `
   <!-- Nettoyage des donnees -->
-  <gouv-normalize
+  <dsfr-data-normalize
     id="${normalizeId}"
     ${attrs.join('\n    ')}>
-  </gouv-normalize>`;
+  </dsfr-data-normalize>`;
     currentSourceId = normalizeId;
   }
 
-  // gouv-facets
+  // dsfr-data-facets
   const facets = generateFacetsElement(currentSourceId, facetsMode);
   if (facets.element) {
     elements += facets.element;
@@ -331,7 +331,7 @@ export function generateMiddlewareElements(
 }
 
 /**
- * Build the colonnes attribute for gouv-datalist.
+ * Build the colonnes attribute for dsfr-data-list.
  * Uses custom column config if available, otherwise auto-detects from fields.
  */
 function buildColonnesAttr(): string {
@@ -489,7 +489,7 @@ export async function generateChart(): Promise<void> {
     const rawDataEl = document.getElementById('raw-data');
     if (rawDataEl) rawDataEl.textContent = JSON.stringify(state.data, null, 2);
 
-    // Generate code: dynamic mode uses gouv-source components, embedded uses inline JS
+    // Generate code: dynamic mode uses dsfr-data-source components, embedded uses inline JS
     if (state.generationMode === 'dynamic' && state.savedSource?.type === 'api') {
       generateDynamicCodeForApi();
     } else {
@@ -643,7 +643,7 @@ export function generateCodeForLocalData(): void {
     const variant = variantSelect?.value || '';
     const unit = unitInput?.value || '';
 
-    const code = `<!-- KPI g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
+    const code = `<!-- KPI g\u00e9n\u00e9r\u00e9 avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
@@ -679,7 +679,7 @@ export function generateCodeForLocalData(): void {
   // Handle Gauge type (local data)
   if (state.chartType === 'gauge') {
     const value = Math.round(state.data[0]?.value || 0);
-    const code = `<!-- Jauge g\u00e9n\u00e9r\u00e9e avec gouv-widgets Builder -->
+    const code = `<!-- Jauge g\u00e9n\u00e9r\u00e9e avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
 
 <!-- D\u00e9pendances (DSFR Chart) -->
@@ -701,7 +701,7 @@ export function generateCodeForLocalData(): void {
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
-    const code = `<!-- Tableau genere avec gouv-widgets Builder -->
+    const code = `<!-- Tableau genere avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -709,17 +709,17 @@ export function generateCodeForLocalData(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-datalist
+  <dsfr-data-list
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>${generateEmbeddedA11y('my-table')}
+  </dsfr-data-list>${generateEmbeddedA11y('my-table')}
 </div>
 
 <script>
@@ -738,7 +738,7 @@ datalist.onSourceData(data);
   if (state.chartType === 'scatter') {
     const xValues = state.data.map(d => (d[state.labelField] as number) || 0);
     const yValues = state.data.map(d => (d.value as number) || 0);
-    const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
+    const code = `<!-- Nuage de points genere avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -788,7 +788,7 @@ datalist.onSourceData(data);
     const avgValue = count > 0 ? Math.round((totalValue / count) * 100) / 100 : 0;
     const today = new Date().toISOString().split('T')[0];
 
-    const mapCode = `<!-- Carte g\u00e9n\u00e9r\u00e9e avec gouv-widgets Builder -->
+    const mapCode = `<!-- Carte g\u00e9n\u00e9r\u00e9e avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donn\u00e9es locales'} -->
 <!-- Palette: ${mapPalette} -->
 
@@ -835,7 +835,7 @@ datalist.onSourceData(data);
   if (state.chartType === 'pie') extraAttrs.push('fill');
   const extraStr = extraAttrs.map(a => `\n    ${a}`).join('');
 
-  const code = `<!-- Graphique genere avec gouv-widgets Builder -->
+  const code = `<!-- Graphique genere avec dsfr-data Builder -->
 <!-- Source : ${state.savedSource?.name || 'Donnees locales'} -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
@@ -861,7 +861,7 @@ datalist.onSourceData(data);
 
 
 /**
- * Generate <gouv-source> + <gouv-query> for ODS sources.
+ * Generate <dsfr-data-source> + <dsfr-data-query> for ODS sources.
  * Uses server-side aggregation (ODSQL) with automatic pagination.
  */
 export function generateOdsQueryCode(
@@ -869,7 +869,7 @@ export function generateOdsQueryCode(
   labelFieldPath: string,
   valueFieldPath: string
 ): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
-  // --- gouv-source attributes (fetch + server-side processing) ---
+  // --- dsfr-data-source attributes (fetch + server-side processing) ---
   const srcAttrs: string[] = [];
   srcAttrs.push('api-type="opendatasoft"');
   srcAttrs.push(`base-url="${odsInfo.baseUrl}"`);
@@ -929,7 +929,7 @@ export function generateOdsQueryCode(
     if (odsql) srcAttrs.push(`where="${escapeHtml(odsql)}"`);
   }
 
-  // --- gouv-query attributes (client-side post-processing) ---
+  // --- dsfr-data-query attributes (client-side post-processing) ---
   const qAttrs: string[] = [];
   qAttrs.push('source="chart-src"');
   if (state.sortOrder && state.sortOrder !== 'none') {
@@ -938,14 +938,14 @@ export function generateOdsQueryCode(
 
   const queryElement = `
   <!-- Source ODS avec agregation serveur et pagination automatique -->
-  <gouv-source
+  <dsfr-data-source
     id="chart-src"
     ${srcAttrs.join('\n    ')}>
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="query-data"
     ${qAttrs.join('\n    ')}>
-  </gouv-query>`;
+  </dsfr-data-query>`;
 
   return {
     queryElement,
@@ -957,7 +957,7 @@ export function generateOdsQueryCode(
 }
 
 /**
- * Generate <gouv-source> + <gouv-query> for Tabular API sources.
+ * Generate <dsfr-data-source> + <dsfr-data-query> for Tabular API sources.
  * Source handles pagination (up to 50K records), query handles client-side aggregation.
  */
 export function generateTabularQueryCode(
@@ -965,13 +965,13 @@ export function generateTabularQueryCode(
   labelFieldPath: string,
   valueFieldPath: string
 ): { queryElement: string; chartSource: string; labelField: string; valueField: string; valueField2: string } {
-  // --- gouv-source attributes (fetch + auto-pagination) ---
+  // --- dsfr-data-source attributes (fetch + auto-pagination) ---
   const srcAttrs: string[] = [];
   srcAttrs.push('api-type="tabular"');
   srcAttrs.push(`base-url="${tabularInfo.baseUrl}"`);
   srcAttrs.push(`resource="${tabularInfo.resourceId}"`);
 
-  // --- gouv-query attributes (client-side aggregation) ---
+  // --- dsfr-data-query attributes (client-side aggregation) ---
   const qAttrs: string[] = [];
   qAttrs.push('source="chart-src"');
 
@@ -1018,15 +1018,15 @@ export function generateTabularQueryCode(
 
   const queryElement = `
   <!-- Source Tabular avec pagination automatique -->
-  <gouv-source
+  <dsfr-data-source
     id="chart-src"
     ${srcAttrs.join('\n    ')}>
-  </gouv-source>
+  </dsfr-data-source>
   <!-- Agregation client-side -->
-  <gouv-query
+  <dsfr-data-query
     id="query-data"
     ${qAttrs.join('\n    ')}>
-  </gouv-query>`;
+  </dsfr-data-query>`;
 
   return {
     queryElement,
@@ -1038,11 +1038,11 @@ export function generateTabularQueryCode(
 }
 
 /**
- * Generate gouv-query HTML for dynamic mode.
- * Always generates a <gouv-query> to handle aggregation, sorting and filtering.
+ * Generate dsfr-data-query HTML for dynamic mode.
+ * Always generates a <dsfr-data-query> to handle aggregation, sorting and filtering.
  * Returns { queryElement, chartSource, labelField, valueField }.
  */
-export function generateGouvQueryCode(
+export function generateDsfrDataQueryCode(
   sourceId: string,
   labelFieldPath: string,
   valueFieldPath: string
@@ -1101,10 +1101,10 @@ export function generateGouvQueryCode(
 
   const queryElement = `
   ${comment}
-  <gouv-query
+  <dsfr-data-query
     id="query-data"
     ${attrs.join('\n    ')}>
-  </gouv-query>`;
+  </dsfr-data-query>`;
 
   return {
     queryElement,
@@ -1116,7 +1116,7 @@ export function generateGouvQueryCode(
 }
 
 /**
- * Generate code using gouv-source + gouv-chart for Grist sources.
+ * Generate code using dsfr-data-source + dsfr-data-chart for Grist sources.
  */
 export function generateDynamicCode(): void {
   const source = state.savedSource;
@@ -1161,7 +1161,7 @@ export function generateDynamicCode(): void {
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
     const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data', gristFacetsMode);
-    const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+    const code = `<!-- Tableau dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -1169,24 +1169,24 @@ export function generateDynamicCode(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-data"
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
-  </gouv-source>
+  </dsfr-data-source>
 ${middlewareHtml}
-  <gouv-datalist
+  <dsfr-data-list
     id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
+  </dsfr-data-list>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
     displayGeneratedCode(code);
     return;
@@ -1201,9 +1201,9 @@ ${middlewareHtml}
     ? (isFlattened ? state.codeField : (`fields.${state.codeField}`))
     : labelFieldPath;
 
-  // Generate gouv-query for aggregation, sorting, filtering
+  // Generate dsfr-data-query for aggregation, sorting, filtering
   const { queryElement, chartSource, labelField: queryLabelField, valueField: queryValueField, valueField2: queryValueField2 } =
-    generateGouvQueryCode(querySourceId, groupByPath, valueFieldPath);
+    generateDsfrDataQueryCode(querySourceId, groupByPath, valueFieldPath);
 
   // Map palette
   const palette = isMap
@@ -1216,10 +1216,10 @@ ${middlewareHtml}
   // Second series attribute
   const valueField2Attr = queryValueField2 ? `\n    value-field-2="${queryValueField2}"` : '';
 
-  const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
+  const code = `<!-- Graphique dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique depuis ${gristHost}) -->
 <!-- Les donnees sont chargees via le proxy ${PROXY_BASE_URL} -->
-${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
+${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via dsfr-data-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -1228,21 +1228,21 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 
 <!-- Dependances JS -->
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
   <!-- Source de donnees (via proxy CORS) -->
-  <gouv-source
+  <dsfr-data-source
     id="chart-data"
     url="${proxyUrl}"
     transform="records"${refreshAttr}>
-  </gouv-source>
+  </dsfr-data-source>
 ${middlewareHtml}${queryElement}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     id="chart"
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
@@ -1250,14 +1250,14 @@ ${middlewareHtml}${queryElement}
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
+  </dsfr-data-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
   displayGeneratedCode(code);
 }
 
 /**
- * Generate code using gouv-source + gouv-dsfr-chart for API sources.
+ * Generate code using dsfr-data-source + dsfr-data-chart for API sources.
  */
 export function generateDynamicCodeForApi(): void {
   const source = state.savedSource;
@@ -1281,7 +1281,7 @@ export function generateDynamicCodeForApi(): void {
   // Handle data path transform
   const transformAttr = source.dataPath ? `\n    transform="${source.dataPath}"` : '';
 
-  // Handle KPI type: use gouv-source + gouv-kpi for ODS/Tabular, fallback to embedded otherwise
+  // Handle KPI type: use dsfr-data-source + dsfr-data-kpi for ODS/Tabular, fallback to embedded otherwise
   if (state.chartType === 'kpi') {
     if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
       const selectExpr = state.aggregation === 'count'
@@ -1294,7 +1294,7 @@ export function generateDynamicCodeForApi(): void {
       const formatAttr = unit === '%' ? ' format="pourcentage"'
         : (unit === '\u20ac' || unit === 'EUR') ? ' format="euro"'
         : unit ? ' format="nombre"' : '';
-      const code = `<!-- KPI dynamique genere avec gouv-widgets Builder -->
+      const code = `<!-- KPI dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (agregation serveur) -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -1302,21 +1302,21 @@ export function generateDynamicCodeForApi(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
-  <gouv-source
+  <dsfr-data-source
     id="kpi-src"
     api-type="opendatasoft"
     base-url="${apiBaseUrl}"
     dataset-id="${resourceIds.datasetId}"
     select="${escapeHtml(selectExpr)}"${whereAttr}${refreshAttr}>
-  </gouv-source>
-  <gouv-kpi
+  </dsfr-data-source>
+  <dsfr-data-kpi
     source="kpi-src"
     valeur="value"
     label="${escapeHtml(state.title)}"${formatAttr}>
-  </gouv-kpi>
+  </dsfr-data-kpi>
 </div>`;
       displayGeneratedCode(code);
       return;
@@ -1338,7 +1338,7 @@ export function generateDynamicCodeForApi(): void {
       // Facettes serveur ODS (fetch depuis l'API /facets)
       const facets = generateFacetsElement('table-query', { serverFacets: true });
       const datalistSource = facets.element ? facets.finalSourceId : 'table-query';
-      const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+      const code = `<!-- Tableau dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -1346,33 +1346,33 @@ export function generateDynamicCodeForApi(): void {
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-data"
     api-type="opendatasoft"
     base-url="${apiBaseUrl}"
     dataset-id="${resourceIds!.datasetId}"${whereAttr}
     server-side
     page-size="20">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="table-query"
     source="table-data"
     server-side>
-  </gouv-query>
+  </dsfr-data-query>
 ${facets.element}
-  <gouv-datalist
+  <dsfr-data-list
     id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     server-tri
     pagination="20">
-  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
+  </dsfr-data-list>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
       displayGeneratedCode(code);
       return;
@@ -1385,7 +1385,7 @@ ${facets.element}
       const staticVals = computeStaticFacetValues();
       const facets = generateFacetsElement('table-query', staticVals ? { staticValues: staticVals } : undefined);
       const datalistSource = facets.element ? facets.finalSourceId : 'table-query';
-      const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+      const code = `<!-- Tableau dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (pagination serveur : une page a la fois) -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -1393,41 +1393,41 @@ ${facets.element}
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-data"
     api-type="tabular"
     base-url="${apiBaseUrl}"
     resource="${resourceIds!.resourceId}"${filterAttr}
     server-side
     page-size="20">
-  </gouv-source>
-  <gouv-query
+  </dsfr-data-source>
+  <dsfr-data-query
     id="table-query"
     source="table-data"
     server-side>
-  </gouv-query>
+  </dsfr-data-query>
 ${facets.element}
-  <gouv-datalist
+  <dsfr-data-list
     id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     server-tri
     pagination="20">
-  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
+  </dsfr-data-list>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
       displayGeneratedCode(code);
       return;
     }
 
-    // Generic API: use gouv-source (no automatic pagination)
+    // Generic API: use dsfr-data-source (no automatic pagination)
     const { elements: middlewareHtml, finalSourceId: datalistSource } = generateMiddlewareElements('table-data');
-    const code = `<!-- Tableau dynamique genere avec gouv-widgets Builder -->
+    const code = `<!-- Tableau dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
 
 <!-- Dependances CSS (DSFR) -->
@@ -1435,23 +1435,23 @@ ${facets.element}
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-source
+  <dsfr-data-source
     id="table-data"
     url="${source.apiUrl}"${transformAttr}${refreshAttr}>
-  </gouv-source>
+  </dsfr-data-source>
 ${middlewareHtml}
-  <gouv-datalist
+  <dsfr-data-list
     id="my-datalist"
     source="${datalistSource}"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>${generateA11yElement(datalistSource, 'my-datalist')}
+  </dsfr-data-list>${generateA11yElement(datalistSource, 'my-datalist')}
 </div>`;
     displayGeneratedCode(code);
     return;
@@ -1471,7 +1471,7 @@ ${middlewareHtml}
   let facetsHtml = '';
 
   if (provider.id === 'opendatasoft' && resourceIds?.datasetId) {
-    // ODS source: use gouv-source + gouv-query for
+    // ODS source: use dsfr-data-source + dsfr-data-query for
     // server-side aggregation and automatic pagination (limit > 100)
     const odsInfo = { baseUrl: apiBaseUrl, datasetId: resourceIds.datasetId };
     const result = generateOdsQueryCode(odsInfo, groupByPath, valueFieldPath);
@@ -1485,7 +1485,7 @@ ${middlewareHtml}
     const facets = generateFacetsElement(chartSource);
     if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
   } else if (provider.id === 'tabular' && resourceIds?.resourceId) {
-    // Tabular source: use gouv-source + gouv-query for
+    // Tabular source: use dsfr-data-source + dsfr-data-query for
     // automatic pagination (up to 50K records) and client-side aggregation
     const tabularInfo = { baseUrl: apiBaseUrl, resourceId: resourceIds.resourceId };
     const result = generateTabularQueryCode(tabularInfo, groupByPath, valueFieldPath);
@@ -1499,10 +1499,10 @@ ${middlewareHtml}
     const facets = generateFacetsElement(chartSource);
     if (facets.element) { facetsHtml = facets.element; chartSource = facets.finalSourceId; }
   } else {
-    // Non-ODS/Tabular source: use gouv-source + gouv-query (generic, client-side)
+    // Non-ODS/Tabular source: use dsfr-data-source + dsfr-data-query (generic, client-side)
     const mw = generateMiddlewareElements('chart-data');
     middlewareHtml = mw.elements;
-    const result = generateGouvQueryCode(mw.finalSourceId, groupByPath, valueFieldPath);
+    const result = generateDsfrDataQueryCode(mw.finalSourceId, groupByPath, valueFieldPath);
     queryElement = result.queryElement;
     chartSource = result.chartSource;
     queryLabelField = result.labelField;
@@ -1510,10 +1510,10 @@ ${middlewareHtml}
     queryValueField2 = result.valueField2 || '';
     sourceElement = `
   <!-- Source de donnees API -->
-  <gouv-source
+  <dsfr-data-source
     id="chart-data"
     url="${source.apiUrl}"${transformAttr}${refreshAttr}>
-  </gouv-source>`;
+  </dsfr-data-source>`;
   }
 
   // Map palette
@@ -1527,9 +1527,9 @@ ${middlewareHtml}
   // Second series attribute
   const valueField2Attr = queryValueField2 ? `\n    value-field-2="${queryValueField2}"` : '';
 
-  const code = `<!-- Graphique dynamique genere avec gouv-widgets Builder -->
+  const code = `<!-- Graphique dynamique genere avec dsfr-data Builder -->
 <!-- Source : ${escapeHtml(source.name)} (chargement dynamique) -->
-${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gouv-query -->' : ''}
+${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via dsfr-data-query -->' : ''}
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -1538,14 +1538,14 @@ ${state.advancedMode ? '<!-- Mode avance active : filtrage et agregation via gou
 
 <!-- Dependances JS -->
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 ${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
   <!-- Graphique DSFR (se met a jour automatiquement) -->
-  <gouv-dsfr-chart
+  <dsfr-data-chart
     id="chart"
     source="${chartSource}"
     type="${state.chartType === 'horizontalBar' ? 'bar' : state.chartType === 'doughnut' ? 'pie' : state.chartType}"${dsfrChartAttrs()}${codeFieldAttr}
@@ -1553,7 +1553,7 @@ ${sourceElement}${middlewareHtml}${queryElement}${facetsHtml}
     value-field="${queryValueField}"${valueField2Attr}
     name="${escapeHtml(state.title || state.valueField)}"
     selected-palette="${palette}">
-  </gouv-dsfr-chart>${generateA11yElement(chartSource, 'chart')}
+  </dsfr-data-chart>${generateA11yElement(chartSource, 'chart')}
 </div>`;
 
   displayGeneratedCode(code);
@@ -1570,7 +1570,7 @@ export function generateCode(apiUrl: string): void {
     const variant = variantSelect?.value || '';
     const unit = unitInput?.value || '';
 
-    const code = `<!-- KPI g\u00e9n\u00e9r\u00e9 avec gouv-widgets Builder -->
+    const code = `<!-- KPI g\u00e9n\u00e9r\u00e9 avec dsfr-data Builder -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -1631,7 +1631,7 @@ loadKPI();
 
   // Handle Gauge type
   if (state.chartType === 'gauge') {
-    const code = `<!-- Jauge g\u00e9n\u00e9r\u00e9e avec gouv-widgets Builder -->
+    const code = `<!-- Jauge g\u00e9n\u00e9r\u00e9e avec dsfr-data Builder -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -1669,24 +1669,24 @@ loadGauge();
     const colonnes = buildColonnesAttr();
     const triAttr = state.sortOrder !== 'none' && state.labelField
       ? `\n    tri="${state.labelField}:${state.sortOrder}"` : '';
-    const code = `<!-- Tableau genere avec gouv-widgets Builder -->
+    const code = `<!-- Tableau genere avec dsfr-data Builder -->
 
 <!-- Dependances CSS (DSFR) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 
 <!-- Dependances JS -->
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 <div class="fr-container fr-my-4w">
   ${state.title ? `<h2>${escapeHtml(state.title)}</h2>` : ''}
   ${state.subtitle ? `<p class="fr-text--sm fr-text--light">${escapeHtml(state.subtitle)}</p>` : ''}
 
-  <gouv-datalist
+  <dsfr-data-list
     id="my-table"
     colonnes="${colonnes}"${buildDatalistAttrs()}${triAttr}
     pagination="10">
-  </gouv-datalist>${generateEmbeddedA11y('my-table')}
+  </dsfr-data-list>${generateEmbeddedA11y('my-table')}
 </div>
 
 <script>
@@ -1707,7 +1707,7 @@ loadTable();
 
   // Handle Scatter type
   if (state.chartType === 'scatter') {
-    const code = `<!-- Nuage de points genere avec gouv-widgets Builder -->
+    const code = `<!-- Nuage de points genere avec dsfr-data Builder -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -1753,7 +1753,7 @@ loadChart();
       ? state.palette
       : 'sequentialAscending';
 
-    const code = `<!-- Carte g\u00e9n\u00e9r\u00e9e avec gouv-widgets Builder -->
+    const code = `<!-- Carte g\u00e9n\u00e9r\u00e9e avec dsfr-data Builder -->
 <!-- Palette: ${mapPalette} -->
 
 <!-- D\u00e9pendances CSS (DSFR) -->
@@ -1829,7 +1829,7 @@ loadMap();
     ? JSON.stringify([state.valueField, state.valueField2])
     : JSON.stringify([state.valueField]);
 
-  const code = `<!-- Graphique genere avec gouv-widgets Builder -->
+  const code = `<!-- Graphique genere avec dsfr-data Builder -->
 
 <!-- Dependances (DSFR + DSFR Chart) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">

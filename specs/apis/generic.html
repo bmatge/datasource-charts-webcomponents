@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generique (REST) - API supportees - gouv-widgets</title>
+  <title>Generique (REST) - API supportees - dsfr-data</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css" integrity="sha384-YR4AxNhFVy1qsQ0Hp7Rosg06e4sj2m9dLxiYZrtqJ0boIOiDbD8XkIsIPMMkf0VL" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" integrity="sha384-6FSSi597BTd6QcnsBNoLclRKxTOyyYqkaucRjFgCNr8wHVCp0COLClSPY4Vy/bjh" crossorigin="anonymous">
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
     .capability-yes { color: var(--text-default-success); font-weight: bold; }
@@ -32,8 +32,8 @@
           <h4 class="fr-callout__title">Tout cote client</h4>
           <p class="fr-callout__text">
             Le mode generique ne connait pas la structure de l'API cible. Il recupere les donnees
-            via <code>gouv-source</code> et <strong>toutes les transformations</strong> (tri, filtrage,
-            agregation, facettes, recherche) sont effectuees cote client par <code>gouv-query</code>.
+            via <code>dsfr-data-source</code> et <strong>toutes les transformations</strong> (tri, filtrage,
+            agregation, facettes, recherche) sont effectuees cote client par <code>dsfr-data-query</code>.
           </p>
         </div>
 
@@ -89,7 +89,7 @@
         <section class="fr-mt-4w">
           <h2>Pagination</h2>
           <p>
-            <strong>Aucune pagination automatique.</strong> gouv-widgets recupere l'URL telle quelle et
+            <strong>Aucune pagination automatique.</strong> dsfr-data recupere l'URL telle quelle et
             traite la reponse JSON comme un tableau de donnees. Si votre API utilise de la pagination,
             vous devez la gerer manuellement dans l'URL ou utiliser un des fournisseurs specialises.
           </p>
@@ -114,7 +114,7 @@
           <div class="fr-highlight fr-mt-2w">
             <p>
               La reponse JSON doit etre un tableau d'objets a la racine, ou vous pouvez utiliser
-              l'attribut <code>data-path</code> sur <code>gouv-source</code> pour specifier le
+              l'attribut <code>data-path</code> sur <code>dsfr-data-source</code> pour specifier le
               chemin vers le tableau de donnees dans la reponse.
             </p>
           </div>
@@ -125,7 +125,7 @@
           <h2>Syntaxe de requete</h2>
           <p>
             Le mode generique n'envoie aucun parametre de requete a l'API. Toutes les
-            transformations sont effectuees <strong>cote client</strong> par <code>gouv-query</code>
+            transformations sont effectuees <strong>cote client</strong> par <code>dsfr-data-query</code>
             avec la syntaxe colon generique (<code>field:operator:value</code>).
           </p>
         </section>
@@ -170,56 +170,56 @@
           <h2>Exemple d'utilisation</h2>
 
           <h3>API JSON simple</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   url="https://mon-api.example.com/data.json"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-dsfr-chart
+&lt;dsfr-data-chart
   source="src"
   type="bar"
   name-field="categorie"
   value-field="valeur"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
           <h3 class="fr-mt-2w">API avec chemin de donnees</h3>
           <pre><code>&lt;!-- Si la reponse JSON est { "results": { "items": [...] } } --&gt;
-&lt;gouv-source
+&lt;dsfr-data-source
   id="src"
   url="https://mon-api.example.com/endpoint"
   data-path="results.items"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query
+&lt;dsfr-data-query
   source="src"
   group-by="type"
   aggregate="montant:sum"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart
+&lt;dsfr-data-chart
   source="src"
   type="pie"
   name-field="type"
   value-field="montant"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Avec normalize pour des donnees imbriquees</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   url="https://mon-api.example.com/nested-data.json"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize
+&lt;dsfr-data-normalize
   source="src"
   id="flat"
   flatten="data"&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-datalist
+&lt;dsfr-data-list
   source="flat"
   columns="nom,valeur,date"
   page-size="20"&gt;
-&lt;/gouv-datalist&gt;</code></pre>
+&lt;/dsfr-data-list&gt;</code></pre>
         </section>
     </div>
   </app-layout-demo>

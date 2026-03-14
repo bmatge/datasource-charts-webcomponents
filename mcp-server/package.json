@@ -1,10 +1,10 @@
 {
-  "name": "gouv-widgets-mcp",
+  "name": "dsfr-data-mcp",
   "version": "0.1.0",
-  "description": "MCP server exposing gouv-widgets skills for AI-assisted chart generation",
+  "description": "MCP server exposing dsfr-data skills for AI-assisted chart generation",
   "type": "module",
   "bin": {
-    "gouv-widgets-mcp": "dist/index.js"
+    "dsfr-data-mcp": "dist/index.js"
   },
   "files": [
     "dist"
@@ -16,7 +16,7 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "gouv-widgets",
+    "dsfr-data",
     "dsfr",
     "dataviz",
     "web-components"

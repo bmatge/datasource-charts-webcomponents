@@ -3,15 +3,15 @@
  *
  * 25 exemples organises en 9 categories :
  *
- * Mode direct       : gouv-source → composant (gouv-dsfr-chart / gouv-kpi / gouv-datalist)
- * Mode requete      : gouv-source → gouv-query → composant
- * Mode normalisation : gouv-source → gouv-normalize → gouv-query → composant
- * Mode display      : gouv-source → gouv-display (template HTML dynamique)
- * Mode recherche    : gouv-source → gouv-search → composant
- * Mode facettes     : gouv-source → gouv-normalize → gouv-facets → composant
- * Pagination serveur : gouv-source paginate → composant
- * Server-side       : gouv-source server-side → composant
- * Carte du monde    : gouv-source → gouv-world-map
+ * Mode direct       : dsfr-data-source → composant (dsfr-data-chart / dsfr-data-kpi / dsfr-data-list)
+ * Mode requete      : dsfr-data-source → dsfr-data-query → composant
+ * Mode normalisation : dsfr-data-source → dsfr-data-normalize → dsfr-data-query → composant
+ * Mode display      : dsfr-data-source → dsfr-data-display (template HTML dynamique)
+ * Mode recherche    : dsfr-data-source → dsfr-data-search → composant
+ * Mode facettes     : dsfr-data-source → dsfr-data-normalize → dsfr-data-facets → composant
+ * Pagination serveur : dsfr-data-source paginate → composant
+ * Server-side       : dsfr-data-source server-side → composant
+ * Carte du monde    : dsfr-data-source → dsfr-data-world-map
  *
  * Sources de donnees :
  *  - OpenDataSoft : Fiscalite locale, Industrie du futur, RappelConso (data.economie.gouv.fr)
@@ -20,14 +20,14 @@
 export const examples: Record<string, string> = {
 
   // =====================================================================
-  // MODE DIRECT — gouv-source → composant
+  // MODE DIRECT — dsfr-data-source → composant
   // Les donnees de la source sont transmises directement au composant
   // de visualisation, sans transformation intermediaire.
   // =====================================================================
 
   'direct-bar': `<!--
   Barres — Taux de taxe fonciere par commune
-  Mode direct : gouv-source → gouv-dsfr-chart (bar)
+  Mode direct : dsfr-data-source → dsfr-data-chart (bar)
   Source : Fiscalite locale des particuliers (OpenDataSoft)
 -->
 
@@ -37,24 +37,24 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Fiscalite locale des particuliers
   </p>
 
-  <gouv-source id="data" api-type="opendatasoft"
+  <dsfr-data-source id="data" api-type="opendatasoft"
     dataset-id="fiscalite-locale-des-particuliers"
     base-url="https://data.economie.gouv.fr"
     limit="15">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-dsfr-chart source="data"
+  <dsfr-data-chart source="data"
     type="bar"
     label-field="libcom"
     value-field="taux_global_tfb"
     unit-tooltip="%"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   'direct-kpi': `<!--
   KPI — Indicateurs cles Industrie du futur
-  Mode direct : gouv-source → gouv-kpi (x4)
+  Mode direct : dsfr-data-source → dsfr-data-kpi (x4)
   Source : Industrie du futur (OpenDataSoft)
   Chaque KPI calcule une agregation sur les donnees brutes
 -->
@@ -65,42 +65,42 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="data" api-type="opendatasoft"
+  <dsfr-data-source id="data" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-    <gouv-kpi source="data"
+    <dsfr-data-kpi source="data"
       valeur="sum:nombre_beneficiaires"
       label="Total beneficiaires"
       format="nombre">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="data"
+    <dsfr-data-kpi source="data"
       valeur="avg:nombre_beneficiaires"
       label="Moyenne par enregistrement"
       format="decimal">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="data"
+    <dsfr-data-kpi source="data"
       valeur="max:montant_investissement"
       label="Investissement max"
       format="euro"
       couleur="vert">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="data"
+    <dsfr-data-kpi source="data"
       valeur="count"
       label="Enregistrements"
       format="nombre">
-    </gouv-kpi>
+    </dsfr-data-kpi>
   </div>
 </div>`,
 
   'direct-datalist': `<!--
   Tableau — Maires de France (pagination serveur)
-  Mode : gouv-source (api-type="tabular", server-side) → gouv-datalist
+  Mode : dsfr-data-source (api-type="tabular", server-side) → dsfr-data-list
   Source : Registre des maires (tabular-api) — 34 874 records
   Chaque page est chargee a la demande depuis l'API (pas de chargement complet)
 -->
@@ -112,30 +112,30 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements — pagination serveur (20 par page)
   </p>
 
-  <gouv-source id="data"
+  <dsfr-data-source id="data"
     api-type="tabular"
     resource="2876a346-d50c-4911-934e-19ee07b0e503"
     server-side
     page-size="20">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-datalist source="data"
+  <dsfr-data-list source="data"
     colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
     tri="Nom de l'élu:asc"
     pagination="20"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`,
 
   // =====================================================================
-  // PAGINATION SERVEUR — gouv-source paginate → composant
-  // gouv-source gere la pagination cote serveur : chaque changement
+  // PAGINATION SERVEUR — dsfr-data-source paginate → composant
+  // dsfr-data-source gere la pagination cote serveur : chaque changement
   // de page declenche un nouvel appel API avec page=N&page_size=M.
   // =====================================================================
 
   'server-paginate-datalist': `<!--
   Tableau avec pagination serveur — Maires de France (34 874 records)
-  Mode direct : gouv-source (paginate) → gouv-datalist
+  Mode direct : dsfr-data-source (paginate) → dsfr-data-list
   Source : Registre des maires (tabular-api)
   Chaque page est chargee depuis l'API, pas de chargement complet en memoire
 -->
@@ -147,21 +147,21 @@ export const examples: Record<string, string> = {
     <br>34 874 enregistrements navigables page par page via l'API
   </p>
 
-  <gouv-source id="data"
+  <dsfr-data-source id="data"
     url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
     paginate page-size="20">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-datalist source="data"
+  <dsfr-data-list source="data"
     colonnes="Nom de l'élu:Nom, Prénom de l'élu:Prenom, Libellé du département:Departement, Libellé de la commune:Commune"
     recherche="true"
     tri="Nom de l'élu:asc"
     pagination="20">
-  </gouv-datalist>
+  </dsfr-data-list>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      Avec <code>paginate</code> et <code>page-size="20"</code>, <code>gouv-source</code>
+      Avec <code>paginate</code> et <code>page-size="20"</code>, <code>dsfr-data-source</code>
       injecte <code>?page=N&amp;page_size=20</code> dans l'URL. Pas besoin de <code>transform="data"</code> :
       en mode pagination, les donnees sont auto-extraites depuis <code>json.data</code>.
       Cliquer sur une page declenche un nouvel appel API.
@@ -171,7 +171,7 @@ export const examples: Record<string, string> = {
 
   'server-paginate-display': `<!--
   Cartes avec pagination serveur — Maires de France
-  Mode direct : gouv-source (paginate) → gouv-display (cartes)
+  Mode direct : dsfr-data-source (paginate) → dsfr-data-display (cartes)
   Source : Registre des maires (tabular-api)
   Naviguez dans les 34 874 maires avec des cartes DSFR, page par page
 -->
@@ -183,12 +183,12 @@ export const examples: Record<string, string> = {
     <br>Pagination cote serveur : chaque page = un appel API
   </p>
 
-  <gouv-source id="data"
+  <dsfr-data-source id="data"
     url="https://tabular-api.data.gouv.fr/api/resources/2876a346-d50c-4911-934e-19ee07b0e503/data/"
     paginate page-size="12">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-display source="data" cols="3" pagination="12">
+  <dsfr-data-display source="data" cols="3" pagination="12">
     <template>
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
@@ -204,12 +204,12 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 </div>`,
 
   'paginate-kpi-global': `<!--
   Pagination serveur + KPI — Industrie du futur
-  Double source : gouv-source (server-side) pour navigation + gouv-source (ODS) pour KPI
+  Double source : dsfr-data-source (server-side) pour navigation + dsfr-data-source (ODS) pour KPI
   Source : Industrie du futur (OpenDataSoft) — 101 records
   La datalist navigue page par page, les KPI portent sur le dataset complet
 -->
@@ -222,66 +222,66 @@ export const examples: Record<string, string> = {
   </p>
 
   <!-- Source 1 : pagination serveur pour la navigation -->
-  <gouv-source id="browse" api-type="opendatasoft"
+  <dsfr-data-source id="browse" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="20">
-  </gouv-source>
+  </dsfr-data-source>
 
   <!-- Source 2 : chargement complet pour les KPI globaux (101 records) -->
-  <gouv-source id="all" api-type="opendatasoft"
+  <dsfr-data-source id="all" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-    <gouv-kpi source="all"
+    <dsfr-data-kpi source="all"
       valeur="count"
       label="Projets"
       format="nombre">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="all"
+    <dsfr-data-kpi source="all"
       valeur="sum:nombre_beneficiaires"
       label="Total beneficiaires"
       format="nombre"
       couleur="bleu">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="all"
+    <dsfr-data-kpi source="all"
       valeur="sum:montant_investissement"
       label="Investissement total"
       format="euro"
       couleur="vert">
-    </gouv-kpi>
+    </dsfr-data-kpi>
   </div>
 
-  <gouv-datalist source="browse"
+  <dsfr-data-list source="browse"
     colonnes="nom_departement:Departement, nom_region:Region, nombre_beneficiaires:Beneficiaires, montant_investissement:Investissement"
     pagination="20">
-  </gouv-datalist>
+  </dsfr-data-list>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Pattern double source :</strong> <code>gouv-source server-side</code> charge une page a la fois
-      pour la navigation (20 records). En parallele, une seconde <code>gouv-source</code>
-      charge le dataset complet (101 records) et les <code>gouv-kpi</code> agregent pour les indicateurs globaux.
+      <strong>Pattern double source :</strong> <code>dsfr-data-source server-side</code> charge une page a la fois
+      pour la navigation (20 records). En parallele, une seconde <code>dsfr-data-source</code>
+      charge le dataset complet (101 records) et les <code>dsfr-data-kpi</code> agregent pour les indicateurs globaux.
       Les deux sources fonctionnent independamment.
     </p>
   </div>
 </div>`,
 
   // =====================================================================
-  // MODE AVEC REQUETE — gouv-source → gouv-query → composant
-  // Les donnees passent par gouv-query qui les filtre, regroupe
+  // MODE AVEC REQUETE — dsfr-data-source → dsfr-data-query → composant
+  // Les donnees passent par dsfr-data-query qui les filtre, regroupe
   // et/ou agrege avant de les transmettre au composant de visualisation.
   // =====================================================================
 
   'query-bar': `<!--
   Barres — Beneficiaires agreges par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (bar)
+  Mode requete : dsfr-data-source → dsfr-data-query → dsfr-data-chart (bar)
   Source : Industrie du futur (OpenDataSoft)
-  gouv-query regroupe par region et somme les beneficiaires
+  dsfr-data-query regroupe par region et somme les beneficiaires
 -->
 
 <div class="fr-container fr-my-4w">
@@ -290,31 +290,31 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="data" api-type="opendatasoft"
+  <dsfr-data-source id="data" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-query id="q-bar" source="data"
+  <dsfr-data-query id="q-bar" source="data"
     group-by="nom_region"
     aggregate="nombre_beneficiaires:sum:beneficiaires"
     order-by="beneficiaires:desc"
     limit="10">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="q-bar"
+  <dsfr-data-chart source="q-bar"
     type="bar"
     label-field="nom_region"
     value-field="beneficiaires"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   'query-pie': `<!--
   Camembert — Investissement Industrie du futur par region
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (pie)
+  Mode requete : dsfr-data-source → dsfr-data-query → dsfr-data-chart (pie)
   Source : Industrie du futur (OpenDataSoft) — 101 records
-  gouv-query regroupe par region et somme les investissements
+  dsfr-data-query regroupe par region et somme les investissements
 -->
 
 <div class="fr-container fr-my-4w">
@@ -323,34 +323,34 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Industrie du futur
   </p>
 
-  <gouv-source id="src" api-type="opendatasoft"
+  <dsfr-data-source id="src" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-query id="q-pie" source="src"
+  <dsfr-data-query id="q-pie" source="src"
     group-by="nom_region"
     aggregate="montant_investissement:sum:investissement"
     order-by="investissement:desc"
     limit="10">
-  </gouv-query>
+  </dsfr-data-query>
 
   <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="q-pie"
+    <dsfr-data-chart source="q-pie"
       type="pie"
       label-field="nom_region"
       value-field="investissement"
       unit-tooltip="EUR"
       selected-palette="categorical">
-    </gouv-dsfr-chart>
+    </dsfr-data-chart>
   </div>
 </div>`,
 
   'query-map': `<!--
   Carte — Taux TFB moyen par departement
-  Mode requete : gouv-source → gouv-query → gouv-dsfr-chart (map)
+  Mode requete : dsfr-data-source → dsfr-data-query → dsfr-data-chart (map)
   Source : Fiscalite locale des particuliers (OpenDataSoft)
-  gouv-query calcule la moyenne TFB par departement (code dep)
+  dsfr-data-query calcule la moyenne TFB par departement (code dep)
 -->
 
 <div class="fr-container fr-my-4w">
@@ -359,37 +359,37 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Fiscalite locale des particuliers
   </p>
 
-  <gouv-source id="data" api-type="opendatasoft"
+  <dsfr-data-source id="data" api-type="opendatasoft"
     dataset-id="fiscalite-locale-des-particuliers"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-query id="q-map" source="data"
+  <dsfr-data-query id="q-map" source="data"
     group-by="dep"
     aggregate="taux_global_tfb:avg:taux">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="q-map"
+  <dsfr-data-chart source="q-map"
     type="map"
     code-field="dep"
     value-field="taux"
     selected-palette="sequentialAscending">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   // =====================================================================
-  // MODE AVEC NORMALISATION — gouv-source → gouv-normalize → gouv-query → composant
-  // Les donnees passent par gouv-normalize pour etre nettoyees
-  // (conversion numerique, renommage, trim) avant traitement par gouv-query.
+  // MODE AVEC NORMALISATION — dsfr-data-source → dsfr-data-normalize → dsfr-data-query → composant
+  // Les donnees passent par dsfr-data-normalize pour etre nettoyees
+  // (conversion numerique, renommage, trim) avant traitement par dsfr-data-query.
   // =====================================================================
 
   'normalize-bar': `<!--
   Barres — Logements vacants par departement (donnees LOVAC nettoyees)
-  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (bar)
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-query → dsfr-data-chart (bar)
   Source : LOVAC - Logements vacants (tabular-api)
   Probleme : les cles ont des espaces (" DEP ", " LIB_DEP ") et les
   nombres sont en string avec separateurs milliers (" 19 805   ").
-  gouv-normalize nettoie les cles (trim), convertit les nombres (numeric-auto)
+  dsfr-data-normalize nettoie les cles (trim), convertit les nombres (numeric-auto)
   et renomme les colonnes cryptiques en noms lisibles.
 -->
 
@@ -397,40 +397,40 @@ export const examples: Record<string, string> = {
   <h2>Top 15 departements par logements vacants (2025)</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
-    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
+    <br>Pipeline : dsfr-data-source → <strong>dsfr-data-normalize</strong> → dsfr-data-query → dsfr-data-chart
   </p>
 
-  <gouv-source id="raw"
+  <dsfr-data-source id="raw"
     url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
     transform="data">
-  </gouv-source>
+  </dsfr-data-source>
 
   <!-- Nettoyage :
     - trim nettoie les cles (" DEP " → "DEP") ET les valeurs (" Ain " → "Ain")
     - numeric-auto convertit " 19 805   " → 19805 (detecte les nombres avec espaces)
     - rename donne des noms lisibles aux colonnes -->
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     trim
     numeric-auto
     rename="LIB_DEP:Departement | pp_vacant_25:Vacants 2025">
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-query id="top" source="clean"
+  <dsfr-data-query id="top" source="clean"
     order-by="Vacants 2025:desc"
     limit="15">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="top"
+  <dsfr-data-chart source="top"
     type="bar"
     label-field="Departement"
     value-field="Vacants 2025"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   'normalize-pie': `<!--
   Camembert — Part des logements vacants de longue duree
-  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-dsfr-chart (pie)
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-query → dsfr-data-chart (pie)
   Source : LOVAC - Logements vacants (tabular-api)
   Montre la proportion de logements vacants >2 ans parmi les top departements.
 -->
@@ -439,74 +439,74 @@ export const examples: Record<string, string> = {
   <h2>Top 8 departements — Vacants longue duree (>2 ans)</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
-    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-dsfr-chart
+    <br>Pipeline : dsfr-data-source → <strong>dsfr-data-normalize</strong> → dsfr-data-query → dsfr-data-chart
   </p>
 
-  <gouv-source id="raw"
+  <dsfr-data-source id="raw"
     url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
     transform="data">
-  </gouv-source>
+  </dsfr-data-source>
 
   <!-- Nettoyage : trim (cles + valeurs), conversion numerique explicite, renommage -->
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     trim
     numeric="pp_vacant_plus_2ans_25"
     rename="LIB_DEP:Departement | pp_vacant_plus_2ans_25:Vacants longue duree">
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-query id="top" source="clean"
+  <dsfr-data-query id="top" source="clean"
     order-by="Vacants longue duree:desc"
     limit="8">
-  </gouv-query>
+  </dsfr-data-query>
 
   <div style="max-width: 500px; margin: 0 auto;">
-    <gouv-dsfr-chart source="top"
+    <dsfr-data-chart source="top"
       type="pie"
       label-field="Departement"
       value-field="Vacants longue duree"
       selected-palette="categorical">
-    </gouv-dsfr-chart>
+    </dsfr-data-chart>
   </div>
 </div>`,
 
   'normalize-datalist': `<!--
   Tableau — Donnees LOVAC nettoyees et lisibles
-  Pipeline : gouv-source → gouv-normalize → gouv-datalist
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-list
   Source : LOVAC - Logements vacants (tabular-api)
   Les donnees brutes ont des cles avec espaces (" DEP ", " LIB_DEP "),
   des nombres en string (" 19 805   ") et des noms de colonnes cryptiques.
-  gouv-normalize nettoie tout avant l'affichage en tableau.
+  dsfr-data-normalize nettoie tout avant l'affichage en tableau.
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>LOVAC — Logements vacants par departement</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
-    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-datalist
+    <br>Pipeline : dsfr-data-source → <strong>dsfr-data-normalize</strong> → dsfr-data-list
   </p>
 
-  <gouv-source id="raw"
+  <dsfr-data-source id="raw"
     url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
     transform="data">
-  </gouv-source>
+  </dsfr-data-source>
 
   <!-- Nettoyage complet :
     - trim : nettoie les espaces dans les cles ET les valeurs
     - numeric-auto : detecte et convertit tous les champs numeriques
     - rename : noms lisibles pour le tableau -->
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     trim
     numeric-auto
     rename="DEP:Code | LIB_DEP:Departement | pp_vacant_25:Vacants 2025 | pp_vacant_plus_2ans_25:Vacants >2 ans | pp_total_24:Total logements 2024 | pp_vacant_24:Vacants 2024">
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-datalist source="clean"
+  <dsfr-data-list source="clean"
     colonnes="Code, Departement, Vacants 2025, Vacants >2 ans, Total logements 2024, Vacants 2024"
     recherche="true"
     tri="Vacants 2025:desc"
     pagination="15"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
@@ -519,110 +519,110 @@ export const examples: Record<string, string> = {
 </div>`,
 
   // =====================================================================
-  // MODE FACETTES — gouv-source → gouv-normalize → gouv-facets → composant
-  // Les donnees passent par gouv-facets qui affiche des filtres interactifs.
+  // MODE FACETTES — dsfr-data-source → dsfr-data-normalize → dsfr-data-facets → composant
+  // Les donnees passent par dsfr-data-facets qui affiche des filtres interactifs.
   // L'utilisateur selectionne des valeurs et les composants en aval
   // se mettent a jour automatiquement.
   // =====================================================================
 
   'facets-datalist': `<!--
   Tableau filtrable — Industrie du futur avec facettes
-  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-datalist
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-facets → dsfr-data-list
   Source : Industrie du futur (OpenDataSoft) — 101 records
-  gouv-facets affiche des filtres interactifs, gouv-datalist le tableau filtre
+  dsfr-data-facets affiche des filtres interactifs, dsfr-data-list le tableau filtre
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Industrie du futur — exploration par facettes</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : <strong>gouv-source</strong> → gouv-normalize → <strong>gouv-facets</strong> → gouv-datalist
+    <br>Pipeline : <strong>dsfr-data-source</strong> → dsfr-data-normalize → <strong>dsfr-data-facets</strong> → dsfr-data-list
   </p>
 
-  <gouv-source id="raw" api-type="opendatasoft"
+  <dsfr-data-source id="raw" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     numeric="nombre_beneficiaires, montant_investissement"
     rename="nom_region:Region | nom_departement:Departement | mesure_light:Mesure"
     trim>
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
   <!-- Facettes : multiselect et select avec colonnage DSFR -->
-  <gouv-facets id="filtered" source="clean"
+  <dsfr-data-facets id="filtered" source="clean"
     fields="Region, Mesure"
     labels="Region:Region | Mesure:Type de mesure"
     display="Region:multiselect | Mesure:select"
     cols="6">
-  </gouv-facets>
+  </dsfr-data-facets>
 
-  <gouv-datalist source="filtered"
+  <dsfr-data-list source="filtered"
     colonnes="Departement, Region, nombre_beneficiaires:Beneficiaires, montant_investissement:Investissement"
     recherche="true"
     tri="Departement:asc"
     pagination="10"
     export="csv">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`,
 
   'facets-bar': `<!--
   Barres — Beneficiaires Industrie du futur filtres par region
-  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (bar)
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-facets → dsfr-data-query → dsfr-data-chart (bar)
   Source : Industrie du futur (OpenDataSoft)
-  gouv-facets filtre par region, gouv-query agrege ensuite les donnees filtrees
+  dsfr-data-facets filtre par region, dsfr-data-query agrege ensuite les donnees filtrees
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Beneficiaires Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → gouv-dsfr-chart
+    <br>Pipeline : dsfr-data-source → dsfr-data-normalize → <strong>dsfr-data-facets</strong> → dsfr-data-query → dsfr-data-chart
   </p>
 
-  <gouv-source id="raw" api-type="opendatasoft"
+  <dsfr-data-source id="raw" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
     rename="nom_region:Region | nom_departement:Departement"
     trim>
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
   <!-- Facettes : filtrer par region (multiselect) avant aggregation -->
-  <gouv-facets id="filtered" source="clean"
+  <dsfr-data-facets id="filtered" source="clean"
     fields="Region"
     display="Region:multiselect"
     sort="alpha">
-  </gouv-facets>
+  </dsfr-data-facets>
 
-  <gouv-query id="stats" source="filtered"
+  <dsfr-data-query id="stats" source="filtered"
     group-by="Departement"
     aggregate="nombre_beneficiaires:sum:Beneficiaires"
     order-by="Beneficiaires:desc"
     limit="15">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="stats"
+  <dsfr-data-chart source="stats"
     type="bar"
     label-field="Departement"
     value-field="Beneficiaires"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   // =====================================================================
-  // MODE DISPLAY — gouv-source → gouv-display (template HTML dynamique)
-  // gouv-display repete un template HTML pour chaque element de donnees,
+  // MODE DISPLAY — dsfr-data-source → dsfr-data-display (template HTML dynamique)
+  // dsfr-data-display repete un template HTML pour chaque element de donnees,
   // ideal pour creer des cartes DSFR, tuiles ou tout motif repetitif.
   // =====================================================================
 
   'direct-display': `<!--
   Cartes DSFR — Beneficiaires Industrie du futur (pagination serveur)
-  Pipeline : gouv-source (server-side) → gouv-display
+  Pipeline : dsfr-data-source (server-side) → dsfr-data-display
   Source : OpenDataSoft — Industrie du futur
   Pagination serveur : chaque page = un appel API
 -->
@@ -631,16 +631,16 @@ export const examples: Record<string, string> = {
   <h2>Beneficiaires Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-display
+    <br>Pipeline : <strong>dsfr-data-source server-side</strong> → dsfr-data-display
   </p>
 
-  <gouv-source id="q" api-type="opendatasoft"
+  <dsfr-data-source id="q" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="6">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-display source="q" cols="3" pagination="6">
+  <dsfr-data-display source="q" cols="3" pagination="6">
     <template>
       <div class="fr-card">
         <div class="fr-card__body">
@@ -659,11 +659,11 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Pagination serveur</strong> : <code>gouv-source server-side</code> ne charge qu'une page a la fois.
+      <strong>Pagination serveur</strong> : <code>dsfr-data-source server-side</code> ne charge qu'une page a la fois.
       Chaque clic sur la pagination declenche un nouvel appel API.
       Le template <code>&lt;template&gt;</code> est repete pour chaque element de la page.
     </p>
@@ -672,7 +672,7 @@ export const examples: Record<string, string> = {
 
   'query-display': `<!--
   Cartes DSFR — Communes de l'Ain (pagination serveur)
-  Pipeline : gouv-source (server-side, Tabular) → gouv-display
+  Pipeline : dsfr-data-source (server-side, Tabular) → dsfr-data-display
   Source : Tabular API — Code officiel geographique (communes)
   Filtre server-side par departement, pagination serveur
 -->
@@ -681,16 +681,16 @@ export const examples: Record<string, string> = {
   <h2>Communes — Departement de l'Ain</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — Code officiel geographique (communes)
-    <br>Pipeline : <strong>gouv-source server-side</strong> (Tabular, where) → gouv-display
+    <br>Pipeline : <strong>dsfr-data-source server-side</strong> (Tabular, where) → dsfr-data-display
   </p>
 
-  <gouv-source id="q" api-type="tabular"
+  <dsfr-data-source id="q" api-type="tabular"
     resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
     where="DEP:eq:01"
     server-side page-size="8">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-display source="q" cols="4" pagination="8">
+  <dsfr-data-display source="q" cols="4" pagination="8">
     <template>
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
@@ -708,12 +708,12 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 </div>`,
 
   'normalize-display': `<!--
   Tuiles DSFR — LOVAC logements vacants (donnees nettoyees)
-  Pipeline : gouv-source → gouv-normalize → gouv-query → gouv-display (tuiles)
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-query → dsfr-data-display (tuiles)
   Source : LOVAC - Logements vacants (tabular-api)
   Les donnees brutes sont nettoyees puis affichees sous forme de tuiles DSFR
 -->
@@ -722,26 +722,26 @@ export const examples: Record<string, string> = {
   <h2>Top 9 departements — Logements vacants (2025)</h2>
   <p class="fr-text--sm fr-text--light">
     Source : tabular-api.data.gouv.fr — LOVAC, logements vacants du parc prive
-    <br>Pipeline : gouv-source → <strong>gouv-normalize</strong> → gouv-query → gouv-display
+    <br>Pipeline : dsfr-data-source → <strong>dsfr-data-normalize</strong> → dsfr-data-query → dsfr-data-display
   </p>
 
-  <gouv-source id="raw"
+  <dsfr-data-source id="raw"
     url="https://tabular-api.data.gouv.fr/api/resources/42a34c0a-7c97-4463-b00e-5913ea5f7077/data/?page_size=101"
     transform="data">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     trim
     numeric-auto
     rename="LIB_DEP:Departement | pp_vacant_25:Vacants | pp_total_24:Total logements | DEP:Code">
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-query id="top" source="clean"
+  <dsfr-data-query id="top" source="clean"
     order-by="Vacants:desc"
     limit="9">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-display source="top" cols="3">
+  <dsfr-data-display source="top" cols="3">
     <template>
       <div class="fr-tile">
         <div class="fr-tile__body">
@@ -756,26 +756,26 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
       Les donnees LOVAC brutes ont des cles avec espaces et des nombres en texte.
-      <code>gouv-normalize</code> nettoie tout avant l'affichage en tuiles DSFR
-      via <code>gouv-display</code>.
+      <code>dsfr-data-normalize</code> nettoie tout avant l'affichage en tuiles DSFR
+      via <code>dsfr-data-display</code>.
     </p>
   </div>
 </div>`,
 
   // =====================================================================
-  // MODE RECHERCHE — gouv-source → gouv-search → composant
-  // gouv-search affiche un champ de recherche DSFR et filtre les donnees
-  // en amont. Se combine naturellement avec gouv-facets et gouv-display.
+  // MODE RECHERCHE — dsfr-data-source → dsfr-data-search → composant
+  // dsfr-data-search affiche un champ de recherche DSFR et filtre les donnees
+  // en amont. Se combine naturellement avec dsfr-data-facets et dsfr-data-display.
   // =====================================================================
 
   'search-datalist': `<!--
   Tableau filtrable — Rappels de produits avec recherche serveur
-  Pipeline : gouv-source (server-side) → gouv-search (server-search) → gouv-datalist (server-tri)
+  Pipeline : dsfr-data-source (server-side) → dsfr-data-search (server-search) → dsfr-data-list (server-tri)
   Source : OpenDataSoft — RappelConso
   Recherche full-text deleguee au serveur, tri et pagination serveur
 -->
@@ -784,33 +784,33 @@ export const examples: Record<string, string> = {
   <h2>Recherche serveur — Rappels de produits</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — RappelConso
-    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-search server-search → gouv-datalist server-tri
+    <br>Pipeline : <strong>dsfr-data-source server-side</strong> → dsfr-data-search server-search → dsfr-data-list server-tri
   </p>
 
-  <gouv-source id="q" api-type="opendatasoft"
+  <dsfr-data-source id="q" api-type="opendatasoft"
     dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="20"
     order-by="date_publication:desc">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-search id="s" source="q"
+  <dsfr-data-search id="s" source="q"
     server-search
     placeholder="Rechercher un produit rappele..."
     min-length="2"
     count>
-  </gouv-search>
+  </dsfr-data-search>
 
-  <gouv-datalist source="q"
+  <dsfr-data-list source="q"
     colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
     server-tri
     pagination="20">
-  </gouv-datalist>
+  </dsfr-data-list>
 </div>`,
 
   'search-display': `<!--
   Cartes avec recherche serveur — Industrie du futur
-  Pipeline : gouv-source (server-side) → gouv-search (server-search) → gouv-display
+  Pipeline : dsfr-data-source (server-side) → dsfr-data-search (server-search) → dsfr-data-display
   Source : OpenDataSoft — Industrie du futur
   Recherche full-text deleguee au serveur, pagination serveur
 -->
@@ -819,22 +819,22 @@ export const examples: Record<string, string> = {
   <h2>Recherche serveur — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : <strong>gouv-source server-side</strong> → gouv-search server-search → gouv-display
+    <br>Pipeline : <strong>dsfr-data-source server-side</strong> → dsfr-data-search server-search → dsfr-data-display
   </p>
 
-  <gouv-source id="q" api-type="opendatasoft"
+  <dsfr-data-source id="q" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="9">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-search id="s" source="q"
+  <dsfr-data-search id="s" source="q"
     server-search
     placeholder="Entreprise, region ou departement..."
     count>
-  </gouv-search>
+  </dsfr-data-search>
 
-  <gouv-display source="q" cols="3" pagination="9">
+  <dsfr-data-display source="q" cols="3" pagination="9">
     <template>
       <div class="fr-card">
         <div class="fr-card__body">
@@ -853,12 +853,12 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 </div>`,
 
   'search-kpi-chart': `<!--
   Recherche + KPI + graphique — Industrie du futur
-  Pipeline : gouv-source → gouv-normalize → gouv-search → gouv-kpi + gouv-query → gouv-dsfr-chart
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-search → dsfr-data-kpi + dsfr-data-query → dsfr-data-chart
   Source : Industrie du futur (OpenDataSoft)
   Les KPI et le graphique se recalculent en temps reel selon la recherche
 -->
@@ -867,138 +867,138 @@ export const examples: Record<string, string> = {
   <h2>Recherche dynamique — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Industrie du futur
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-search</strong> → KPI + graphique
+    <br>Pipeline : dsfr-data-source → dsfr-data-normalize → <strong>dsfr-data-search</strong> → KPI + graphique
   </p>
 
-  <gouv-source id="raw" api-type="opendatasoft"
+  <dsfr-data-source id="raw" api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
     rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
     trim>
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-search id="searched" source="clean"
+  <dsfr-data-search id="searched" source="clean"
     fields="Entreprise, Region, Departement"
     placeholder="Entreprise, region, departement..."
     operator="words"
     count>
-  </gouv-search>
+  </dsfr-data-search>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
-    <gouv-kpi source="searched"
+    <dsfr-data-kpi source="searched"
       valeur="count"
       label="Projets"
       couleur="bleu">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="searched"
+    <dsfr-data-kpi source="searched"
       valeur="sum:montant_investissement"
       label="Investissement total"
       format="euro">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="searched"
+    <dsfr-data-kpi source="searched"
       valeur="sum:nombre_beneficiaires"
       label="Beneficiaires"
       format="nombre">
-    </gouv-kpi>
+    </dsfr-data-kpi>
   </div>
 
-  <gouv-query id="stats" source="searched"
+  <dsfr-data-query id="stats" source="searched"
     group-by="Region"
     aggregate="nombre_beneficiaires:sum:Beneficiaires"
     order-by="Beneficiaires:desc"
     limit="10">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="stats"
+  <dsfr-data-chart source="stats"
     type="bar"
     label-field="Region"
     value-field="Beneficiaires"
     selected-palette="categorical">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   'facets-map': `<!--
   Carte + KPI — Fiscalite locale filtree par region et departement
-  Pipeline : gouv-source → gouv-normalize → gouv-facets → gouv-query → gouv-dsfr-chart (map) + gouv-kpi
+  Pipeline : dsfr-data-source → dsfr-data-normalize → dsfr-data-facets → dsfr-data-query → dsfr-data-chart (map) + dsfr-data-kpi
   Source : Fiscalite locale des particuliers (OpenDataSoft)
-  gouv-facets filtre par region, la carte et les KPI refletent les donnees filtrees
+  dsfr-data-facets filtre par region, la carte et les KPI refletent les donnees filtrees
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Fiscalite locale — exploration par region</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Fiscalite locale des particuliers
-    <br>Pipeline : gouv-source → gouv-normalize → <strong>gouv-facets</strong> → gouv-query → carte + KPI
+    <br>Pipeline : dsfr-data-source → dsfr-data-normalize → <strong>dsfr-data-facets</strong> → dsfr-data-query → carte + KPI
   </p>
 
-  <gouv-source id="raw" api-type="opendatasoft"
+  <dsfr-data-source id="raw" api-type="opendatasoft"
     dataset-id="fiscalite-locale-des-particuliers"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-normalize id="clean" source="raw"
+  <dsfr-data-normalize id="clean" source="raw"
     numeric="taux_global_tfb, taux_global_th, mpoid"
     rename="libreg:Region | libdep:Departement | libcom:Commune"
     trim>
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
   <!-- Facettes : filtrer par region (multiselect) -->
-  <gouv-facets id="filtered" source="clean"
+  <dsfr-data-facets id="filtered" source="clean"
     fields="Region"
     display="Region:multiselect"
     sort="alpha">
-  </gouv-facets>
+  </dsfr-data-facets>
 
   <!-- KPI sur les donnees filtrees -->
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-    <gouv-kpi source="filtered"
+    <dsfr-data-kpi source="filtered"
       valeur="count"
       label="Communes"
       format="nombre">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="filtered"
+    <dsfr-data-kpi source="filtered"
       valeur="avg:taux_global_tfb"
       label="Taux TFB moyen"
       format="pourcentage">
-    </gouv-kpi>
+    </dsfr-data-kpi>
 
-    <gouv-kpi source="filtered"
+    <dsfr-data-kpi source="filtered"
       valeur="avg:taux_global_th"
       label="Taux TH moyen"
       format="pourcentage">
-    </gouv-kpi>
+    </dsfr-data-kpi>
   </div>
 
   <!-- Carte sur les donnees filtrees et agregees -->
-  <gouv-query id="stats" source="filtered"
+  <dsfr-data-query id="stats" source="filtered"
     group-by="dep"
     aggregate="taux_global_tfb:avg:taux">
-  </gouv-query>
+  </dsfr-data-query>
 
-  <gouv-dsfr-chart source="stats"
+  <dsfr-data-chart source="stats"
     type="map"
     code-field="dep"
     value-field="taux"
     selected-palette="sequentialAscending">
-  </gouv-dsfr-chart>
+  </dsfr-data-chart>
 </div>`,
 
   // =====================================================================
-  // SERVER-SIDE — gouv-source server-side → composant
-  // gouv-source ne charge qu'une page a la fois et ecoute les commandes
+  // SERVER-SIDE — dsfr-data-source server-side → composant
+  // dsfr-data-source ne charge qu'une page a la fois et ecoute les commandes
   // des composants en aval (pagination, recherche, tri, facettes).
   // =====================================================================
 
   'server-side-ods': `<!--
   Server-side ODS — Recherche + pagination serveur
-  Mode: gouv-source (server-side) -> gouv-search (server-search) -> gouv-display
+  Mode: dsfr-data-source (server-side) -> dsfr-data-search (server-search) -> dsfr-data-display
   Source: OpenDataSoft - RappelConso (rappels de produits)
 -->
 
@@ -1008,21 +1008,21 @@ export const examples: Record<string, string> = {
     Source : data.economie.gouv.fr — Mode server-side avec recherche full-text ODS
   </p>
 
-  <gouv-source id="q" api-type="opendatasoft"
+  <dsfr-data-source id="q" api-type="opendatasoft"
     dataset-id="rappelconso-v2-gtin-trie"
     base-url="https://data.economie.gouv.fr"
     server-side page-size="10"
     order-by="date_publication:desc">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-search id="s" source="q"
+  <dsfr-data-search id="s" source="q"
     server-search
     placeholder="Rechercher un produit..."
     url-search-param="q" url-sync
     count>
-  </gouv-search>
+  </dsfr-data-search>
 
-  <gouv-display source="q" cols="1" pagination="10"
+  <dsfr-data-display source="q" cols="1" pagination="10"
     url-sync url-page-param="page">
     <template>
       <div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w">
@@ -1037,20 +1037,20 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Mode server-side</strong> : gouv-source server-side ne charge qu'une page a la fois.
-      La recherche est deleguee au serveur via <code>gouv-search server-search</code>.
-      La pagination est geree par <code>gouv-display</code> via les metadonnees server.
+      <strong>Mode server-side</strong> : dsfr-data-source server-side ne charge qu'une page a la fois.
+      La recherche est deleguee au serveur via <code>dsfr-data-search server-search</code>.
+      La pagination est geree par <code>dsfr-data-display</code> via les metadonnees server.
     </p>
   </div>
 </div>`,
 
   'server-side-tabular-tri': `<!--
   Server-side Tabular — Tri serveur
-  Mode: gouv-source (server-side tabular) -> gouv-datalist (server-tri)
+  Mode: dsfr-data-source (server-side tabular) -> dsfr-data-list (server-tri)
   Source: Tabular API data.gouv.fr - Code officiel geographique (communes)
 -->
 
@@ -1060,22 +1060,22 @@ export const examples: Record<string, string> = {
     Source : tabular-api.data.gouv.fr — Mode server-side avec tri par colonne
   </p>
 
-  <gouv-source id="q" api-type="tabular"
+  <dsfr-data-source id="q" api-type="tabular"
     resource="91a95bee-c7c8-45f9-a8aa-f14cc4697545"
     server-side page-size="20">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-datalist source="q"
+  <dsfr-data-list source="q"
     colonnes="COM:Code commune, LIBELLE:Commune, DEP:Departement, REG:Region"
     server-tri
     pagination="20"
     url-sync>
-  </gouv-datalist>
+  </dsfr-data-list>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Mode server-side + tri</strong> : gouv-source server-side charge une page,
-      <code>gouv-datalist server-tri</code> delegue le tri au serveur.
+      <strong>Mode server-side + tri</strong> : dsfr-data-source server-side charge une page,
+      <code>dsfr-data-list server-tri</code> delegue le tri au serveur.
       Chaque clic sur un en-tete de colonne declenche un re-fetch avec le bon \`orderBy\`.
     </p>
   </div>
@@ -1083,43 +1083,43 @@ export const examples: Record<string, string> = {
 
   'server-facets-display': `<!--
   Server-facets ODS — Recherche + facettes + normalize + cartes
-  Mode: gouv-source (server-side ODS) + gouv-search + gouv-normalize + gouv-facets (server-facets) -> gouv-display
+  Mode: dsfr-data-source (server-side ODS) + dsfr-data-search + dsfr-data-normalize + dsfr-data-facets (server-facets) -> dsfr-data-display
   Source: OpenDataSoft - Industrie du futur (data.economie.gouv.fr)
-  gouv-normalize arrondit les montants pour un affichage propre
+  dsfr-data-normalize arrondit les montants pour un affichage propre
 -->
 
 <div class="fr-container fr-my-4w">
   <h2>Facettes serveur ODS — Industrie du futur</h2>
   <p class="fr-text--sm fr-text--light">
     Source : data.economie.gouv.fr — Facettes dynamiques + recherche full-text, pagination serveur
-    <br>Pipeline : gouv-source server-side → gouv-search → <strong>gouv-normalize</strong> (round) → gouv-facets server-facets → gouv-display
+    <br>Pipeline : dsfr-data-source server-side → dsfr-data-search → <strong>dsfr-data-normalize</strong> (round) → dsfr-data-facets server-facets → dsfr-data-display
   </p>
 
-  <gouv-source id="q" server-side page-size="12"
+  <dsfr-data-source id="q" server-side page-size="12"
     api-type="opendatasoft"
     dataset-id="industrie-du-futur"
     base-url="https://data.economie.gouv.fr">
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-search source="q" server-search
+  <dsfr-data-search source="q" server-search
     placeholder="Rechercher une entreprise..."
     count>
-  </gouv-search>
+  </dsfr-data-search>
 
   <!-- Arrondir les montants (supprimer les decimales parasites) -->
-  <gouv-normalize id="clean" source="q"
+  <dsfr-data-normalize id="clean" source="q"
     round="montant_investissement, montant_participation_etat">
-  </gouv-normalize>
+  </dsfr-data-normalize>
 
-  <gouv-facets id="filtered" source="clean"
+  <dsfr-data-facets id="filtered" source="clean"
     server-facets
     fields="nom_region"
     labels="nom_region:Region"
     display="nom_region:multiselect"
     cols="6">
-  </gouv-facets>
+  </dsfr-data-facets>
 
-  <gouv-display source="filtered" cols="3" pagination="12">
+  <dsfr-data-display source="filtered" cols="3" pagination="12">
     <template>
       <div class="fr-card fr-card--shadow">
         <div class="fr-card__body">
@@ -1136,26 +1136,26 @@ export const examples: Record<string, string> = {
         </div>
       </div>
     </template>
-  </gouv-display>
+  </dsfr-data-display>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>Facettes serveur + normalize + format</strong> : <code>gouv-normalize round</code> arrondit les montants
+      <strong>Facettes serveur + normalize + format</strong> : <code>dsfr-data-normalize round</code> arrondit les montants
       (supprime les decimales parasites type <code>32073247.27</code> → <code>32073247</code>).
-      <code>{{champ:number}}</code> dans le template gouv-display ajoute les separateurs de milliers
+      <code>{{champ:number}}</code> dans le template dsfr-data-display ajoute les separateurs de milliers
       (<code>32073247</code> → <code>32 073 247</code>).
-      <code>gouv-facets server-facets</code> fetche les valeurs de facettes depuis l'API ODS.
+      <code>dsfr-data-facets server-facets</code> fetche les valeurs de facettes depuis l'API ODS.
     </p>
   </div>
 </div>`,
 
   // =====================================================================
-  // CARTE DU MONDE — gouv-source → gouv-world-map
+  // CARTE DU MONDE — dsfr-data-source → dsfr-data-world-map
   // =====================================================================
 
   'direct-worldmap': `<!--
   Carte du monde — PIB par pays (donnees embarquees)
-  Mode direct : gouv-source (donnees inline) → gouv-world-map
+  Mode direct : dsfr-data-source (donnees inline) → dsfr-data-world-map
   Cliquer sur un pays pour zoomer sur son continent
 -->
 
@@ -1165,7 +1165,7 @@ export const examples: Record<string, string> = {
     Donnees embarquees — Source : Banque mondiale (extrait)
   </p>
 
-  <gouv-source id="data"
+  <dsfr-data-source id="data"
     data='[
       {"code":"US","pib":25462},{"code":"CN","pib":17963},{"code":"JP","pib":4231},
       {"code":"DE","pib":4072},{"code":"GB","pib":3070},{"code":"IN","pib":3385},
@@ -1185,20 +1185,20 @@ export const examples: Record<string, string> = {
       {"code":"HU","pib":188},{"code":"MA","pib":134},{"code":"KE","pib":113},
       {"code":"ET","pib":126},{"code":"GH","pib":77}
     ]'>
-  </gouv-source>
+  </dsfr-data-source>
 
-  <gouv-world-map source="data"
+  <dsfr-data-world-map source="data"
     code-field="code"
     value-field="pib"
     code-format="iso-a2"
     name="PIB"
     unit-tooltip="Mds USD"
     selected-palette="sequentialAscending">
-  </gouv-world-map>
+  </dsfr-data-world-map>
 
   <div class="fr-callout fr-mt-4w">
     <p class="fr-callout__text">
-      <strong>gouv-world-map</strong> : carte du monde choropleth avec zoom interactif par continent.
+      <strong>dsfr-data-world-map</strong> : carte du monde choropleth avec zoom interactif par continent.
       Cliquer sur un pays pour zoomer sur son continent, cliquer a nouveau pour revenir a la vue monde.
     </p>
   </div>

@@ -45,7 +45,7 @@ jobs:
         run: npm run build
 
       - name: Build grist-widgets
-        run: npm run build --workspace=@gouv-widgets/app-grist-widgets
+        run: npm run build --workspace=@dsfr-data/app-grist-widgets
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

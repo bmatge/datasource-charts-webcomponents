@@ -2,7 +2,7 @@
  * Types and data fetching for widget monitoring.
  */
 
-import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { PROXY_BASE_URL } from '@dsfr-data/shared';
 
 export interface MonitoringEntry {
   referer: string;
@@ -86,7 +86,7 @@ export function getMockData(): MonitoringData {
     entries: [
       {
         referer: 'https://ministere-interieur.gouv.fr/stats/tableau-de-bord',
-        component: 'gouv-dsfr-chart',
+        component: 'dsfr-data-chart',
         chartType: 'bar',
         firstSeen: '2026-01-15T10:23:45Z',
         lastSeen: '2026-02-07T08:12:33Z',
@@ -94,7 +94,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://ministere-interieur.gouv.fr/stats/tableau-de-bord',
-        component: 'gouv-kpi',
+        component: 'dsfr-data-kpi',
         chartType: null,
         firstSeen: '2026-01-15T10:23:45Z',
         lastSeen: '2026-02-07T08:12:33Z',
@@ -102,7 +102,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://education.gouv.fr/donnees/indicateurs',
-        component: 'gouv-dsfr-chart',
+        component: 'dsfr-data-chart',
         chartType: 'line',
         firstSeen: '2026-01-20T14:05:12Z',
         lastSeen: '2026-02-06T22:45:01Z',
@@ -110,7 +110,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://education.gouv.fr/donnees/indicateurs',
-        component: 'gouv-datalist',
+        component: 'dsfr-data-list',
         chartType: null,
         firstSeen: '2026-01-22T09:15:00Z',
         lastSeen: '2026-02-06T22:45:01Z',
@@ -118,7 +118,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://sante.gouv.fr/open-data/dashboard',
-        component: 'gouv-dsfr-chart',
+        component: 'dsfr-data-chart',
         chartType: 'pie',
         firstSeen: '2026-01-25T16:30:00Z',
         lastSeen: '2026-02-07T07:00:00Z',
@@ -126,7 +126,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://sante.gouv.fr/open-data/dashboard',
-        component: 'gouv-dsfr-chart',
+        component: 'dsfr-data-chart',
         chartType: 'bar',
         firstSeen: '2026-01-25T16:30:00Z',
         lastSeen: '2026-02-07T07:00:00Z',
@@ -134,7 +134,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://ecologie.gouv.fr/observatoire/emissions',
-        component: 'gouv-dsfr-chart',
+        component: 'dsfr-data-chart',
         chartType: 'scatter',
         firstSeen: '2026-02-01T11:00:00Z',
         lastSeen: '2026-02-07T06:30:00Z',
@@ -142,7 +142,7 @@ export function getMockData(): MonitoringData {
       },
       {
         referer: 'https://ecologie.gouv.fr/observatoire/emissions',
-        component: 'gouv-source',
+        component: 'dsfr-data-source',
         chartType: null,
         firstSeen: '2026-02-01T11:00:00Z',
         lastSeen: '2026-02-07T06:30:00Z',
@@ -153,11 +153,11 @@ export function getMockData(): MonitoringData {
       totalSites: 4,
       totalComponents: 8,
       byComponent: {
-        'gouv-dsfr-chart': 4,
-        'gouv-kpi': 1,
-        'gouv-datalist': 1,
-        'gouv-source': 1,
-        'gouv-query': 1,
+        'dsfr-data-chart': 4,
+        'dsfr-data-kpi': 1,
+        'dsfr-data-list': 1,
+        'dsfr-data-source': 1,
+        'dsfr-data-query': 1,
       },
       byChartType: {
         bar: 2,

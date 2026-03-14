@@ -11,7 +11,7 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { escapeHtml, isAuthenticated } from '@gouv-widgets/shared';
+import { escapeHtml, isAuthenticated } from '@dsfr-data/shared';
 
 interface Share {
   id: string;

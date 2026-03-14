@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-normalize — Exemples - Guide - gouv-widgets</title>
+  <title>dsfr-data-normalize — Exemples - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -39,39 +39,39 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-eraser-line fr-mr-1w"></i>gouv-normalize</h1>
+        <h1><i class="ri-eraser-line fr-mr-1w"></i>dsfr-data-normalize</h1>
         <p class="fr-text--lead">
-          <code>gouv-normalize</code> nettoie les donnees (conversion numerique, renommage de colonnes, trim des espaces) avant de les transmettre au composant de visualisation ou a <code>gouv-query</code>.
+          <code>dsfr-data-normalize</code> nettoie les donnees (conversion numerique, renommage de colonnes, trim des espaces) avant de les transmettre au composant de visualisation ou a <code>dsfr-data-query</code>.
         </p>
 
         <!-- normalize-bar -->
         <h4>Barres — Conversion numerique + renommage</h4>
-        <p>Les donnees brutes contiennent des populations en string et des cles d'API peu lisibles. <code>gouv-normalize</code> convertit les nombres et renomme les colonnes avant l'agregation.</p>
+        <p>Les donnees brutes contiennent des populations en string et des cles d'API peu lisibles. <code>dsfr-data-normalize</code> convertit les nombres et renomme les colonnes avant l'agregation.</p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-n-bar">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="clean" source="data"
+&lt;dsfr-data-normalize id="clean" source="data"
   numeric="nombre_beneficiaires, montant_investissement"
   rename="nom_region:Region | nombre_beneficiaires:Beneficiaires | montant_investissement:Investissement"
   trim&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-query id="stats" source="clean"
+&lt;dsfr-data-query id="stats" source="clean"
   group-by="Region"
   aggregate="Beneficiaires:sum"
   order-by="Beneficiaires__sum:desc"
   limit="10"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="stats" type="bar"
+&lt;dsfr-data-chart source="stats" type="bar"
   label-field="Region" value-field="Beneficiaires__sum"
   selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -82,52 +82,52 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-flatten">Code source</button></h3>
           <div class="fr-collapse" id="code-n-flatten">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
 &lt;!-- flatten est sans effet ici car les donnees sont deja plates,
      mais illustre la syntaxe pour des sources Grist/ODS v1 --&gt;
-&lt;gouv-normalize id="clean" source="data"
+&lt;dsfr-data-normalize id="clean" source="data"
   trim numeric-auto&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-query id="stats" source="clean"
+&lt;dsfr-data-query id="stats" source="clean"
   group-by="nom_region"
   aggregate="nombre_beneficiaires:sum:Beneficiaires"
   order-by="Beneficiaires:desc"
   limit="8"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="stats" type="bar"
+&lt;dsfr-data-chart source="stats" type="bar"
   label-field="nom_region" value-field="Beneficiaires"
   titre="Beneficiaires par region (normalize + query)"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
         <!-- normalize-datalist (RappelConso ODS) -->
         <h4>Tableau — Renommage de champs ODS</h4>
-        <p>Les champs de l'API ODS ont des noms techniques (<code>modeles_ou_references</code>, <code>categorie_produit</code>). <code>gouv-normalize</code> renomme ces champs en noms lisibles avant l'affichage en tableau.</p>
+        <p>Les champs de l'API ODS ont des noms techniques (<code>modeles_ou_references</code>, <code>categorie_produit</code>). <code>dsfr-data-normalize</code> renomme ces champs en noms lisibles avant l'affichage en tableau.</p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-n-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-n-datalist">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
-  server-side page-size="50"&gt;&lt;/gouv-source&gt;
+  server-side page-size="50"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="clean" source="data"
+&lt;dsfr-data-normalize id="clean" source="data"
   trim
   rename="modeles_ou_references:Produit | marque_produit:Marque | categorie_produit:Categorie | sous_categorie_produit:Sous-categorie | date_publication:Date"&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-datalist source="clean"
+&lt;dsfr-data-list source="clean"
   colonnes="Produit, Marque, Categorie, Sous-categorie, Date"
   recherche="true" filtres="Categorie"
   tri="Produit:asc" pagination="10" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 

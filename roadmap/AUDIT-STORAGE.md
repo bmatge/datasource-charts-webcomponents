@@ -291,10 +291,10 @@ Aucune validation runtime des donnees lues depuis localStorage ou l'API. Un `JSO
 ### 6.4 Inconsistance des cles de stockage
 
 ```typescript
-FAVORITES: 'gouv-widgets-favorites',    // tirets
-DASHBOARDS: 'gouv-widgets-dashboards',  // tirets
-CONNECTIONS: 'gouv_widgets_connections', // underscores
-SOURCES: 'gouv_widgets_sources',        // underscores
+FAVORITES: 'dsfr-data-favorites',    // tirets
+DASHBOARDS: 'dsfr-data-dashboards',  // tirets
+CONNECTIONS: 'dsfr-data-connections', // underscores
+SOURCES: 'dsfr-data-sources',        // underscores
 ```
 
 Melange de conventions de nommage. Pas un bug, mais symptome d'un developpement incremental.
@@ -514,7 +514,7 @@ interface DbAdapter {
 ```typescript
 // .env
 DB_TYPE=sqlite       # ou mariadb, postgres
-DB_PATH=./data/gouv-widgets.db
+DB_PATH=./data/dsfr-data.db
 # ou
 DB_HOST=localhost
 DB_PORT=3306

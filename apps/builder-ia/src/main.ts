@@ -4,7 +4,7 @@
  */
 
 import './styles/builder-ia.css';
-import { initAuth } from '@gouv-widgets/shared';
+import { initAuth } from '@dsfr-data/shared';
 
 import { loadSavedSources, handleSourceChange, loadSavedSourceData, initDataPreviewModal } from './sources.js';
 import { loadIAConfig, saveIAConfig, addExtraParam } from './ia/ia-config.js';

@@ -5,7 +5,7 @@
 # Log format: $time_iso8601|$http_referer|$arg_c|$arg_t|$remote_addr|$arg_r
 # Field 6 ($arg_r) = explicit origin sent by JS (preferred over $http_referer)
 # Old logs (5 fields) are still supported via fallback to $http_referer
-# Example:    2026-02-07T10:23:45+00:00|https://site.gouv.fr/page|gouv-dsfr-chart|bar|1.2.3.4|https://site.gouv.fr
+# Example:    2026-02-07T10:23:45+00:00|https://site.gouv.fr/page|dsfr-data-chart|bar|1.2.3.4|https://site.gouv.fr
 
 LOG_FILE="${1:-/var/log/nginx/beacon.log}"
 OUT_FILE="${2:-/usr/share/nginx/html/public/monitoring-data.json}"

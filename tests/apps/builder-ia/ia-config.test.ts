@@ -72,7 +72,7 @@ describe('builder-ia ia-config', () => {
         token: 'my-token-123',
         systemPrompt: 'Custom prompt',
       };
-      localStorage.setItem('gouv_widgets_ia_config', JSON.stringify(saved));
+      localStorage.setItem('dsfr-data-ia-config', JSON.stringify(saved));
 
       loadIAConfig();
 
@@ -82,13 +82,13 @@ describe('builder-ia ia-config', () => {
     });
 
     it('should handle partial config gracefully', () => {
-      localStorage.setItem('gouv_widgets_ia_config', JSON.stringify({ token: 'only-token' }));
+      localStorage.setItem('dsfr-data-ia-config', JSON.stringify({ token: 'only-token' }));
       loadIAConfig();
       expect((document.getElementById('ia-token') as HTMLInputElement).value).toBe('only-token');
     });
 
     it('should handle invalid JSON gracefully', () => {
-      localStorage.setItem('gouv_widgets_ia_config', 'not-json');
+      localStorage.setItem('dsfr-data-ia-config', 'not-json');
       expect(() => loadIAConfig()).not.toThrow();
     });
   });
@@ -101,7 +101,7 @@ describe('builder-ia ia-config', () => {
       vi.spyOn(toast, 'toastSuccess').mockImplementation(() => {});
       saveIAConfig();
 
-      const saved = JSON.parse(localStorage.getItem('gouv_widgets_ia_config')!);
+      const saved = JSON.parse(localStorage.getItem('dsfr-data-ia-config')!);
       expect(saved.apiUrl).toBe('https://test.api.com');
       expect(saved.token).toBe('test-token');
     });
@@ -127,7 +127,7 @@ describe('builder-ia ia-config', () => {
       expect(config.systemPrompt).toBe('Live prompt');
 
       // Should NOT have saved to localStorage
-      expect(localStorage.getItem('gouv_widgets_ia_config')).toBeNull();
+      expect(localStorage.getItem('dsfr-data-ia-config')).toBeNull();
     });
   });
 });

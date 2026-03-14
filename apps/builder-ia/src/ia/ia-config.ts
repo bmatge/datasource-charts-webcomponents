@@ -4,7 +4,7 @@
  * (Albert, OpenAI, Anthropic, Gemini, Mistral, etc.)
  */
 
-import { toastSuccess } from '@gouv-widgets/shared';
+import { toastSuccess } from '@dsfr-data/shared';
 
 /** IA config shape */
 export interface IAConfig {
@@ -15,7 +15,7 @@ export interface IAConfig {
   extraParams: Record<string, string>;
 }
 
-const IA_CONFIG_KEY = 'gouv_widgets_ia_config';
+const IA_CONFIG_KEY = 'dsfr-data-ia-config';
 
 /**
  * Toggle the IA config panel visibility

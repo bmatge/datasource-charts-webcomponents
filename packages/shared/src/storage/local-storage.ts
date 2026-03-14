@@ -4,11 +4,11 @@
 
 /** Well-known storage keys used across apps */
 export const STORAGE_KEYS = {
-  FAVORITES: 'gouv-widgets-favorites',
-  DASHBOARDS: 'gouv-widgets-dashboards',
-  CONNECTIONS: 'gouv_widgets_connections',
-  SOURCES: 'gouv_widgets_sources',
-  SELECTED_SOURCE: 'gouv_widgets_selected_source',
+  FAVORITES: 'dsfr-data-favorites',
+  DASHBOARDS: 'dsfr-data-dashboards',
+  CONNECTIONS: 'dsfr-data-connections',
+  SOURCES: 'dsfr-data-sources',
+  SELECTED_SOURCE: 'dsfr-data-selected-source',
 } as const;
 
 /**

@@ -38,14 +38,14 @@ describe('favorites-manager', () => {
     });
 
     it('should load favorites from localStorage', () => {
-      localStorage.setItem('gouv-widgets-favorites', JSON.stringify(sampleFavorites));
+      localStorage.setItem('dsfr-data-favorites', JSON.stringify(sampleFavorites));
       const loaded = loadFavorites();
       expect(loaded).toHaveLength(2);
       expect(loaded[0].name).toBe('Chart A');
     });
 
     it('should return empty array on corrupt data', () => {
-      localStorage.setItem('gouv-widgets-favorites', 'not-json{');
+      localStorage.setItem('dsfr-data-favorites', 'not-json{');
       expect(loadFavorites()).toEqual([]);
     });
   });
@@ -53,7 +53,7 @@ describe('favorites-manager', () => {
   describe('saveFavorites', () => {
     it('should save favorites to localStorage', () => {
       saveFavorites(sampleFavorites);
-      const stored = JSON.parse(localStorage.getItem('gouv-widgets-favorites')!);
+      const stored = JSON.parse(localStorage.getItem('dsfr-data-favorites')!);
       expect(stored).toHaveLength(2);
       expect(stored[0].id).toBe('fav-1');
     });

@@ -89,7 +89,7 @@ describe('builder sources', () => {
         makeSource({ id: 'src-1', name: 'Source A', type: 'grist' }),
         makeSource({ id: 'src-2', name: 'Source B', type: 'api' }),
       ];
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify(sources));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify(sources));
 
       loadSavedSources();
 
@@ -102,7 +102,7 @@ describe('builder sources', () => {
 
     it('adds badge emoji based on source type (grist)', () => {
       const sources: Source[] = [makeSource({ id: 'g1', name: 'Grist Source', type: 'grist' })];
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify(sources));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify(sources));
 
       loadSavedSources();
 
@@ -114,7 +114,7 @@ describe('builder sources', () => {
 
     it('adds badge emoji based on source type (manual)', () => {
       const sources: Source[] = [makeSource({ id: 'm1', name: 'Manual Source', type: 'manual' })];
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify(sources));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify(sources));
 
       loadSavedSources();
 
@@ -126,7 +126,7 @@ describe('builder sources', () => {
 
     it('adds badge emoji based on source type (api)', () => {
       const sources: Source[] = [makeSource({ id: 'a1', name: 'API Source', type: 'api' })];
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify(sources));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify(sources));
 
       loadSavedSources();
 
@@ -139,8 +139,8 @@ describe('builder sources', () => {
     it('adds selected source from localStorage even if not in sources list', () => {
       const sources: Source[] = [makeSource({ id: 'src-1', name: 'Source A' })];
       const selectedSource = makeSource({ id: 'src-selected', name: 'Recent Source', type: 'api' });
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify(sources));
-      localStorage.setItem('gouv_widgets_selected_source', JSON.stringify(selectedSource));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify(sources));
+      localStorage.setItem('dsfr-data-selected-source', JSON.stringify(selectedSource));
 
       loadSavedSources();
 
@@ -155,8 +155,8 @@ describe('builder sources', () => {
 
     it('does not duplicate selected source if already in sources list', () => {
       const source = makeSource({ id: 'src-1', name: 'Source A' });
-      localStorage.setItem('gouv_widgets_sources', JSON.stringify([source]));
-      localStorage.setItem('gouv_widgets_selected_source', JSON.stringify(source));
+      localStorage.setItem('dsfr-data-sources', JSON.stringify([source]));
+      localStorage.setItem('dsfr-data-selected-source', JSON.stringify(source));
 
       loadSavedSources();
 

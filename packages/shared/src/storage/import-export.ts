@@ -66,7 +66,7 @@ export function downloadExport(filename?: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename || `gouv-widgets-export-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = filename || `dsfr-data-export-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

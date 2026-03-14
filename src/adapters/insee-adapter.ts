@@ -12,8 +12,8 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, ServerSideOverlay
 } from './api-adapter.js';
-import type { ProviderConfig } from '@gouv-widgets/shared';
-import { INSEE_CONFIG } from '@gouv-widgets/shared';
+import type { ProviderConfig } from '@dsfr-data/shared';
+import { INSEE_CONFIG } from '@dsfr-data/shared';
 
 /** Default base URL for the Melodi API */
 const INSEE_BASE_URL = 'https://api.insee.fr/melodi';
@@ -101,7 +101,7 @@ export class InseeAdapter implements ApiAdapter {
 
     if (totalCount >= 0 && allResults.length < totalCount && allResults.length < requestedLimit) {
       console.warn(
-        `gouv-source[insee]: pagination incomplete - ${allResults.length}/${totalCount} resultats ` +
+        `dsfr-data-source[insee]: pagination incomplete - ${allResults.length}/${totalCount} resultats ` +
         `(limite: ${INSEE_MAX_PAGES} pages de ${pageSize})`
       );
     }
@@ -271,7 +271,7 @@ export class InseeAdapter implements ApiAdapter {
    *
    * INSEE only supports equality filtering via query params,
    * so only `eq` and `in` operators are mapped. Others are ignored
-   * (client-side gouv-query handles advanced filtering).
+   * (client-side dsfr-data-query handles advanced filtering).
    */
   private _applyDimensionFilters(url: URL, whereClause: string): void {
     const parts = whereClause.split(',').map(p => p.trim()).filter(Boolean);
@@ -302,7 +302,7 @@ export class InseeAdapter implements ApiAdapter {
           break;
         }
         // Other operators (gt, lt, contains, etc.) are not supported by INSEE API
-        // They will be handled client-side by gouv-query
+        // They will be handled client-side by dsfr-data-query
         default:
           break;
       }

@@ -1,4 +1,4 @@
-# gouv-widgets
+# dsfr-data
 
 Bibliotheque de Web Components pour integrer des graphiques dynamiques, accessibles et conformes DSFR dans les sites gouvernementaux francais. Voir la [fiche produit](roadmap/DATASHEET.md) pour le positionnement detaille.
 
@@ -10,7 +10,7 @@ Les plateformes BI (Metabase, Superset, Chartsgouv) repondent a un autre besoin 
 
 ## La solution
 
-gouv-widgets resout le **dernier kilometre** : permettre a un agent public non technique de transformer une donnee ouverte en graphique conforme, accessible et dynamique, embarque dans son site, **sans plateforme, sans developpeur, sans infra**.
+dsfr-data resout le **dernier kilometre** : permettre a un agent public non technique de transformer une donnee ouverte en graphique conforme, accessible et dynamique, embarque dans son site, **sans plateforme, sans developpeur, sans infra**.
 
 Le projet s'articule en **deux volets independants** :
 
@@ -44,24 +44,24 @@ Une suite d'outils web pour **generer le code HTML du volet 1 sans le connaitre*
 
 | Composant | Description |
 |-----------|-------------|
-| `gouv-source` | Connecteur de donnees : charge depuis une API REST et distribue aux autres composants |
-| `gouv-normalize` | Normalisation : conversion numerique, renommage de colonnes, trim, remplacement |
-| `gouv-query` | Requetage : filtre, tri, regroupement et agregation des donnees |
-| `gouv-facets` | Filtres a facettes interactifs sur les donnees d'une source |
-| `gouv-search` | Barre de recherche textuelle avec filtrage client ou server-side |
-| `gouv-dsfr-chart` | Wrapper graphique : connecte les graphiques DSFR Chart au systeme de donnees dynamiques |
-| `gouv-datalist` | Tableau avec recherche, filtres, tri, pagination et export CSV |
-| `gouv-kpi` | Indicateur chiffre cle avec formatage, couleurs conditionnelles et icones |
-| `gouv-display` | Affichage libre de donnees via template HTML personnalise |
-| `gouv-world-map` | Carte du monde coloree par valeurs (choropleth) |
-| `gouv-chart-a11y` | Companion d'accessibilite unifie (tableau, CSV, description) |
+| `dsfr-data-source` | Connecteur de donnees : charge depuis une API REST et distribue aux autres composants |
+| `dsfr-data-normalize` | Normalisation : conversion numerique, renommage de colonnes, trim, remplacement |
+| `dsfr-data-query` | Requetage : filtre, tri, regroupement et agregation des donnees |
+| `dsfr-data-facets` | Filtres a facettes interactifs sur les donnees d'une source |
+| `dsfr-data-search` | Barre de recherche textuelle avec filtrage client ou server-side |
+| `dsfr-data-chart` | Wrapper graphique : connecte les graphiques DSFR Chart au systeme de donnees dynamiques |
+| `dsfr-data-list` | Tableau avec recherche, filtres, tri, pagination et export CSV |
+| `dsfr-data-kpi` | Indicateur chiffre cle avec formatage, couleurs conditionnelles et icones |
+| `dsfr-data-display` | Affichage libre de donnees via template HTML personnalise |
+| `dsfr-data-world-map` | Carte du monde coloree par valeurs (choropleth) |
+| `dsfr-data-a11y` | Companion d'accessibilite unifie (tableau, CSV, description) |
 
 Les composants se chainent de facon declarative :
 
 ```
-gouv-source -> gouv-normalize -> gouv-query -> gouv-dsfr-chart / gouv-kpi / gouv-datalist / gouv-display / gouv-world-map
-                                             -> gouv-facets / gouv-search (filtres interactifs)
-                                             -> gouv-chart-a11y (accessibilite : tableau, CSV, description)
+dsfr-data-source -> dsfr-data-normalize -> dsfr-data-query -> dsfr-data-chart / dsfr-data-kpi / dsfr-data-list / dsfr-data-display / dsfr-data-world-map
+                                             -> dsfr-data-facets / dsfr-data-search (filtres interactifs)
+                                             -> dsfr-data-a11y (accessibilite : tableau, CSV, description)
 ```
 
 ## Utilisation
@@ -72,9 +72,9 @@ Trois bundles sont disponibles selon les besoins :
 
 | Bundle | Contenu | Taille (gzip) |
 |--------|---------|---------------|
-| `gouv-widgets.core.umd.js` | Tous les composants sauf carte du monde | ~52 Ko |
-| `gouv-widgets.world-map.umd.js` | Composant `gouv-world-map` (d3-geo) | ~30 Ko |
-| `gouv-widgets.umd.js` | Tout-en-un (core + world-map) | ~70 Ko |
+| `dsfr-data.core.umd.js` | Tous les composants sauf carte du monde | ~52 Ko |
+| `dsfr-data.world-map.umd.js` | Composant `dsfr-data-world-map` (d3-geo) | ~30 Ko |
+| `dsfr-data.umd.js` | Tout-en-un (core + world-map) | ~70 Ko |
 
 Les bundles ESM equivalents (`.esm.js`) sont aussi disponibles pour `<script type="module">`.
 
@@ -85,53 +85,53 @@ Les bundles ESM equivalents (`.esm.js`) sont aussi disponibles pour `<script typ
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
 
-<!-- gouv-widgets : choisir UNE des options ci-dessous -->
+<!-- dsfr-data : choisir UNE des options ci-dessous -->
 
 <!-- Option 1 : npm CDN (recommande) -->
-<script src="https://unpkg.com/gouv-widgets/dist/gouv-widgets.core.umd.js"></script>
+<script src="https://unpkg.com/dsfr-data/dist/dsfr-data.core.umd.js"></script>
 
 <!-- Option 2 : jsdelivr CDN -->
-<script src="https://cdn.jsdelivr.net/npm/gouv-widgets/dist/gouv-widgets.core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dsfr-data/dist/dsfr-data.core.umd.js"></script>
 
 <!-- Option 3 : self-hosted -->
-<script src="https://<votre-domaine>/dist/gouv-widgets.core.umd.js"></script>
+<script src="https://<votre-domaine>/dist/dsfr-data.core.umd.js"></script>
 ```
 
 Pour la carte du monde, ajouter aussi :
 ```html
-<script src="https://unpkg.com/gouv-widgets/dist/gouv-widgets.world-map.umd.js"></script>
+<script src="https://unpkg.com/dsfr-data/dist/dsfr-data.world-map.umd.js"></script>
 ```
 
 ### Exemple minimal
 
 ```html
 <!-- Source de donnees -->
-<gouv-source id="data"
+<dsfr-data-source id="data"
   url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/industrie-du-futur/records?limit=100"
   transform="results">
-</gouv-source>
+</dsfr-data-source>
 
 <!-- Agregation par region -->
-<gouv-query id="q" source="data"
+<dsfr-data-query id="q" source="data"
   group-by="nom_region"
   aggregate="nombre_beneficiaires:sum:beneficiaires"
   order-by="beneficiaires:desc" limit="10">
-</gouv-query>
+</dsfr-data-query>
 
 <!-- Graphique en barres -->
-<gouv-dsfr-chart source="q" type="bar"
+<dsfr-data-chart source="q" type="bar"
   label-field="nom_region" value-field="beneficiaires">
-</gouv-dsfr-chart>
+</dsfr-data-chart>
 ```
 
 ### Integration via npm
 
 ```bash
-npm install gouv-widgets
+npm install dsfr-data
 ```
 
 ```js
-import 'gouv-widgets';
+import 'dsfr-data';
 ```
 
 ## Applications
@@ -152,7 +152,7 @@ Le projet inclut sept applications web pour creer et gerer des visualisations :
 
 ```
 /
-├── src/                 # Composants web Lit (gouv-source, gouv-kpi, etc.)
+├── src/                 # Composants web Lit (dsfr-data-source, dsfr-data-kpi, etc.)
 ├── dist/                # Build output (ESM + UMD)
 ├── apps/
 │   ├── builder/         # Generateur visuel de graphiques
@@ -163,7 +163,7 @@ Le projet inclut sept applications web pour creer et gerer des visualisations :
 │   ├── favorites/       # Gestion des favoris
 │   └── monitoring/      # Suivi des deployements
 ├── packages/
-│   └── shared/          # Utilitaires partages (@gouv-widgets/shared)
+│   └── shared/          # Utilitaires partages (@dsfr-data/shared)
 ├── proxy/               # Proxy CORS autonome (nginx) deployable independamment
 ├── mcp-server/          # Serveur MCP pour connecteurs IA (Claude, etc.)
 ├── specs/               # Specifications des composants
@@ -224,13 +224,13 @@ npm run tauri:build   # Build Tauri production
 ### Dev d'une app individuelle
 
 ```bash
-npm run dev --workspace=@gouv-widgets/app-builder
-npm run dev --workspace=@gouv-widgets/app-builder-ia
-npm run dev --workspace=@gouv-widgets/app-dashboard
-npm run dev --workspace=@gouv-widgets/app-sources
-npm run dev --workspace=@gouv-widgets/app-playground
-npm run dev --workspace=@gouv-widgets/app-favorites
-npm run dev --workspace=@gouv-widgets/app-monitoring
+npm run dev --workspace=@dsfr-data/app-builder
+npm run dev --workspace=@dsfr-data/app-builder-ia
+npm run dev --workspace=@dsfr-data/app-dashboard
+npm run dev --workspace=@dsfr-data/app-sources
+npm run dev --workspace=@dsfr-data/app-playground
+npm run dev --workspace=@dsfr-data/app-favorites
+npm run dev --workspace=@dsfr-data/app-monitoring
 ```
 
 ## APIs externes

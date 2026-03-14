@@ -3,7 +3,7 @@
  */
 
 import { state, type DatalistColumn } from '../state.js';
-import { openModal, closeModal, setupModalOverlayClose } from '@gouv-widgets/shared';
+import { openModal, closeModal, setupModalOverlayClose } from '@dsfr-data/shared';
 
 /**
  * Initialize datalist columns from current fields (all visible, labels = names).

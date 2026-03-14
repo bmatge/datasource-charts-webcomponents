@@ -2,7 +2,7 @@
  * Manual table editor - DOM operations for the inline table in the manual source modal.
  */
 
-import { looksLikeNumber, toNumber, toastWarning } from '@gouv-widgets/shared';
+import { looksLikeNumber, toNumber, toastWarning } from '@dsfr-data/shared';
 
 // ============================================================
 // Helpers

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractData, extractTotalCount } from '../../src/utils/response-parser.js';
-import { ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG } from '@gouv-widgets/shared';
+import { ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG } from '@dsfr-data/shared';
 
 describe('extractData', () => {
   it('ODS: extracts results array', () => {

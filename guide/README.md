@@ -1,6 +1,6 @@
 # guide/
 
-Documentation utilisateur et exemples d'utilisation des composants gouv-widgets.
+Documentation utilisateur et exemples d'utilisation des composants dsfr-data.
 
 ## Contenu
 

@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@gouv-widgets/shared': resolve(__dirname, 'packages/shared/src'),
+      '@dsfr-data/shared': resolve(__dirname, 'packages/shared/src'),
     },
   },
   test: {
@@ -21,8 +21,8 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.js'],
-      exclude: ['src/index.js', 'src/components/layout/**'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/index.ts', 'src/components/layout/**'],
       reporter: ['text', 'html'],
       all: true,
     },

@@ -20,20 +20,20 @@ const _meta = import.meta as any;
 export const PROXY_BASE_URL: string = _meta.env?.VITE_PROXY_URL || 'https://chartsbuilder.matge.com';
 
 /**
- * Base URL for the gouv-widgets JS library in generated code.
+ * Base URL for the dsfr-data JS library in generated code.
  * Configurable via VITE_LIB_URL at build time.
  *
  * Supported values:
- *   - "unpkg"    → https://unpkg.com/gouv-widgets@{version}/dist
- *   - "jsdelivr" → https://cdn.jsdelivr.net/npm/gouv-widgets@{version}/dist
+ *   - "unpkg"    → https://unpkg.com/dsfr-data@{version}/dist
+ *   - "jsdelivr" → https://cdn.jsdelivr.net/npm/dsfr-data@{version}/dist
  *   - Custom URL → used as-is (e.g. "https://my-cdn.example.com/dist")
  *   - unset      → defaults to ${PROXY_BASE_URL}/dist
  */
 function resolveLibUrl(): string {
   const raw: string = _meta.env?.VITE_LIB_URL || '';
   if (!raw) return `${PROXY_BASE_URL}/dist`;
-  if (raw === 'unpkg') return 'https://unpkg.com/gouv-widgets/dist';
-  if (raw === 'jsdelivr') return 'https://cdn.jsdelivr.net/npm/gouv-widgets/dist';
+  if (raw === 'unpkg') return 'https://unpkg.com/dsfr-data/dist';
+  if (raw === 'jsdelivr') return 'https://cdn.jsdelivr.net/npm/dsfr-data/dist';
   return raw;
 }
 export const LIB_URL: string = resolveLibUrl();

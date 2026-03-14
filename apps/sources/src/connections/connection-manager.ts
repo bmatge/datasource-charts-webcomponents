@@ -17,7 +17,7 @@ import {
   toastError,
   confirmDialog,
   getApiAdapter,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 
 import { state, EXTERNAL_PROXY } from '../state.js';
 import type { StoredConnection } from '../state.js';

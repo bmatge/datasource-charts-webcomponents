@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Parcours utilisateur - Guide - gouv-widgets</title>
+  <title>Parcours utilisateur - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -114,19 +114,19 @@
           <img src="images/guide-B3-builder-dynamic-mode.png" alt="Mode dynamique">
           <ul>
             <li><strong>Donnees integrees</strong> : les donnees sont copiees en dur dans le HTML (statique)</li>
-            <li><strong>Chargement dynamique</strong> : utilise <code>&lt;gouv-source&gt;</code> + <code>&lt;gouv-query&gt;</code> + <code>&lt;gouv-dsfr-chart&gt;</code> pour charger les donnees en temps reel</li>
+            <li><strong>Chargement dynamique</strong> : utilise <code>&lt;dsfr-data-source&gt;</code> + <code>&lt;dsfr-data-query&gt;</code> + <code>&lt;dsfr-data-chart&gt;</code> pour charger les donnees en temps reel</li>
           </ul>
 
           <h3>Etape 4 — Code genere avec composants dynamiques</h3>
-          <p>Apres avoir configure et genere le graphique, le code genere contient les Web Components gouv-widgets :</p>
+          <p>Apres avoir configure et genere le graphique, le code genere contient les Web Components dsfr-data :</p>
           <img src="images/guide-B4-builder-grist-code.png" alt="Code dynamique Grist">
           <p>Le code genere ressemble a :</p>
-<pre>&lt;gouv-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
-             transform="records"&gt;&lt;/gouv-source&gt;
-&lt;gouv-normalize id="clean" source="data" flatten="fields" trim numeric-auto&gt;&lt;/gouv-normalize&gt;
-&lt;gouv-query id="query-result" source="clean" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/gouv-query&gt;
-&lt;gouv-dsfr-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
-                 title="PIB par pays"&gt;&lt;/gouv-dsfr-chart&gt;</pre>
+<pre>&lt;dsfr-data-source id="data" url="https://grist.numerique.gouv.fr/api/docs/xxx/tables/yyy/records"
+             transform="records"&gt;&lt;/dsfr-data-source&gt;
+&lt;dsfr-data-normalize id="clean" source="data" flatten="fields" trim numeric-auto&gt;&lt;/dsfr-data-normalize&gt;
+&lt;dsfr-data-query id="query-result" source="clean" group-by="Pays" aggregate="PIB:avg" order-by="value:desc"&gt;&lt;/dsfr-data-query&gt;
+&lt;dsfr-data-chart source="query-result" type="bar" label-field="Pays" value-field="PIB"
+                 title="PIB par pays"&gt;&lt;/dsfr-data-chart&gt;</pre>
         </section>
 
         <!-- Parcours C -->
@@ -172,7 +172,7 @@
         <section id="parcours-d">
           <h2>Prototyper avec le Playground</h2>
           <div class="user-story">
-            <strong>Pour</strong> tester et modifier du code de composants gouv-widgets en temps reel,
+            <strong>Pour</strong> tester et modifier du code de composants dsfr-data en temps reel,
             <strong>je dois</strong> utiliser le Playground avec ses exemples precharges ou ecrire mon propre code,
             <strong>afin de</strong> prototyper rapidement des visualisations avant de les integrer.
           </div>
@@ -180,7 +180,7 @@
           <h3>Etape 1 — Charger un exemple</h3>
           <p>Le <strong>Playground</strong> est un editeur de code split avec un apercu en temps reel. Un selecteur d'exemples propose des modeles classes en 3 categories :</p>
           <ul>
-            <li><strong>Composants gouv-widgets</strong> : <code>gouv-source</code> + <code>gouv-query</code> + <code>gouv-dsfr-chart</code> (barres, camembert, lignes), <code>gouv-kpi</code>, <code>gouv-datalist</code>, dashboard complet</li>
+            <li><strong>Composants dsfr-data</strong> : <code>dsfr-data-source</code> + <code>dsfr-data-query</code> + <code>dsfr-data-chart</code> (barres, camembert, lignes), <code>dsfr-data-kpi</code>, <code>dsfr-data-list</code>, dashboard complet</li>
             <li><strong>DSFR Chart natifs</strong> : composants DSFR (barres, lignes, camembert, jauge, radar, carte)</li>
           </ul>
           <img src="images/guide-D1-playground-overview.png" alt="Playground — vue d'ensemble">
@@ -197,11 +197,11 @@
             <li>Cliquez sur <strong>Copier</strong> pour copier le code</li>
             <li>Cliquez sur <strong>Favoris</strong> pour sauvegarder dans vos favoris</li>
           </ol>
-          <img src="images/guide-D3-playground-dashboard.png" alt="Playground — dashboard gouv-widgets">
+          <img src="images/guide-D3-playground-dashboard.png" alt="Playground — dashboard dsfr-data">
 
-          <h3>Etape 4 — Tester les composants gouv-widgets</h3>
-          <p>L'exemple "gouv-source + gouv-dsfr-chart" montre comment connecter une source de donnees a un graphique DSFR via les Web Components :</p>
-          <img src="images/guide-D4-playground-gouv-source.png" alt="Playground — gouv-source + chart">
+          <h3>Etape 4 — Tester les composants dsfr-data</h3>
+          <p>L'exemple "dsfr-data-source + dsfr-data-chart" montre comment connecter une source de donnees a un graphique DSFR via les Web Components :</p>
+          <img src="images/guide-D4-playground-dsfr-data-source.png" alt="Playground — dsfr-data-source + chart">
         </section>
 
         <!-- Parcours E -->
@@ -265,7 +265,7 @@
             <ul>
               <li>OpenDataSoft : <code>data.economie.gouv.fr</code> (chemin : <code>results</code>)</li>
               <li>Tabular API : <code>tabular-api.data.gouv.fr</code> (chemin : <code>data</code>)</li>
-              <li>Grist API : <code>grist.numerique.gouv.fr</code> (chemin : <code>records</code>, puis <code>gouv-normalize flatten="fields"</code>)</li>
+              <li>Grist API : <code>grist.numerique.gouv.fr</code> (chemin : <code>records</code>, puis <code>dsfr-data-normalize flatten="fields"</code>)</li>
             </ul>
           </div>
 
@@ -274,7 +274,7 @@
           <img src="images/guide-F2-builder-api-chart.png" alt="Builder — graphique API">
 
           <h3>Etape 3 — Recuperer le code</h3>
-          <p>Le code genere inclut soit un fetch direct vers l'API, soit les composants <code>&lt;gouv-source&gt;</code> et <code>&lt;gouv-dsfr-chart&gt;</code> pour un chargement dynamique.</p>
+          <p>Le code genere inclut soit un fetch direct vers l'API, soit les composants <code>&lt;dsfr-data-source&gt;</code> et <code>&lt;dsfr-data-chart&gt;</code> pour un chargement dynamique.</p>
           <img src="images/guide-F3-builder-api-code.png" alt="Builder — code API">
         </section>
 
@@ -288,7 +288,7 @@
           </div>
 
           <h3>Vue d'ensemble</h3>
-          <p>La page <strong>Monitoring</strong> affiche automatiquement les donnees collectees par le systeme de beacons. Chaque composant gouv-widgets envoie un signal au deploiement, permettant de suivre l'utilisation.</p>
+          <p>La page <strong>Monitoring</strong> affiche automatiquement les donnees collectees par le systeme de beacons. Chaque composant dsfr-data envoie un signal au deploiement, permettant de suivre l'utilisation.</p>
           <img src="images/guide-G1-monitoring-overview.png" alt="Monitoring — vue d'ensemble">
 
           <h3>KPIs de suivi</h3>

@@ -2,7 +2,7 @@
  * Favorites app - main entry point
  */
 
-import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo, initAuth, getApiAdapter } from '@gouv-widgets/shared';
+import { escapeHtml, formatDateShort, openModal, closeModal, setupModalOverlayClose, toastInfo, toastSuccess, toastError, loadFromStorage, saveToStorage, STORAGE_KEYS, appHref, navigateTo, initAuth, getApiAdapter } from '@dsfr-data/shared';
 import { loadFavorites, saveFavorites, deleteFavorite, findFavorite } from './favorites-manager.js';
 import type { Favorite } from './favorites-manager.js';
 import { getPreviewHTML } from './preview.js';
@@ -30,7 +30,7 @@ function exportFavorites(): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'gouv-widgets-favoris.json';
+  a.download = 'dsfr-data-favoris.json';
   a.click();
   URL.revokeObjectURL(url);
   toastSuccess('Favoris exportes');

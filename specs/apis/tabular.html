@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tabular - API supportees - gouv-widgets</title>
+  <title>Tabular - API supportees - dsfr-data</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css" integrity="sha384-YR4AxNhFVy1qsQ0Hp7Rosg06e4sj2m9dLxiYZrtqJ0boIOiDbD8XkIsIPMMkf0VL" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" integrity="sha384-6FSSi597BTd6QcnsBNoLclRKxTOyyYqkaucRjFgCNr8wHVCp0COLClSPY4Vy/bjh" crossorigin="anonymous">
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
     .capability-yes { color: var(--text-default-success); font-weight: bold; }
@@ -106,7 +106,7 @@
           </div>
           <div class="fr-highlight fr-mt-2w">
             <p>
-              La pagination serveur est geree par <code>gouv-source</code> avec l'attribut <code>auto-pagination</code>.
+              La pagination serveur est geree par <code>dsfr-data-source</code> avec l'attribut <code>auto-pagination</code>.
               Les metadonnees serveur sont accessibles via <code>meta.page</code>, <code>meta.page_size</code>
               et <code>meta.total</code>.
             </p>
@@ -154,7 +154,7 @@
           <div class="fr-table">
             <table>
               <thead>
-                <tr><th>Parametre URL</th><th>Description</th><th>Attribut gouv-query</th></tr>
+                <tr><th>Parametre URL</th><th>Description</th><th>Attribut dsfr-data-query</th></tr>
               </thead>
               <tbody>
                 <tr><td><code>column__groupby</code></td><td>Grouper par cette colonne</td><td><code>group-by="column"</code></td></tr>
@@ -238,7 +238,7 @@
         <section class="fr-mt-4w">
           <h2>Detection automatique</h2>
           <p>
-            gouv-widgets detecte automatiquement une source Tabular si l'URL contient :
+            dsfr-data detecte automatiquement une source Tabular si l'URL contient :
           </p>
           <ul>
             <li><code>tabular-api.data.gouv.fr/api/resources/{resourceId}</code></li>
@@ -253,39 +253,39 @@
           <h2>Exemple d'utilisation</h2>
 
           <h3>Graphique avec agregation</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   api-type="tabular"
   resource="2876a346-d50c-4911-934e-19ee07b0e503"
   auto-pagination&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query
+&lt;dsfr-data-query
   source="src"
   group-by="region"
   aggregate="population:sum"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart
+&lt;dsfr-data-chart
   source="src"
   type="bar"
   name-field="region"
   value-field="population"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Datalist avec pagination serveur</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   api-type="tabular"
   resource="2876a346-d50c-4911-934e-19ee07b0e503"
   server-side&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist
+&lt;dsfr-data-list
   source="src"
   columns="nom,prenom,commune"
   page-size="20"&gt;
-&lt;/gouv-datalist&gt;</code></pre>
+&lt;/dsfr-data-list&gt;</code></pre>
         </section>
     </div>
   </app-layout-demo>

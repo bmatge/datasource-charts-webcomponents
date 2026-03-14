@@ -11,28 +11,28 @@ test.describe('Grist widgets - test local', () => {
     await expect(page.locator('h1')).toContainText('Test local des widgets Grist DSFR');
   });
 
-  test('gouv-dsfr-chart component is present', async ({ page }) => {
-    const chart = page.locator('gouv-dsfr-chart[source="grist"]');
+  test('dsfr-data-chart component is present', async ({ page }) => {
+    const chart = page.locator('dsfr-data-chart[source="grist"]');
     await expect(chart).toBeAttached();
   });
 
-  test('gouv-kpi component is present and renders', async ({ page }) => {
-    const kpi = page.locator('gouv-kpi[source="grist"]');
+  test('dsfr-data-kpi component is present and renders', async ({ page }) => {
+    const kpi = page.locator('dsfr-data-kpi[source="grist"]');
     await expect(kpi).toBeAttached();
     // KPI should have rendered a value in shadow DOM
     const shadow = kpi.locator('div').first();
     await expect(shadow).toBeVisible({ timeout: 5000 });
   });
 
-  test('gouv-datalist component renders rows', async ({ page }) => {
-    const datalist = page.locator('gouv-datalist[source="grist"]');
+  test('dsfr-data-list component renders rows', async ({ page }) => {
+    const datalist = page.locator('dsfr-data-list[source="grist"]');
     await expect(datalist).toBeAttached();
     // Wait for table to render (in shadow DOM, a <table> or <tr>)
     await expect(datalist.locator('table').first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('gouv-dsfr-chart map component is present', async ({ page }) => {
-    const map = page.locator('gouv-dsfr-chart[source="grist-map"]');
+  test('dsfr-data-chart map component is present', async ({ page }) => {
+    const map = page.locator('dsfr-data-chart[source="grist-map"]');
     await expect(map).toBeAttached();
     await expect(map).toHaveAttribute('type', 'map');
   });
@@ -87,7 +87,7 @@ test.describe('Grist widgets - individual widget pages', () => {
 
     await page.goto('/apps/grist-widgets/chart/index.html');
     await expect(page.locator('#empty-state')).toBeVisible();
-    // Note: gouv-dsfr-chart is created dynamically by chart.ts when data arrives
+    // Note: dsfr-data-chart is created dynamically by chart.ts when data arrives
   });
 
   // Note: kpi/ and map/ pages were merged into chart/index.html (unified widget)
@@ -105,6 +105,6 @@ test.describe('Grist widgets - individual widget pages', () => {
 
     await page.goto('/apps/grist-widgets/datalist/index.html');
     await expect(page.locator('#empty-state')).toBeVisible();
-    await expect(page.locator('gouv-datalist')).toBeAttached();
+    await expect(page.locator('dsfr-data-list')).toBeAttached();
   });
 });

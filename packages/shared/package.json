@@ -1,7 +1,7 @@
 {
-  "name": "@gouv-widgets/shared",
+  "name": "@dsfr-data/shared",
   "version": "0.1.0",
-  "description": "Utilitaires partagés pour les apps gouv-widgets",
+  "description": "Utilitaires partagés pour les apps dsfr-data",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",

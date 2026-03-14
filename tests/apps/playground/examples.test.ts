@@ -68,82 +68,82 @@ describe('playground examples', () => {
     }
   });
 
-  it('direct examples should use gouv-source', () => {
+  it('direct examples should use dsfr-data-source', () => {
     for (const key of directKeys) {
-      const hasSource = examples[key].includes('gouv-source');
-      expect(hasSource, `${key} should use gouv-source`).toBe(true);
+      const hasSource = examples[key].includes('dsfr-data-source');
+      expect(hasSource, `${key} should use dsfr-data-source`).toBe(true);
       if (!['direct-kpi', 'direct-datalist', 'direct-display', 'direct-worldmap'].includes(key)) {
-        expect(examples[key], `${key} should use gouv-dsfr-chart`).toContain('gouv-dsfr-chart');
+        expect(examples[key], `${key} should use dsfr-data-chart`).toContain('dsfr-data-chart');
       }
     }
   });
 
-  it('display examples should use gouv-display', () => {
+  it('display examples should use dsfr-data-display', () => {
     for (const key of displayKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      expect(examples[key], `${key} should use gouv-display`).toContain('gouv-display');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
+      expect(examples[key], `${key} should use dsfr-data-display`).toContain('dsfr-data-display');
       expect(examples[key], `${key} should use template`).toContain('<template>');
     }
   });
 
-  it('query examples should use gouv-source and gouv-query', () => {
+  it('query examples should use dsfr-data-source and dsfr-data-query', () => {
     for (const key of queryKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      expect(examples[key], `${key} should use gouv-query`).toContain('gouv-query');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
+      expect(examples[key], `${key} should use dsfr-data-query`).toContain('dsfr-data-query');
     }
   });
 
-  it('kpi examples should use gouv-kpi', () => {
-    expect(examples['direct-kpi']).toContain('gouv-kpi');
+  it('kpi examples should use dsfr-data-kpi', () => {
+    expect(examples['direct-kpi']).toContain('dsfr-data-kpi');
   });
 
-  it('datalist examples should use gouv-datalist', () => {
-    expect(examples['direct-datalist']).toContain('gouv-datalist');
+  it('datalist examples should use dsfr-data-list', () => {
+    expect(examples['direct-datalist']).toContain('dsfr-data-list');
   });
 
-  it('normalize examples should use gouv-source and gouv-normalize', () => {
+  it('normalize examples should use dsfr-data-source and dsfr-data-normalize', () => {
     for (const key of normalizeKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
+      expect(examples[key], `${key} should use dsfr-data-normalize`).toContain('dsfr-data-normalize');
     }
   });
 
-  it('facets examples should use gouv-source, gouv-facets and gouv-normalize', () => {
+  it('facets examples should use dsfr-data-source, dsfr-data-facets and dsfr-data-normalize', () => {
     for (const key of facetsKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      expect(examples[key], `${key} should use gouv-normalize`).toContain('gouv-normalize');
-      expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
+      expect(examples[key], `${key} should use dsfr-data-normalize`).toContain('dsfr-data-normalize');
+      expect(examples[key], `${key} should use dsfr-data-facets`).toContain('dsfr-data-facets');
     }
   });
 
-  it('client-side search examples should use gouv-source and gouv-search', () => {
+  it('client-side search examples should use dsfr-data-source and dsfr-data-search', () => {
     for (const key of searchClientKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
-      expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
+      expect(examples[key], `${key} should use dsfr-data-search`).toContain('dsfr-data-search');
     }
   });
 
-  it('server-side search examples should use gouv-source server-side and gouv-search server-search', () => {
+  it('server-side search examples should use dsfr-data-source server-side and dsfr-data-search server-search', () => {
     for (const key of searchServerKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
-      expect(examples[key], `${key} should use gouv-search`).toContain('gouv-search');
+      expect(examples[key], `${key} should use dsfr-data-search`).toContain('dsfr-data-search');
       expect(examples[key], `${key} should use server-search`).toContain('server-search');
     }
   });
 
-  it('server-side examples should use gouv-source with server-side', () => {
+  it('server-side examples should use dsfr-data-source with server-side', () => {
     for (const key of serverSideKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
     }
   });
 
-  it('server-facets examples should use gouv-source server-side and gouv-facets server-facets', () => {
+  it('server-facets examples should use dsfr-data-source server-side and dsfr-data-facets server-facets', () => {
     for (const key of serverFacetsKeys) {
-      expect(examples[key], `${key} should use gouv-source`).toContain('gouv-source');
+      expect(examples[key], `${key} should use dsfr-data-source`).toContain('dsfr-data-source');
       expect(examples[key], `${key} should use server-side`).toContain('server-side');
-      expect(examples[key], `${key} should use gouv-facets`).toContain('gouv-facets');
+      expect(examples[key], `${key} should use dsfr-data-facets`).toContain('dsfr-data-facets');
       expect(examples[key], `${key} should use server-facets`).toContain('server-facets');
     }
   });

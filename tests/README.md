@@ -6,9 +6,9 @@ Tests unitaires et d'integration (Vitest).
 
 ```
 tests/
-  gouv-source.test.ts        # Tests des composants web
-  gouv-query.test.ts
-  gouv-facets.test.ts
+  dsfr-data-source.test.ts        # Tests des composants web
+  dsfr-data-query.test.ts
+  dsfr-data-facets.test.ts
   ...
   aggregations.test.ts        # Tests des utilitaires
   chart-data.test.ts
@@ -18,7 +18,7 @@ tests/
   beacon.test.ts
   integration.test.ts         # Tests multi-composants
   adapters/                   # Tests des adaptateurs (ODS, Tabular, Grist)
-  shared/                     # Tests du package @gouv-widgets/shared
+  shared/                     # Tests du package @dsfr-data/shared
   apps/                       # Tests des applications (builder, builder-ia, dashboard, etc.)
   server/                     # Tests du serveur Express
   builder-e2e/                # Tests exhaustifs du builder (Playwright, 110 combinaisons)

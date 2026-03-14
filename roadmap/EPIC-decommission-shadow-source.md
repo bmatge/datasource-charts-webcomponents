@@ -1,11 +1,11 @@
-# EPIC : Decommissionnement du shadow source (gouv-query backward-compat)
+# EPIC : Decommissionnement du shadow source (dsfr-data-query backward-compat)
 
 ## Contexte
 
-Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query api-type="opendatasoft" ...>` sans `<gouv-source>` explicite cree dynamiquement un `<gouv-source>` invisible ("shadow source") dans le DOM. Ce mecanisme :
+Le composant `dsfr-data-query` supporte un mode backward-compatible ou `<dsfr-data-query api-type="opendatasoft" ...>` sans `<dsfr-data-source>` explicite cree dynamiquement un `<dsfr-data-source>` invisible ("shadow source") dans le DOM. Ce mecanisme :
 
 - Complexifie le code (~100 lignes dediees)
-- Cree un couplage implicite entre gouv-query et gouv-source
+- Cree un couplage implicite entre dsfr-data-query et dsfr-data-source
 - Rend le debugging difficile (element invisible dans le DOM)
 - Masque le flux de donnees reel a l'utilisateur
 - N'est plus genere par aucun builder depuis le fix `94459c0`
@@ -16,7 +16,7 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 
 ## Inventaire du code a supprimer/modifier
 
-### 1. `src/components/gouv-query.ts` — Coeur du shadow source
+### 1. `src/components/dsfr-data-query.ts` — Coeur du shadow source
 
 | Lignes | Element | Action |
 |--------|---------|--------|
@@ -42,7 +42,7 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 
 **Estimation** : ~100 lignes supprimees, ~20 lignes simplifiees.
 
-### 2. `tests/gouv-query.test.ts` — Tests du shadow source
+### 2. `tests/dsfr-data-query.test.ts` — Tests du shadow source
 
 | Lignes | Test | Action |
 |--------|------|--------|
@@ -59,21 +59,21 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 | 984-1000 | "uses filter attribute as where fallback" | **Adapter** si filter existe encore hors compat |
 
 **A ajouter** :
-- Test verifiant que `<gouv-query>` sans `source` emet un warning et ne fait rien
-- Test verifiant que `api-type` sur `<gouv-query>` est ignore
+- Test verifiant que `<dsfr-data-query>` sans `source` emet un warning et ne fait rien
+- Test verifiant que `api-type` sur `<dsfr-data-query>` est ignore
 
-### 3. `specs/components/gouv-query.html` — Specifications
+### 3. `specs/components/dsfr-data-query.html` — Specifications
 
 | Lignes | Contenu | Action |
 |--------|---------|--------|
-| 17-21 | Exemple deprecated en en-tete | **Remplacer** par le pattern gouv-source + gouv-query |
+| 17-21 | Exemple deprecated en en-tete | **Remplacer** par le pattern dsfr-data-source + dsfr-data-query |
 | 55-73 | Table des modes (generic/opendatasoft/tabular) | **Simplifier** : supprimer les modes adapter, garder uniquement la mention de `source` |
 | 80 | Attribut `api-type` dans la table des attributs | **Supprimer** |
 | 82-93 | Attributs `base-url`, `dataset-id`, `resource`, `select`, `headers` | **Supprimer** |
-| 226-250 | Exemple "Mode OpenDataSoft : requete serveur" | **Remplacer** par un exemple avec `<gouv-source>` explicite |
+| 226-250 | Exemple "Mode OpenDataSoft : requete serveur" | **Remplacer** par un exemple avec `<dsfr-data-source>` explicite |
 | 258-266 | Exemple "Mode Tabular API" (si deprecated) | **Remplacer** |
-| 299-308 | Exemple "Dataset prive avec headers" | **Remplacer** par un pattern utilisant `headers` sur `<gouv-source>` |
-| 330-337 | Exemple "Rafraichissement automatique" | **Remplacer** par `refresh` sur `<gouv-source>` |
+| 299-308 | Exemple "Dataset prive avec headers" | **Remplacer** par un pattern utilisant `headers` sur `<dsfr-data-source>` |
+| 330-337 | Exemple "Rafraichissement automatique" | **Remplacer** par `refresh` sur `<dsfr-data-source>` |
 
 ### 4. `apps/builder-ia/src/skills.ts` — Skills IA
 
@@ -97,9 +97,9 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 
 ## Taches
 
-### T1 — Supprimer le shadow source de `gouv-query.ts`
+### T1 — Supprimer le shadow source de `dsfr-data-query.ts`
 
-**Fichier** : `src/components/gouv-query.ts`
+**Fichier** : `src/components/dsfr-data-query.ts`
 
 1. Supprimer le type `ApiType`
 2. Supprimer les 6 proprietes deprecated : `apiType`, `baseUrl`, `datasetId`, `resource`, `select`, `headers`
@@ -117,33 +117,33 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 
 ### T2 — Mettre a jour les tests unitaires
 
-**Fichier** : `tests/gouv-query.test.ts`
+**Fichier** : `tests/dsfr-data-query.test.ts`
 
 1. Supprimer le describe "Shadow source (backward compat mode)" entier (~120 lignes)
 2. Supprimer le test "forwards to shadow source in compat mode"
 3. Supprimer le describe "Shadow source edge cases" entier
 4. Nettoyer setup/teardown : retirer `clearDataCache('__gq_*')` et cleanup `__gq_*`
 5. Ajouter :
-   - Test : `<gouv-query>` sans `source` emet un warning et n'initialise pas
+   - Test : `<dsfr-data-query>` sans `source` emet un warning et n'initialise pas
    - Test : les anciennes proprietes (`apiType`, `baseUrl`...) n'existent plus sur l'element
 6. Verifier que `filter` (alias de `where`) fonctionne toujours via `this.source`
 
-**Critere de validation** : `npm run test:run` passe, couverture de gouv-query >= 90%.
+**Critere de validation** : `npm run test:run` passe, couverture de dsfr-data-query >= 90%.
 
 ### T3 — Mettre a jour les specifications
 
-**Fichier** : `specs/components/gouv-query.html`
+**Fichier** : `specs/components/dsfr-data-query.html`
 
-1. Remplacer l'exemple en en-tete par un pattern `<gouv-source> + <gouv-query source="...">`
-2. Supprimer la table des modes (ou la simplifier : gouv-query = pur transformateur)
+1. Remplacer l'exemple en en-tete par un pattern `<dsfr-data-source> + <dsfr-data-query source="...">`
+2. Supprimer la table des modes (ou la simplifier : dsfr-data-query = pur transformateur)
 3. Retirer les attributs adapter de la table des attributs (`api-type`, `base-url`, `dataset-id`, `resource`, `select`, `headers`)
 4. Remplacer tous les exemples deprecated par le nouveau pattern :
-   - ODS serveur : `<gouv-source api-type="opendatasoft" ...>` + `<gouv-query source="...">`
+   - ODS serveur : `<dsfr-data-source api-type="opendatasoft" ...>` + `<dsfr-data-query source="...">`
    - Tabular : idem avec `api-type="tabular"`
-   - Dataset prive : `headers` sur `<gouv-source>`
-   - Rafraichissement : `refresh` sur `<gouv-source>`
+   - Dataset prive : `headers` sur `<dsfr-data-source>`
+   - Rafraichissement : `refresh` sur `<dsfr-data-source>`
 
-**Critere de validation** : aucun `<gouv-query` avec `api-type=` dans le fichier.
+**Critere de validation** : aucun `<dsfr-data-query` avec `api-type=` dans le fichier.
 
 ### T4 — Mettre a jour les skills et la documentation
 
@@ -160,7 +160,7 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 1. `npm run build` : build sans erreur
 2. `npm run test:run` : tous les tests passent
 3. `grep -r 'shadowSource\|_shadowSource\|__gq_' src/ tests/` : aucun resultat
-4. `grep -r 'api-type' specs/components/gouv-query.html` : aucun resultat
+4. `grep -r 'api-type' specs/components/dsfr-data-query.html` : aucun resultat
 5. Verifier manuellement dans le navigateur :
    - ODS chart dynamique fonctionne (builder)
    - Tabular datalist fonctionne (builder)
@@ -173,9 +173,9 @@ Le composant `gouv-query` supporte un mode backward-compatible ou `<gouv-query a
 
 | Risque | Impact | Mitigation |
 |--------|--------|------------|
-| Code externe utilisant `<gouv-query api-type="...">` | L'ancien pattern ne marchera plus | App pas en prod, aucun utilisateur externe connu |
+| Code externe utilisant `<dsfr-data-query api-type="...">` | L'ancien pattern ne marchera plus | App pas en prod, aucun utilisateur externe connu |
 | Tests E2E (Playwright) utilisant l'ancien pattern | Echec des tests | Verifier `tests/builder-e2e/` apres les changements |
-| Skill gouvQuery dans builder-IA pas a jour | L'IA pourrait generer l'ancien pattern | T4 met a jour les skills, les tests d'alignement le verifient |
+| Skill dsfrDataQuery dans builder-IA pas a jour | L'IA pourrait generer l'ancien pattern | T4 met a jour les skills, les tests d'alignement le verifient |
 
 ## Estimation
 

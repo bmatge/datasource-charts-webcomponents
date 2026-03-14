@@ -61,7 +61,7 @@ process.on('SIGINT', () => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[server] gouv-widgets API listening on port ${PORT}`);
+  console.log(`[server] dsfr-data API listening on port ${PORT}`);
 });
 
 export default app;

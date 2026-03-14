@@ -11,8 +11,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'GouvWidgets',
-      fileName: (format) => `gouv-widgets.${format === 'es' ? 'esm' : format}.js`,
+      name: 'DsfrData',
+      fileName: (format) => `dsfr-data.${format === 'es' ? 'esm' : format}.js`,
       formats: ['es', 'umd']
     },
     // Prevent Vite from inlining the TopoJSON as base64 (105 KB)
@@ -149,12 +149,12 @@ export default defineConfig({
       },
     },
     {
-      name: 'gouv-widgets-umd',
+      name: 'dsfr-data-umd',
       // Serve the UMD bundle for grist-widgets pages (test-local.html, chart/, datalist/)
       configureServer(server) {
-        const umdPath = resolve(__dirname, 'dist/gouv-widgets.umd.js');
+        const umdPath = resolve(__dirname, 'dist/dsfr-data.umd.js');
         server.middlewares.use((req, res, next) => {
-          if (req.url && req.url.endsWith('/lib/gouv-widgets.umd.js')) {
+          if (req.url && req.url.endsWith('/lib/dsfr-data.umd.js')) {
             if (!existsSync(umdPath)) {
               res.statusCode = 404;
               res.end('UMD not found. Run "npm run build" first.');
@@ -171,7 +171,7 @@ export default defineConfig({
     {
       name: 'cors-proxy',
       configureServer(server) {
-        // Proxy CORS generique pour gouv-source use-proxy :
+        // Proxy CORS generique pour dsfr-data-source use-proxy :
         // lit l'URL cible depuis le header X-Target-URL
         // et forwarde la requete cote serveur (contourne CORS)
         server.middlewares.use('/cors-proxy', (req, res) => {

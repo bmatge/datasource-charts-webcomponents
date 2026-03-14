@@ -34,8 +34,8 @@ function fullPayload() {
       { id: 'conn-1', name: 'Grist Prod', type: 'grist', apiKey: 'key-123', status: 'ok' },
     ],
     favorites: [
-      { id: 'fav-1', name: 'Bar Chart', chartType: 'bar', code: '<gouv-chart type="bar"></gouv-chart>', source: 'builder' },
-      { id: 'fav-2', name: 'Pie Chart', chartType: 'pie', code: '<gouv-chart type="pie"></gouv-chart>', source: 'builder-ia' },
+      { id: 'fav-1', name: 'Bar Chart', chartType: 'bar', code: '<dsfr-data-chart type="bar"></dsfr-data-chart>', source: 'builder' },
+      { id: 'fav-2', name: 'Pie Chart', chartType: 'pie', code: '<dsfr-data-chart type="pie"></dsfr-data-chart>', source: 'builder-ia' },
     ],
     dashboards: [
       { id: 'dash-1', name: 'Overview', description: 'Main dashboard', layout: { rows: 2 }, widgets: [{ id: 'w1' }] },

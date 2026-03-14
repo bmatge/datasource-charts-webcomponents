@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { state, createEmptyDashboard } from '../../../apps/dashboard/src/state';
 
-// Mock @gouv-widgets/shared
-vi.mock('@gouv-widgets/shared', () => ({
+// Mock @dsfr-data/shared
+vi.mock('@dsfr-data/shared', () => ({
   escapeHtml: (s: string) => s.replace(/</g, '&lt;').replace(/>/g, '&gt;'),
   saveToStorage: vi.fn(),
-  STORAGE_KEYS: { DASHBOARDS: 'gouv-widgets-dashboards' },
+  STORAGE_KEYS: { DASHBOARDS: 'dsfr-data-dashboards' },
   toastWarning: vi.fn(),
   toastSuccess: vi.fn(),
   navigateTo: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('@gouv-widgets/shared', () => ({
 }));
 
 import { confirmSave, openSaveModal, closeSaveModal, newDashboard, loadDashboard, deleteDashboard } from '../../../apps/dashboard/src/dashboards';
-import { saveToStorage, toastWarning, toastSuccess, confirmDialog } from '@gouv-widgets/shared';
+import { saveToStorage, toastWarning, toastSuccess, confirmDialog } from '@dsfr-data/shared';
 
 describe('dashboard/dashboards', () => {
   beforeEach(() => {

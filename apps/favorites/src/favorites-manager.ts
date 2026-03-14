@@ -2,7 +2,7 @@
  * Favorites manager - handles CRUD operations on stored favorites
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@dsfr-data/shared';
 
 export interface Favorite {
   id: string;

@@ -194,7 +194,7 @@ private _performJoin(leftData: Row[], rightData: Row[]): Row[] {
 ### Integration dans le pipeline
 
 Le composant doit :
-- Implementer la meme interface de sortie que `gouv-source` et `gouv-query` (propriete `records`, evenement `gouv-data`)
+- Implementer la meme interface de sortie que `dsfr-data-source` et `dsfr-data-query` (propriete `records`, evenement `gouv-data`)
 - Pouvoir etre consomme par n'importe quel composant d'affichage (`dsfr-data-chart`, `dsfr-data-list`, `dsfr-data-kpi`, etc.)
 - Re-executer la jointure quand l'une des sources emet de nouvelles donnees (pagination, filtre modifie)
 

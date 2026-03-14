@@ -2,7 +2,7 @@
  * CSV parsing: parse lines, detect separators, handle file uploads.
  */
 
-import { escapeHtml, toNumber, looksLikeNumber } from '@gouv-widgets/shared';
+import { escapeHtml, toNumber, looksLikeNumber } from '@dsfr-data/shared';
 import { setParsedCsvData } from '../state.js';
 
 // ============================================================

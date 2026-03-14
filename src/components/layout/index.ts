@@ -1,5 +1,5 @@
 /**
- * Layout components for the gouv-widgets application
+ * Layout components for the dsfr-data application
  *
  * These components provide reusable layout structures
  * for the header, footer, and page layouts.

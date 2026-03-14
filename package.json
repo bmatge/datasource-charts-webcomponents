@@ -1,28 +1,28 @@
 {
-  "name": "gouv-widgets",
+  "name": "dsfr-data",
   "version": "0.3.3",
   "description": "Bibliothèque de Web Components de dataviz pour sites gouvernementaux",
   "type": "module",
-  "main": "dist/gouv-widgets.umd.js",
-  "module": "dist/gouv-widgets.esm.js",
+  "main": "dist/dsfr-data.umd.js",
+  "module": "dist/dsfr-data.esm.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/gouv-widgets.esm.js",
-      "require": "./dist/gouv-widgets.umd.js",
+      "import": "./dist/dsfr-data.esm.js",
+      "require": "./dist/dsfr-data.umd.js",
       "types": "./dist/index.d.ts"
     },
     "./core": {
-      "import": "./dist/gouv-widgets.core.esm.js",
-      "require": "./dist/gouv-widgets.core.umd.js"
+      "import": "./dist/dsfr-data.core.esm.js",
+      "require": "./dist/dsfr-data.core.umd.js"
     },
     "./world-map": {
-      "import": "./dist/gouv-widgets.world-map.esm.js",
-      "require": "./dist/gouv-widgets.world-map.umd.js"
+      "import": "./dist/dsfr-data.world-map.esm.js",
+      "require": "./dist/dsfr-data.world-map.umd.js"
     }
   },
   "files": [
-    "dist/gouv-widgets.*.js",
+    "dist/dsfr-data.*.js",
     "dist/data/"
   ],
   "workspaces": [
@@ -33,8 +33,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite-node scripts/build-lib.ts && vite-node scripts/build-skills-json.ts",
-    "build:shared": "npm run build --workspace=@gouv-widgets/shared",
-    "build:apps": "npm run build --workspace=@gouv-widgets/app-favorites && npm run build --workspace=@gouv-widgets/app-playground && npm run build --workspace=@gouv-widgets/app-sources && npm run build --workspace=@gouv-widgets/app-builder-ia && npm run build --workspace=@gouv-widgets/app-builder && npm run build --workspace=@gouv-widgets/app-dashboard && npm run build --workspace=@gouv-widgets/app-monitoring && npm run build --workspace=@gouv-widgets/app-grist-widgets",
+    "build:shared": "npm run build --workspace=@dsfr-data/shared",
+    "build:apps": "npm run build --workspace=@dsfr-data/app-favorites && npm run build --workspace=@dsfr-data/app-playground && npm run build --workspace=@dsfr-data/app-sources && npm run build --workspace=@dsfr-data/app-builder-ia && npm run build --workspace=@dsfr-data/app-builder && npm run build --workspace=@dsfr-data/app-dashboard && npm run build --workspace=@dsfr-data/app-monitoring && npm run build --workspace=@dsfr-data/app-grist-widgets",
     "build:all": "npm run build:shared && npm run build && npm run build:apps",
     "preview": "vite preview",
     "test": "vitest",
@@ -44,8 +44,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "npm run build:all && npm run build:app && tauri build",
     "build:app": "node scripts/build-app.js",
-    "build:server": "npm run build --workspace=@gouv-widgets/server",
-    "dev:server": "npm run dev --workspace=@gouv-widgets/server",
+    "build:server": "npm run build --workspace=@dsfr-data/server",
+    "dev:server": "npm run dev --workspace=@dsfr-data/server",
     "test:e2e": "playwright test",
     "prepublishOnly": "npm run build:shared && npm run build"
   },

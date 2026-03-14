@@ -12,7 +12,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@gouv-widgets/shared': resolve(__dirname, '../../packages/shared/src'),
+      '@dsfr-data/shared': resolve(__dirname, '../../packages/shared/src'),
     }
   },
   server: {

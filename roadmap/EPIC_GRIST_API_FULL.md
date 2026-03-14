@@ -26,7 +26,7 @@ modifiant que **2 fichiers** :
 | `src/adapters/grist-adapter.ts` | Logique : construction d'URL, parsing reponses, gestion pagination |
 | `packages/shared/src/providers/grist.ts` | Config declarative : capacites, pagination, query format |
 
-**Les composants ne changent pas.** `gouv-source`, `gouv-query`, `gouv-facets`, `gouv-search`
+**Les composants ne changent pas.** `dsfr-data-source`, `dsfr-data-query`, `dsfr-data-facets`, `dsfr-data-search`
 lisent les capacites depuis l'adapter/provider et s'adaptent automatiquement.
 
 ## Fichiers modifies (2 fichiers adapter/provider + 1 type a etendre)
@@ -51,7 +51,7 @@ Les interfaces `ApiAdapter`, `AdapterParams`, `ServerSideOverlay`, `FetchResult`
 | `ApiAdapter` | `fetchFacets?()` | Signature existante : `(params: Pick<AdapterParams, 'baseUrl'\|'datasetId'\|'headers'>, fields: string[], where: string, signal?) → Promise<FacetResult[]>`. Ne pas inventer `fetchFacetValues()`. |
 | `FacetResult` | `{ field, values: Array<{ value, count }> }` | L'adapter doit retourner ce format. |
 | `ProviderConfig.query` | `aggregationSyntax` | Type union actuel : `'odsql-select' \| 'colon-attr' \| 'client-only'`. **Doit etre etendu** avec `'sql'` dans `provider-config.ts`. |
-| `gouv-search` | `searchTemplate` | Ne remplace que `{q}`, pas `{searchField}`. Le template Grist doit etre un WHERE complet avec `{q}` seulement. |
+| `dsfr-data-search` | `searchTemplate` | Ne remplace que `{q}`, pas `{searchField}`. Le template Grist doit etre un WHERE complet avec `{q}` seulement. |
 
 ## Decisions d'arbitrage
 
@@ -63,7 +63,7 @@ Les interfaces `ApiAdapter`, `AdapterParams`, `ServerSideOverlay`, `FetchResult`
 
 ## Contraintes techniques
 
-- **Retrocompatibilite** : le pattern actuel (`gouv-source` + `gouv-query` tout client-side) doit continuer a fonctionner
+- **Retrocompatibilite** : le pattern actuel (`dsfr-data-source` + `dsfr-data-query` tout client-side) doit continuer a fonctionner
 - **Timeout SQL** : le defaut Grist est 1000ms, non modifiable par le client. Les requetes complexes doivent rester simples
 - **Instances heterogenes** : `grist.numerique.gouv.fr` et `docs.getgrist.com` peuvent avoir des politiques differentes sur le endpoint SQL
 - **Proxy** : toutes les requetes Grist passent par un proxy CORS, les nouveaux endpoints doivent etre proxies aussi
@@ -144,7 +144,7 @@ POST /api/docs/{docId}/sql
 ```
 
 L'adapter choisit automatiquement le mode en fonction des attributs demandes
-par `gouv-source` (via `ServerSideOverlay`).
+par `dsfr-data-source` (via `ServerSideOverlay`).
 
 ---
 
@@ -261,7 +261,7 @@ private _colonWhereToGristFilter(where: string): Record<string, string[]> | null
 /**
  * Convertit une clause order-by colon-syntax en parametre sort Grist.
  *
- * Syntaxe source (gouv-source) : "population:desc, nom:asc"
+ * Syntaxe source (dsfr-data-source) : "population:desc, nom:asc"
  * Syntaxe cible (Grist API)    : "-population,nom"
  *
  * Options Grist supportees : naturalSort, choiceOrder, emptyFirst
@@ -415,7 +415,7 @@ export const GRIST_CONFIG: ProviderConfig = {
 **Fichier** : `src/adapters/grist-adapter.ts`
 
 Le `buildFacetWhere()` actuel produit de la syntaxe colon (`field:eq:value`).
-C'est correct : le composant `gouv-facets` l'envoie en commande `where` a `gouv-source`,
+C'est correct : le composant `dsfr-data-facets` l'envoie en commande `where` a `dsfr-data-source`,
 qui le passe a l'adapter via `buildServerSideUrl()`. L'adapter le convertit ensuite
 en JSON Grist via `_colonWhereToGristFilter()`.
 
@@ -598,7 +598,7 @@ private async _fetchSql(
   if (!response.ok) {
     // Fallback : si le endpoint SQL n'est pas disponible, revenir au mode Records
     if (response.status === 404 || response.status === 403) {
-      console.warn('[gouv-widgets] Grist SQL endpoint not available, falling back to client-side processing');
+      console.warn('[dsfr-data] Grist SQL endpoint not available, falling back to client-side processing');
       return this.fetchAll(params, signal);
     }
     throw new Error(`Grist SQL HTTP ${response.status}: ${response.statusText}`);
@@ -848,7 +848,7 @@ private _toNumberOrString(value: string): string | number {
 
 **Fichier** : `src/adapters/grist-adapter.ts`
 
-**ATTENTION** : `gouv-search` ne remplace que le placeholder `{q}` dans le template.
+**ATTENTION** : `dsfr-data-search` ne remplace que le placeholder `{q}` dans le template.
 Il ne gere PAS `{searchField}`. Le template doit etre un WHERE complet avec `{q}` seulement.
 
 Pour Grist, la recherche full-text n'existe pas nativement. Deux approches :
@@ -857,7 +857,7 @@ Pour Grist, la recherche full-text n'existe pas nativement. Deux approches :
 
 ```html
 <!-- L'utilisateur specifie le champ de recherche dans le HTML -->
-<gouv-search source="data" search-template="nom:contains:{q}"></gouv-search>
+<dsfr-data-search source="data" search-template="nom:contains:{q}"></dsfr-data-search>
 ```
 
 L'adapter retourne `null` (pas de template par defaut) car Grist n'a pas de
@@ -874,7 +874,7 @@ getDefaultSearchTemplate(): string | null {
 
 **Approche B (optionnelle, future)** : Recherche multi-champs via SQL OR
 
-Si on veut un searchTemplate par defaut, il faudrait etendre `gouv-search` pour
+Si on veut un searchTemplate par defaut, il faudrait etendre `dsfr-data-search` pour
 supporter un nouveau placeholder ou creer un mecanisme dans l'adapter qui traduit
 `nom:contains:{q}` en `(col1 LIKE ? OR col2 LIKE ?)` pour toutes les colonnes Text.
 Cela necessite `fetchColumns()` (etape 3) pour connaitre les colonnes de type Text.
@@ -884,7 +884,7 @@ Cela necessite `fetchColumns()` (etape 3) pour connaitre les colonnes de type Te
 
 **Fichier** : `src/adapters/grist-adapter.ts`
 
-Pour supporter `gouv-facets` en mode server, l'adapter doit implementer la methode
+Pour supporter `dsfr-data-facets` en mode server, l'adapter doit implementer la methode
 optionnelle `fetchFacets()` deja definie dans l'interface `ApiAdapter` :
 
 ```typescript
@@ -949,7 +949,7 @@ async fetchFacets(
 
 **Note** : Cette methode retourne `FacetResult[]` (valeur + count), pas juste les
 valeurs distinctes. Le `GROUP BY` + `COUNT(*)` est plus utile que `SELECT DISTINCT`
-car il permet a `gouv-facets` d'afficher les comptages par valeur.
+car il permet a `dsfr-data-facets` d'afficher les comptages par valeur.
 
 ### 2.10 Orchestration fetchAll / fetchPage avec mode SQL
 
@@ -1067,12 +1067,12 @@ private async _checkSqlAvailability(params: AdapterParams): Promise<boolean> {
     });
     this._sqlAvailableByHost.set(hostname, response.ok);
     if (!response.ok) {
-      console.info(`[gouv-widgets] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
+      console.info(`[dsfr-data] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
     }
     return response.ok;
   } catch {
     this._sqlAvailableByHost.set(hostname, false);
-    console.info(`[gouv-widgets] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
+    console.info(`[dsfr-data] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
     return false;
   }
 }
@@ -1370,12 +1370,12 @@ Ajouter un exemple Grist avec pagination server-side dans le guide :
 
 ```html
 <!-- Grist avec pagination server-side -->
-<gouv-source id="src" api-type="grist"
+<dsfr-data-source id="src" api-type="grist"
   base-url="https://proxy/grist-gouv-proxy/api/docs/DOC/tables/TABLE/records"
   server-side page-size="20">
-</gouv-source>
-<gouv-datalist source="src" colonnes="nom,prenom,ville" pagination="20">
-</gouv-datalist>
+</dsfr-data-source>
+<dsfr-data-list source="src" colonnes="nom,prenom,ville" pagination="20">
+</dsfr-data-list>
 ```
 
 ---
@@ -1506,7 +1506,7 @@ mis a jour quand les capabilities changent :
 | `tests/shared/providers.test.ts` | 160-162 | `defaultMode: 'client'` → `'server'` (etape 2) |
 | `tests/shared/providers.test.ts` | 380 | `aggregationSyntax` values → ajouter `'sql'` |
 | `tests/adapters/facet-where.test.ts` | 84-88 | Inchange (buildFacetWhere colon syntax ne change pas) |
-| `tests/components/gouv-source-adapter.test.ts` | 127-145 | Inchange (params building ne change pas) |
+| `tests/components/dsfr-data-source-adapter.test.ts` | 127-145 | Inchange (params building ne change pas) |
 
 ### Tests E2E a surveiller (pas de modification, validation retrocompat)
 
@@ -1520,10 +1520,10 @@ mis a jour quand les capabilities changent :
 ## Verification finale
 
 En fin d'epic, verifier que :
-- [ ] `gouv-source api-type="grist" server-side page-size="20"` pagine correctement
-- [ ] `gouv-facets source="..." server-facets` affiche les valeurs distinctes via SQL
-- [ ] `gouv-search source="..."` recherche via SQL LIKE
-- [ ] `gouv-query source="..." group-by="region" aggregate="pop:sum:total"` aggrege via SQL
+- [ ] `dsfr-data-source api-type="grist" server-side page-size="20"` pagine correctement
+- [ ] `dsfr-data-facets source="..." server-facets` affiche les valeurs distinctes via SQL
+- [ ] `dsfr-data-search source="..."` recherche via SQL LIKE
+- [ ] `dsfr-data-query source="..." group-by="region" aggregate="pop:sum:total"` aggrege via SQL
 - [ ] Le fallback client-side fonctionne si le endpoint SQL est indisponible
 - [ ] Aucune injection SQL possible (tests de securite)
 - [ ] Le proxy (Vite dev + nginx prod) route les endpoints /sql et /columns

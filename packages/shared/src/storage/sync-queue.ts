@@ -22,7 +22,7 @@ interface SyncOperation {
 
 const MAX_RETRIES = 3;
 const BACKOFF_BASE_MS = 2000;
-const QUEUE_STORAGE_KEY = 'gouv-widgets-sync-queue';
+const QUEUE_STORAGE_KEY = 'dsfr-data-sync-queue';
 
 let _status: SyncStatus = 'idle';
 let _errorCount = 0;

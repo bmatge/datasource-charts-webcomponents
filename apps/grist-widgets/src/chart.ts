@@ -13,7 +13,7 @@
 import './styles/grist-widgets.css';
 import { initGristBridge, onGristOptions, getGristApiInfo } from './shared/grist-bridge.js';
 import { createOptionsPanel, type OptionDef } from './shared/grist-options-panel.js';
-import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { PROXY_BASE_URL } from '@dsfr-data/shared';
 
 const ALL_OPTIONS: OptionDef[] = [
   {
@@ -137,14 +137,14 @@ function renderWidget(type: string) {
   container.innerHTML = '';
 
   if (type === 'kpi') {
-    const kpi = document.createElement('gouv-kpi');
+    const kpi = document.createElement('dsfr-data-kpi');
     kpi.setAttribute('source', 'grist');
     kpi.setAttribute('valeur', 'avg:Value');
     kpi.setAttribute('label', 'Indicateur');
     kpi.setAttribute('format', 'nombre');
     container.appendChild(kpi);
   } else {
-    const chart = document.createElement('gouv-dsfr-chart');
+    const chart = document.createElement('dsfr-data-chart');
     chart.setAttribute('source', 'grist');
     chart.setAttribute('type', type);
     chart.setAttribute('label-field', 'Label');
@@ -173,7 +173,7 @@ function applyOptions(opts: Record<string, unknown>) {
 
   // Appliquer les options selon le type
   if (type === 'kpi') {
-    const kpi = document.querySelector('gouv-kpi');
+    const kpi = document.querySelector('dsfr-data-kpi');
     if (!kpi) return;
 
     const agg = (opts.aggregation || 'avg') as string;
@@ -188,7 +188,7 @@ function applyOptions(opts: Record<string, unknown>) {
       kpi.removeAttribute('couleur');
     }
   } else {
-    const chart = document.querySelector('gouv-dsfr-chart');
+    const chart = document.querySelector('dsfr-data-chart');
     if (!chart) return;
 
     chart.setAttribute('type', type);
@@ -217,7 +217,7 @@ function generateFixedHtml(): string {
 
   // Dependances CDN (a ajouter dans le <head> de la page hote)
   const deps = [
-    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<!-- Dependances dsfr-data (a ajouter dans le <head> si absentes) -->',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
@@ -230,14 +230,14 @@ function generateFixedHtml(): string {
     const icone = opts.icone ? ` icone="${opts.icone}"` : '';
     const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
 
-    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>');
 
     return `${deps.join('\n')}
 
 <!-- Widget KPI -->
-<gouv-kpi source="export" valeur="${agg}:Value" format="${format}" label="${label}"${icone}${couleur}></gouv-kpi>
+<dsfr-data-kpi source="export" valeur="${agg}:Value" format="${format}" label="${label}"${icone}${couleur}></dsfr-data-kpi>
 <script>
-  customElements.whenDefined('gouv-kpi').then(function() {
+  customElements.whenDefined('dsfr-data-kpi').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
@@ -246,7 +246,7 @@ function generateFixedHtml(): string {
   // Chart types: bar, line, pie, radar, scatter, gauge, bar-line, map, map-reg
   deps.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">');
   deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>');
-  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>');
 
   const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
   const horizontal = opts.horizontal === true ? ' horizontal' : '';
@@ -259,9 +259,9 @@ function generateFixedHtml(): string {
   return `${deps.join('\n')}
 
 <!-- Widget graphique -->
-<gouv-dsfr-chart source="export" type="${type}" label-field="Label" value-field="Value"${codeField}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></gouv-dsfr-chart>
+<dsfr-data-chart source="export" type="${type}" label-field="Label" value-field="Value"${codeField}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></dsfr-data-chart>
 <script>
-  customElements.whenDefined('gouv-dsfr-chart').then(function() {
+  customElements.whenDefined('dsfr-data-chart').then(function() {
     GouvWidgets.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
@@ -286,7 +286,7 @@ function generateDynamicHtml(): string {
   const codeCol = columnMappings?.Code as string | undefined;
 
   const deps = [
-    '<!-- Dependances gouv-widgets (a ajouter dans le <head> si absentes) -->',
+    '<!-- Dependances dsfr-data (a ajouter dans le <head> si absentes) -->',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">',
@@ -299,24 +299,24 @@ function generateDynamicHtml(): string {
     const icone = opts.icone ? ` icone="${opts.icone}"` : '';
     const couleur = opts.couleur ? ` couleur="${opts.couleur}"` : '';
 
-    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+    deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>');
 
     return `${deps.join('\n')}
 
 <!-- Source Grist (document public requis) -->
-<gouv-source
+<dsfr-data-source
   id="grist-data"
   url="${proxyUrl}"
   transform="records">
-</gouv-source>
+</dsfr-data-source>
 
 <!-- Widget KPI -->
-<gouv-kpi source="grist-data" valeur="${agg}:fields.${valueCol}" format="${format}" label="${label}"${icone}${couleur}></gouv-kpi>`;
+<dsfr-data-kpi source="grist-data" valeur="${agg}:fields.${valueCol}" format="${format}" label="${label}"${icone}${couleur}></dsfr-data-kpi>`;
   }
 
   deps.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">');
   deps.push('<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"><\/script>');
-  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/gouv-widgets@main/dist/gouv-widgets.umd.js"><\/script>');
+  deps.push('<script src="https://cdn.jsdelivr.net/gh/bmatge/dsfr-data@main/dist/dsfr-data.umd.js"><\/script>');
 
   const palette = opts.palette ? ` selected-palette="${opts.palette}"` : '';
   const horizontal = opts.horizontal === true ? ' horizontal' : '';
@@ -328,14 +328,14 @@ function generateDynamicHtml(): string {
   return `${deps.join('\n')}
 
 <!-- Source Grist (document public requis) -->
-<gouv-source
+<dsfr-data-source
   id="grist-data"
   url="${proxyUrl}"
   transform="records">
-</gouv-source>
+</dsfr-data-source>
 
 <!-- Widget graphique -->
-<gouv-dsfr-chart source="grist-data" type="${type}" label-field="fields.${labelCol}" value-field="fields.${valueCol}"${codeFieldAttr}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></gouv-dsfr-chart>`;
+<dsfr-data-chart source="grist-data" type="${type}" label-field="fields.${labelCol}" value-field="fields.${valueCol}"${codeFieldAttr}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></dsfr-data-chart>`;
 }
 
 let codeVisible = false;
@@ -429,7 +429,7 @@ onGristOptions((opts) => {
 // Render initial
 renderWidget(currentType);
 
-document.addEventListener('gouv-data-loaded', () => {
+document.addEventListener('dsfr-data-loaded', () => {
   const empty = document.getElementById('empty-state');
   const container = document.getElementById('widget-container');
   const panel = document.getElementById('options-panel');

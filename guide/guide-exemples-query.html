@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-query — Exemples - Guide - gouv-widgets</title>
+  <title>dsfr-data-query — Exemples - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -39,29 +39,29 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-filter-3-line fr-mr-1w"></i>gouv-query</h1>
+        <h1><i class="ri-filter-3-line fr-mr-1w"></i>dsfr-data-query</h1>
         <p class="fr-text--lead">
-          <code>gouv-query</code> filtre, regroupe et agrege les donnees avant de les transmettre aux composants de visualisation.
+          <code>dsfr-data-query</code> filtre, regroupe et agrege les donnees avant de les transmettre aux composants de visualisation.
           Supporte <code>group-by</code>, <code>aggregate</code>, <code>filter</code>, <code>order-by</code> et <code>limit</code>.
         </p>
 
         <p class="fr-mt-1w">
           <a class="fr-link fr-link--icon-right fr-icon-arrow-right-line"
-             href="../specs/components/gouv-query.html">
+             href="../specs/components/dsfr-data-query.html">
             Reference API complete (attributs, operateurs, methodes)
           </a>
         </p>
 
         <div class="fr-callout fr-callout--green-emeraude fr-mb-3w">
-          <h4 class="fr-callout__title">gouv-source + gouv-query</h4>
+          <h4 class="fr-callout__title">dsfr-data-source + dsfr-data-query</h4>
           <p class="fr-callout__text">
-            <strong><code>gouv-source</code></strong> est le connecteur de donnees : il recupere du JSON
+            <strong><code>dsfr-data-source</code></strong> est le connecteur de donnees : il recupere du JSON
             depuis n'importe quelle API REST ou API connue (<code>api-type="opendatasoft"</code>,
             <code>tabular</code>, <code>grist</code>) avec pagination automatique, proxy CORS
             et support <code>headers</code> pour les jeux prives.<br><br>
-            <strong><code>gouv-query</code></strong> est une couche de transformation pure : il ecoute
+            <strong><code>dsfr-data-query</code></strong> est une couche de transformation pure : il ecoute
             une source existante et filtre, groupe, agrege et trie les donnees cote client.
-            Il ne fetche jamais directement — il se branche toujours sur un <code>gouv-source</code>.
+            Il ne fetche jamais directement — il se branche toujours sur un <code>dsfr-data-source</code>.
           </p>
         </div>
 
@@ -74,19 +74,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-q-bar">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="nom_region"
   aggregate="nombre_beneficiaires:sum:beneficiaires"
   order-by="beneficiaires:desc" limit="10"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="bar"
+&lt;dsfr-data-chart source="q" type="bar"
   label-field="nom_region" value-field="beneficiaires"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -97,19 +97,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-order">Code source</button></h3>
           <div class="fr-collapse" id="code-v-order">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="nom_region"
   aggregate="nombre_beneficiaires:sum:beneficiaires"
   order-by="beneficiaires:asc" limit="10"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="bar"
+&lt;dsfr-data-chart source="q" type="bar"
   label-field="nom_region" value-field="beneficiaires"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -122,19 +122,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-line">Code source</button></h3>
           <div class="fr-collapse" id="code-q-line">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="libreg"
   aggregate="taux_global_tfb:avg:taux_moyen"
   order-by="taux_moyen:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="line"
+&lt;dsfr-data-chart source="q" type="line"
   label-field="libreg" value-field="taux_moyen" unit-tooltip="%"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -147,22 +147,22 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-pie">Code source</button></h3>
           <div class="fr-collapse" id="code-q-pie">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   group-by="categorie_produit"
   aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="8"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="pie"
+&lt;dsfr-data-chart source="q" type="pie"
   label-field="categorie_produit"
   value-field="nombre"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -173,22 +173,22 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-limit">Code source</button></h3>
           <div class="fr-collapse" id="code-v-limit">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   group-by="categorie_produit"
   aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="4"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="pie"
+&lt;dsfr-data-chart source="q" type="pie"
   label-field="categorie_produit"
   value-field="nombre"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -201,19 +201,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-radar">Code source</button></h3>
           <div class="fr-collapse" id="code-q-radar">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="nom_region"
   aggregate="montant_investissement:avg:investissement"
   limit="6"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="radar"
+&lt;dsfr-data-chart source="q" type="radar"
   label-field="nom_region" value-field="investissement"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -226,19 +226,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-gauge">Code source</button></h3>
           <div class="fr-collapse" id="code-q-gauge">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="libreg"
   aggregate="taux_global_tfb:avg:taux_moyen"
   order-by="taux_moyen:desc" limit="1"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="gauge"
+&lt;dsfr-data-chart source="q" type="gauge"
   value-field="taux_moyen"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -251,19 +251,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-scatter">Code source</button></h3>
           <div class="fr-collapse" id="code-q-scatter">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="libdep"
   aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
   limit="30"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="scatter"
+&lt;dsfr-data-chart source="q" type="scatter"
   label-field="tfb" value-field="th"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -276,21 +276,21 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-barline">Code source</button></h3>
           <div class="fr-collapse" id="code-q-barline">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="libreg"
   aggregate="taux_global_tfb:avg:tfb, taux_global_th:avg:th"
   order-by="tfb:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="bar-line"
+&lt;dsfr-data-chart source="q" type="bar-line"
   label-field="libreg" value-field="tfb" value-field-2="th"
   name='["Taxe fonciere (TFB)", "Taxe habitation (TH)"]'
   unit-tooltip="%"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -303,19 +303,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-map">Code source</button></h3>
           <div class="fr-collapse" id="code-q-map">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="dep"
   aggregate="taux_global_tfb:avg:taux"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="map"
+&lt;dsfr-data-chart source="q" type="map"
   code-field="dep" value-field="taux"
   selected-palette="sequentialAscending"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -326,19 +326,19 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-agg">Code source</button></h3>
           <div class="fr-collapse" id="code-v-agg">
-<pre class="example-code">&lt;gouv-source id="data" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="data" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="data"
+&lt;dsfr-data-query id="q" source="data"
   group-by="dep"
   aggregate="taux_global_tfb:max:taux"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="map"
+&lt;dsfr-data-chart source="q" type="map"
   code-field="dep" value-field="taux"
   selected-palette="sequentialAscending"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -351,21 +351,21 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-q-kpi">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q-alim" source="src"
+&lt;dsfr-data-query id="q-alim" source="src"
   filter="categorie_produit:contains:Aliment"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
-  &lt;gouv-kpi source="src" valeur="count"
-    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="q-alim" valeur="count"
-    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="src" valeur="count"
+    label="Total des rappels" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="q-alim" valeur="count"
+    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
@@ -377,21 +377,21 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-filter">Code source</button></h3>
           <div class="fr-collapse" id="code-v-filter">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q-combine" source="src"
+&lt;dsfr-data-query id="q-combine" source="src"
   filter="categorie_produit:contains:Aliment, sous_categorie_produit:contains:Lait"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"&gt;
-  &lt;gouv-kpi source="src" valeur="count"
-    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="q-combine" valeur="count"
-    label="Alimentaires (Lait)" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="src" valeur="count"
+    label="Total des rappels" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="q-combine" valeur="count"
+    label="Alimentaires (Lait)" format="nombre" couleur="bleu"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
@@ -405,20 +405,20 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-q-datalist">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   filter="categorie_produit:contains:Aliment"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-datalist source="q"
+&lt;dsfr-data-list source="q"
   colonnes="modeles_ou_references:Produit, marque_produit:Marque, sous_categorie_produit:Sous-categorie"
   recherche="true" tri="modeles_ou_references:asc" pagination="10" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
@@ -429,20 +429,20 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-v-in">Code source</button></h3>
           <div class="fr-collapse" id="code-v-in">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   filter="categorie_produit:in:Alimentation|Habitat"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-datalist source="q"
+&lt;dsfr-data-list source="q"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   recherche="true" tri="categorie_produit:asc" pagination="10" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
@@ -450,7 +450,7 @@
         <h2 id="multi-page" class="fr-mt-6w">Multi-page ODS</h2>
         <p>
           Avec <code>api-type="opendatasoft"</code> et <code>server-side page-size="100"</code>,
-          <code>gouv-source</code> charge les donnees page par page (ici 100 records) avant de transmettre a <code>gouv-query</code>.
+          <code>dsfr-data-source</code> charge les donnees page par page (ici 100 records) avant de transmettre a <code>dsfr-data-query</code>.
           Cela permet de faire un camembert ou un KPI sur un volume significatif de donnees.
         </p>
 
@@ -462,32 +462,32 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-tabular">Code source</button></h3>
           <div class="fr-collapse" id="code-q-tabular">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   group-by="categorie_produit"
   aggregate="libelle:count:nombre"
   order-by="nombre:desc" limit="10"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="pie"
+&lt;dsfr-data-chart source="q" type="pie"
   label-field="categorie_produit"
   value-field="nombre"
   selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
         <!-- Pagination serveur + KPI globaux -->
         <h2 id="pagination-kpi" class="fr-mt-6w">Pagination serveur + KPI globaux</h2>
         <p>
-          Quand <code>gouv-source server-side</code> est actif, les composants en aval ne voient que la page courante.
+          Quand <code>dsfr-data-source server-side</code> est actif, les composants en aval ne voient que la page courante.
           Les KPI calcules sur une seule page sont trompeurs. La solution : utiliser <strong>deux sources</strong> —
-          une <code>gouv-source server-side</code> pour la navigation + une <code>gouv-source</code> avec <code>page-size</code> eleve pour les KPI globaux.
+          une <code>dsfr-data-source server-side</code> pour la navigation + une <code>dsfr-data-source</code> avec <code>page-size</code> eleve pour les KPI globaux.
         </p>
 
         <h4 id="paginate-kpi">Double source — Navigation paginee + KPI sur un volume etendu</h4>
@@ -499,81 +499,81 @@
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-paginate-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-q-paginate-kpi">
 <pre class="example-code">&lt;!-- Source 1 : pagination serveur pour la navigation --&gt;
-&lt;gouv-source id="browse" api-type="opendatasoft"
+&lt;dsfr-data-source id="browse" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="20"
-  order-by="date_publication:desc"&gt;&lt;/gouv-source&gt;
+  order-by="date_publication:desc"&gt;&lt;/dsfr-data-source&gt;
 
 &lt;!-- Source 2 : chargement etendu pour les KPI globaux --&gt;
-&lt;gouv-source id="stats-src" api-type="opendatasoft"
+&lt;dsfr-data-source id="stats-src" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="global-stats" source="stats-src"
+&lt;dsfr-data-query id="global-stats" source="stats-src"
   aggregate="libelle:count:total"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-query id="global-alim" source="stats-src"
+&lt;dsfr-data-query id="global-alim" source="stats-src"
   filter="categorie_produit:contains:Aliment"
   aggregate="libelle:count:total_alim"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"&gt;
-  &lt;gouv-kpi source="global-stats" valeur="sum:total"
-    label="Total des rappels" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="global-alim" valeur="sum:total_alim"
-    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="global-stats" valeur="sum:total"
+    label="Total des rappels" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="global-alim" valeur="sum:total_alim"
+    label="Dont alimentaires" format="nombre" couleur="bleu"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;
 
-&lt;gouv-datalist source="browse"
+&lt;dsfr-data-list source="browse"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <h2 id="server-side" class="fr-mt-6w">Mode server-side</h2>
         <p>
-          Avec <code>server-side</code>, <code>gouv-source</code> ne charge qu'<strong>une page</strong> a la fois
+          Avec <code>server-side</code>, <code>dsfr-data-source</code> ne charge qu'<strong>une page</strong> a la fois
           et ecoute les commandes des composants en aval (pagination, recherche, tri).
           C'est utile pour les gros datasets ou la recherche full-text doit etre deleguee au serveur.
         </p>
         <div class="fr-callout fr-callout--blue-ecume fr-mb-3w">
           <p class="fr-callout__text">
             <strong>Quand utiliser server-side ?</strong>
-            En mode normal, <code>gouv-source</code> charge tous les records disponibles.
+            En mode normal, <code>dsfr-data-source</code> charge tous les records disponibles.
             Si le dataset est volumineux, ou si vous avez besoin de recherche full-text serveur,
             utilisez <code>server-side</code>.
           </p>
         </div>
 
         <h4 id="server-side-ods">Recherche serveur — Rappels de produits (ODS)</h4>
-        <p>Utilise <code>gouv-source server-side</code> + <code>gouv-search server-search</code> pour rechercher dans le dataset RappelConso.
+        <p>Utilise <code>dsfr-data-source server-side</code> + <code>dsfr-data-search server-search</code> pour rechercher dans le dataset RappelConso.
           <a href="../apps/playground/index.html?example=server-side-ods" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-ods">Code source</button></h3>
           <div class="fr-collapse" id="code-q-ss-ods">
-<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="q" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="10"
   order-by="date_publication:desc"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-search id="s" source="q"
+&lt;dsfr-data-search id="s" source="q"
   server-search
   placeholder="Rechercher un produit..."
   url-search-param="q" url-sync
   count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-display source="q" cols="1" pagination="10"
+&lt;dsfr-data-display source="q" cols="1" pagination="10"
   url-sync url-page-param="page"&gt;
   &lt;template&gt;
     &lt;div class="fr-card fr-card--horizontal fr-card--sm fr-mb-2w"&gt;
@@ -588,31 +588,31 @@
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/template&gt;
-&lt;/gouv-display&gt;</pre>
+&lt;/dsfr-data-display&gt;</pre>
           </div>
         </section>
 
         <h4 id="server-side-tabular">Tri serveur — Rappels de produits (ODS)</h4>
-        <p>Utilise <code>gouv-source server-side</code> + <code>gouv-datalist server-tri</code> pour trier cote serveur.
+        <p>Utilise <code>dsfr-data-source server-side</code> + <code>dsfr-data-list server-tri</code> pour trier cote serveur.
           <a href="../apps/playground/index.html?example=server-side-tabular-tri" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-ss-tab">Code source</button></h3>
           <div class="fr-collapse" id="code-q-ss-tab">
-<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="q" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="20"
   order-by="date_publication:desc"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist source="q"
+&lt;dsfr-data-list source="q"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="20"
   url-sync&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
@@ -620,7 +620,7 @@
         <p>
           L'attribut <code>headers</code> permet de passer des headers HTTP (API key, Bearer token)
           pour acceder a des datasets prives ou proteges. Il accepte un objet JSON en chaine de caracteres.
-          Cet attribut est disponible sur <code>gouv-source</code> en mode <code>opendatasoft</code> et <code>tabular</code>.
+          Cet attribut est disponible sur <code>dsfr-data-source</code> en mode <code>opendatasoft</code> et <code>tabular</code>.
         </p>
         <div class="fr-callout fr-callout--blue-ecume fr-mb-3w">
           <p class="fr-callout__text">
@@ -631,25 +631,25 @@
         </div>
 
         <h4 id="headers-ods">Dataset prive ODS avec API key</h4>
-        <p>Passe une <code>apikey</code> via <code>gouv-source headers</code> pour acceder a un dataset prive sur une instance OpenDataSoft.</p>
+        <p>Passe une <code>apikey</code> via <code>dsfr-data-source headers</code> pour acceder a un dataset prive sur une instance OpenDataSoft.</p>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-q-headers">Code source</button></h3>
           <div class="fr-collapse" id="code-q-headers">
-<pre class="example-code">&lt;gouv-source id="src" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="mon-dataset-prive"
   base-url="https://mon-instance.opendatasoft.com"
   headers='{"apikey":"votre-cle-api"}'&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="q" source="src"
+&lt;dsfr-data-query id="q" source="src"
   group-by="region"
   aggregate="population:sum:total"
   order-by="total:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="q" type="bar"
+&lt;dsfr-data-chart source="q" type="bar"
   label-field="region" value-field="total"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * gouv-widgets MCP Server
+ * dsfr-data MCP Server
  *
- * Exposes gouv-widgets skills to AI tools via the Model Context Protocol.
+ * Exposes dsfr-data skills to AI tools via the Model Context Protocol.
  * Skills are fetched dynamically from the production server on startup,
  * so the MCP always serves the latest specifications.
  *
@@ -12,11 +12,11 @@
  *   http  (--http)   - for Claude.ai web connectors and remote clients
  *
  * Usage:
- *   npx gouv-widgets-mcp                                  # stdio, default URL
- *   npx gouv-widgets-mcp --url https://my-domain.com      # stdio, custom URL
- *   npx gouv-widgets-mcp --http                            # HTTP on port 3001
- *   npx gouv-widgets-mcp --http --port 8080                # HTTP on custom port
- *   npx gouv-widgets-mcp --http --skills-file ./skills.json # HTTP, local file
+ *   npx dsfr-data-mcp                                  # stdio, default URL
+ *   npx dsfr-data-mcp --url https://my-domain.com      # stdio, custom URL
+ *   npx dsfr-data-mcp --http                            # HTTP on port 3001
+ *   npx dsfr-data-mcp --http --port 8080                # HTTP on custom port
+ *   npx dsfr-data-mcp --http --skills-file ./skills.json # HTTP, local file
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -75,7 +75,7 @@ async function loadSkills(): Promise<Skill[]> {
       // Local file mode (Docker / embedded)
       const { readFileSync } = await import('node:fs');
       skillsCache = JSON.parse(readFileSync(skillsFile, 'utf-8')) as Skill[];
-      console.error(`[gouv-widgets-mcp] Loaded ${skillsCache.length} skills from ${skillsFile}`);
+      console.error(`[dsfr-data-mcp] Loaded ${skillsCache.length} skills from ${skillsFile}`);
     } else {
       // Remote fetch mode (default)
       const url = `${baseUrl}/dist/skills.json`;
@@ -84,7 +84,7 @@ async function loadSkills(): Promise<Skill[]> {
       skillsCache = (await res.json()) as Skill[];
     }
   } catch (err) {
-    console.error(`[gouv-widgets-mcp] Could not load skills: ${err}`);
+    console.error(`[dsfr-data-mcp] Could not load skills: ${err}`);
     skillsCache = [];
   }
 
@@ -104,7 +104,7 @@ function matchSkills(skills: Skill[], message: string): Skill[] {
 
 function createMcpServer(): McpServer {
   const server = new McpServer({
-    name: 'gouv-widgets',
+    name: 'dsfr-data',
     version: '0.1.0',
   });
 
@@ -112,14 +112,14 @@ function createMcpServer(): McpServer {
 
   server.tool(
     'list_skills',
-    'List all available gouv-widgets skills (id, name, description)',
+    'List all available dsfr-data skills (id, name, description)',
     async () => {
       const skills = await loadSkills();
       const list = skills.map(s => `- **${s.name}** (${s.id}): ${s.description}`).join('\n');
       return {
         content: [{
           type: 'text' as const,
-          text: `## gouv-widgets skills (${skills.length})\n\n${list}`,
+          text: `## dsfr-data skills (${skills.length})\n\n${list}`,
         }],
       };
     },
@@ -130,7 +130,7 @@ function createMcpServer(): McpServer {
   server.tool(
     'get_skill',
     'Get the full content of a specific skill by ID',
-    { skill_id: z.string().describe('Skill ID (e.g. gouvSource, gouvDsfrChart, createChartAction)') },
+    { skill_id: z.string().describe('Skill ID (e.g. dsfrDataSource, dsfrDataChart, createChartAction)') },
     async ({ skill_id }) => {
       const skills = await loadSkills();
       const skill = skills.find(s => s.id === skill_id);
@@ -184,26 +184,26 @@ function createMcpServer(): McpServer {
 
   server.tool(
     'generate_widget_code',
-    'Get the full specification needed to generate gouv-widgets HTML code: composition patterns, CDN dependencies, component docs, and troubleshooting tips.',
+    'Get the full specification needed to generate dsfr-data HTML code: composition patterns, CDN dependencies, component docs, and troubleshooting tips.',
     {
       chart_type: z.string().optional().describe('Optional chart type to focus on (bar, line, pie, map, kpi, datalist, etc.)'),
     },
     async ({ chart_type }) => {
       const skills = await loadSkills();
 
-      const ids = ['compositionPatterns', 'gouvSource', 'gouvDsfrChart', 'apiProviders', 'troubleshooting'];
+      const ids = ['compositionPatterns', 'dsfrDataSource', 'dsfrDataChart', 'apiProviders', 'troubleshooting'];
 
       if (chart_type) {
         const lower = chart_type.toLowerCase();
-        if (lower === 'kpi') ids.push('gouvKpi');
-        if (lower === 'datalist' || lower === 'tableau') ids.push('gouvDatalist');
+        if (lower === 'kpi') ids.push('dsfrDataKpi');
+        if (lower === 'datalist' || lower === 'tableau') ids.push('dsfrDataList');
         if (lower === 'map' || lower === 'map-reg') ids.push('dsfrColors');
         if (lower.includes('bar') || lower.includes('pie') || lower.includes('line')) ids.push('chartTypes');
       } else {
-        ids.push('gouvKpi', 'gouvDatalist', 'gouvQuery', 'chartTypes', 'dsfrColors');
+        ids.push('dsfrDataKpi', 'dsfrDataList', 'dsfrDataQuery', 'chartTypes', 'dsfrColors');
       }
 
-      if (!ids.includes('gouvQuery')) ids.push('gouvQuery');
+      if (!ids.includes('dsfrDataQuery')) ids.push('dsfrDataQuery');
 
       const contents = [...new Set(ids)]
         .map(id => skills.find(s => s.id === id))
@@ -228,7 +228,7 @@ function createMcpServer(): McpServer {
 
 async function startStdio() {
   await loadSkills();
-  console.error(`[gouv-widgets-mcp] stdio mode — ${skillsCache?.length ?? 0} skills from ${baseUrl}`);
+  console.error(`[dsfr-data-mcp] stdio mode — ${skillsCache?.length ?? 0} skills from ${baseUrl}`);
 
   const server = createMcpServer();
   const transport = new StdioServerTransport();
@@ -241,7 +241,7 @@ async function startStdio() {
 
 async function startHttp() {
   await loadSkills();
-  console.error(`[gouv-widgets-mcp] HTTP mode — ${skillsCache?.length ?? 0} skills from ${baseUrl}`);
+  console.error(`[dsfr-data-mcp] HTTP mode — ${skillsCache?.length ?? 0} skills from ${baseUrl}`);
 
   // Map to store transports by session ID
   const sessions = new Map<string, { server: McpServer; transport: StreamableHTTPServerTransport }>();
@@ -293,7 +293,7 @@ async function startHttp() {
       transport.onclose = () => {
         if (transport.sessionId) {
           sessions.delete(transport.sessionId);
-          console.error(`[gouv-widgets-mcp] Session ${transport.sessionId} closed (${sessions.size} active)`);
+          console.error(`[dsfr-data-mcp] Session ${transport.sessionId} closed (${sessions.size} active)`);
         }
       };
 
@@ -302,7 +302,7 @@ async function startHttp() {
       // Store session with the generated ID
       if (transport.sessionId) {
         sessions.set(transport.sessionId, { server, transport });
-        console.error(`[gouv-widgets-mcp] New session ${transport.sessionId} (${sessions.size} active)`);
+        console.error(`[dsfr-data-mcp] New session ${transport.sessionId} (${sessions.size} active)`);
       }
     } else {
       res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -311,7 +311,7 @@ async function startHttp() {
   });
 
   httpServer.listen(httpPort, () => {
-    console.error(`[gouv-widgets-mcp] Listening on http://0.0.0.0:${httpPort}/mcp`);
+    console.error(`[dsfr-data-mcp] Listening on http://0.0.0.0:${httpPort}/mcp`);
   });
 }
 
@@ -320,6 +320,6 @@ async function startHttp() {
 // ---------------------------------------------------------------------------
 
 (isHttpMode ? startHttp() : startStdio()).catch((err) => {
-  console.error('[gouv-widgets-mcp] Fatal error:', err);
+  console.error('[dsfr-data-mcp] Fatal error:', err);
   process.exit(1);
 });

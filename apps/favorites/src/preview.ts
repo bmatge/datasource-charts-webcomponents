@@ -3,4 +3,4 @@
  * Delegates to the shared getPreviewHTML.
  */
 
-export { getPreviewHTML } from '@gouv-widgets/shared';
+export { getPreviewHTML } from '@dsfr-data/shared';

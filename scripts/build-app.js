@@ -5,7 +5,7 @@
  * Structure de sortie :
  *   app-dist/
  *     index.html          (hub page)
- *     dist/               (gouv-widgets library)
+ *     dist/               (dsfr-data library)
  *     demo/               (demo pages)
  *     favoris.html         (redirect -> apps/favorites/)
  *     builder.html         (redirect -> apps/builder/)

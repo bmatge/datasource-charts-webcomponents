@@ -2,7 +2,7 @@
  * Dashboard app - Widget management
  */
 
-import { escapeHtml, navigateTo, confirmDialog } from '@gouv-widgets/shared';
+import { escapeHtml, navigateTo, confirmDialog } from '@dsfr-data/shared';
 import { state } from './state.js';
 import { openConfigModal } from './widget-config.js';
 import { updateGeneratedCode } from './code-generator.js';

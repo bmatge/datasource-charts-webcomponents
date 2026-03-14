@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildPaginationParams, extractPaginationMeta } from '../../src/utils/pagination.js';
-import { ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG } from '@gouv-widgets/shared';
+import { ODS_CONFIG, TABULAR_CONFIG, GRIST_CONFIG, GENERIC_CONFIG } from '@dsfr-data/shared';
 
 describe('buildPaginationParams', () => {
   it('ODS offset: page=1 → offset=0, limit=100', () => {

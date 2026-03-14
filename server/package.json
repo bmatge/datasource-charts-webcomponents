@@ -1,7 +1,7 @@
 {
-  "name": "@gouv-widgets/server",
+  "name": "@dsfr-data/server",
   "version": "0.1.0",
-  "description": "Backend API pour gouv-widgets (auth, CRUD, cache, RBAC)",
+  "description": "Backend API pour dsfr-data (auth, CRUD, cache, RBAC)",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

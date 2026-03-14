@@ -2,13 +2,13 @@
   {
     "name": "Graphique / Carte / KPI DSFR",
     "url": "chart/index.html",
-    "widgetId": "@gouv-widgets/grist-chart",
+    "widgetId": "@dsfr-data/grist-chart",
     "published": true,
     "accessLevel": "read table",
     "description": "Widget polyvalent DSFR : graphiques (barres, lignes, camembert, radar, scatter, jauge), cartes France (departements/regions), et KPI. Choisissez le type dans les options.",
     "authors": [
       {
-        "name": "gouv-widgets",
+        "name": "dsfr-data",
         "url": "https://github.com/bmatge/datasource-charts-webcomponents"
       }
     ],
@@ -17,13 +17,13 @@
   {
     "name": "Tableau DSFR",
     "url": "datalist/index.html",
-    "widgetId": "@gouv-widgets/grist-datalist",
+    "widgetId": "@dsfr-data/grist-datalist",
     "published": true,
     "accessLevel": "read table",
     "description": "Tableau de donnees conforme DSFR avec recherche, tri, pagination et export CSV. Affiche automatiquement toutes les colonnes.",
     "authors": [
       {
-        "name": "gouv-widgets",
+        "name": "dsfr-data",
         "url": "https://github.com/bmatge/datasource-charts-webcomponents"
       }
     ],

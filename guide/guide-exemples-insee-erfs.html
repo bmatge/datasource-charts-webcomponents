@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard INSEE ERFS — Exemples avances - Guide - gouv-widgets</title>
+  <title>Dashboard INSEE ERFS — Exemples avances - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -89,32 +89,32 @@
         </p>
 
         <h4>Architecture du pipeline</h4>
-        <div class="pipeline-diagram">gouv-source "raw" (fetch INSEE Melodi, transform="observations")
-  \-- gouv-normalize "n1" (flatten="dimensions")
-       \-- gouv-normalize "n2" (flatten="measures")
-            \-- gouv-normalize "data" (flatten="OBS_VALUE_NIVEAU" + numeric + trim + replace-fields)
-                 |-- gouv-query "q-kpi-*" (filtres KPI 2023)
-                 |     \-- gouv-kpi (4 indicateurs)
-                 |-- gouv-query "q-evolution" (serie temporelle)
-                 |     \-- gouv-dsfr-chart line
-                 |-- gouv-query "q-d1" / "q-d9-evol" (deciles)
-                 |     \-- gouv-dsfr-chart line x2
-                 |-- gouv-query "q-pcs" (par PCS)
-                 |     \-- gouv-dsfr-chart bar horizontal
-                 |-- gouv-query "q-age" (par tranche d'age)
-                 |     \-- gouv-dsfr-chart bar
-                 |-- gouv-query "q-statut" / "q-menages"
-                 |     \-- gouv-dsfr-chart bar + line
-                 |-- gouv-query "q-seul" / "q-couple" (type de menage)
-                 |     \-- gouv-dsfr-chart line x2
-                 \-- gouv-query "q-table" (donnees detaillees)
-                       \-- gouv-datalist (tableau + export CSV)</div>
+        <div class="pipeline-diagram">dsfr-data-source "raw" (fetch INSEE Melodi, transform="observations")
+  \-- dsfr-data-normalize "n1" (flatten="dimensions")
+       \-- dsfr-data-normalize "n2" (flatten="measures")
+            \-- dsfr-data-normalize "data" (flatten="OBS_VALUE_NIVEAU" + numeric + trim + replace-fields)
+                 |-- dsfr-data-query "q-kpi-*" (filtres KPI 2023)
+                 |     \-- dsfr-data-kpi (4 indicateurs)
+                 |-- dsfr-data-query "q-evolution" (serie temporelle)
+                 |     \-- dsfr-data-chart line
+                 |-- dsfr-data-query "q-d1" / "q-d9-evol" (deciles)
+                 |     \-- dsfr-data-chart line x2
+                 |-- dsfr-data-query "q-pcs" (par PCS)
+                 |     \-- dsfr-data-chart bar horizontal
+                 |-- dsfr-data-query "q-age" (par tranche d'age)
+                 |     \-- dsfr-data-chart bar
+                 |-- dsfr-data-query "q-statut" / "q-menages"
+                 |     \-- dsfr-data-chart bar + line
+                 |-- dsfr-data-query "q-seul" / "q-couple" (type de menage)
+                 |     \-- dsfr-data-chart line x2
+                 \-- dsfr-data-query "q-table" (donnees detaillees)
+                       \-- dsfr-data-list (tableau + export CSV)</div>
 
         <p class="fr-mt-2w">
           L'API INSEE Melodi retourne des observations avec des objets imbriques (<code>dimensions</code>,
-          <code>measures</code>, <code>OBS_VALUE_NIVEAU</code>). Trois <code>gouv-normalize</code> successifs
+          <code>measures</code>, <code>OBS_VALUE_NIVEAU</code>). Trois <code>dsfr-data-normalize</code> successifs
           aplatissent ces niveaux, puis <code>replace-fields</code> decode les codes INSEE
-          (PCS, AGE, EMPSTA_ENQ, ERFS_MEASURE) en libelles humains. Les <code>gouv-query</code>
+          (PCS, AGE, EMPSTA_ENQ, ERFS_MEASURE) en libelles humains. Les <code>dsfr-data-query</code>
           filtrent ensuite par indicateur, periode et dimensions pour alimenter chaque visualisation.
         </p>
 
@@ -125,24 +125,24 @@
         <!-- ============================================================= -->
 
         <!-- 1. Fetch API INSEE Melodi -->
-        <gouv-source id="raw"
+        <dsfr-data-source id="raw"
           url="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL"
           transform="observations">
-        </gouv-source>
+        </dsfr-data-source>
 
         <!-- 2. Aplatir .dimensions -->
-        <gouv-normalize id="n1" source="raw" flatten="dimensions"></gouv-normalize>
+        <dsfr-data-normalize id="n1" source="raw" flatten="dimensions"></dsfr-data-normalize>
 
         <!-- 3. Aplatir .measures -->
-        <gouv-normalize id="n2" source="n1" flatten="measures"></gouv-normalize>
+        <dsfr-data-normalize id="n2" source="n1" flatten="measures"></dsfr-data-normalize>
 
         <!-- 4. Aplatir .OBS_VALUE_NIVEAU + forcer numerique + decoder tous les codes INSEE -->
-        <gouv-normalize id="data" source="n2"
+        <dsfr-data-normalize id="data" source="n2"
           flatten="OBS_VALUE_NIVEAU"
           numeric="value"
           trim
           replace-fields="PCS:1T2:Agriculteurs, artisans, commerçants | PCS:3:Cadres et prof. intel. sup. | PCS:4:Professions intermédiaires | PCS:5:Employés | PCS:6:Ouvriers | AGE:Y_LT30:Moins de 30 ans | AGE:Y30T39:30-39 ans | AGE:Y40T49:40-49 ans | AGE:Y50T64:50-64 ans | AGE:Y65T74:65-74 ans | AGE:Y_GE75:75 ans et plus | AGE:Y_GE65:65 ans et plus | AGE:Y_LT65:Moins de 65 ans | AGE:Y_GE18:18 ans et plus | EMPSTA_ENQ:1T2:Actifs | EMPSTA_ENQ:1:Actifs occupés | EMPSTA_ENQ:2:Chômeurs | EMPSTA_ENQ:3:Retraités | EMPSTA_ENQ:12:Cadres salariés | EMPSTA_ENQ:13:Prof. intermédiaires salariés | EMPSTA_ENQ:31:Retraités ex-salariés | EMPSTA_ENQ:36:Retraités ex-non salariés | ERFS_MEASURE:MEAN_DI_CONST:Revenu moyen | ERFS_MEASURE:MED_DI_CONST:Revenu médian | ERFS_MEASURE:D1_DI_CONST:1er décile (D1) | ERFS_MEASURE:D9_DI_CONST:9e décile (D9) | ERFS_MEASURE:D1_DI_RET_CONST:D1 retraité | ERFS_MEASURE:D9_DI_RET_CONST:D9 retraité | ERFS_MEASURE:MED_DI_RET_CONST:Médiane retraitée | ERFS_MEASURE:D1_DI_A_CONST:D1 ajusté | ERFS_MEASURE:D9_DI_A_CONST:D9 ajusté | ERFS_MEASURE:MED_DI_A_CONST:Médiane ajustée | ERFS_MEASURE:NUM_HH:Nombre de ménages | ERFS_MEASURE:NUM_HH_MD60:Ménages sous seuil 60%">
-        </gouv-normalize>
+        </dsfr-data-normalize>
 
         <!-- ============================================================= -->
         <!-- DASHBOARD                                                       -->
@@ -158,45 +158,45 @@
         <!-- KPIs 2023 -->
         <h2 class="section-title">Chiffres cles 2023</h2>
 
-        <gouv-query id="q-kpi-mean" source="data"
+        <dsfr-data-query id="q-kpi-mean" source="data"
           where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023">
-        </gouv-query>
-        <gouv-query id="q-kpi-d1" source="data"
+        </dsfr-data-query>
+        <dsfr-data-query id="q-kpi-d1" source="data"
           where="ERFS_MEASURE:eq:1er décile (D1), PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023">
-        </gouv-query>
-        <gouv-query id="q-kpi-med" source="data"
+        </dsfr-data-query>
+        <dsfr-data-query id="q-kpi-med" source="data"
           where="ERFS_MEASURE:eq:Revenu médian, PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023">
-        </gouv-query>
-        <gouv-query id="q-kpi-d9" source="data"
+        </dsfr-data-query>
+        <dsfr-data-query id="q-kpi-d9" source="data"
           where="ERFS_MEASURE:eq:9e décile (D9), PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023">
-        </gouv-query>
+        </dsfr-data-query>
 
         <div class="kpi-row">
-          <gouv-kpi source="q-kpi-mean" valeur="value" label="Revenu disponible moyen"
-            format="euro" icone="ri-money-euro-circle-line" couleur="bleu"></gouv-kpi>
-          <gouv-kpi source="q-kpi-d1" valeur="value" label="1er décile (D1)"
-            format="euro" icone="ri-arrow-down-line" couleur="rouge"></gouv-kpi>
-          <gouv-kpi source="q-kpi-med" valeur="value" label="Revenu médian"
-            format="euro" icone="ri-bar-chart-horizontal-line" couleur="vert"></gouv-kpi>
-          <gouv-kpi source="q-kpi-d9" valeur="value" label="9e décile (D9)"
-            format="euro" icone="ri-arrow-up-line" couleur="orange"></gouv-kpi>
+          <dsfr-data-kpi source="q-kpi-mean" valeur="value" label="Revenu disponible moyen"
+            format="euro" icone="ri-money-euro-circle-line" couleur="bleu"></dsfr-data-kpi>
+          <dsfr-data-kpi source="q-kpi-d1" valeur="value" label="1er décile (D1)"
+            format="euro" icone="ri-arrow-down-line" couleur="rouge"></dsfr-data-kpi>
+          <dsfr-data-kpi source="q-kpi-med" valeur="value" label="Revenu médian"
+            format="euro" icone="ri-bar-chart-horizontal-line" couleur="vert"></dsfr-data-kpi>
+          <dsfr-data-kpi source="q-kpi-d9" valeur="value" label="9e décile (D9)"
+            format="euro" icone="ri-arrow-up-line" couleur="orange"></dsfr-data-kpi>
         </div>
 
         <!-- Evolution revenu moyen -->
         <h2 class="section-title">Evolution du revenu disponible moyen</h2>
 
-        <gouv-query id="q-evolution" source="data"
+        <dsfr-data-query id="q-evolution" source="data"
           where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
           order-by="TIME_PERIOD:asc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <div class="chart-card">
           <h3>Revenu disponible moyen des menages — en euros constants par an</h3>
-          <gouv-dsfr-chart id="chart-evol" source="q-evolution" type="line"
+          <dsfr-data-chart id="chart-evol" source="q-evolution" type="line"
             label-field="TIME_PERIOD" value-field="value"
             unit-tooltip=" €" selected-palette="default">
-          </gouv-dsfr-chart>
-          <gouv-chart-a11y for="chart-evol" source="q-evolution" table download></gouv-chart-a11y>
+          </dsfr-data-chart>
+          <dsfr-data-a11y for="chart-evol" source="q-evolution" table download></dsfr-data-a11y>
         </div>
 
         <!-- Deciles D1 et D9 -->
@@ -205,61 +205,61 @@
         <div class="charts-2col">
           <div class="chart-card">
             <h3>Evolution du 1er decile (D1) — euros constants/an</h3>
-            <gouv-query id="q-d1" source="data"
+            <dsfr-data-query id="q-d1" source="data"
               where="ERFS_MEASURE:eq:1er décile (D1), PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
               order-by="TIME_PERIOD:asc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-d1" type="line"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-d1" type="line"
               label-field="TIME_PERIOD" value-field="value"
               unit-tooltip=" €" selected-palette="sequentialAscending">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
 
           <div class="chart-card">
             <h3>Evolution du 9e decile (D9) — euros constants/an</h3>
-            <gouv-query id="q-d9-evol" source="data"
+            <dsfr-data-query id="q-d9-evol" source="data"
               where="ERFS_MEASURE:eq:9e décile (D9), PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
               order-by="TIME_PERIOD:asc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-d9-evol" type="line"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-d9-evol" type="line"
               label-field="TIME_PERIOD" value-field="value"
               unit-tooltip=" €" selected-palette="sequentialDescending">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
         </div>
 
         <!-- Par PCS -->
         <h2 class="section-title">Revenus par categorie socioprofessionnelle</h2>
 
-        <gouv-query id="q-pcs" source="data"
+        <dsfr-data-query id="q-pcs" source="data"
           where="ERFS_MEASURE:eq:Revenu moyen, PCS:neq:_T, AGE:eq:18 ans et plus, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2022"
           order-by="value:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <div class="chart-card">
           <h3>Revenu disponible moyen par PCS — 2022, euros constants/an</h3>
-          <gouv-dsfr-chart id="chart-pcs" source="q-pcs" type="bar"
+          <dsfr-data-chart id="chart-pcs" source="q-pcs" type="bar"
             label-field="PCS" value-field="value"
             horizontal unit-tooltip=" €" selected-palette="categorical">
-          </gouv-dsfr-chart>
-          <gouv-chart-a11y for="chart-pcs" source="q-pcs" table download></gouv-chart-a11y>
+          </dsfr-data-chart>
+          <dsfr-data-a11y for="chart-pcs" source="q-pcs" table download></dsfr-data-a11y>
         </div>
 
         <!-- Par age -->
         <h2 class="section-title">Revenus selon l'age</h2>
 
-        <gouv-query id="q-age" source="data"
+        <dsfr-data-query id="q-age" source="data"
           where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:in:Moins de 30 ans|30-39 ans|40-49 ans|50-64 ans|65-74 ans|75 ans et plus, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023"
           order-by="AGE:asc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <div class="chart-card">
           <h3>Revenu disponible moyen par tranche d'age — 2023, euros constants/an</h3>
-          <gouv-dsfr-chart id="chart-age" source="q-age" type="bar"
+          <dsfr-data-chart id="chart-age" source="q-age" type="bar"
             label-field="AGE" value-field="value"
             unit-tooltip=" €" selected-palette="sequentialAscending">
-          </gouv-dsfr-chart>
-          <gouv-chart-a11y for="chart-age" source="q-age" table download></gouv-chart-a11y>
+          </dsfr-data-chart>
+          <dsfr-data-a11y for="chart-age" source="q-age" table download></dsfr-data-a11y>
         </div>
 
         <!-- Par statut d'activite + nombre de menages -->
@@ -268,26 +268,26 @@
         <div class="charts-2col">
           <div class="chart-card">
             <h3>Revenu moyen par statut — 2022, euros constants/an</h3>
-            <gouv-query id="q-statut" source="data"
+            <dsfr-data-query id="q-statut" source="data"
               where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:in:Actifs|Chômeurs|Retraités, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2022"
               order-by="value:desc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-statut" type="bar"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-statut" type="bar"
               label-field="EMPSTA_ENQ" value-field="value"
               unit-tooltip=" €" selected-palette="categorical">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
 
           <div class="chart-card">
             <h3>Nombre de menages en France (en milliers)</h3>
-            <gouv-query id="q-menages" source="data"
+            <dsfr-data-query id="q-menages" source="data"
               where="ERFS_MEASURE:eq:Nombre de ménages, PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
               order-by="TIME_PERIOD:asc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-menages" type="line"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-menages" type="line"
               label-field="TIME_PERIOD" value-field="value"
               unit-tooltip=" milliers" selected-palette="default">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
         </div>
 
@@ -297,51 +297,51 @@
         <div class="charts-2col">
           <div class="chart-card">
             <h3>Personnes seules de moins de 65 ans — euros constants/an</h3>
-            <gouv-query id="q-seul" source="data"
+            <dsfr-data-query id="q-seul" source="data"
               where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:Moins de 65 ans, EMPSTA_ENQ:eq:_T, TPH:eq:11, COMPARE_TIME:eq:NB"
               order-by="TIME_PERIOD:asc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-seul" type="line"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-seul" type="line"
               label-field="TIME_PERIOD" value-field="value"
               unit-tooltip=" €" selected-palette="default">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
 
           <div class="chart-card">
             <h3>Couples avec enfant(s) de moins de 65 ans — euros constants/an</h3>
-            <gouv-query id="q-couple" source="data"
+            <dsfr-data-query id="q-couple" source="data"
               where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:Moins de 65 ans, EMPSTA_ENQ:eq:_T, TPH:eq:222, COMPARE_TIME:eq:NB"
               order-by="TIME_PERIOD:asc">
-            </gouv-query>
-            <gouv-dsfr-chart source="q-couple" type="line"
+            </dsfr-data-query>
+            <dsfr-data-chart source="q-couple" type="line"
               label-field="TIME_PERIOD" value-field="value"
               unit-tooltip=" €" selected-palette="default">
-            </gouv-dsfr-chart>
+            </dsfr-data-chart>
           </div>
         </div>
 
         <!-- Tableau detaille -->
         <h2 class="section-title">Donnees detaillees</h2>
 
-        <gouv-query id="q-table" source="data"
+        <dsfr-data-query id="q-table" source="data"
           where="PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
           order-by="TIME_PERIOD:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
-        <gouv-datalist source="q-table"
+        <dsfr-data-list source="q-table"
           colonnes="TIME_PERIOD:Année, ERFS_MEASURE:Indicateur, value:Valeur"
           recherche
           filtres="ERFS_MEASURE"
           tri="TIME_PERIOD:desc"
           pagination="15"
           export="csv">
-        </gouv-datalist>
+        </dsfr-data-list>
 
         <!-- Source -->
         <div class="source-note">
           <strong>Source :</strong> INSEE — Enquete Revenus Fiscaux et Sociaux (ERFS), series longues menages<br>
           <strong>API :</strong> <a href="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL" target="_blank" rel="noopener">api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL</a><br>
-          <strong>Pipeline 100% declaratif :</strong> <code>gouv-source</code> &rarr; <code>gouv-normalize</code> &times;3 (flatten) + <code>replace-fields</code> (decodage INSEE) &rarr; <code>gouv-query</code> &rarr; visualisations
+          <strong>Pipeline 100% declaratif :</strong> <code>dsfr-data-source</code> &rarr; <code>dsfr-data-normalize</code> &times;3 (flatten) + <code>replace-fields</code> (decodage INSEE) &rarr; <code>dsfr-data-query</code> &rarr; visualisations
         </div>
 
         <!-- Code source -->
@@ -349,19 +349,19 @@
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-erfs">Code source complet</button></h3>
           <div class="fr-collapse" id="code-erfs">
 <pre class="example-code">&lt;!-- 1. Fetch API INSEE Melodi --&gt;
-&lt;gouv-source id="raw"
+&lt;dsfr-data-source id="raw"
   url="https://api.insee.fr/melodi/data/DS_ERFS_MENAGE_SL"
   transform="observations"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
 &lt;!-- 2. Aplatir .dimensions --&gt;
-&lt;gouv-normalize id="n1" source="raw" flatten="dimensions"&gt;&lt;/gouv-normalize&gt;
+&lt;dsfr-data-normalize id="n1" source="raw" flatten="dimensions"&gt;&lt;/dsfr-data-normalize&gt;
 
 &lt;!-- 3. Aplatir .measures --&gt;
-&lt;gouv-normalize id="n2" source="n1" flatten="measures"&gt;&lt;/gouv-normalize&gt;
+&lt;dsfr-data-normalize id="n2" source="n1" flatten="measures"&gt;&lt;/dsfr-data-normalize&gt;
 
 &lt;!-- 4. Aplatir .OBS_VALUE_NIVEAU + forcer numerique + decoder les codes INSEE --&gt;
-&lt;gouv-normalize id="data" source="n2"
+&lt;dsfr-data-normalize id="data" source="n2"
   flatten="OBS_VALUE_NIVEAU"
   numeric="value"
   trim
@@ -379,81 +379,81 @@
     | ERFS_MEASURE:D1_DI_CONST:1er decile (D1)
     | ERFS_MEASURE:D9_DI_CONST:9e decile (D9)
     | ERFS_MEASURE:NUM_HH:Nombre de menages"&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
 &lt;!-- KPIs --&gt;
-&lt;gouv-query id="q-kpi-mean" source="data"
+&lt;dsfr-data-query id="q-kpi-mean" source="data"
   where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:_T,
     EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;div class="kpi-row"&gt;
-  &lt;gouv-kpi source="q-kpi-mean" valeur="value" label="Revenu disponible moyen"
-    format="euro" icone="ri-money-euro-circle-line" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="q-kpi-mean" valeur="value" label="Revenu disponible moyen"
+    format="euro" icone="ri-money-euro-circle-line" couleur="bleu"&gt;&lt;/dsfr-data-kpi&gt;
   &lt;!-- + D1, Median, D9 (meme pattern) --&gt;
 &lt;/div&gt;
 
 &lt;!-- Evolution --&gt;
-&lt;gouv-query id="q-evolution" source="data"
+&lt;dsfr-data-query id="q-evolution" source="data"
   where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T, AGE:eq:_T,
     EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
   order-by="TIME_PERIOD:asc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart id="chart-evol" source="q-evolution" type="line"
+&lt;dsfr-data-chart id="chart-evol" source="q-evolution" type="line"
   label-field="TIME_PERIOD" value-field="value"
   unit-tooltip=" €" selected-palette="default"&gt;
-&lt;/gouv-dsfr-chart&gt;
-&lt;gouv-chart-a11y for="chart-evol" source="q-evolution" table download&gt;&lt;/gouv-chart-a11y&gt;
+&lt;/dsfr-data-chart&gt;
+&lt;dsfr-data-a11y for="chart-evol" source="q-evolution" table download&gt;&lt;/dsfr-data-a11y&gt;
 
 &lt;!-- Par PCS (bar horizontal) --&gt;
-&lt;gouv-query id="q-pcs" source="data"
+&lt;dsfr-data-query id="q-pcs" source="data"
   where="ERFS_MEASURE:eq:Revenu moyen, PCS:neq:_T, AGE:eq:18 ans et plus,
     EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2022"
   order-by="value:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart id="chart-pcs" source="q-pcs" type="bar"
+&lt;dsfr-data-chart id="chart-pcs" source="q-pcs" type="bar"
   label-field="PCS" value-field="value"
   horizontal unit-tooltip=" €" selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
 &lt;!-- Par age --&gt;
-&lt;gouv-query id="q-age" source="data"
+&lt;dsfr-data-query id="q-age" source="data"
   where="ERFS_MEASURE:eq:Revenu moyen, PCS:eq:_T,
     AGE:in:Moins de 30 ans|30-39 ans|40-49 ans|50-64 ans|65-74 ans|75 ans et plus,
     EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB, TIME_PERIOD:eq:2023"
   order-by="AGE:asc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart id="chart-age" source="q-age" type="bar"
+&lt;dsfr-data-chart id="chart-age" source="q-age" type="bar"
   label-field="AGE" value-field="value"
   unit-tooltip=" €" selected-palette="sequentialAscending"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
 &lt;!-- Tableau detaille --&gt;
-&lt;gouv-query id="q-table" source="data"
+&lt;dsfr-data-query id="q-table" source="data"
   where="PCS:eq:_T, AGE:eq:_T, EMPSTA_ENQ:eq:_T, TPH:eq:_T, COMPARE_TIME:eq:NB"
   order-by="TIME_PERIOD:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-datalist source="q-table"
+&lt;dsfr-data-list source="q-table"
   colonnes="TIME_PERIOD:Annee, ERFS_MEASURE:Indicateur, value:Valeur"
   recherche filtres="ERFS_MEASURE" tri="TIME_PERIOD:desc"
   pagination="15" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>1 seule source HTTP</strong> : <code>gouv-source</code> fetch l'API INSEE Melodi, <code>transform="observations"</code> extrait le tableau d'observations.</li>
-          <li><strong>Aplatissement progressif</strong> : 3 <code>gouv-normalize</code> successifs aplatissent les objets imbriques (<code>dimensions</code> &rarr; <code>measures</code> &rarr; <code>OBS_VALUE_NIVEAU</code>).</li>
+          <li><strong>1 seule source HTTP</strong> : <code>dsfr-data-source</code> fetch l'API INSEE Melodi, <code>transform="observations"</code> extrait le tableau d'observations.</li>
+          <li><strong>Aplatissement progressif</strong> : 3 <code>dsfr-data-normalize</code> successifs aplatissent les objets imbriques (<code>dimensions</code> &rarr; <code>measures</code> &rarr; <code>OBS_VALUE_NIVEAU</code>).</li>
           <li><strong>Decodage INSEE via replace-fields</strong> : les codes de dimension (PCS <code>3</code>, AGE <code>Y30T39</code>, etc.) sont convertis en libelles humains directement dans le pipeline, sans JavaScript.</li>
-          <li><strong>Filtres declaratifs</strong> : chaque <code>gouv-query</code> filtre par indicateur, periode, PCS, age, etc. avec la syntaxe colon.</li>
+          <li><strong>Filtres declaratifs</strong> : chaque <code>dsfr-data-query</code> filtre par indicateur, periode, PCS, age, etc. avec la syntaxe colon.</li>
           <li><strong>Visualisations variees</strong> : KPIs, courbes d'evolution, barres horizontales, barres verticales, tableaux avec export CSV.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique permet le telechargement CSV pour les lecteurs d'ecran.</li>
+          <li><strong>Accessibilite</strong> : <code>dsfr-data-a11y</code> sur chaque graphique permet le telechargement CSV pour les lecteurs d'ecran.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
         </ul>
 

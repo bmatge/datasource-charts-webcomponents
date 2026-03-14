@@ -2,7 +2,7 @@
  * SourceSubscriberMixin - Pattern réutilisable pour l'abonnement aux sources de données
  *
  * Factorise la logique d'abonnement/cache/désabonnement commune à
- * gouv-kpi, gouv-datalist, gouv-chart et gouv-dsfr-chart.
+ * dsfr-data-kpi, dsfr-data-list, dsfr-data-chart.
  */
 import type { LitElement } from 'lit';
 import { subscribeToSource, getDataCache } from './data-bridge.js';

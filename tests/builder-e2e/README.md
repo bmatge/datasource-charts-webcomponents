@@ -1,6 +1,6 @@
 # Tests de validation du Builder
 
-Ce dossier contient une suite complète de tests E2E Playwright pour vérifier que **tous les paramètres** du builder gouv-widgets fonctionnent correctement et génèrent le code attendu.
+Ce dossier contient une suite complète de tests E2E Playwright pour vérifier que **tous les paramètres** du builder dsfr-data fonctionnent correctement et génèrent le code attendu.
 
 ## 📁 Fichiers
 
@@ -145,8 +145,8 @@ npx playwright test quick-audit.spec.ts --debug
 - [ ] KPI : variants (info, success, warning, error) et unités
 - [ ] Map : attributs deferred (value, date)
 - [ ] Datalist : colonnes configurables, recherche, export
-- [ ] Normalization (gouv-normalize) : flatten, trim, rename
-- [ ] Facettes (gouv-facets)
+- [ ] Normalization (dsfr-data-normalize) : flatten, trim, rename
+- [ ] Facettes (dsfr-data-facets)
 - [ ] Mode de génération (embedded vs dynamic)
 - [ ] Refresh interval
 - [ ] Raw data toggle

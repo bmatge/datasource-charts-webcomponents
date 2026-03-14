@@ -68,11 +68,11 @@ export const TABULAR_CONFIG: ProviderConfig = {
   },
 
   codeGen: {
-    usesGouvSource: true,
-    usesGouvQuery: true,
-    usesGouvNormalize: false,
+    usesDsfrDataSource: true,
+    usesDsfrDataQuery: true,
+    usesDsfrDataNormalize: false,
     sourceApiType: 'tabular',
     fieldPrefix: '',
-    dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
+    dependencies: { dsfr: true, dsfrChart: true, dsfrData: true },
   },
 };

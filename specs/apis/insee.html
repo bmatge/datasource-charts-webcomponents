@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INSEE (Melodi) - API supportees - gouv-widgets</title>
+  <title>INSEE (Melodi) - API supportees - dsfr-data</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css" integrity="sha384-YR4AxNhFVy1qsQ0Hp7Rosg06e4sj2m9dLxiYZrtqJ0boIOiDbD8XkIsIPMMkf0VL" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" integrity="sha384-6FSSi597BTd6QcnsBNoLclRKxTOyyYqkaucRjFgCNr8wHVCp0COLClSPY4Vy/bjh" crossorigin="anonymous">
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
     .capability-yes { color: var(--text-default-success); font-weight: bold; }
@@ -35,7 +35,7 @@
             L'API Melodi utilise un modele <strong>dimensionnel</strong> : chaque observation est decrite par
             des dimensions (GEO, TIME_PERIOD, FREQ...), une mesure (OBS_VALUE) et des attributs optionnels.
             Le filtrage se fait par <strong>egalite sur les dimensions</strong> via des parametres de requete.
-            L'adapter aplatit automatiquement les observations en objets plats exploitables par les composants gouv-widgets.
+            L'adapter aplatit automatiquement les observations en objets plats exploitables par les composants dsfr-data.
           </p>
         </div>
 
@@ -78,17 +78,17 @@
                 <tr>
                   <td>Group-by serveur</td>
                   <td class="capability-no">Non</td>
-                  <td>Agregation effectuee cote client via gouv-query</td>
+                  <td>Agregation effectuee cote client via dsfr-data-query</td>
                 </tr>
                 <tr>
                   <td>Tri serveur</td>
                   <td class="capability-no">Non</td>
-                  <td>Tri effectue cote client via gouv-query</td>
+                  <td>Tri effectue cote client via dsfr-data-query</td>
                 </tr>
                 <tr>
                   <td>Agregation serveur</td>
                   <td class="capability-no">Non</td>
-                  <td>Agregation effectuee cote client via gouv-query</td>
+                  <td>Agregation effectuee cote client via dsfr-data-query</td>
                 </tr>
               </tbody>
             </table>
@@ -130,7 +130,7 @@
             Multi-valeurs : repeter le parametre (<code>?POPREF_MEASURE=PMUN&amp;POPREF_MEASURE=PTOT</code>).
           </p>
 
-          <h3 class="fr-mt-2w">Syntaxe colon (gouv-source)</h3>
+          <h3 class="fr-mt-2w">Syntaxe colon (dsfr-data-source)</h3>
           <p>
             L'adapter convertit la syntaxe colon standard en parametres INSEE :
           </p>
@@ -150,7 +150,7 @@
             <p>
               Seuls les operateurs <code>eq</code> et <code>in</code> sont geres cote serveur.
               Les operateurs avances (<code>gt</code>, <code>lt</code>, <code>contains</code>...)
-              sont appliques cote client par <code>gouv-query</code>.
+              sont appliques cote client par <code>dsfr-data-query</code>.
             </p>
           </div>
         </section>
@@ -171,7 +171,7 @@
                 <tr><td>Chemin des donnees</td><td><code>observations</code></td></tr>
                 <tr><td>Chemin du total</td><td><code>paging.count</code></td></tr>
                 <tr><td>Donnees imbriquees</td><td>Oui : <code>dimensions</code>, <code>measures</code>, <code>attributes</code></td></tr>
-                <tr><td>Aplatissement auto</td><td>Oui (par l'adapter, pas besoin de <code>gouv-normalize</code>)</td></tr>
+                <tr><td>Aplatissement auto</td><td>Oui (par l'adapter, pas besoin de <code>dsfr-data-normalize</code>)</td></tr>
               </tbody>
             </table>
           </div>
@@ -186,7 +186,7 @@
   "paging": { "count": 35355, "next": "...&amp;page=2" }
 }</code></pre>
 
-          <h3 class="fr-mt-2w">Apres aplatissement (exploitable par gouv-query)</h3>
+          <h3 class="fr-mt-2w">Apres aplatissement (exploitable par dsfr-data-query)</h3>
           <pre><code>{
   "GEO": "2025-FRANCE-F",
   "FREQ": "A",
@@ -242,7 +242,7 @@
         <section class="fr-mt-4w">
           <h2>Detection automatique</h2>
           <p>
-            gouv-widgets detecte automatiquement une source INSEE si l'URL contient :
+            dsfr-data detecte automatiquement une source INSEE si l'URL contient :
           </p>
           <ul>
             <li><code>melodi/data/{datasetId}</code></li>
@@ -257,74 +257,74 @@
           <h2>Exemples d'utilisation</h2>
 
           <h3>Population municipale de France</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   api-type="insee"
   base-url="https://api.insee.fr/melodi"
   dataset-id="DS_POPULATIONS_REFERENCE"
   where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023, GEO:eq:FRANCE-F"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-kpi
+&lt;dsfr-data-kpi
   source="src"
   valeur="OBS_VALUE"
   label="Population municipale 2023"
   format="nombre"&gt;
-&lt;/gouv-kpi&gt;</code></pre>
+&lt;/dsfr-data-kpi&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Populations par departement avec graphique</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   api-type="insee"
   base-url="https://api.insee.fr/melodi"
   dataset-id="DS_POPULATIONS_REFERENCE"
   where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023"
   limit="500"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query
+&lt;dsfr-data-query
   source="src"
   filter="GEO:contains:DEP"
   order-by="OBS_VALUE:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart
+&lt;dsfr-data-chart
   source="src"
   type="bar"
   name-field="GEO"
   value-field="OBS_VALUE"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
-          <h3 class="fr-mt-2w">Decoder les codes de dimension avec gouv-normalize</h3>
+          <h3 class="fr-mt-2w">Decoder les codes de dimension avec dsfr-data-normalize</h3>
           <p>
             Les dimensions INSEE utilisent des codes (<code>AGE: "Y30T39"</code>, <code>PCS: "3"</code>).
-            L'attribut <code>replace-fields</code> de <code>&lt;gouv-normalize&gt;</code> permet de les
+            L'attribut <code>replace-fields</code> de <code>&lt;dsfr-data-normalize&gt;</code> permet de les
             remplacer par des libelles lisibles, <strong>sans affecter</strong> les autres champs
             qui pourraient contenir les memes valeurs.
           </p>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="raw"
   api-type="insee"
   base-url="https://api.insee.fr/melodi"
   dataset-id="DS_POPULATIONS_REFERENCE"
   where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023"
   limit="500"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="decoded" source="raw"
+&lt;dsfr-data-normalize id="decoded" source="raw"
   replace-fields="AGE:Y30T39:30-39 ans | AGE:Y_LT30:Moins de 30 ans | PCS:3:Cadres | PCS:5:Employes"
   replace="N/A:"&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-dsfr-chart
+&lt;dsfr-data-chart
   source="decoded"
   type="bar"
   name-field="AGE"
   value-field="OBS_VALUE"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Datalist avec pagination serveur</h3>
-          <pre><code>&lt;gouv-source
+          <pre><code>&lt;dsfr-data-source
   id="src"
   api-type="insee"
   base-url="https://api.insee.fr/melodi"
@@ -332,13 +332,13 @@
   where="POPREF_MEASURE:eq:PMUN, TIME_PERIOD:eq:2023"
   server-side
   page-size="50"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist
+&lt;dsfr-data-list
   source="src"
   columns="GEO,OBS_VALUE"
   page-size="50"&gt;
-&lt;/gouv-datalist&gt;</code></pre>
+&lt;/dsfr-data-list&gt;</code></pre>
         </section>
     </div>
   </app-layout-demo>

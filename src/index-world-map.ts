@@ -1,7 +1,7 @@
 /**
- * gouv-widgets/world-map - Composant carte du monde
+ * dsfr-data/world-map - Composant carte du monde
  *
- * A charger en complement de gouv-widgets.core si gouv-world-map est utilise.
+ * A charger en complement de dsfr-data.core si dsfr-data-world-map est utilise.
  * Inclut d3-geo et topojson-client.
  */
-export { GouvWorldMap } from './components/gouv-world-map.js';
+export { DsfrDataWorldMap } from './components/dsfr-data-world-map.js';

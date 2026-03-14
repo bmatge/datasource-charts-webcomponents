@@ -177,10 +177,10 @@ test.beforeAll(() => {
 /** Inject all test data into localStorage before page navigation */
 async function setupStorage(page: Page) {
   await page.addInitScript((data) => {
-    localStorage.setItem('gouv_widgets_connections', JSON.stringify(data.connections));
-    localStorage.setItem('gouv_widgets_sources', JSON.stringify(data.sources));
-    localStorage.setItem('gouv-widgets-favorites', JSON.stringify(data.favorites));
-    localStorage.setItem('gouv-widgets-dashboards', JSON.stringify(data.dashboards));
+    localStorage.setItem('dsfr-data-connections', JSON.stringify(data.connections));
+    localStorage.setItem('dsfr-data-sources', JSON.stringify(data.sources));
+    localStorage.setItem('dsfr-data-favorites', JSON.stringify(data.favorites));
+    localStorage.setItem('dsfr-data-dashboards', JSON.stringify(data.dashboards));
   }, {
     connections: [GRIST_CONNECTION, API_ODS_CONNECTION, API_DATAGOUV_CONNECTION],
     sources: [MANUAL_SOURCE, GRIST_SOURCE, API_ODS_SOURCE],
@@ -600,14 +600,14 @@ test.describe('User Guide Screenshots', () => {
     await fullScreenshot(page, 'guide-D3-playground-dashboard.png');
     await clearAnnotations(page);
 
-    // --- D4: Playground with gouv-source line chart ---
+    // --- D4: Playground with dsfr-data-source line chart ---
     await page.selectOption('#example-select', 'direct-line');
     const confirm3 = page.locator('[data-action="confirm"]');
     if (await confirm3.isVisible({ timeout: 1000 }).catch(() => false)) await confirm3.click();
     await page.waitForTimeout(500);
     await page.click('#run-btn');
     await page.waitForTimeout(5000);
-    await fullScreenshot(page, 'guide-D4-playground-gouv-source.png');
+    await fullScreenshot(page, 'guide-D4-playground-dsfr-data-source.png');
   });
 
   // ========================================================================
@@ -767,22 +767,22 @@ test.describe('User Guide Screenshots', () => {
     await page.setViewportSize({ width: 1200, height: 900 });
 
     // KPI demo
-    await page.goto('/specs/components/gouv-kpi.html');
+    await page.goto('/specs/components/dsfr-data-kpi.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-kpi.png');
 
     // Datalist demo
-    await page.goto('/specs/components/gouv-datalist.html');
+    await page.goto('/specs/components/dsfr-data-list.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-datalist.png');
 
     // Chart demo
-    await page.goto('/specs/components/gouv-dsfr-chart.html');
+    await page.goto('/specs/components/dsfr-data-chart.html');
     await page.waitForTimeout(6000);
     await fullScreenshot(page, 'guide-comp-chart.png');
 
     // Query demo
-    await page.goto('/specs/components/gouv-query.html');
+    await page.goto('/specs/components/dsfr-data-query.html');
     await page.waitForTimeout(4000);
     await fullScreenshot(page, 'guide-comp-query.png');
   });

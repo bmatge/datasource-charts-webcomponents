@@ -3,7 +3,7 @@
  *
  * Tests 16 use cases (2 per chart type) produced by simulating the builder:
  *   - "Brut" (embedded): API aggregation + DSFR Chart rendering
- *   - "Query" (dynamic): gouv-source + gouv-query + gouv-dsfr-chart rendering
+ *   - "Query" (dynamic): dsfr-data-source + dsfr-data-query + dsfr-data-chart rendering
  *
  * Dataset: industrie-du-futur (data.economie.gouv.fr) - 101 departements
  */
@@ -36,7 +36,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
       { timeout: 60_000 }
     );
 
-    // Wait extra time for dynamic charts (gouv-source + gouv-query + gouv-dsfr-chart)
+    // Wait extra time for dynamic charts (dsfr-data-source + dsfr-data-query + dsfr-data-chart)
     // These need: API fetch + query processing + chart render
     await page.waitForTimeout(8_000);
   });
@@ -87,15 +87,15 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   // -------------------------------------------------------------------
   // 2. BAR - QUERY
   // -------------------------------------------------------------------
-  test('2. BAR query - Beneficiaires par region via gouv-query', async () => {
+  test('2. BAR query - Beneficiaires par region via dsfr-data-query', async () => {
     const section = page.locator('#bar-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '02-bar-query.png') });
 
-    // gouv-dsfr-chart should have rendered a bar-chart
-    const chart = section.locator('gouv-dsfr-chart');
+    // dsfr-data-chart should have rendered a bar-chart
+    const chart = section.locator('dsfr-data-chart');
     await expect(chart).toBeVisible();
 
-    const barChart = section.locator('gouv-dsfr-chart bar-chart');
+    const barChart = section.locator('dsfr-data-chart bar-chart');
     await expect(barChart).toBeVisible();
   });
 
@@ -113,11 +113,11 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   // -------------------------------------------------------------------
   // 4. HBAR - QUERY
   // -------------------------------------------------------------------
-  test('4. HBAR query - Investissement moyen par region via gouv-query', async () => {
+  test('4. HBAR query - Investissement moyen par region via dsfr-data-query', async () => {
     const section = page.locator('#hbar-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '04-hbar-query.png') });
 
-    const barChart = section.locator('gouv-dsfr-chart bar-chart');
+    const barChart = section.locator('dsfr-data-chart bar-chart');
     await expect(barChart).toBeVisible();
   });
 
@@ -139,7 +139,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
     const section = page.locator('#line-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '06-line-query.png') });
 
-    const lineChart = section.locator('gouv-dsfr-chart line-chart');
+    const lineChart = section.locator('dsfr-data-chart line-chart');
     await expect(lineChart).toBeVisible();
   });
 
@@ -161,7 +161,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
     const section = page.locator('#pie-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '08-pie-query.png') });
 
-    const pieChart = section.locator('gouv-dsfr-chart pie-chart');
+    const pieChart = section.locator('dsfr-data-chart pie-chart');
     await expect(pieChart).toBeVisible();
   });
 
@@ -180,12 +180,12 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   // -------------------------------------------------------------------
   // 10. DOUGHNUT - QUERY
   // -------------------------------------------------------------------
-  test('10. DOUGHNUT query - Departements par region via gouv-query', async () => {
+  test('10. DOUGHNUT query - Departements par region via dsfr-data-query', async () => {
     const section = page.locator('#doughnut-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '10-doughnut-query.png') });
 
-    // DSFR Chart has no doughnut type, uses pie-chart via gouv-dsfr-chart
-    const pieChart = section.locator('gouv-dsfr-chart pie-chart');
+    // DSFR Chart has no doughnut type, uses pie-chart via dsfr-data-chart
+    const pieChart = section.locator('dsfr-data-chart pie-chart');
     await expect(pieChart).toBeVisible();
   });
 
@@ -207,7 +207,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
     const section = page.locator('#radar-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '12-radar-query.png') });
 
-    const radarChart = section.locator('gouv-dsfr-chart radar-chart');
+    const radarChart = section.locator('dsfr-data-chart radar-chart');
     await expect(radarChart).toBeVisible();
   });
 
@@ -226,12 +226,12 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   // -------------------------------------------------------------------
   // 14. MAP - QUERY
   // -------------------------------------------------------------------
-  test('14. MAP query - Carte investissements via gouv-dsfr-chart', async () => {
+  test('14. MAP query - Carte investissements via dsfr-data-chart', async () => {
     const section = page.locator('#map-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '14-map-query.png') });
 
-    // gouv-dsfr-chart with map type should render
-    const dsfrChart = section.locator('gouv-dsfr-chart');
+    // dsfr-data-chart with map type should render
+    const dsfrChart = section.locator('dsfr-data-chart');
     await expect(dsfrChart).toBeVisible();
   });
 
@@ -253,12 +253,12 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   // -------------------------------------------------------------------
   // 16. KPI - QUERY
   // -------------------------------------------------------------------
-  test('16. KPI query - Beneficiaires IDF via gouv-kpi', async () => {
+  test('16. KPI query - Beneficiaires IDF via dsfr-data-kpi', async () => {
     const section = page.locator('#kpi-query');
     await section.screenshot({ path: join(SCREENSHOT_DIR, '16-kpi-query.png') });
 
-    // gouv-kpi should have rendered
-    const kpi = section.locator('gouv-kpi');
+    // dsfr-data-kpi should have rendered
+    const kpi = section.locator('dsfr-data-kpi');
     await expect(kpi).toBeVisible();
   });
 
@@ -296,10 +296,10 @@ test.describe('Industrie du Futur - Builder simulation', () => {
     expect(Number(numericPart)).toBeGreaterThan(1_000_000_000);
   });
 
-  test('BAR query - gouv-dsfr-chart received data from gouv-query', async () => {
-    // Verify the gouv-dsfr-chart component has rendered a bar-chart
+  test('BAR query - dsfr-data-chart received data from dsfr-data-query', async () => {
+    // Verify the dsfr-data-chart component has rendered a bar-chart
     const hasBarChart = await page.evaluate(() => {
-      const chart = document.querySelector('#bar-query gouv-dsfr-chart');
+      const chart = document.querySelector('#bar-query dsfr-data-chart');
       return chart?.querySelector('bar-chart') !== null;
     });
     expect(hasBarChart).toBe(true);
@@ -308,7 +308,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   test('PIE query - filtered to exactly 3 regions', async () => {
     // Read the x attribute from the DSFR pie-chart to count labels
     const dataCount = await page.evaluate(() => {
-      const pieChart = document.querySelector('#pie-query gouv-dsfr-chart pie-chart');
+      const pieChart = document.querySelector('#pie-query dsfr-data-chart pie-chart');
       if (!pieChart) return -1;
       const xAttr = pieChart.getAttribute('x');
       if (!xAttr) return -1;
@@ -325,7 +325,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   test('LINE query - only departments with >= 100 beneficiaires', async () => {
     // Read the x attribute from the DSFR line-chart to count labels
     const labelCount = await page.evaluate(() => {
-      const lineChart = document.querySelector('#line-query gouv-dsfr-chart line-chart');
+      const lineChart = document.querySelector('#line-query dsfr-data-chart line-chart');
       if (!lineChart) return -1;
       const xAttr = lineChart.getAttribute('x');
       if (!xAttr) return -1;
@@ -344,7 +344,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
   test('DOUGHNUT query - count of departments per region', async () => {
     // Read the x attribute from the DSFR pie-chart (doughnut mapped to pie) to count labels
     const dataCount = await page.evaluate(() => {
-      const pieChart = document.querySelector('#doughnut-query gouv-dsfr-chart pie-chart');
+      const pieChart = document.querySelector('#doughnut-query dsfr-data-chart pie-chart');
       if (!pieChart) return -1;
       const xAttr = pieChart.getAttribute('x');
       if (!xAttr) return -1;
@@ -355,7 +355,7 @@ test.describe('Industrie du Futur - Builder simulation', () => {
         return -1;
       }
     });
-    // Should have 6 regions (limited by gouv-query limit=6)
+    // Should have 6 regions (limited by dsfr-data-query limit=6)
     expect(dataCount).toBe(6);
   });
 });

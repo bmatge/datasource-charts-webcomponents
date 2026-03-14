@@ -1,22 +1,22 @@
 /**
- * gouv-widgets/core - Composants de dataviz sans la carte du monde
+ * dsfr-data/core - Composants de dataviz sans la carte du monde
  *
  * Bundle allege sans d3-geo ni topojson (~50% plus leger).
- * Pour ajouter gouv-world-map, charger aussi gouv-widgets.world-map.esm.js
+ * Pour ajouter dsfr-data-world-map, charger aussi dsfr-data.world-map.esm.js
  */
 
 // Composants de donnees
-export { GouvSource } from './components/gouv-source.js';
-export { GouvQuery } from './components/gouv-query.js';
-export { GouvNormalize } from './components/gouv-normalize.js';
-export { GouvFacets } from './components/gouv-facets.js';
-export { GouvSearch } from './components/gouv-search.js';
-export { GouvKpi } from './components/gouv-kpi.js';
-export { GouvKpiGroup } from './components/gouv-kpi-group.js';
-export { GouvDatalist } from './components/gouv-datalist.js';
-export { GouvDisplay } from './components/gouv-display.js';
-export { GouvDsfrChart } from './components/gouv-dsfr-chart.js';
-export { GouvChartA11y } from './components/gouv-chart-a11y.js';
+export { DsfrDataSource } from './components/dsfr-data-source.js';
+export { DsfrDataQuery } from './components/dsfr-data-query.js';
+export { DsfrDataNormalize } from './components/dsfr-data-normalize.js';
+export { DsfrDataFacets } from './components/dsfr-data-facets.js';
+export { DsfrDataSearch } from './components/dsfr-data-search.js';
+export { DsfrDataKpi } from './components/dsfr-data-kpi.js';
+export { DsfrDataKpiGroup } from './components/dsfr-data-kpi-group.js';
+export { DsfrDataList } from './components/dsfr-data-list.js';
+export { DsfrDataDisplay } from './components/dsfr-data-display.js';
+export { DsfrDataChart } from './components/dsfr-data-chart.js';
+export { DsfrDataA11y } from './components/dsfr-data-a11y.js';
 
 // Composants de layout
 export { AppHeader, AppFooter, AppLayoutBuilder, AppLayoutDemo } from './components/layout/index.js';

@@ -4,7 +4,7 @@
  */
 
 import './styles/sources.css';
-import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, toastSuccess, toastError, navigateTo, initAuth, downloadExport, importFromFile, migrateSource } from '@gouv-widgets/shared';
+import { openModal, closeModal, saveToStorage, loadFromStorage, STORAGE_KEYS, toastWarning, toastSuccess, toastError, navigateTo, initAuth, downloadExport, importFromFile, migrateSource } from '@dsfr-data/shared';
 
 import {
   state,

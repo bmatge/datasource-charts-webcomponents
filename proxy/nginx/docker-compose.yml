@@ -1,5 +1,5 @@
 # =============================================================================
-# Docker Compose - Proxy CORS autonome pour gouv-widgets
+# Docker Compose - Proxy CORS autonome pour dsfr-data
 # =============================================================================
 #
 # Deploie un reverse proxy Nginx qui contourne les restrictions CORS
@@ -17,7 +17,7 @@
 services:
   proxy:
     image: nginx:alpine
-    container_name: gouv-widgets-proxy
+    container_name: dsfr-data-proxy
     restart: unless-stopped
     ports:
       - "3000:80"

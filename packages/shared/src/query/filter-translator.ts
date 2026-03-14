@@ -1,11 +1,11 @@
 /**
  * Filter translation utilities.
- * Converts gouv-query colon-syntax filters to ODSQL where clauses
+ * Converts dsfr-data-query colon-syntax filters to ODSQL where clauses
  * and applies filters to local data arrays.
  */
 
 /**
- * Convert a gouv-query filter expression (field:operator:value) to an ODSQL where clause.
+ * Convert a dsfr-data-query filter expression (field:operator:value) to an ODSQL where clause.
  * Supports 12 operators: eq, neq, gt, gte, lt, lte, contains, notcontains, in, notin, isnull, isnotnull.
  */
 export function filterToOdsql(filterExpr: string): string {
@@ -31,7 +31,7 @@ export function filterToOdsql(filterExpr: string): string {
 }
 
 /**
- * Apply a gouv-query style filter (field:operator:value) to local data rows.
+ * Apply a dsfr-data-query style filter (field:operator:value) to local data rows.
  * Supports 10 operators: eq, neq, gt, gte, lt, lte, contains, notcontains, isnull, isnotnull.
  */
 export function applyLocalFilter(

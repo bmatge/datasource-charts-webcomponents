@@ -27,6 +27,7 @@ export { buildGristHeaders } from './api/grist.js';
 
 // Storage
 export { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from './storage/local-storage.js';
+export { migrateStorageKeys } from './storage/migration.js';
 
 // Storage adapter (async API — supports localStorage and remote backends)
 export type { StorageAdapter } from './storage/storage-adapter.js';

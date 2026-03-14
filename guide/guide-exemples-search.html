@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-search — Exemples - Guide - gouv-widgets</title>
+  <title>dsfr-data-search — Exemples - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -39,64 +39,64 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-search-line fr-mr-1w"></i>gouv-search</h1>
+        <h1><i class="ri-search-line fr-mr-1w"></i>dsfr-data-search</h1>
         <p class="fr-text--lead">
-          <code>gouv-search</code> affiche un champ de recherche DSFR et filtre les donnees en amont avant de les redistribuer aux composants en aval. Se combine avec <code>gouv-facets</code> et <code>gouv-display</code>.
+          <code>dsfr-data-search</code> affiche un champ de recherche DSFR et filtre les donnees en amont avant de les redistribuer aux composants en aval. Se combine avec <code>dsfr-data-facets</code> et <code>dsfr-data-display</code>.
         </p>
 
         <!-- search-datalist (server-side ODS) -->
         <h4>Tableau — Recherche serveur sur les rappels de produits</h4>
-        <p>Recherche full-text deleguee au serveur ODS via <code>gouv-search server-search</code>. Le tableau supporte le tri serveur via <code>server-tri</code> et la pagination serveur. Chaque action (recherche, tri, page) declenche un nouvel appel API.
+        <p>Recherche full-text deleguee au serveur ODS via <code>dsfr-data-search server-search</code>. Le tableau supporte le tri serveur via <code>server-tri</code> et la pagination serveur. Chaque action (recherche, tri, page) declenche un nouvel appel API.
           <a href="../apps/playground/index.html?example=search-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-s-datalist">
-<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="q" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="20"
   order-by="date_publication:desc"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-search id="s" source="q"
+&lt;dsfr-data-search id="s" source="q"
   server-search
   placeholder="Rechercher un produit rappele..."
   min-length="2"
   count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-datalist source="q"
+&lt;dsfr-data-list source="q"
   colonnes="modeles_ou_references:Produit, categorie_produit:Categorie, marque_produit:Marque, date_publication:Date"
   server-tri
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <!-- search-display (server-side ODS) -->
         <h4>Cartes — Recherche serveur sur Industrie du futur</h4>
-        <p>Recherche full-text serveur combinee avec <code>gouv-display</code> pour afficher les resultats sous forme de cartes DSFR. La pagination est geree cote serveur.
+        <p>Recherche full-text serveur combinee avec <code>dsfr-data-display</code> pour afficher les resultats sous forme de cartes DSFR. La pagination est geree cote serveur.
           <a href="../apps/playground/index.html?example=search-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-display">Code source</button></h3>
           <div class="fr-collapse" id="code-s-display">
-<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="q" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="9"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-search id="s" source="q"
+&lt;dsfr-data-search id="s" source="q"
   server-search
   placeholder="Entreprise, region ou departement..."
   count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-display source="q" cols="3" pagination="9"&gt;
+&lt;dsfr-data-display source="q" cols="3" pagination="9"&gt;
   &lt;template&gt;
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
@@ -110,38 +110,38 @@
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/template&gt;
-&lt;/gouv-display&gt;</pre>
+&lt;/dsfr-data-display&gt;</pre>
           </div>
         </section>
 
         <!-- search-facets-display (RappelConso ODS) -->
         <h4>Recherche + facettes + cartes</h4>
-        <p>Pipeline complet : la recherche reduit le jeu de donnees, les facettes affinent par categorie et sous-categorie, et <code>gouv-display</code> genere les cartes.
+        <p>Pipeline complet : la recherche reduit le jeu de donnees, les facettes affinent par categorie et sous-categorie, et <code>dsfr-data-display</code> genere les cartes.
           <a href="../apps/playground/index.html?example=search-facets-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-facets">Code source</button></h3>
           <div class="fr-collapse" id="code-s-facets">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
-  server-side page-size="100"&gt;&lt;/gouv-source&gt;
+  server-side page-size="100"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-search id="searched" source="raw"
+&lt;dsfr-data-search id="searched" source="raw"
   fields="libelle, marque_produit, motif_rappel"
   placeholder="Rechercher un rappel..."
   operator="words" count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-facets id="filtered" source="searched"
+&lt;dsfr-data-facets id="filtered" source="searched"
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie"
   display="categorie_produit:multiselect | sous_categorie_produit:select"
   cols="6"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-display source="filtered" cols="3" pagination="9"&gt;
+&lt;dsfr-data-display source="filtered" cols="3" pagination="9"&gt;
   &lt;template&gt;
     &lt;div class="fr-card"&gt;
       &lt;div class="fr-card__body"&gt;
@@ -155,7 +155,7 @@
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/template&gt;
-&lt;/gouv-display&gt;</pre>
+&lt;/dsfr-data-display&gt;</pre>
           </div>
         </section>
 
@@ -168,41 +168,41 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-s-kpi">Code source</button></h3>
           <div class="fr-collapse" id="code-s-kpi">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
+&lt;dsfr-data-normalize id="clean" source="raw"
   numeric="montant_investissement, nombre_beneficiaires"
   rename="nom_region:Region | nom_departement:Departement | nom_entreprise:Entreprise"
   trim&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-search id="searched" source="clean"
+&lt;dsfr-data-search id="searched" source="clean"
   fields="Entreprise, Region, Departement"
   placeholder="Entreprise, region, departement..."
   operator="words" count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;"&gt;
-  &lt;gouv-kpi source="searched" valeur="count"
-    label="Projets" couleur="bleu"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="searched" valeur="sum:montant_investissement"
-    label="Investissement total" format="euro"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="searched" valeur="sum:nombre_beneficiaires"
-    label="Beneficiaires" format="nombre"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="searched" valeur="count"
+    label="Projets" couleur="bleu"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="searched" valeur="sum:montant_investissement"
+    label="Investissement total" format="euro"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="searched" valeur="sum:nombre_beneficiaires"
+    label="Beneficiaires" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;
 
-&lt;gouv-query id="stats" source="searched"
+&lt;dsfr-data-query id="stats" source="searched"
   group-by="Region"
   aggregate="nombre_beneficiaires:sum:Beneficiaires"
   order-by="Beneficiaires:desc" limit="10"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="stats" type="bar"
+&lt;dsfr-data-chart source="stats" type="bar"
   label-field="Region" value-field="Beneficiaires"
   selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 

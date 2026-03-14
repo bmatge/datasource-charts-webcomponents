@@ -9,9 +9,9 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, ServerSideOverlay, FacetResult
 } from './api-adapter.js';
-import type { QueryAggregate } from '../components/gouv-query.js';
-import type { ProviderConfig } from '@gouv-widgets/shared';
-import { ODS_CONFIG } from '@gouv-widgets/shared';
+import type { QueryAggregate } from '../components/dsfr-data-query.js';
+import type { ProviderConfig } from '@dsfr-data/shared';
+import { ODS_CONFIG } from '@dsfr-data/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -95,7 +95,7 @@ export class OpenDataSoftAdapter implements ApiAdapter {
     // Avertir si pagination incomplete
     if (totalCount >= 0 && allResults.length < totalCount && allResults.length < requestedLimit) {
       console.warn(
-        `gouv-query: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
+        `dsfr-data-query: pagination incomplete - ${allResults.length}/${totalCount} resultats recuperes ` +
         `(limite de securite: ${ODS_MAX_PAGES} pages de ${ODS_PAGE_SIZE})`
       );
     }

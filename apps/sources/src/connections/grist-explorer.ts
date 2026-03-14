@@ -11,7 +11,7 @@ import {
   toastWarning,
   toastSuccess,
   toastError,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 
 import { state } from '../state.js';
 import type { GristDocument, GristRecord, Source } from '../state.js';
@@ -285,7 +285,7 @@ export async function createGristTable(): Promise<void> {
     }
 
     toastSuccess(`Table "${tableName}" creee avec succes !`);
-    const { closeModal } = await import('@gouv-widgets/shared');
+    const { closeModal } = await import('@dsfr-data/shared');
     closeModal('create-table-modal');
 
     // Refresh tables list
@@ -574,7 +574,7 @@ export async function exportToGrist(): Promise<void> {
     }
 
     toastSuccess(`Table "${tableName}" creee avec ${source.data.length} enregistrements !`);
-    const { closeModal } = await import('@gouv-widgets/shared');
+    const { closeModal } = await import('@dsfr-data/shared');
     closeModal('export-grist-modal');
 
     // If we are viewing this connection, refresh

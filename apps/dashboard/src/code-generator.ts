@@ -2,7 +2,7 @@
  * Dashboard app - Code generation
  */
 
-import { escapeHtml, CDN_URLS, LIB_URL } from '@gouv-widgets/shared';
+import { escapeHtml, CDN_URLS, LIB_URL } from '@dsfr-data/shared';
 import { state, getRowColumns } from './state.js';
 import type { Widget } from './state.js';
 
@@ -51,7 +51,7 @@ export function generateHTMLCode(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(dashboard.name)} - gouv-widgets</title>
+  <title>${escapeHtml(dashboard.name)} - dsfr-data</title>
 
   <!-- DSFR -->
   <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
@@ -62,8 +62,8 @@ export function generateHTMLCode(): string {
   <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
   <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
 
-  <!-- gouv-widgets -->
-  <script type="module" src="${LIB_URL}/gouv-widgets.core.esm.js"><\/script>
+  <!-- dsfr-data -->
+  <script type="module" src="${LIB_URL}/dsfr-data.core.esm.js"><\/script>
 </head>
 <body>
   <div class="fr-container fr-my-4w">
@@ -83,30 +83,30 @@ export function generateWidgetHTML(widget: Widget): string {
   switch (widget.type) {
     case 'kpi': {
       const iconeAttr = widget.config.icone ? ` icone="${widget.config.icone}"` : '';
-      return `${indent}<gouv-kpi
+      return `${indent}<dsfr-data-kpi
 ${indent}  valeur="${escapeHtml(widget.config.valeur || '')}"
 ${indent}  label="${escapeHtml(widget.config.label || widget.title)}"
 ${indent}  format="${widget.config.format || 'nombre'}"${iconeAttr}>
-${indent}</gouv-kpi>\n`;
+${indent}</dsfr-data-kpi>\n`;
     }
 
     case 'chart':
       if (widget.config.fromFavorite && widget.config.code) {
         return `${indent}<!-- Graphique: ${escapeHtml(widget.title)} -->\n${indent}${widget.config.code.split('\n').join('\n' + indent)}\n`;
       }
-      return `${indent}<gouv-dsfr-chart
+      return `${indent}<dsfr-data-chart
 ${indent}  type="${widget.config.chartType || 'bar'}"
 ${indent}  label-field="${escapeHtml(widget.config.labelField || '')}"
 ${indent}  value-field="${escapeHtml(widget.config.valueField || '')}"
 ${indent}  selected-palette="${widget.config.palette || 'categorical'}">
-${indent}</gouv-dsfr-chart>\n`;
+${indent}</dsfr-data-chart>\n`;
 
     case 'table': {
       const cols = widget.config.columns?.length ? ` columns='${JSON.stringify(widget.config.columns)}'` : '';
       const searchable = widget.config.searchable ? ' searchable' : '';
       const sortable = widget.config.sortable ? ' sortable' : '';
-      return `${indent}<gouv-datalist${cols}${searchable}${sortable}>
-${indent}</gouv-datalist>\n`;
+      return `${indent}<dsfr-data-list${cols}${searchable}${sortable}>
+${indent}</dsfr-data-list>\n`;
     }
 
     case 'text':

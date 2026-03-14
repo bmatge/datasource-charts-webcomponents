@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Ghibli - Guide - gouv-widgets</title>
+  <title>Dashboard Ghibli - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -94,30 +94,30 @@
         <div class="fr-callout fr-callout--blue-france fr-mt-2w">
           <p class="fr-callout__text">
             <strong>Provider generic :</strong> L'API Ghibli retourne directement un tableau JSON plat
-            (pas d'enveloppe, CORS natif). <code>gouv-source</code> utilise une URL directe sans <code>api-type</code>
+            (pas d'enveloppe, CORS natif). <code>dsfr-data-source</code> utilise une URL directe sans <code>api-type</code>
             ni <code>transform</code>.
             Les champs numeriques (<code>rt_score</code>, <code>running_time</code>,
-            <code>release_date</code>) arrivent en string et sont convertis via <code>gouv-normalize numeric</code>.
+            <code>release_date</code>) arrivent en string et sont convertis via <code>dsfr-data-normalize numeric</code>.
             Toutes les transformations (tri, filtre, group-by, agregation) sont effectuees client-side
-            par <code>gouv-query</code>.
+            par <code>dsfr-data-query</code>.
           </p>
         </div>
 
         <h4>Architecture du pipeline</h4>
-        <div class="pipeline-diagram">gouv-source "raw-films" (fetch URL directe, JSON plat, CORS natif)
-  \-- gouv-normalize "films" (trim + numeric="rt_score,running_time,release_date")
-       |-- gouv-query "by-score" (order-by rt_score:desc)
-       |     \-- gouv-dsfr-chart bar horizontal (scores RT)
-       |-- gouv-query "by-duration" (order-by running_time:desc)
-       |     \-- gouv-dsfr-chart bar horizontal (durees)
-       |-- gouv-query "by-director-count" (group-by director, count)
-       |     \-- gouv-dsfr-chart pie (nb films/realisateur)
-       |-- gouv-query "by-director-score" (group-by director, avg rt_score)
-       |     \-- gouv-dsfr-chart bar (score moyen/realisateur)
-       |-- gouv-query "recent-films" (where release_date >= 2000)
-       |     \-- gouv-dsfr-chart line x2 (score + duree dans le temps)
-       |-- gouv-kpi x2 (score RT moyen, duree moyenne)
-       \-- gouv-facets + gouv-datalist (filmographie complete)</div>
+        <div class="pipeline-diagram">dsfr-data-source "raw-films" (fetch URL directe, JSON plat, CORS natif)
+  \-- dsfr-data-normalize "films" (trim + numeric="rt_score,running_time,release_date")
+       |-- dsfr-data-query "by-score" (order-by rt_score:desc)
+       |     \-- dsfr-data-chart bar horizontal (scores RT)
+       |-- dsfr-data-query "by-duration" (order-by running_time:desc)
+       |     \-- dsfr-data-chart bar horizontal (durees)
+       |-- dsfr-data-query "by-director-count" (group-by director, count)
+       |     \-- dsfr-data-chart pie (nb films/realisateur)
+       |-- dsfr-data-query "by-director-score" (group-by director, avg rt_score)
+       |     \-- dsfr-data-chart bar (score moyen/realisateur)
+       |-- dsfr-data-query "recent-films" (where release_date >= 2000)
+       |     \-- dsfr-data-chart line x2 (score + duree dans le temps)
+       |-- dsfr-data-kpi x2 (score RT moyen, duree moyenne)
+       \-- dsfr-data-facets + dsfr-data-list (filmographie complete)</div>
 
         <h4 class="fr-mt-3w">Exemple live</h4>
 
@@ -126,53 +126,53 @@
         <!-- ============================================================= -->
 
         <!-- 1. Fetch generique (URL directe, JSON plat, CORS natif) -->
-        <gouv-source id="raw-films"
+        <dsfr-data-source id="raw-films"
           url="https://ghibliapi.vercel.app/films">
-        </gouv-source>
+        </dsfr-data-source>
 
         <!-- 2. Normalisation : conversion numerique des champs string -->
-        <gouv-normalize id="films"
+        <dsfr-data-normalize id="films"
           source="raw-films"
           trim
           numeric="rt_score,running_time,release_date">
-        </gouv-normalize>
+        </dsfr-data-normalize>
 
         <!-- 3. Queries derivees (tout client-side) -->
 
         <!-- Films tries par score RT decroissant -->
-        <gouv-query id="by-score"
+        <dsfr-data-query id="by-score"
           source="films"
           order-by="rt_score:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <!-- Films tries par duree decroissante -->
-        <gouv-query id="by-duration"
+        <dsfr-data-query id="by-duration"
           source="films"
           order-by="running_time:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <!-- Nb de films par realisateur -->
-        <gouv-query id="by-director-count"
+        <dsfr-data-query id="by-director-count"
           source="films"
           group-by="director"
           aggregate="id:count"
           order-by="id__count:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <!-- Score RT moyen par realisateur -->
-        <gouv-query id="by-director-score"
+        <dsfr-data-query id="by-director-score"
           source="films"
           group-by="director"
           aggregate="rt_score:avg, id:count"
           order-by="rt_score__avg:desc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <!-- Films recents (>= 2000) -->
-        <gouv-query id="recent-films"
+        <dsfr-data-query id="recent-films"
           source="films"
           where="release_date:gte:2000"
           order-by="release_date:asc">
-        </gouv-query>
+        </dsfr-data-query>
 
         <!-- ============================================================= -->
         <!-- DASHBOARD                                                       -->
@@ -189,7 +189,7 @@
         <h2 class="section-title">Indicateurs cles</h2>
 
         <div class="kpi-row">
-          <gouv-kpi source="films"
+          <dsfr-data-kpi source="films"
             valeur="avg:rt_score"
             label="Score Rotten Tomatoes moyen (sur 100)"
             format="nombre"
@@ -197,15 +197,15 @@
             seuil-orange="75"
             icone="ri-star-line"
             couleur="bleu">
-          </gouv-kpi>
+          </dsfr-data-kpi>
 
-          <gouv-kpi source="films"
+          <dsfr-data-kpi source="films"
             valeur="avg:running_time"
             label="Duree moyenne (minutes par film)"
             format="nombre"
             icone="ri-time-line"
             couleur="orange">
-          </gouv-kpi>
+          </dsfr-data-kpi>
         </div>
 
         <!-- Scores et durees -->
@@ -213,7 +213,7 @@
 
         <div class="chart-card">
           <h3>Score Rotten Tomatoes par film <small>trie du meilleur au moins bon</small></h3>
-          <gouv-dsfr-chart id="chart-score" source="by-score"
+          <dsfr-data-chart id="chart-score" source="by-score"
             type="bar"
             label-field="title"
             value-field="rt_score"
@@ -222,21 +222,21 @@
             unit-tooltip="%"
             y-min="0"
             y-max="100">
-          </gouv-dsfr-chart>
-          <gouv-chart-a11y for="chart-score" source="by-score" table download></gouv-chart-a11y>
+          </dsfr-data-chart>
+          <dsfr-data-a11y for="chart-score" source="by-score" table download></dsfr-data-a11y>
         </div>
 
         <div class="chart-card">
           <h3>Duree des films <small>en minutes, du plus long au plus court</small></h3>
-          <gouv-dsfr-chart id="chart-duration" source="by-duration"
+          <dsfr-data-chart id="chart-duration" source="by-duration"
             type="bar"
             label-field="title"
             value-field="running_time"
             selected-palette="divergentAscending"
             horizontal
             unit-tooltip=" min">
-          </gouv-dsfr-chart>
-          <gouv-chart-a11y for="chart-duration" source="by-duration" table download></gouv-chart-a11y>
+          </dsfr-data-chart>
+          <dsfr-data-a11y for="chart-duration" source="by-duration" table download></dsfr-data-a11y>
         </div>
 
         <!-- Realisateurs -->
@@ -245,18 +245,18 @@
         <div class="charts-2col">
           <div class="chart-card">
             <h3>Nombre de films par realisateur</h3>
-            <gouv-dsfr-chart id="chart-dir-count" source="by-director-count"
+            <dsfr-data-chart id="chart-dir-count" source="by-director-count"
               type="pie"
               label-field="director"
               value-field="id__count"
               selected-palette="categorical">
-            </gouv-dsfr-chart>
-            <gouv-chart-a11y for="chart-dir-count" source="by-director-count" table download></gouv-chart-a11y>
+            </dsfr-data-chart>
+            <dsfr-data-a11y for="chart-dir-count" source="by-director-count" table download></dsfr-data-a11y>
           </div>
 
           <div class="chart-card">
             <h3>Score RT moyen par realisateur</h3>
-            <gouv-dsfr-chart id="chart-dir-score" source="by-director-score"
+            <dsfr-data-chart id="chart-dir-score" source="by-director-score"
               type="bar"
               label-field="director"
               value-field="rt_score__avg"
@@ -264,8 +264,8 @@
               unit-tooltip="%"
               y-min="0"
               y-max="100">
-            </gouv-dsfr-chart>
-            <gouv-chart-a11y for="chart-dir-score" source="by-director-score" table download></gouv-chart-a11y>
+            </dsfr-data-chart>
+            <dsfr-data-a11y for="chart-dir-score" source="by-director-score" table download></dsfr-data-a11y>
           </div>
         </div>
 
@@ -275,7 +275,7 @@
         <div class="charts-2col">
           <div class="chart-card">
             <h3>Score RT par annee de sortie</h3>
-            <gouv-dsfr-chart id="chart-recent-score" source="recent-films"
+            <dsfr-data-chart id="chart-recent-score" source="recent-films"
               type="line"
               label-field="release_date"
               value-field="rt_score"
@@ -283,55 +283,55 @@
               unit-tooltip="%"
               y-min="0"
               y-max="100">
-            </gouv-dsfr-chart>
-            <gouv-chart-a11y for="chart-recent-score" source="recent-films" table download></gouv-chart-a11y>
+            </dsfr-data-chart>
+            <dsfr-data-a11y for="chart-recent-score" source="recent-films" table download></dsfr-data-a11y>
           </div>
 
           <div class="chart-card">
             <h3>Duree par annee de sortie</h3>
-            <gouv-dsfr-chart id="chart-recent-duration" source="recent-films"
+            <dsfr-data-chart id="chart-recent-duration" source="recent-films"
               type="line"
               label-field="release_date"
               value-field="running_time"
               selected-palette="divergentAscending"
               unit-tooltip=" min">
-            </gouv-dsfr-chart>
-            <gouv-chart-a11y for="chart-recent-duration" source="recent-films" table download></gouv-chart-a11y>
+            </dsfr-data-chart>
+            <dsfr-data-a11y for="chart-recent-duration" source="recent-films" table download></dsfr-data-a11y>
           </div>
         </div>
 
         <!-- Filmographie complete -->
         <h2 class="section-title">Filmographie complete</h2>
 
-        <gouv-facets id="films-filtered"
+        <dsfr-data-facets id="films-filtered"
           source="films"
           fields="director,producer"
           labels="director:Realisateur | producer:Producteur"
           display="director:select | producer:select"
           cols="6">
-        </gouv-facets>
+        </dsfr-data-facets>
 
-        <gouv-datalist source="films-filtered"
+        <dsfr-data-list source="films-filtered"
           colonnes="title:Titre, director:Realisateur, release_date:Annee, running_time:Duree (min), rt_score:Score RT (%)"
           recherche
           tri="rt_score:desc"
           pagination="10"
           export="csv">
-        </gouv-datalist>
+        </dsfr-data-list>
 
         <!-- Source -->
         <div class="source-note">
           <strong>Source :</strong> <a href="https://ghibliapi.vercel.app" target="_blank" rel="noopener">Ghibli API (ghibliapi.vercel.app)</a> — donnees publiques, CORS natif, aucune cle d'API<br>
           <strong>Provider :</strong> generic (URL directe, tableau JSON plat, pas de <code>transform</code>)<br>
           <strong>Pipeline 100% declaratif :</strong>
-          <code>gouv-source</code> (fetch URL) &rarr;
-          <code>gouv-normalize</code> (trim + numeric) &rarr;
-          6&times; <code>gouv-query</code> client-side (group-by, aggregate, where, order-by) &rarr;
-          <code>gouv-facets</code> (filtres interactifs) +
-          2&times; <code>gouv-kpi</code> +
-          6&times; <code>gouv-dsfr-chart</code> +
-          <code>gouv-datalist</code> +
-          6&times; <code>gouv-chart-a11y</code>
+          <code>dsfr-data-source</code> (fetch URL) &rarr;
+          <code>dsfr-data-normalize</code> (trim + numeric) &rarr;
+          6&times; <code>dsfr-data-query</code> client-side (group-by, aggregate, where, order-by) &rarr;
+          <code>dsfr-data-facets</code> (filtres interactifs) +
+          2&times; <code>dsfr-data-kpi</code> +
+          6&times; <code>dsfr-data-chart</code> +
+          <code>dsfr-data-list</code> +
+          6&times; <code>dsfr-data-a11y</code>
         </div>
 
         <!-- Code source -->
@@ -339,131 +339,131 @@
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-ghibli">Code source complet</button></h3>
           <div class="fr-collapse" id="code-ghibli">
 <pre class="example-code">&lt;!-- 1. Fetch generique (URL directe, CORS natif) --&gt;
-&lt;gouv-source id="raw-films"
+&lt;dsfr-data-source id="raw-films"
   url="https://ghibliapi.vercel.app/films"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
 &lt;!-- 2. Normalisation : conversion numerique des champs string --&gt;
-&lt;gouv-normalize id="films" source="raw-films"
+&lt;dsfr-data-normalize id="films" source="raw-films"
   trim
   numeric="rt_score,running_time,release_date"&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
 &lt;!-- 3. Queries derivees (tout client-side) --&gt;
 
 &lt;!-- Films tries par score RT decroissant --&gt;
-&lt;gouv-query id="by-score" source="films"
+&lt;dsfr-data-query id="by-score" source="films"
   order-by="rt_score:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- Films tries par duree decroissante --&gt;
-&lt;gouv-query id="by-duration" source="films"
+&lt;dsfr-data-query id="by-duration" source="films"
   order-by="running_time:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- Nb de films par realisateur --&gt;
-&lt;gouv-query id="by-director-count" source="films"
+&lt;dsfr-data-query id="by-director-count" source="films"
   group-by="director"
   aggregate="id:count"
   order-by="id__count:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- Score RT moyen par realisateur --&gt;
-&lt;gouv-query id="by-director-score" source="films"
+&lt;dsfr-data-query id="by-director-score" source="films"
   group-by="director"
   aggregate="rt_score:avg, id:count"
   order-by="rt_score__avg:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- Films recents (&gt;= 2000) --&gt;
-&lt;gouv-query id="recent-films" source="films"
+&lt;dsfr-data-query id="recent-films" source="films"
   where="release_date:gte:2000"
   order-by="release_date:asc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- KPIs --&gt;
 &lt;div class="kpi-row"&gt;
-  &lt;gouv-kpi source="films"
+  &lt;dsfr-data-kpi source="films"
     valeur="avg:rt_score"
     label="Score Rotten Tomatoes moyen (sur 100)"
     format="nombre"
     seuil-vert="90" seuil-orange="75"
     icone="ri-star-line" couleur="bleu"&gt;
-  &lt;/gouv-kpi&gt;
+  &lt;/dsfr-data-kpi&gt;
 
-  &lt;gouv-kpi source="films"
+  &lt;dsfr-data-kpi source="films"
     valeur="avg:running_time"
     label="Duree moyenne (minutes par film)"
     format="nombre"
     icone="ri-time-line" couleur="orange"&gt;
-  &lt;/gouv-kpi&gt;
+  &lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;
 
 &lt;!-- Score RT par film (barres horizontales) --&gt;
-&lt;gouv-dsfr-chart id="chart-score" source="by-score"
+&lt;dsfr-data-chart id="chart-score" source="by-score"
   type="bar" label-field="title" value-field="rt_score"
   selected-palette="sequentialAscending"
   horizontal unit-tooltip="%" y-min="0" y-max="100"&gt;
-&lt;/gouv-dsfr-chart&gt;
-&lt;gouv-chart-a11y for="chart-score" source="by-score" table download&gt;&lt;/gouv-chart-a11y&gt;
+&lt;/dsfr-data-chart&gt;
+&lt;dsfr-data-a11y for="chart-score" source="by-score" table download&gt;&lt;/dsfr-data-a11y&gt;
 
 &lt;!-- Duree des films (barres horizontales) --&gt;
-&lt;gouv-dsfr-chart id="chart-duration" source="by-duration"
+&lt;dsfr-data-chart id="chart-duration" source="by-duration"
   type="bar" label-field="title" value-field="running_time"
   selected-palette="divergentAscending"
   horizontal unit-tooltip=" min"&gt;
-&lt;/gouv-dsfr-chart&gt;
-&lt;gouv-chart-a11y for="chart-duration" source="by-duration" table download&gt;&lt;/gouv-chart-a11y&gt;
+&lt;/dsfr-data-chart&gt;
+&lt;dsfr-data-a11y for="chart-duration" source="by-duration" table download&gt;&lt;/dsfr-data-a11y&gt;
 
 &lt;!-- Nb films par realisateur (camembert) --&gt;
-&lt;gouv-dsfr-chart id="chart-dir-count" source="by-director-count"
+&lt;dsfr-data-chart id="chart-dir-count" source="by-director-count"
   type="pie" label-field="director" value-field="id__count"
   selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
 &lt;!-- Score RT moyen par realisateur (barres) --&gt;
-&lt;gouv-dsfr-chart id="chart-dir-score" source="by-director-score"
+&lt;dsfr-data-chart id="chart-dir-score" source="by-director-score"
   type="bar" label-field="director" value-field="rt_score__avg"
   selected-palette="sequentialDescending"
   unit-tooltip="%" y-min="0" y-max="100"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
 &lt;!-- Evolution temporelle (films depuis 2000) --&gt;
-&lt;gouv-dsfr-chart source="recent-films"
+&lt;dsfr-data-chart source="recent-films"
   type="line" label-field="release_date" value-field="rt_score"
   selected-palette="categorical" unit-tooltip="%"
   y-min="0" y-max="100"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
-&lt;gouv-dsfr-chart source="recent-films"
+&lt;dsfr-data-chart source="recent-films"
   type="line" label-field="release_date" value-field="running_time"
   selected-palette="divergentAscending" unit-tooltip=" min"&gt;
-&lt;/gouv-dsfr-chart&gt;
+&lt;/dsfr-data-chart&gt;
 
 &lt;!-- Filmographie complete avec facettes et tableau --&gt;
-&lt;gouv-facets id="films-filtered" source="films"
+&lt;dsfr-data-facets id="films-filtered" source="films"
   fields="director,producer"
   labels="director:Realisateur | producer:Producteur"
   display="director:select | producer:select"
   cols="6"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-datalist source="films-filtered"
+&lt;dsfr-data-list source="films-filtered"
   colonnes="title:Titre, director:Realisateur, release_date:Annee, running_time:Duree (min), rt_score:Score RT (%)"
   recherche tri="rt_score:desc" pagination="10" export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>Provider generic</strong> : <code>gouv-source</code> utilise une URL directe vers une API REST qui retourne un tableau JSON plat. Pas besoin d'<code>api-type</code> ni de <code>transform</code> — le cas d'usage le plus simple. L'API Ghibli supporte CORS nativement, donc pas besoin de <code>use-proxy</code>.</li>
-          <li><strong>Normalisation des types</strong> : l'API retourne <code>rt_score</code>, <code>running_time</code> et <code>release_date</code> en string. <code>gouv-normalize numeric</code> les convertit en nombres pour permettre le tri, les agregations et les filtres numeriques.</li>
-          <li><strong>Queries multiples sur une seule source</strong> : 6 <code>gouv-query</code> derivent chacun une vue differente des memes donnees (tri, group-by, aggregate, where) — tout en client-side.</li>
-          <li><strong>KPI avec agregation inline</strong> : <code>gouv-kpi valeur="avg:rt_score"</code> calcule la moyenne directement, sans query intermediaire.</li>
-          <li><strong>Facettes et tableau interactif</strong> : <code>gouv-facets</code> en mode select filtre par realisateur et producteur, <code>gouv-datalist</code> ajoute la recherche, le tri et l'export CSV.</li>
-          <li><strong>Accessibilite</strong> : <code>gouv-chart-a11y</code> sur chaque graphique pour le telechargement CSV.</li>
+          <li><strong>Provider generic</strong> : <code>dsfr-data-source</code> utilise une URL directe vers une API REST qui retourne un tableau JSON plat. Pas besoin d'<code>api-type</code> ni de <code>transform</code> — le cas d'usage le plus simple. L'API Ghibli supporte CORS nativement, donc pas besoin de <code>use-proxy</code>.</li>
+          <li><strong>Normalisation des types</strong> : l'API retourne <code>rt_score</code>, <code>running_time</code> et <code>release_date</code> en string. <code>dsfr-data-normalize numeric</code> les convertit en nombres pour permettre le tri, les agregations et les filtres numeriques.</li>
+          <li><strong>Queries multiples sur une seule source</strong> : 6 <code>dsfr-data-query</code> derivent chacun une vue differente des memes donnees (tri, group-by, aggregate, where) — tout en client-side.</li>
+          <li><strong>KPI avec agregation inline</strong> : <code>dsfr-data-kpi valeur="avg:rt_score"</code> calcule la moyenne directement, sans query intermediaire.</li>
+          <li><strong>Facettes et tableau interactif</strong> : <code>dsfr-data-facets</code> en mode select filtre par realisateur et producteur, <code>dsfr-data-list</code> ajoute la recherche, le tri et l'export CSV.</li>
+          <li><strong>Accessibilite</strong> : <code>dsfr-data-a11y</code> sur chaque graphique pour le telechargement CSV.</li>
           <li><strong>0 ligne de JavaScript</strong> : tout le dashboard est 100% declaratif en HTML.</li>
           <li><strong>CORS natif</strong> : l'API Ghibli autorise les requetes cross-origin — pas besoin de proxy. Pour les APIs sans CORS, utiliser <code>use-proxy</code> pour router via <code>/cors-proxy</code>.</li>
         </ul>

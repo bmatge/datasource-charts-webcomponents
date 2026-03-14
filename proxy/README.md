@@ -1,16 +1,16 @@
-# Proxy CORS autonome -- gouv-widgets
+# Proxy CORS autonome -- dsfr-data
 
 ## Qu'est-ce que c'est ?
 
 Ce dossier contient la configuration d'un **reverse proxy Nginx** qui peut etre
-deploye de facon independante, sans le frontend gouv-widgets.
+deploye de facon independante, sans le frontend dsfr-data.
 
 Son unique role est de relayer les requetes vers les APIs externes en ajoutant
 les en-tetes CORS necessaires (`Access-Control-Allow-Origin: *`, etc.).
 
 ## Pourquoi un proxy CORS ?
 
-Les composants gouv-widgets interrogent plusieurs APIs gouvernementales depuis
+Les composants dsfr-data interrogent plusieurs APIs gouvernementales depuis
 le navigateur. Ces APIs ne fournissent pas toujours les en-tetes CORS requis
 pour autoriser les appels cross-origin depuis un domaine tiers.
 

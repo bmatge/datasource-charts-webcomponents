@@ -4,7 +4,7 @@
  */
 
 import { state, FAVORITES_KEY } from '../state.js';
-import { loadFromStorage, saveToStorage, toastWarning, toastSuccess, navigateTo } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, toastWarning, toastSuccess, navigateTo } from '@dsfr-data/shared';
 import type { Favorite } from '../state.js';
 
 /**

@@ -2,7 +2,7 @@
  * Data source loading, selection and field analysis
  */
 
-import { loadFromStorage, STORAGE_KEYS, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@dsfr-data/shared';
 import { state } from './state.js';
 import type { Source, Field } from './state.js';
 import { addMessage } from './chat/chat.js';

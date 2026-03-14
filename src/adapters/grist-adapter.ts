@@ -24,9 +24,9 @@ import type {
   ApiAdapter, AdapterCapabilities, AdapterParams,
   FetchResult, FacetResult, ServerSideOverlay
 } from './api-adapter.js';
-import type { QueryAggregate } from '../components/gouv-query.js';
-import type { ProviderConfig } from '@gouv-widgets/shared';
-import { GRIST_CONFIG } from '@gouv-widgets/shared';
+import type { QueryAggregate } from '../components/dsfr-data-query.js';
+import type { ProviderConfig } from '@dsfr-data/shared';
+import { GRIST_CONFIG } from '@dsfr-data/shared';
 
 /** Construit les options fetch avec headers optionnels */
 function buildFetchOptions(params: Pick<AdapterParams, 'headers'>, signal?: AbortSignal): RequestInit {
@@ -469,7 +469,7 @@ export class GristAdapter implements ApiAdapter {
     if (!response.ok) {
       // Fallback : si SQL indisponible, revenir au mode Records
       if (response.status === 404 || response.status === 403) {
-        console.warn('[gouv-widgets] Grist SQL endpoint not available, falling back to client-side processing');
+        console.warn('[dsfr-data] Grist SQL endpoint not available, falling back to client-side processing');
         this._sqlAvailableByHost.set(this._extractHostname(params.baseUrl), false);
         return this._fetchAllRecords(params, signal);
       }
@@ -713,12 +713,12 @@ export class GristAdapter implements ApiAdapter {
       const available = response.ok;
       this._sqlAvailableByHost.set(hostname, available);
       if (!available) {
-        console.info(`[gouv-widgets] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
+        console.info(`[dsfr-data] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
       }
       return available;
     } catch {
       this._sqlAvailableByHost.set(hostname, false);
-      console.info(`[gouv-widgets] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
+      console.info(`[dsfr-data] Grist SQL endpoint not available on ${hostname} — using client-side processing`);
       return false;
     }
   }

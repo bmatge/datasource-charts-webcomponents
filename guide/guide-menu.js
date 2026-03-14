@@ -23,13 +23,13 @@
       {
         id: "guide-composants", label: "Guide par composant",
         children: [
-          { id: "exemples-source", label: "gouv-source", href: "guide-exemples-source.html" },
-          { id: "exemples-normalize", label: "gouv-normalize", href: "guide-exemples-normalize.html" },
-          { id: "exemples-query", label: "gouv-query", href: "guide-exemples-query.html" },
-          { id: "exemples-search", label: "gouv-search", href: "guide-exemples-search.html" },
-          { id: "exemples-facets", label: "gouv-facets", href: "guide-exemples-facets.html" },
-          { id: "exemples-display", label: "gouv-display", href: "guide-exemples-display.html" },
-          { id: "exemples-chart-a11y", label: "gouv-chart-a11y", href: "guide-exemples-chart-a11y.html" }
+          { id: "exemples-source", label: "dsfr-data-source", href: "guide-exemples-source.html" },
+          { id: "exemples-normalize", label: "dsfr-data-normalize", href: "guide-exemples-normalize.html" },
+          { id: "exemples-query", label: "dsfr-data-query", href: "guide-exemples-query.html" },
+          { id: "exemples-search", label: "dsfr-data-search", href: "guide-exemples-search.html" },
+          { id: "exemples-facets", label: "dsfr-data-facets", href: "guide-exemples-facets.html" },
+          { id: "exemples-display", label: "dsfr-data-display", href: "guide-exemples-display.html" },
+          { id: "exemples-chart-a11y", label: "dsfr-data-a11y", href: "guide-exemples-chart-a11y.html" }
         ]
       },
       {

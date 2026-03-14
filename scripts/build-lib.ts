@@ -1,9 +1,9 @@
 /**
  * Build script that produces 3 library bundles:
  *
- *   gouv-widgets.esm.js / .umd.js       — full bundle (all components)
- *   gouv-widgets.core.esm.js / .umd.js   — core bundle (no world-map, no d3-geo)
- *   gouv-widgets.world-map.esm.js         — world-map add-on (ESM only)
+ *   dsfr-data.esm.js / .umd.js       — full bundle (all components)
+ *   dsfr-data.core.esm.js / .umd.js   — core bundle (no world-map, no d3-geo)
+ *   dsfr-data.world-map.esm.js         — world-map add-on (ESM only)
  *
  * Also copies the TopoJSON asset to dist/data/.
  */
@@ -55,24 +55,24 @@ mkdirSync(resolve(root, 'dist'), { recursive: true });
 // 1. Full bundle
 await buildBundle(
   resolve(root, 'src/index.ts'),
-  'GouvWidgets',
-  (fmt) => `gouv-widgets.${fmt === 'es' ? 'esm' : fmt}.js`,
+  'DsfrData',
+  (fmt) => `dsfr-data.${fmt === 'es' ? 'esm' : fmt}.js`,
   ['es', 'umd'],
 );
 
 // 2. Core bundle (no world-map / d3-geo / topojson)
 await buildBundle(
   resolve(root, 'src/index-core.ts'),
-  'GouvWidgets',
-  (fmt) => `gouv-widgets.core.${fmt === 'es' ? 'esm' : fmt}.js`,
+  'DsfrData',
+  (fmt) => `dsfr-data.core.${fmt === 'es' ? 'esm' : fmt}.js`,
   ['es', 'umd'],
 );
 
 // 3. World-map add-on (ESM only — loaded as module complement)
 await buildBundle(
   resolve(root, 'src/index-world-map.ts'),
-  'GouvWorldMap',
-  (fmt) => `gouv-widgets.world-map.${fmt === 'es' ? 'esm' : fmt}.js`,
+  'DsfrDataWorldMap',
+  (fmt) => `dsfr-data.world-map.${fmt === 'es' ? 'esm' : fmt}.js`,
   ['es', 'umd'],
 );
 

@@ -3,7 +3,7 @@
  */
 
 import { state } from '../state.js';
-import { saveToStorage, loadFromStorage, STORAGE_KEYS, toastInfo, toastWarning, navigateTo } from '@gouv-widgets/shared';
+import { saveToStorage, loadFromStorage, STORAGE_KEYS, toastInfo, toastWarning, navigateTo } from '@dsfr-data/shared';
 
 /**
  * Switch active tab in the preview panel (delegates to app-preview-panel component)

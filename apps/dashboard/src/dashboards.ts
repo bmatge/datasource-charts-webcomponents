@@ -2,7 +2,7 @@
  * Dashboard app - Dashboard CRUD operations
  */
 
-import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo, confirmDialog, getApiAdapter } from '@gouv-widgets/shared';
+import { escapeHtml, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, navigateTo, confirmDialog, getApiAdapter } from '@dsfr-data/shared';
 import { state, createEmptyDashboard } from './state.js';
 import { resetGrid, rebuildGrid } from './grid.js';
 import { updateGeneratedCode, generateHTMLCode } from './code-generator.js';

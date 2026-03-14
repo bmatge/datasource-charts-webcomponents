@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { checkAuth, logout, onAuthChange, isDbMode, onSyncStatusChange } from '@gouv-widgets/shared';
-import type { User, SyncStatus } from '@gouv-widgets/shared';
+import { checkAuth, logout, onAuthChange, isDbMode, onSyncStatusChange } from '@dsfr-data/shared';
+import type { User, SyncStatus } from '@dsfr-data/shared';
 
 // Side-effect import: register <auth-modal> custom element
 import './auth-modal.js';
@@ -66,7 +66,7 @@ export class AppHeader extends LitElement {
     super.connectedCallback();
     // Read favorites count
     try {
-      const favs = JSON.parse(localStorage.getItem('gouv-widgets-favorites') || '[]');
+      const favs = JSON.parse(localStorage.getItem('dsfr-data-favorites') || '[]');
       this._favCount = Array.isArray(favs) ? favs.length : 0;
     } catch { /* ignore */ }
     // Inject active page style once

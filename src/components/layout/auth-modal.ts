@@ -11,7 +11,7 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { login, register } from '@gouv-widgets/shared';
+import { login, register } from '@dsfr-data/shared';
 
 type Tab = 'login' | 'register';
 

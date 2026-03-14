@@ -1,5 +1,5 @@
 {
-  "name": "@gouv-widgets/app-sources",
+  "name": "@dsfr-data/app-sources",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@gouv-widgets/shared": "*"
+    "@dsfr-data/shared": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

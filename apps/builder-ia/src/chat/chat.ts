@@ -9,7 +9,7 @@ import type { IAConfig } from '../ia/ia-config.js';
 import { SKILLS, getRelevantSkills, buildSkillsContext } from '../skills.js';
 import { applyChartConfig } from '../ui/chart-renderer.js';
 import { analyzeFields, updateFieldsList, updateRawData } from '../sources.js';
-import { fetchWithTimeout, httpErrorMessage, detectProvider } from '@gouv-widgets/shared';
+import { fetchWithTimeout, httpErrorMessage, detectProvider } from '@dsfr-data/shared';
 
 /**
  * Add a message to the chat UI and state
@@ -182,13 +182,13 @@ async function callAlbertAPI(userMessage: string, config: IAConfig): Promise<str
       ? ` (apercu limite, source complete: ${state.source.recordCount} enregistrements)`
       : '';
     const paginationNote = isOds
-      ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise gouv-source avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000), puis gouv-query pour transformer.`
+      ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API ODS en contient probablement plus. Dans le code embarquable, utilise dsfr-data-source avec api-type="opendatasoft" pour recuperer automatiquement toutes les donnees (pagination automatique, max 1000), puis dsfr-data-query pour transformer.`
       : isTabular
-        ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise gouv-source avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000), puis gouv-query pour transformer.`
+        ? `\nNOTE : l'apercu ne contient que ${state.localData.length} enregistrements. L'API Tabular en contient probablement plus. Dans le code embarquable, utilise dsfr-data-source avec api-type="tabular" et resource="ID" pour recuperer automatiquement toutes les donnees (pagination automatique, max 50000), puis dsfr-data-query pour transformer.`
         : '';
     const isGrist = state.source?.type === 'grist';
     const gristNote = isGrist
-      ? `\nIMPORTANT: Source Grist detectee. Les donnees sont sous "records[].fields". Pour le code embarquable, utiliser <gouv-normalize flatten="fields" trim numeric-auto> et referencer les champs par leur nom plat (sans prefixe "fields.").`
+      ? `\nIMPORTANT: Source Grist detectee. Les donnees sont sous "records[].fields". Pour le code embarquable, utiliser <dsfr-data-normalize flatten="fields" trim numeric-auto> et referencer les champs par leur nom plat (sans prefixe "fields.").`
       : '';
     dataContext = `\n\nDonnees actuelles (${state.localData.length} enregistrements${totalNote}) :
 Champs : ${state.fields.map(f => `${f.name} (${f.type})`).join(', ')}
@@ -204,7 +204,7 @@ Exemple d'enregistrement : ${JSON.stringify(state.localData[0])}${paginationNote
 
   const actionReminder = `\n\n---\nREGLE ABSOLUE - FORMAT DE REPONSE :
 Tu dois OBLIGATOIREMENT inclure UN bloc \`\`\`json dans CHAQUE reponse quand l'utilisateur parle de graphique, carte, KPI, tableau, couleur, palette, type, filtre, tri, etc.
-NE GENERE JAMAIS de code HTML (<gouv-source>, <gouv-dsfr-chart>, etc.) SAUF si l'utilisateur dit explicitement "genere le code", "code embarquable", "integrer", "embarquer".
+NE GENERE JAMAIS de code HTML (<dsfr-data-source>, <dsfr-data-chart>, etc.) SAUF si l'utilisateur dit explicitement "genere le code", "code embarquable", "integrer", "embarquer".
 
 FORMAT OBLIGATOIRE :
 \`\`\`json

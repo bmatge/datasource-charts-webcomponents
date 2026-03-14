@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recherche Huwise — Exemples avances - Guide - gouv-widgets</title>
+  <title>Recherche Huwise — Exemples avances - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -46,24 +46,24 @@
         </p>
 
         <h4>Architecture du pipeline</h4>
-        <div class="pipeline-diagram">gouv-source "q" (server-side, ODS, 100 resultats)
+        <div class="pipeline-diagram">dsfr-data-source "q" (server-side, ODS, 100 resultats)
   |
-  |-- gouv-search "search" (envoie where a q via whereKey)
-  |-- gouv-facets "filtered" (envoie where a q via whereKey, re-emet)
+  |-- dsfr-data-search "search" (envoie where a q via whereKey)
+  |-- dsfr-data-facets "filtered" (envoie where a q via whereKey, re-emet)
   |
   v
-gouv-facets "filtered" (donnees filtrees par q)
-  |-- gouv-query "alim" (client, filtre Aliment, limit 3)
-  |     \-- gouv-display (cartes, 3 cols)
-  |-- gouv-query "autres" (client, filtre non-Aliment, limit 3)
-  |     \-- gouv-display (cartes, 3 cols)
-  \-- gouv-display (liste complete, pagination 20)</div>
+dsfr-data-facets "filtered" (donnees filtrees par q)
+  |-- dsfr-data-query "alim" (client, filtre Aliment, limit 3)
+  |     \-- dsfr-data-display (cartes, 3 cols)
+  |-- dsfr-data-query "autres" (client, filtre non-Aliment, limit 3)
+  |     \-- dsfr-data-display (cartes, 3 cols)
+  \-- dsfr-data-display (liste complete, pagination 20)</div>
 
         <p class="fr-mt-2w">
-          La source <code>gouv-source id="q"</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
+          La source <code>dsfr-data-source id="q"</code> server-side charge 100 resultats depuis l'API ODS RappelConso.
           La recherche et les facettes envoient chacune des commandes <code>where</code> a la source avec des <code>whereKey</code> distincts.
-          La source merge automatiquement ces filtres et les facettes <code>gouv-facets id="filtered"</code> réémettent les données filtrées.
-          Les donnees sont ensuite splitees par deux <code>gouv-query</code> client-side (alimentation / autres) avant affichage en trois zones.
+          La source merge automatiquement ces filtres et les facettes <code>dsfr-data-facets id="filtered"</code> réémettent les données filtrées.
+          Les donnees sont ensuite splitees par deux <code>dsfr-data-query</code> client-side (alimentation / autres) avant affichage en trois zones.
         </p>
 
         <h4 class="fr-mt-3w">Exemple live</h4>
@@ -72,38 +72,38 @@ gouv-facets "filtered" (donnees filtrees par q)
         <!-- LIVE EXAMPLE                                                    -->
         <!-- ============================================================= -->
 
-        <gouv-source id="q"
+        <dsfr-data-source id="q"
           api-type="opendatasoft"
           dataset-id="rappelconso-v2-gtin-trie"
           base-url="https://data.economie.gouv.fr"
           order-by="date_publication:desc"
           server-side
           page-size="100">
-        </gouv-source>
+        </dsfr-data-source>
 
-        <gouv-search id="search" source="q" server-search
+        <dsfr-data-search id="search" source="q" server-search
           placeholder="Rechercher un produit, une marque, un numero de fiche..."
           count>
-        </gouv-search>
+        </dsfr-data-search>
 
-        <gouv-facets id="filtered" source="q" server-facets
+        <dsfr-data-facets id="filtered" source="q" server-facets
           fields="categorie_produit, sous_categorie_produit"
           labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
           display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
           max-values="8">
-        </gouv-facets>
+        </dsfr-data-facets>
 
-        <gouv-query id="alim" source="filtered"
+        <dsfr-data-query id="alim" source="filtered"
           where="categorie_produit:contains:Aliment"
           order-by="date_publication:desc"
           limit="3">
-        </gouv-query>
+        </dsfr-data-query>
 
-        <gouv-query id="autres" source="filtered"
+        <dsfr-data-query id="autres" source="filtered"
           where="categorie_produit:notcontains:Aliment"
           order-by="date_publication:desc"
           limit="3">
-        </gouv-query>
+        </dsfr-data-query>
 
         <div class="fr-my-4w">
 
@@ -111,7 +111,7 @@ gouv-facets "filtered" (donnees filtrees par q)
 
           <h3 class="fr-h5 fr-mt-4w fr-mb-2w">Alimentation — derniers rappels</h3>
 
-          <gouv-display source="alim" cols="3"
+          <dsfr-data-display source="alim" cols="3"
             empty="Aucun rappel alimentaire recent.">
             <template>
               <div class="fr-card fr-card--shadow rappel-card">
@@ -139,13 +139,13 @@ gouv-facets "filtered" (donnees filtrees par q)
                 </div>
               </div>
             </template>
-          </gouv-display>
+          </dsfr-data-display>
 
           <hr class="fr-hr fr-mt-4w fr-mb-4w">
 
           <h3 class="fr-h5 fr-mb-2w">Autres categories — derniers rappels</h3>
 
-          <gouv-display source="autres" cols="3"
+          <dsfr-data-display source="autres" cols="3"
             empty="Aucun rappel recent hors alimentation.">
             <template>
               <div class="fr-card fr-card--shadow rappel-card">
@@ -173,13 +173,13 @@ gouv-facets "filtered" (donnees filtrees par q)
                 </div>
               </div>
             </template>
-          </gouv-display>
+          </dsfr-data-display>
 
           <hr class="fr-hr fr-mt-4w fr-mb-4w">
 
           <h3 class="fr-h5 fr-mb-2w">Tous les rappels</h3>
 
-          <gouv-display source="filtered" cols="1" pagination="20"
+          <dsfr-data-display source="filtered" cols="1" pagination="20"
             empty="Aucun rappel trouve pour ces criteres.">
             <template>
               <div class="fr-card fr-card--horizontal fr-card--shadow rappel-card">
@@ -207,7 +207,7 @@ gouv-facets "filtered" (donnees filtrees par q)
                 </div>
               </div>
             </template>
-          </gouv-display>
+          </dsfr-data-display>
 
         </div>
 
@@ -222,48 +222,48 @@ gouv-facets "filtered" (donnees filtrees par q)
 &lt;/style&gt;
 
 &lt;!-- Source commune --&gt;
-&lt;gouv-source id="q"
+&lt;dsfr-data-source id="q"
   api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
   order-by="date_publication:desc"
   server-side
   page-size="100"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
 &lt;!-- Recherche server-side --&gt;
-&lt;gouv-search id="search" source="q" server-search
+&lt;dsfr-data-search id="search" source="q" server-search
   placeholder="Rechercher un produit, une marque, un numero de fiche..."
   count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
 &lt;!-- Facettes server-side (mode dropdown DSFR) --&gt;
-&lt;gouv-facets id="filtered" source="q" server-facets
+&lt;dsfr-data-facets id="filtered" source="q" server-facets
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie de produit | sous_categorie_produit:Sous-categorie de produit"
   display="categorie_produit:multiselect | sous_categorie_produit:multiselect"
   max-values="8"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
 &lt;!-- Split client-side : alimentation (3 plus recents) --&gt;
-&lt;gouv-query id="alim" source="filtered"
+&lt;dsfr-data-query id="alim" source="filtered"
   where="categorie_produit:contains:Aliment"
   order-by="date_publication:desc"
   limit="3"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;!-- Split client-side : autres (3 plus recents) --&gt;
-&lt;gouv-query id="autres" source="filtered"
+&lt;dsfr-data-query id="autres" source="filtered"
   where="categorie_produit:notcontains:Aliment"
   order-by="date_publication:desc"
   limit="3"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
 &lt;div class="fr-container fr-my-4w"&gt;
   &lt;h1 class="fr-h2"&gt;Rappels de produits&lt;/h1&gt;
 
   &lt;h2 class="fr-h4 fr-mt-4w fr-mb-2w"&gt;Alimentation — derniers rappels&lt;/h2&gt;
-  &lt;gouv-display source="alim" cols="3"
+  &lt;dsfr-data-display source="alim" cols="3"
     empty="Aucun rappel alimentaire recent."&gt;
     &lt;template&gt;
       &lt;div class="fr-card fr-card--shadow rappel-card"&gt;
@@ -291,12 +291,12 @@ gouv-facets "filtered" (donnees filtrees par q)
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/template&gt;
-  &lt;/gouv-display&gt;
+  &lt;/dsfr-data-display&gt;
 
   &lt;hr class="fr-hr fr-mt-4w fr-mb-4w"&gt;
 
   &lt;h2 class="fr-h4 fr-mb-2w"&gt;Autres categories — derniers rappels&lt;/h2&gt;
-  &lt;gouv-display source="autres" cols="3"
+  &lt;dsfr-data-display source="autres" cols="3"
     empty="Aucun rappel recent hors alimentation."&gt;
     &lt;template&gt;
       &lt;div class="fr-card fr-card--shadow rappel-card"&gt;
@@ -325,12 +325,12 @@ gouv-facets "filtered" (donnees filtrees par q)
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/template&gt;
-  &lt;/gouv-display&gt;
+  &lt;/dsfr-data-display&gt;
 
   &lt;hr class="fr-hr fr-mt-4w fr-mb-4w"&gt;
 
   &lt;h2 class="fr-h4 fr-mb-2w"&gt;Tous les rappels&lt;/h2&gt;
-  &lt;gouv-display source="filtered" cols="1" pagination="20"
+  &lt;dsfr-data-display source="filtered" cols="1" pagination="20"
     empty="Aucun rappel trouve pour ces criteres."&gt;
     &lt;template&gt;
       &lt;div class="fr-card fr-card--horizontal fr-card--shadow rappel-card"&gt;
@@ -358,7 +358,7 @@ gouv-facets "filtered" (donnees filtrees par q)
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/template&gt;
-  &lt;/gouv-display&gt;
+  &lt;/dsfr-data-display&gt;
 &lt;/div&gt;</pre>
           </div>
         </section>
@@ -366,9 +366,9 @@ gouv-facets "filtered" (donnees filtrees par q)
         <!-- Points cles -->
         <h4 class="fr-mt-3w">Points cles de cet exemple</h4>
         <ul>
-          <li><strong>1 seule source serveur</strong> : <code>gouv-source server-side</code> charge 100 resultats depuis l'API ODS.</li>
-          <li><strong>Recherche + facettes</strong> : <code>gouv-search id="search" server-search</code> et <code>gouv-facets id="filtered" server-facets</code> envoient chacun un <code>where</code> a la source, merges via <code>whereKey</code> distincts.</li>
-          <li><strong>Split client-side</strong> : deux <code>gouv-query</code> filtrent localement les donnees re-emises par les facettes (alimentation vs autres).</li>
+          <li><strong>1 seule source serveur</strong> : <code>dsfr-data-source server-side</code> charge 100 resultats depuis l'API ODS.</li>
+          <li><strong>Recherche + facettes</strong> : <code>dsfr-data-search id="search" server-search</code> et <code>dsfr-data-facets id="filtered" server-facets</code> envoient chacun un <code>where</code> a la source, merges via <code>whereKey</code> distincts.</li>
+          <li><strong>Split client-side</strong> : deux <code>dsfr-data-query</code> filtrent localement les donnees re-emises par les facettes (alimentation vs autres).</li>
           <li><strong>3 zones d'affichage</strong> : les 3 derniers rappels alimentaires, les 3 derniers autres, et la liste complete paginee.</li>
           <li><strong>Cross-facet</strong> : les compteurs de chaque facette tiennent compte des selections des autres facettes.</li>
         </ul>

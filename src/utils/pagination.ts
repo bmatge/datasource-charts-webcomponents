@@ -3,7 +3,7 @@
  * metadata from API responses using ProviderConfig.
  */
 
-import type { ProviderConfig } from '@gouv-widgets/shared';
+import type { ProviderConfig } from '@dsfr-data/shared';
 import { getByPath } from './json-path.js';
 
 export interface PaginationMeta {

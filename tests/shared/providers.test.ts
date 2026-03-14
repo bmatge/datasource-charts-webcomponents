@@ -90,9 +90,9 @@ describe('ODS config', () => {
     expect(ODS_CONFIG.facets.defaultMode).toBe('server');
   });
 
-  it('should use gouv-source + gouv-query in code gen', () => {
-    expect(ODS_CONFIG.codeGen.usesGouvSource).toBe(true);
-    expect(ODS_CONFIG.codeGen.usesGouvQuery).toBe(true);
+  it('should use dsfr-data-source + dsfr-data-query in code gen', () => {
+    expect(ODS_CONFIG.codeGen.usesDsfrDataSource).toBe(true);
+    expect(ODS_CONFIG.codeGen.usesDsfrDataQuery).toBe(true);
     expect(ODS_CONFIG.codeGen.sourceApiType).toBe('opendatasoft');
   });
 });
@@ -156,9 +156,9 @@ describe('Grist config', () => {
     expect(GRIST_CONFIG.defaultAuthType).toBe('bearer');
   });
 
-  it('should use gouv-source api-type grist in code gen', () => {
-    expect(GRIST_CONFIG.codeGen.usesGouvSource).toBe(true);
-    expect(GRIST_CONFIG.codeGen.usesGouvNormalize).toBe(false);
+  it('should use dsfr-data-source api-type grist in code gen', () => {
+    expect(GRIST_CONFIG.codeGen.usesDsfrDataSource).toBe(true);
+    expect(GRIST_CONFIG.codeGen.usesDsfrDataNormalize).toBe(false);
     expect(GRIST_CONFIG.codeGen.sourceApiType).toBe('grist');
     expect(GRIST_CONFIG.codeGen.fieldPrefix).toBe('');
   });
@@ -220,9 +220,9 @@ describe('INSEE config', () => {
     expect(INSEE_CONFIG.facets.defaultMode).toBe('client');
   });
 
-  it('should use gouv-source api-type insee', () => {
-    expect(INSEE_CONFIG.codeGen.usesGouvSource).toBe(true);
-    expect(INSEE_CONFIG.codeGen.usesGouvNormalize).toBe(false);
+  it('should use dsfr-data-source api-type insee', () => {
+    expect(INSEE_CONFIG.codeGen.usesDsfrDataSource).toBe(true);
+    expect(INSEE_CONFIG.codeGen.usesDsfrDataNormalize).toBe(false);
     expect(INSEE_CONFIG.codeGen.sourceApiType).toBe('insee');
   });
 

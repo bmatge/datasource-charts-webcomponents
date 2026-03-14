@@ -4,7 +4,7 @@
  * and favorite state restoration.
  */
 
-import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@gouv-widgets/shared';
+import { loadFromStorage, STORAGE_KEYS, appHref, fetchWithTimeout, httpErrorMessage, escapeHtml, openModal, closeModal, setupModalOverlayClose, migrateSource } from '@dsfr-data/shared';
 import { state, type Source, type Field } from './state.js';
 import { selectChartType } from './ui/chart-type-selector.js';
 import { populateFieldSelects } from './sources-fields.js';
@@ -167,7 +167,7 @@ export function loadFieldsFromLocalData(): void {
   if (source?.type === 'grist' && source.rawRecords && source.rawRecords.length > 0) {
     const rawRecord = source.rawRecords[0];
     if (rawRecord && rawRecord.fields) {
-      // Use flat field names — gouv-normalize flatten="fields" will promote them
+      // Use flat field names — dsfr-data-normalize flatten="fields" will promote them
       state.fields = Object.keys(rawRecord.fields).map((key): Field => ({
         name: key,
         fullPath: key,

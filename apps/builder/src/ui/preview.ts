@@ -4,7 +4,7 @@
  * document, then renders it via iframe srcdoc.
  */
 
-import { getPreviewHTML } from '@gouv-widgets/shared';
+import { getPreviewHTML } from '@dsfr-data/shared';
 
 /**
  * Render the generated code in the preview iframe.

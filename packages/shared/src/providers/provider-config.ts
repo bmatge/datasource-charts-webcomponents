@@ -39,7 +39,7 @@ export interface ProviderConfig {
     totalCountPath: string | null;
     /** Records are wrapped under a sub-object? (e.g. 'fields' for Grist) */
     nestedDataKey: string | null;
-    /** Does this provider need gouv-normalize flatten automatically? */
+    /** Does this provider need dsfr-data-normalize flatten automatically? */
     requiresFlatten: boolean;
   };
 
@@ -109,13 +109,13 @@ export interface ProviderConfig {
 
   // --- Code generation ---
   codeGen: {
-    /** Does the generated pipeline use gouv-source? (always true) */
-    usesGouvSource: boolean;
-    /** Does the generated pipeline use gouv-query? */
-    usesGouvQuery: boolean;
-    /** Does the generated pipeline use gouv-normalize? */
-    usesGouvNormalize: boolean;
-    /** api-type value for gouv-source */
+    /** Does the generated pipeline use dsfr-data-source? (always true) */
+    usesDsfrDataSource: boolean;
+    /** Does the generated pipeline use dsfr-data-query? */
+    usesDsfrDataQuery: boolean;
+    /** Does the generated pipeline use dsfr-data-normalize? */
+    usesDsfrDataNormalize: boolean;
+    /** api-type value for dsfr-data-source */
     sourceApiType: ProviderId;
     /** Field prefix for nested data paths (e.g. 'fields.' for Grist without flatten) */
     fieldPrefix: string;
@@ -123,7 +123,7 @@ export interface ProviderConfig {
     dependencies: {
       dsfr: boolean;
       dsfrChart: boolean;
-      gouvWidgets: boolean;
+      dsfrData: boolean;
     };
   };
 }

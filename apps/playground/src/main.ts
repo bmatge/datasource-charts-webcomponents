@@ -2,7 +2,7 @@
  * Playground app - main entry point
  */
 
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth, CDN_URLS, LIB_URL } from '@gouv-widgets/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, toastWarning, toastSuccess, appHref, confirmDialog, initAuth, CDN_URLS, LIB_URL } from '@dsfr-data/shared';
 import { initEditor } from './editor.js';
 import type { CodeMirrorEditor } from './editor.js';
 import { examples } from './examples/examples-data.js';
@@ -11,22 +11,22 @@ import { getPreviewHTML } from './preview.js';
 let editor: CodeMirrorEditor;
 
 /** Standard dependency block for external use */
-const DEPS_BLOCK = `<!-- Dependances (DSFR + DSFR Chart + gouv-widgets) -->
+const DEPS_BLOCK = `<!-- Dependances (DSFR + DSFR Chart + dsfr-data) -->
 <link rel="stylesheet" href="${CDN_URLS.dsfrCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrUtilityCss}">
 <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
 <script src="${CDN_URLS.chartJs}"><\/script>
 <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-<script src="${LIB_URL}/gouv-widgets.core.umd.js"><\/script>
+<script src="${LIB_URL}/dsfr-data.core.umd.js"><\/script>
 
 `;
 
-/** Regex to detect dependency lines (CDN links for dsfr, chart.js, gouv-widgets) */
-const DEPS_LINE_RE = /^[ \t]*(<link[^>]*(dsfr|DSFRChart)[^>]*>|<script[^>]*(dsfr|chart\.js|DSFRChart|gouv-widgets)[^>]*><\/script>)[ \t]*\n?/gm;
+/** Regex to detect dependency lines (CDN links for dsfr, chart.js, dsfr-data) */
+const DEPS_LINE_RE = /^[ \t]*(<link[^>]*(dsfr|DSFRChart)[^>]*>|<script[^>]*(dsfr|chart\.js|DSFRChart|dsfr-data)[^>]*><\/script>)[ \t]*\n?/gm;
 const DEPS_COMMENT_RE = /^[ \t]*<!--\s*Dependances[^>]*-->\s*\n?/gm;
 
 function hasDeps(code: string): boolean {
-  return DEPS_LINE_RE.test(code) || /gouv-widgets\.(core\.)?(umd|esm)\.js/.test(code);
+  return DEPS_LINE_RE.test(code) || /dsfr-data\.(core\.)?(umd|esm)\.js/.test(code);
 }
 
 function addDeps(code: string): string {

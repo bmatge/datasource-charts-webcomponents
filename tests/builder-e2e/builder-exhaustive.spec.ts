@@ -1,5 +1,5 @@
 /**
- * Tests exhaustifs du Builder gouv-widgets
+ * Tests exhaustifs du Builder dsfr-data
  *
  * Teste TOUTES les combinaisons :
  *   - Sources : locale, ODS, Tabular
@@ -125,7 +125,7 @@ async function setupPage(page: Page, sources: any[]) {
 
   // Inject sources
   await page.evaluate((srcs) => {
-    localStorage.setItem('gouv_widgets_sources', JSON.stringify(srcs));
+    localStorage.setItem('dsfr-data-sources', JSON.stringify(srcs));
   }, sources);
 
   // Reload to load sources in the dropdown
@@ -286,18 +286,18 @@ function validateCode(code: string, chartType: ChartType, mode: string, facets: 
   const missing: string[] = [];
 
   if (mode === 'dynamic') {
-    code.includes('gouv-source') ? contains.push('gouv-source') : missing.push('gouv-source');
+    code.includes('dsfr-data-source') ? contains.push('dsfr-data-source') : missing.push('dsfr-data-source');
     if (facets) {
-      code.includes('gouv-facets') ? contains.push('gouv-facets') : missing.push('gouv-facets');
+      code.includes('dsfr-data-facets') ? contains.push('dsfr-data-facets') : missing.push('dsfr-data-facets');
     }
   }
 
   if (chartType === 'datalist') {
-    code.includes('gouv-datalist') ? contains.push('gouv-datalist') : missing.push('gouv-datalist');
+    code.includes('dsfr-data-list') ? contains.push('dsfr-data-list') : missing.push('dsfr-data-list');
   } else if (chartType === 'kpi') {
-    (code.includes('gouv-kpi') || code.includes('kpi')) ? contains.push('kpi') : missing.push('kpi');
+    (code.includes('dsfr-data-kpi') || code.includes('kpi')) ? contains.push('kpi') : missing.push('kpi');
   } else {
-    (code.includes('gouv-dsfr-chart') || code.includes('chart') || code.includes('canvas'))
+    (code.includes('dsfr-data-chart') || code.includes('chart') || code.includes('canvas'))
       ? contains.push('chart') : missing.push('chart');
   }
 

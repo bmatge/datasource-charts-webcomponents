@@ -1,4 +1,4 @@
-# CLAUDE.md - Configuration du projet gouv-widgets
+# CLAUDE.md - Configuration du projet dsfr-data
 
 ## Contexte du projet
 
@@ -20,10 +20,10 @@ Architecture monorepo avec npm workspaces.
 │   ├── favorites/           # Gestion des favoris
 │   └── monitoring/          # Monitoring et logs
 ├── packages/
-│   └── shared/              # Utilitaires partages (@gouv-widgets/shared)
-├── src/                     # Composants web gouv-widgets (Lit)
+│   └── shared/              # Utilitaires partages (@dsfr-data/shared)
+├── src/                     # Composants web dsfr-data (Lit)
 │   ├── adapters/            # Adapters API (ODS, Tabular, Grist, Generic)
-│   └── components/          # Composants Lit (gouv-source, gouv-query, ...)
+│   └── components/          # Composants Lit (dsfr-data-source, dsfr-data-query, ...)
 ├── dist/                    # Build output (ESM + UMD)
 ├── specs/                   # Specifications des composants
 ├── guide/                   # Guide utilisateur et exemples
@@ -54,13 +54,13 @@ npm run tauri:build   # Build Tauri production (build:all + build:app + tauri bu
 ### Dev d'une app individuelle
 
 ```bash
-npm run dev --workspace=@gouv-widgets/app-builder
-npm run dev --workspace=@gouv-widgets/app-builder-ia
-npm run dev --workspace=@gouv-widgets/app-dashboard
-npm run dev --workspace=@gouv-widgets/app-sources
-npm run dev --workspace=@gouv-widgets/app-playground
-npm run dev --workspace=@gouv-widgets/app-favorites
-npm run dev --workspace=@gouv-widgets/app-monitoring
+npm run dev --workspace=@dsfr-data/app-builder
+npm run dev --workspace=@dsfr-data/app-builder-ia
+npm run dev --workspace=@dsfr-data/app-dashboard
+npm run dev --workspace=@dsfr-data/app-sources
+npm run dev --workspace=@dsfr-data/app-playground
+npm run dev --workspace=@dsfr-data/app-favorites
+npm run dev --workspace=@dsfr-data/app-monitoring
 ```
 
 ## Architecture des composants data
@@ -68,58 +68,58 @@ npm run dev --workspace=@gouv-widgets/app-monitoring
 ### Pipeline recommande
 
 ```
-gouv-source  ──[fetch via adapter]──[paginate]──[cache]──► donnees brutes
+dsfr-data-source  ──[fetch via adapter]──[paginate]──[cache]──► donnees brutes
      │                                                         │
      │ adapters (ODS, Tabular, Grist, Generic)                 ▼
-     │                                               gouv-normalize (optionnel)
+     │                                               dsfr-data-normalize (optionnel)
      │                                                         │
      │                                                         ▼
-     │                                               gouv-query [transform seulement]
+     │                                               dsfr-data-query [transform seulement]
      │                                               filter, group-by, aggregate, sort
      │                                                         │
      │                                    ┌────────────────────┤
      │                                    ▼                    ▼
-     │                              gouv-facets          gouv-search
+     │                              dsfr-data-facets          dsfr-data-search
      │                                    │                    │
      │◄── commandes (page, where, orderBy)┘                    │
      │◄── commandes (where) ───────────────────────────────────┘
      ▼
-  gouv-dsfr-chart / gouv-datalist / gouv-kpi / gouv-display
+  dsfr-data-chart / dsfr-data-list / dsfr-data-kpi / dsfr-data-display
          │
-         └──► gouv-chart-a11y (companion accessibilite : tableau, CSV, description)
+         └──► dsfr-data-a11y (companion accessibilite : tableau, CSV, description)
 ```
 
 **Regles** :
-- **gouv-source** est le seul composant qui fait du fetch HTTP. Il supporte `api-type` pour ODS, Tabular, Grist et Generic.
-- **gouv-query** est un pur transformateur de donnees (filter, group-by, aggregate, sort). Il ne fait jamais de requete HTTP.
-- Les commandes (page, where, orderBy) remontent vers gouv-source via `gouv-source-command`.
-- gouv-facets et gouv-search delegent la construction des WHERE clauses aux adapters.
+- **dsfr-data-source** est le seul composant qui fait du fetch HTTP. Il supporte `api-type` pour ODS, Tabular, Grist et Generic.
+- **dsfr-data-query** est un pur transformateur de donnees (filter, group-by, aggregate, sort). Il ne fait jamais de requete HTTP.
+- Les commandes (page, where, orderBy) remontent vers dsfr-data-source via `dsfr-data-source-command`.
+- dsfr-data-facets et dsfr-data-search delegent la construction des WHERE clauses aux adapters.
 
 ### Pattern HTML
 
 ```html
 <!-- Source (fetch) → Query (transform) → Chart (display) -->
-<gouv-source id="src" api-type="opendatasoft"
+<dsfr-data-source id="src" api-type="opendatasoft"
   dataset-id="mon-dataset" base-url="https://data.economie.gouv.fr">
-</gouv-source>
-<gouv-query id="data" source="src"
+</dsfr-data-source>
+<dsfr-data-query id="data" source="src"
   group-by="region" aggregate="population:sum:total" order-by="total:desc">
-</gouv-query>
-<gouv-dsfr-chart id="mon-graph" source="data" type="bar"
+</dsfr-data-query>
+<dsfr-data-chart id="mon-graph" source="data" type="bar"
   label-field="region" value-field="total">
-</gouv-dsfr-chart>
+</dsfr-data-chart>
 <!-- Optionnel : accessibilite du graphique -->
-<gouv-chart-a11y for="mon-graph" source="data" table download></gouv-chart-a11y>
+<dsfr-data-a11y for="mon-graph" source="data" table download></dsfr-data-a11y>
 ```
 
-Pour les cas sans transformation (datalist, display), gouv-query peut etre omis :
+Pour les cas sans transformation (datalist, display), dsfr-data-query peut etre omis :
 
 ```html
-<gouv-source id="src" api-type="tabular"
+<dsfr-data-source id="src" api-type="tabular"
   resource="..." server-side page-size="20">
-</gouv-source>
-<gouv-datalist source="src" colonnes="..." pagination="20">
-</gouv-datalist>
+</dsfr-data-source>
+<dsfr-data-list source="src" colonnes="..." pagination="20">
+</dsfr-data-list>
 ```
 
 ### Adapters et ProviderConfig
@@ -144,9 +144,9 @@ Pour les cas sans transformation (datalist, display), gouv-query peut etre omis 
 - **ODSQL** (OpenDataSoft) : syntaxe SQL-like — `population > 5000 AND status = 'active'`
 - **Colon** (Tabular, Grist) : syntaxe structuree — `field:operator:value, field2:operator:value2`
 
-### Attributs gouv-source
+### Attributs dsfr-data-source
 
-gouv-source fonctionne en deux modes :
+dsfr-data-source fonctionne en deux modes :
 
 **Mode URL (fetch direct)** : `url`, `method`, `headers`, `params`, `refresh`, `transform`, `paginate`, `page-size`, `cache-ttl`, `data` (inline JSON)
 
@@ -169,9 +169,9 @@ L'adapter expose aussi `fetchColumns()` et `fetchTables()` pour l'introspection 
 - Nommage : `gouv-*` pour les composants publics, `app-*` pour les layouts
 - Tests : fichiers `*.test.ts` dans `/tests/`
 - Pas d'emoji dans le code sauf demande explicite
-- Imports partages via `@gouv-widgets/shared`
+- Imports partages via `@dsfr-data/shared`
 
-## Package shared (@gouv-widgets/shared)
+## Package shared (@dsfr-data/shared)
 
 Utilitaires partages entre toutes les apps :
 - `escapeHtml()` - Echappement HTML
@@ -200,7 +200,7 @@ Les tests d'alignement dans `tests/apps/builder-ia/skills.test.ts` verifient aut
 
 Si un attribut est ajoute a un composant sans maj du skill, le test echouera.
 
-**Note** : gouv-source a deux modes (voir "Attributs gouv-source" ci-dessus). gouv-query est un pur transformateur et ne fait aucun fetch HTTP.
+**Note** : dsfr-data-source a deux modes (voir "Attributs dsfr-data-source" ci-dessus). dsfr-data-query est un pur transformateur et ne fait aucun fetch HTTP.
 
 ## Release Tauri
 
@@ -227,8 +227,8 @@ Le workflow `.github/workflows/release.yml` build automatiquement sur macOS (ARM
 - `PROXY_BASE_URL` dans `packages/shared/src/api/proxy-config.ts` lit `VITE_PROXY_URL` au build time (source de verite unique)
 - `LIB_URL` dans `packages/shared/src/api/proxy-config.ts` lit `VITE_LIB_URL` au build time (URL du JS dans le code genere)
   - Non defini → `${PROXY_BASE_URL}/dist` (self-hosted)
-  - `"unpkg"` → `https://unpkg.com/gouv-widgets/dist`
-  - `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/gouv-widgets/dist`
+  - `"unpkg"` → `https://unpkg.com/dsfr-data/dist`
+  - `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/dsfr-data/dist`
 - `APP_DOMAIN` dans `.env` configure Traefik (docker-compose.yml) et les scripts de deploiement
 - Voir `.env.example` pour toutes les variables
 
@@ -238,9 +238,9 @@ Le build (`scripts/build-lib.ts`) produit 3 bundles dans `dist/` :
 
 | Bundle | Contenu | Taille gzip |
 |--------|---------|-------------|
-| `gouv-widgets.core.{esm,umd}.js` | Tous composants sauf `gouv-world-map` | ~52 Ko |
-| `gouv-widgets.world-map.{esm,umd}.js` | `gouv-world-map` (d3-geo, topojson) | ~30 Ko |
-| `gouv-widgets.{esm,umd}.js` | Tout-en-un | ~70 Ko |
+| `dsfr-data.core.{esm,umd}.js` | Tous composants sauf `dsfr-data-world-map` | ~52 Ko |
+| `dsfr-data.world-map.{esm,umd}.js` | `dsfr-data-world-map` (d3-geo, topojson) | ~30 Ko |
+| `dsfr-data.{esm,umd}.js` | Tout-en-un | ~70 Ko |
 
 Le code genere par les builders et le playground utilise le **core** bundle par defaut.
 Le TopoJSON (`dist/data/world-countries-110m.json`) est charge par fetch a l'execution.
@@ -267,8 +267,8 @@ fonctionnement des composants en production. Overhead negligeable (~2 Ko).
 
 Les composants DSFR Chart (`map-chart`, `map-chart-reg`) sont des Web Components Vue qui
 ecrasent certains attributs (`value`, `date`) avec leurs valeurs par defaut lors du montage Vue.
-`gouv-dsfr-chart` utilise un mecanisme de `setTimeout(500ms)` pour re-appliquer ces attributs
-apres le montage Vue (voir `_createChartElement` dans `src/components/gouv-dsfr-chart.ts`).
+`dsfr-data-chart` utilise un mecanisme de `setTimeout(500ms)` pour re-appliquer ces attributs
+apres le montage Vue (voir `_createChartElement` dans `src/components/dsfr-data-chart.ts`).
 
 Si un nouveau composant DSFR Chart presente le meme comportement, ajouter les attributs
 concernes dans l'objet `deferred` retourne par `_getTypeSpecificAttributes()`.

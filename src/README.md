@@ -1,6 +1,6 @@
 # src/
 
-Code source de la bibliotheque de Web Components gouv-widgets (Lit).
+Code source de la bibliotheque de Web Components dsfr-data (Lit).
 
 ## Structure
 
@@ -16,15 +16,15 @@ src/
 
 | Composant | Role |
 |-----------|------|
-| `gouv-source` | Chargement de donnees depuis une API REST |
-| `gouv-normalize` | Nettoyage des donnees (conversion, renommage de colonnes) |
-| `gouv-query` | Filtrage, regroupement et agregation |
-| `gouv-facets` | Interface de filtres interactifs |
-| `gouv-search` | Recherche plein texte |
-| `gouv-datalist` | Tableau avec pagination et export |
-| `gouv-dsfr-chart` | Graphique DSFR (bar, line, pie, radar, map, gauge, scatter) |
-| `gouv-kpi` | Indicateur chiffre cle (KPI) |
-| `gouv-display` | Template HTML libre |
+| `dsfr-data-source` | Chargement de donnees depuis une API REST |
+| `dsfr-data-normalize` | Nettoyage des donnees (conversion, renommage de colonnes) |
+| `dsfr-data-query` | Filtrage, regroupement et agregation |
+| `dsfr-data-facets` | Interface de filtres interactifs |
+| `dsfr-data-search` | Recherche plein texte |
+| `dsfr-data-list` | Tableau avec pagination et export |
+| `dsfr-data-chart` | Graphique DSFR (bar, line, pie, radar, map, gauge, scatter) |
+| `dsfr-data-kpi` | Indicateur chiffre cle (KPI) |
+| `dsfr-data-display` | Template HTML libre |
 
 ## Adaptateurs (`adapters/`)
 
@@ -51,5 +51,5 @@ src/
 ## Build
 
 ```bash
-npm run build    # Genere dist/gouv-widgets.{core,world-map,full}.{esm,umd}.js
+npm run build    # Genere dist/dsfr-data.{core,world-map,full}.{esm,umd}.js
 ```

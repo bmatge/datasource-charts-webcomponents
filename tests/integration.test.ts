@@ -13,7 +13,7 @@ import {
  * Integration tests for the data-bridge flow.
  *
  * Tests the full event pipeline: source dispatches -> bridge routes -> consumers receive.
- * Simulates the real-world flow of gouv-source -> gouv-kpi/chart/datalist.
+ * Simulates the real-world flow of dsfr-data-source -> dsfr-data-kpi/chart/datalist.
  */
 describe('Data flow integration', () => {
   beforeEach(() => {

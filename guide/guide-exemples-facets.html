@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gouv-facets — Exemples - Guide - gouv-widgets</title>
+  <title>dsfr-data-facets — Exemples - Guide - dsfr-data</title>
   <style>@view-transition{navigation:auto}app-header:not(:defined){display:block;min-height:56px}app-footer:not(:defined){display:block;min-height:48px}</style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@2.0.4/dist/DSFRChart/DSFRChart.js"></script>
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <script src="guide-menu.js"></script>
   <style>
     .guide-layout { display: flex; gap: 2rem; }
@@ -39,9 +39,9 @@
 
       <div class="guide-content">
 
-        <h1><i class="ri-filter-3-line fr-mr-1w"></i>gouv-facets</h1>
+        <h1><i class="ri-filter-3-line fr-mr-1w"></i>dsfr-data-facets</h1>
         <p class="fr-text--lead">
-          <code>gouv-facets</code> affiche des filtres a facettes interactifs conformes DSFR (checkboxes, selects, multiselects, radios) et filtre les donnees en amont avant de les redistribuer aux composants en aval. Deux modes : <strong>client-side</strong> (calcul local) et <strong>server-facets</strong> (API ODS).
+          <code>dsfr-data-facets</code> affiche des filtres a facettes interactifs conformes DSFR (checkboxes, selects, multiselects, radios) et filtre les donnees en amont avant de les redistribuer aux composants en aval. Deux modes : <strong>client-side</strong> (calcul local) et <strong>server-facets</strong> (API ODS).
         </p>
 
         <h2>Mode server-facets</h2>
@@ -49,73 +49,73 @@
 
         <!-- facets-datalist -->
         <h4>Tableau filtrable — Rappels de produits avec facettes serveur</h4>
-        <p>Facettes serveur ODS sur Categorie (multiselect) et Sous-categorie (select) avec colonnage DSFR (<code>cols="4"</code>). Les compteurs se mettent a jour dynamiquement sur le dataset complet. Les donnees filtrees alimentent un <code>gouv-datalist</code>.
+        <p>Facettes serveur ODS sur Categorie (multiselect) et Sous-categorie (select) avec colonnage DSFR (<code>cols="4"</code>). Les compteurs se mettent a jour dynamiquement sur le dataset complet. Les donnees filtrees alimentent un <code>dsfr-data-list</code>.
           <a href="../apps/playground/index.html?example=facets-datalist" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-datalist">Code source</button></h3>
           <div class="fr-collapse" id="code-f-datalist">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
-  server-side page-size="20"&gt;&lt;/gouv-source&gt;
+  server-side page-size="20"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-facets id="filtered" source="raw"
+&lt;dsfr-data-facets id="filtered" source="raw"
   server-facets
   fields="categorie_produit, sous_categorie_produit"
   labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie"
   display="categorie_produit:multiselect | sous_categorie_produit:select"
   cols="4"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-datalist source="filtered"
+&lt;dsfr-data-list source="filtered"
   colonnes="modeles_ou_references:Produit, marque_produit:Marque, categorie_produit:Categorie, sous_categorie_produit:Sous-cat."
   server-tri
   pagination="20"
   export="csv"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <!-- facets-bar -->
         <h4>Barres — Beneficiaires filtres par region</h4>
-        <p>La facette Region en mode multiselect filtre les donnees, puis <code>gouv-query</code> agrege pour le graphique en barres. Selectionner des regions recalcule instantanement le graphique.
+        <p>La facette Region en mode multiselect filtre les donnees, puis <code>dsfr-data-query</code> agrege pour le graphique en barres. Selectionner des regions recalcule instantanement le graphique.
           <a href="../apps/playground/index.html?example=facets-bar" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-bar">Code source</button></h3>
           <div class="fr-collapse" id="code-f-bar">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
+&lt;dsfr-data-normalize id="clean" source="raw"
   numeric="montant_investissement, montant_participation_etat, nombre_beneficiaires"
   rename="nom_region:Region | nom_departement:Departement"
   trim&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-facets id="filtered" source="clean"
+&lt;dsfr-data-facets id="filtered" source="clean"
   fields="Region"
   display="Region:multiselect"
   sort="alpha"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-query id="stats" source="filtered"
+&lt;dsfr-data-query id="stats" source="filtered"
   group-by="Departement"
   aggregate="nombre_beneficiaires:sum:Beneficiaires"
   order-by="Beneficiaires:desc"
   limit="15"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="stats"
+&lt;dsfr-data-chart source="stats"
   type="bar"
   label-field="Departement"
   value-field="Beneficiaires"
   selected-palette="categorical"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -128,39 +128,39 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-map">Code source</button></h3>
           <div class="fr-collapse" id="code-f-map">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="fiscalite-locale-des-particuliers"
-  base-url="https://data.economie.gouv.fr"&gt;&lt;/gouv-source&gt;
+  base-url="https://data.economie.gouv.fr"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-normalize id="clean" source="raw"
+&lt;dsfr-data-normalize id="clean" source="raw"
   numeric="taux_global_tfb, taux_global_th, mpoid"
   rename="libreg:Region | libdep:Departement | libcom:Commune"
   trim&gt;
-&lt;/gouv-normalize&gt;
+&lt;/dsfr-data-normalize&gt;
 
-&lt;gouv-facets id="filtered" source="clean"
+&lt;dsfr-data-facets id="filtered" source="clean"
   fields="Region"
   display="Region:multiselect"
   sort="alpha"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
 &lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"&gt;
-  &lt;gouv-kpi source="filtered" valeur="count" label="Communes" format="nombre"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="pourcentage"&gt;&lt;/gouv-kpi&gt;
-  &lt;gouv-kpi source="filtered" valeur="avg:taux_global_th" label="Taux TH moyen" format="pourcentage"&gt;&lt;/gouv-kpi&gt;
+  &lt;dsfr-data-kpi source="filtered" valeur="count" label="Communes" format="nombre"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="filtered" valeur="avg:taux_global_tfb" label="Taux TFB moyen" format="pourcentage"&gt;&lt;/dsfr-data-kpi&gt;
+  &lt;dsfr-data-kpi source="filtered" valeur="avg:taux_global_th" label="Taux TH moyen" format="pourcentage"&gt;&lt;/dsfr-data-kpi&gt;
 &lt;/div&gt;
 
-&lt;gouv-query id="stats" source="filtered"
+&lt;dsfr-data-query id="stats" source="filtered"
   group-by="dep"
   aggregate="taux_global_tfb:avg:taux"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="stats"
+&lt;dsfr-data-chart source="stats"
   type="map"
   code-field="dep"
   value-field="taux"
   selected-palette="sequentialAscending"&gt;
-&lt;/gouv-dsfr-chart&gt;</pre>
+&lt;/dsfr-data-chart&gt;</pre>
           </div>
         </section>
 
@@ -180,60 +180,60 @@
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-f-modes">Code source</button></h3>
           <div class="fr-collapse" id="code-f-modes">
-<pre class="example-code">&lt;gouv-source id="raw" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="raw" api-type="opendatasoft"
   dataset-id="rappelconso-v2-gtin-trie"
   base-url="https://data.economie.gouv.fr"
-  server-side page-size="20"&gt;&lt;/gouv-source&gt;
+  server-side page-size="20"&gt;&lt;/dsfr-data-source&gt;
 
-&lt;gouv-facets id="filtered" source="raw"
+&lt;dsfr-data-facets id="filtered" source="raw"
   server-facets
   fields="categorie_produit, sous_categorie_produit, marque_produit"
   labels="categorie_produit:Categorie | sous_categorie_produit:Sous-categorie | marque_produit:Marque"
   display="categorie_produit:radio | sous_categorie_produit:multiselect | marque_produit:select"
   max-values="6"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-datalist source="filtered"
+&lt;dsfr-data-list source="filtered"
   colonnes="modeles_ou_references:Produit, marque_produit:Marque, categorie_produit:Categorie"
   server-tri
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</pre>
+&lt;/dsfr-data-list&gt;</pre>
           </div>
         </section>
 
         <h2>Mode server-facets (ODS)</h2>
-        <p>En mode <code>server-facets</code>, <code>gouv-facets</code> fetche les valeurs de facettes depuis l'API ODS <code>/facets</code> au lieu de les calculer localement. Cela permet des facettes dynamiques sur des datasets de millions de records. Les compteurs se mettent a jour automatiquement selon la recherche et les selections cross-facet.</p>
-        <p>Requis : <code>source</code> pointant vers un <code>gouv-source</code> avec <code>api-type="opendatasoft"</code> et <code>server-side</code>. L'attribut <code>fields</code> est obligatoire (pas d'auto-detection en mode serveur).</p>
+        <p>En mode <code>server-facets</code>, <code>dsfr-data-facets</code> fetche les valeurs de facettes depuis l'API ODS <code>/facets</code> au lieu de les calculer localement. Cela permet des facettes dynamiques sur des datasets de millions de records. Les compteurs se mettent a jour automatiquement selon la recherche et les selections cross-facet.</p>
+        <p>Requis : <code>source</code> pointant vers un <code>dsfr-data-source</code> avec <code>api-type="opendatasoft"</code> et <code>server-side</code>. L'attribut <code>fields</code> est obligatoire (pas d'auto-detection en mode serveur).</p>
 
         <!-- server-facets-display -->
         <h4>Recherche + facettes serveur + cartes</h4>
-        <p>Pipeline complet server-side : <code>gouv-search server-search</code> et <code>gouv-facets server-facets</code> envoient leurs filtres a <code>gouv-source</code> qui merge les <code>where</code> avec AND. Les compteurs de facettes se mettent a jour dynamiquement (cross-facet).
+        <p>Pipeline complet server-side : <code>dsfr-data-search server-search</code> et <code>dsfr-data-facets server-facets</code> envoient leurs filtres a <code>dsfr-data-source</code> qui merge les <code>where</code> avec AND. Les compteurs de facettes se mettent a jour dynamiquement (cross-facet).
           <a href="../apps/playground/index.html?example=server-facets-display" class="fr-link fr-link--sm">Tester dans le Playground</a>
         </p>
         <div class="example-loading" data-example>Chargement...</div>
         <section class="fr-accordion fr-mt-1w">
           <h3 class="fr-accordion__title"><button class="fr-accordion__btn" aria-expanded="false" aria-controls="code-sf-display">Code source</button></h3>
           <div class="fr-collapse" id="code-sf-display">
-<pre class="example-code">&lt;gouv-source id="q" api-type="opendatasoft"
+<pre class="example-code">&lt;dsfr-data-source id="q" api-type="opendatasoft"
   dataset-id="industrie-du-futur"
   base-url="https://data.economie.gouv.fr"
   server-side page-size="12"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-search source="q" server-search
+&lt;dsfr-data-search source="q" server-search
   placeholder="Rechercher une entreprise..."
   count&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-facets id="filtered" source="q"
+&lt;dsfr-data-facets id="filtered" source="q"
   server-facets
   fields="nom_region,type_aide"
   labels="nom_region:Region | type_aide:Type d'aide"
   display="nom_region:multiselect | type_aide:select"
   cols="6"&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-display source="filtered" cols="3" pagination="12"&gt;
+&lt;dsfr-data-display source="filtered" cols="3" pagination="12"&gt;
   &lt;template&gt;
     &lt;div class="fr-card fr-card--shadow"&gt;
       &lt;div class="fr-card__body"&gt;
@@ -247,7 +247,7 @@
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/template&gt;
-&lt;/gouv-display&gt;</pre>
+&lt;/dsfr-data-display&gt;</pre>
           </div>
         </section>
 
@@ -276,7 +276,7 @@
               <tr><td><code>url-param-map</code></td><td>String</td><td>Mapping URL param → champ : <code>param:field | param2:field2</code></td></tr>
               <tr><td><code>url-sync</code></td><td>Boolean</td><td>Synchronise l'URL quand l'utilisateur change les facettes</td></tr>
               <tr><td><code>cols</code></td><td>String</td><td>Colonnage DSFR : <code>"4"</code> (global) ou <code>"champ:4 | champ2:6"</code> (par facette). Utilise la grille DSFR <code>fr-col-N</code></td></tr>
-              <tr><td><code>server-facets</code></td><td>Boolean</td><td>Active le mode facettes serveur ODS (API <code>/facets</code>). Requiert <code>source</code> vers un <code>gouv-query server-side</code> connecte a un <code>gouv-source api-type="opendatasoft"</code>. <code>fields</code> obligatoire</td></tr>
+              <tr><td><code>server-facets</code></td><td>Boolean</td><td>Active le mode facettes serveur ODS (API <code>/facets</code>). Requiert <code>source</code> vers un <code>dsfr-data-query server-side</code> connecte a un <code>dsfr-data-source api-type="opendatasoft"</code>. <code>fields</code> obligatoire</td></tr>
             </tbody>
           </table>
         </div>

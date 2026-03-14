@@ -3,7 +3,7 @@ import {
   generateChartFromLocalData,
   generateCodeForLocalData,
   generateCode,
-  generateGouvQueryCode,
+  generateDsfrDataQueryCode,
   generateDynamicCode,
   generateDynamicCodeForApi,
   generateMiddlewareElements,
@@ -12,7 +12,7 @@ import {
   generateTabularQueryCode,
   computeStaticFacetValues,
 } from '../../../apps/builder/src/ui/code-generator';
-import { filterToOdsql, applyLocalFilter } from '@gouv-widgets/shared';
+import { filterToOdsql, applyLocalFilter } from '@dsfr-data/shared';
 import { state } from '../../../apps/builder/src/state';
 
 vi.mock('../../../apps/builder/src/ui/chart-renderer', () => ({
@@ -73,18 +73,18 @@ function resetState(): void {
   };
 }
 
-describe('generateGouvQueryCode', () => {
+describe('generateDsfrDataQueryCode', () => {
   beforeEach(() => {
     resetState();
   });
 
-  it('should always generate a gouv-query element even when advancedMode is false', () => {
+  it('should always generate a dsfr-data-query element even when advancedMode is false', () => {
     state.advancedMode = false;
     state.aggregation = 'avg';
     state.sortOrder = 'desc';
   
-    const result = generateGouvQueryCode('my-source', 'fields.region', 'fields.population');
-    expect(result.queryElement).toContain('<gouv-query');
+    const result = generateDsfrDataQueryCode('my-source', 'fields.region', 'fields.population');
+    expect(result.queryElement).toContain('<dsfr-data-query');
     expect(result.queryElement).toContain('source="my-source"');
     expect(result.queryElement).toContain('group-by="fields.region"');
     expect(result.queryElement).toContain('aggregate="fields.population:avg"');
@@ -92,20 +92,20 @@ describe('generateGouvQueryCode', () => {
 
   it('should always return chartSource = "query-data"', () => {
     state.advancedMode = false;
-    const result = generateGouvQueryCode('my-source', 'fields.region', 'fields.population');
+    const result = generateDsfrDataQueryCode('my-source', 'fields.region', 'fields.population');
     expect(result.chartSource).toBe('query-data');
   });
 
-  it('should build gouv-query element with source, group-by, filter, aggregate, order-by when advancedMode is true', () => {
+  it('should build dsfr-data-query element with source, group-by, filter, aggregate, order-by when advancedMode is true', () => {
     state.advancedMode = true;
     state.queryFilter = 'population>1000';
     state.queryGroupBy = 'region';
     state.queryAggregate = 'population:sum';
     state.sortOrder = 'desc';
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.region', 'fields.value');
 
-    expect(result.queryElement).toContain('<gouv-query');
+    expect(result.queryElement).toContain('<dsfr-data-query');
     expect(result.queryElement).toContain('id="query-data"');
     expect(result.queryElement).toContain('source="chart-data"');
     expect(result.queryElement).toContain('group-by="region"');
@@ -120,7 +120,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
   
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.chartSource).toBe('query-data');
   });
 
@@ -130,7 +130,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
   
 
-    const result = generateGouvQueryCode('chart-data', 'fields.commune', 'fields.value');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.commune', 'fields.value');
     expect(result.queryElement).toContain('group-by="fields.commune"');
   });
 
@@ -141,7 +141,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'asc';
   
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.region', 'fields.population');
     expect(result.queryElement).toContain('order-by="fields.population__sum:asc"');
   });
 
@@ -151,7 +151,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
 
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.value');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.region', 'fields.value');
     expect(result.queryElement).not.toContain('filter=');
   });
 
@@ -162,7 +162,7 @@ describe('generateGouvQueryCode', () => {
     state.sortOrder = 'desc';
 
 
-    const result = generateGouvQueryCode('chart-data', 'fields.region', 'fields.population');
+    const result = generateDsfrDataQueryCode('chart-data', 'fields.region', 'fields.population');
     expect(result.queryElement).toContain('aggregate="fields.population:avg"');
   });
 });
@@ -600,7 +600,7 @@ describe('generateCodeForLocalData', () => {
     generateCodeForLocalData();
 
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('gouv-datalist');
+    expect(code).toContain('dsfr-data-list');
     expect(code).toContain('colonnes=');
     expect(code).toContain('recherche');
     expect(code).toContain('pagination=');
@@ -842,14 +842,14 @@ describe('generateFacetsElement', () => {
     expect(result.element).toBe('');
   });
 
-  it('should generate gouv-facets with fields attribute', () => {
+  it('should generate dsfr-data-facets with fields attribute', () => {
     state.facetsConfig.enabled = true;
     state.facetsConfig.fields = [
       { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
       { field: 'dept', label: 'Departement', display: 'checkbox', searchable: false, disjunctive: false },
     ];
     const result = generateFacetsElement('chart-data');
-    expect(result.element).toContain('<gouv-facets');
+    expect(result.element).toContain('<dsfr-data-facets');
     expect(result.element).toContain('id="faceted-data"');
     expect(result.element).toContain('source="chart-data"');
     expect(result.element).toContain('fields="region, dept"');
@@ -965,12 +965,12 @@ describe('generateMiddlewareElements', () => {
     expect(result.finalSourceId).toBe('chart-data');
   });
 
-  it('should generate gouv-normalize when normalize enabled', () => {
+  it('should generate dsfr-data-normalize when normalize enabled', () => {
     state.normalizeConfig.enabled = true;
     state.normalizeConfig.trim = true;
     state.normalizeConfig.flatten = 'fields';
     const result = generateMiddlewareElements('chart-data');
-    expect(result.elements).toContain('<gouv-normalize');
+    expect(result.elements).toContain('<dsfr-data-normalize');
     expect(result.elements).toContain('id="normalized-data"');
     expect(result.elements).toContain('source="chart-data"');
     expect(result.elements).toContain('trim');
@@ -1007,8 +1007,8 @@ describe('generateMiddlewareElements', () => {
       { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
     ];
     const result = generateMiddlewareElements('chart-data');
-    expect(result.elements).toContain('<gouv-normalize');
-    expect(result.elements).toContain('<gouv-facets');
+    expect(result.elements).toContain('<dsfr-data-normalize');
+    expect(result.elements).toContain('<dsfr-data-facets');
     // Facets should source from normalized-data
     expect(result.elements).toContain('source="normalized-data"');
     expect(result.finalSourceId).toBe('faceted-data');
@@ -1020,8 +1020,8 @@ describe('generateMiddlewareElements', () => {
       { field: 'region', label: 'Region', display: 'checkbox', searchable: false, disjunctive: false },
     ];
     const result = generateMiddlewareElements('chart-data');
-    expect(result.elements).not.toContain('<gouv-normalize');
-    expect(result.elements).toContain('<gouv-facets');
+    expect(result.elements).not.toContain('<dsfr-data-normalize');
+    expect(result.elements).toContain('<dsfr-data-facets');
     expect(result.elements).toContain('source="chart-data"');
     expect(result.finalSourceId).toBe('faceted-data');
   });
@@ -1250,14 +1250,14 @@ describe('generateDynamicCode', () => {
     ];
   });
 
-  it('should generate gouv-source + gouv-query + gouv-dsfr-chart for bar chart', () => {
+  it('should generate dsfr-data-source + dsfr-data-query + dsfr-data-chart for bar chart', () => {
     state.chartType = 'bar';
     state.aggregation = 'sum';
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
-    expect(code).toContain('<gouv-query');
-    expect(code).toContain('<gouv-dsfr-chart');
+    expect(code).toContain('<dsfr-data-source');
+    expect(code).toContain('<dsfr-data-query');
+    expect(code).toContain('<dsfr-data-chart');
     expect(code).toContain('type="bar"');
     expect(code).toContain('transform="records"');
   });
@@ -1335,10 +1335,10 @@ describe('generateDynamicCode', () => {
     ];
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
-    expect(code).toContain('<gouv-datalist');
+    expect(code).toContain('<dsfr-data-source');
+    expect(code).toContain('<dsfr-data-list');
     expect(code).toContain('colonnes="region:Region, population:Pop."');
-    expect(code).not.toContain('<gouv-dsfr-chart');
+    expect(code).not.toContain('<dsfr-data-chart');
   });
 
   it('should fallback to embedded for KPI type', () => {
@@ -1346,8 +1346,8 @@ describe('generateDynamicCode', () => {
     state.data = [{ value: 42 }];
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    // KPI generates embedded code, not gouv-source
-    expect(code).not.toContain('<gouv-source');
+    // KPI generates embedded code, not dsfr-data-source
+    expect(code).not.toContain('<dsfr-data-source');
     expect(code).toContain('kpi');
   });
 
@@ -1416,7 +1416,7 @@ describe('generateDynamicCode', () => {
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
     // Facets are part of middleware between source and query
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
   });
 
   it('should do nothing when source is not grist', () => {
@@ -1462,7 +1462,7 @@ describe('generateDynamicCodeForApi', () => {
     state.generationMode = 'dynamic';
   });
 
-  it('should detect ODS source and generate gouv-source + gouv-query', () => {
+  it('should detect ODS source and generate dsfr-data-source + dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS Source', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus-regionaux/records',
@@ -1473,16 +1473,16 @@ describe('generateDynamicCodeForApi', () => {
     state.chartType = 'bar';
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('api-type="opendatasoft"');
     expect(code).toContain('base-url="https://data.iledefrance.fr"');
     expect(code).toContain('dataset-id="elus-regionaux"');
-    expect(code).toContain('<gouv-query');
+    expect(code).toContain('<dsfr-data-query');
     expect(code).toContain('source="chart-src"');
-    expect(code).toContain('<gouv-dsfr-chart');
+    expect(code).toContain('<dsfr-data-chart');
   });
 
-  it('should detect Tabular source and generate gouv-source + gouv-query', () => {
+  it('should detect Tabular source and generate dsfr-data-source + dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'Tabular Source', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1493,15 +1493,15 @@ describe('generateDynamicCodeForApi', () => {
     state.chartType = 'bar';
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('api-type="tabular"');
     expect(code).toContain('base-url="https://tabular-api.data.gouv.fr"');
     expect(code).toContain('resource="abc-123"');
-    expect(code).toContain('<gouv-query');
+    expect(code).toContain('<dsfr-data-query');
     expect(code).toContain('source="chart-src"');
   });
 
-  it('should use gouv-source for generic API sources', () => {
+  it('should use dsfr-data-source for generic API sources', () => {
     state.savedSource = {
       id: '1', name: 'Generic API', type: 'api',
       apiUrl: 'https://example.com/api/data',
@@ -1512,10 +1512,10 @@ describe('generateDynamicCodeForApi', () => {
     state.chartType = 'bar';
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('url="https://example.com/api/data"');
-    expect(code).toContain('<gouv-query');
-    expect(code).toContain('<gouv-dsfr-chart');
+    expect(code).toContain('<dsfr-data-query');
+    expect(code).toContain('<dsfr-data-chart');
   });
 
   it('should generate facets for ODS sources', () => {
@@ -1533,7 +1533,7 @@ describe('generateDynamicCodeForApi', () => {
     ];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="dept"');
   });
 
@@ -1552,7 +1552,7 @@ describe('generateDynamicCodeForApi', () => {
     ];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
   });
 
   it('should use codeField as group-by for map charts', () => {
@@ -1571,7 +1571,7 @@ describe('generateDynamicCodeForApi', () => {
     expect(code).toContain('code-field="code_dept"');
   });
 
-  it('should generate gouv-source + gouv-kpi for ODS KPI type', () => {
+  it('should generate dsfr-data-source + dsfr-data-kpi for ODS KPI type', () => {
     state.savedSource = {
       id: '1', name: 'ODS Source', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -1582,10 +1582,10 @@ describe('generateDynamicCodeForApi', () => {
     state.data = [{ value: 99 }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('api-type="opendatasoft"');
     expect(code).toContain('select="avg(population) as value"');
-    expect(code).toContain('<gouv-kpi');
+    expect(code).toContain('<dsfr-data-kpi');
     expect(code).toContain('valeur="value"');
   });
 
@@ -1599,12 +1599,12 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    // Must use gouv-source + gouv-query pattern
-    expect(code).toContain('<gouv-source');
+    // Must use dsfr-data-source + dsfr-data-query pattern
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('api-type="opendatasoft"');
-    expect(code).toContain('<gouv-query');
-    expect(code).toContain('<gouv-datalist');
-    expect(code).not.toContain('<gouv-dsfr-chart');
+    expect(code).toContain('<dsfr-data-query');
+    expect(code).toContain('<dsfr-data-list');
+    expect(code).not.toContain('<dsfr-data-chart');
     expect(code).toContain('server-side');
     expect(code).toContain('page-size="20"');
     expect(code).toContain('server-tri');
@@ -1621,11 +1621,11 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    // Must use gouv-source + gouv-query pattern
-    expect(code).toContain('<gouv-source');
+    // Must use dsfr-data-source + dsfr-data-query pattern
+    expect(code).toContain('<dsfr-data-source');
     expect(code).toContain('api-type="tabular"');
-    expect(code).toContain('<gouv-query');
-    expect(code).toContain('<gouv-datalist');
+    expect(code).toContain('<dsfr-data-query');
+    expect(code).toContain('<dsfr-data-list');
     expect(code).toContain('server-side');
     expect(code).toContain('page-size="20"');
     expect(code).toContain('server-tri');
@@ -1642,8 +1642,8 @@ describe('generateDynamicCodeForApi', () => {
     state.fields = [{ name: 'region', type: 'string', sample: 'Bretagne' }];
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-source');
-    expect(code).toContain('<gouv-datalist');
+    expect(code).toContain('<dsfr-data-source');
+    expect(code).toContain('<dsfr-data-list');
     expect(code).not.toContain('server-side');
     expect(code).not.toContain('server-tri');
   });
@@ -1811,7 +1811,7 @@ describe('regression tests', () => {
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
 
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="dept"');
   });
 
@@ -1832,7 +1832,7 @@ describe('regression tests', () => {
     generateDynamicCodeForApi();
     const code = document.getElementById('generated-code')!.textContent!;
 
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="dept"');
   });
 
@@ -1865,9 +1865,9 @@ describe('regression tests', () => {
 });
 
 // =====================================================================
-// Regression: api-type must be on gouv-source, never on gouv-query
+// Regression: api-type must be on dsfr-data-source, never on dsfr-data-query
 // =====================================================================
-describe('regression: api-type on gouv-source not gouv-query', () => {
+describe('regression: api-type on dsfr-data-source not dsfr-data-query', () => {
   beforeEach(() => {
     resetState();
     document.body.innerHTML = `
@@ -1880,18 +1880,18 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
   });
 
   /**
-   * Verify that api-type appears on <gouv-source>, NOT on <gouv-query>.
+   * Verify that api-type appears on <dsfr-data-source>, NOT on <dsfr-data-query>.
    */
   function assertNoDeprecatedPattern(code: string) {
-    // api-type must NOT appear on gouv-query
-    expect(code).not.toMatch(/<gouv-query[^>]*api-type=/);
-    // api-type must appear on gouv-source (if present at all)
+    // api-type must NOT appear on dsfr-data-query
+    expect(code).not.toMatch(/<dsfr-data-query[^>]*api-type=/);
+    // api-type must appear on dsfr-data-source (if present at all)
     if (code.includes('api-type=')) {
-      expect(code).toMatch(/<gouv-source[^>]*api-type=/);
+      expect(code).toMatch(/<dsfr-data-source[^>]*api-type=/);
     }
   }
 
-  it('ODS bar chart should use gouv-source for api-type, not gouv-query', () => {
+  it('ODS bar chart should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -1905,7 +1905,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('Tabular bar chart should use gouv-source for api-type, not gouv-query', () => {
+  it('Tabular bar chart should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'Tabular', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1919,7 +1919,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('ODS datalist should use gouv-source for api-type, not gouv-query', () => {
+  it('ODS datalist should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -1932,7 +1932,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('Tabular datalist should use gouv-source for api-type, not gouv-query', () => {
+  it('Tabular datalist should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'Tabular', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1945,7 +1945,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('ODS map should use gouv-source for api-type, not gouv-query', () => {
+  it('ODS map should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -1960,7 +1960,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('Tabular map should use gouv-source for api-type, not gouv-query', () => {
+  it('Tabular map should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'Tabular', type: 'api',
       apiUrl: 'https://tabular-api.data.gouv.fr/api/resources/abc-123/data/',
@@ -1975,7 +1975,7 @@ describe('regression: api-type on gouv-source not gouv-query', () => {
     assertNoDeprecatedPattern(code);
   });
 
-  it('ODS chart with facets should use gouv-source for api-type, not gouv-query', () => {
+  it('ODS chart with facets should use dsfr-data-source for api-type, not dsfr-data-query', () => {
     state.savedSource = {
       id: '1', name: 'ODS', type: 'api',
       apiUrl: 'https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/elus/records',
@@ -2056,14 +2056,14 @@ describe('alignment: chart types in DSFR_TAG_MAP', () => {
     state.labelField = 'region';
     generateCodeForLocalData();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('gouv-datalist');
+    expect(code).toContain('dsfr-data-list');
   });
 });
 
 // =====================================================================
-// Alignment: all aggregation types work in gouv-query code
+// Alignment: all aggregation types work in dsfr-data-query code
 // =====================================================================
-describe('alignment: aggregation types in generateGouvQueryCode', () => {
+describe('alignment: aggregation types in generateDsfrDataQueryCode', () => {
   beforeEach(() => {
     resetState();
   });
@@ -2074,8 +2074,8 @@ describe('alignment: aggregation types in generateGouvQueryCode', () => {
     it(`should handle ${agg} aggregation`, () => {
       state.aggregation = agg;
       state.sortOrder = 'desc';
-      const result = generateGouvQueryCode('src', 'region', 'population');
-      // generateGouvQueryCode always uses valueFieldPath:aggregation format
+      const result = generateDsfrDataQueryCode('src', 'region', 'population');
+      // generateDsfrDataQueryCode always uses valueFieldPath:aggregation format
       expect(result.queryElement).toContain(`aggregate="population:${agg}"`);
     });
   }
@@ -2201,7 +2201,7 @@ describe('alignment: normalize config attributes', () => {
     // All others default to false/empty
 
     const result = generateMiddlewareElements('src');
-    expect(result.elements).toContain('<gouv-normalize');
+    expect(result.elements).toContain('<dsfr-data-normalize');
     expect(result.elements).not.toContain('trim');
     expect(result.elements).not.toContain('numeric-auto');
     expect(result.elements).not.toContain('strip-html');
@@ -2287,7 +2287,7 @@ describe('generateCode (API fetch embedded)', () => {
     state.datalistExportCsv = true;
     generateCode('https://api.example.com?limit=200');
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('gouv-datalist');
+    expect(code).toContain('dsfr-data-list');
     expect(code).toContain('colonnes="region:Region, population:Pop."');
     expect(code).toContain('recherche');
     expect(code).toContain('export="csv"');
@@ -2731,7 +2731,7 @@ describe('Grist facets field paths', () => {
     ];
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="fields.region"');
   });
 
@@ -2746,7 +2746,7 @@ describe('Grist facets field paths', () => {
     ];
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="region"');
     expect(code).not.toContain('fields="fields.region"');
   });
@@ -2763,7 +2763,7 @@ describe('Grist facets field paths', () => {
     ];
     generateDynamicCode();
     const code = document.getElementById('generated-code')!.textContent!;
-    expect(code).toContain('<gouv-facets');
+    expect(code).toContain('<dsfr-data-facets');
     expect(code).toContain('fields="fields.region"');
   });
 

@@ -47,17 +47,17 @@ Verifie que chaque page de specification affiche les bons composants :
 
 | Page | Type | Verification |
 |------|------|-------------|
-| `gouv-dsfr-chart.html` | Donnees locales | 5 `gouv-dsfr-chart`, inner `bar-chart`/`line-chart`/`pie-chart`/`radar-chart` |
-| `gouv-kpi.html` | Donnees locales | >=8 `gouv-kpi`, >=3 `gouv-kpi-group` |
-| `gouv-datalist.html` | Donnees locales | >=4 `gouv-datalist` |
-| `gouv-display.html` | Donnees locales | >=3 `gouv-display` |
-| `gouv-chart-a11y.html` | Donnees locales | >=2 `gouv-chart-a11y`, >=1 `gouv-dsfr-chart` |
-| `gouv-facets.html` | API ODS | >=4 `gouv-facets`, >=3 `gouv-datalist`, >=1 `gouv-dsfr-chart`, >=2 `gouv-kpi` |
-| `gouv-search.html` | API ODS | >=3 `gouv-search`, >=1 `gouv-datalist` |
-| `gouv-world-map.html` | API + topojson | >=1 `gouv-world-map`, SVG rendu |
-| `gouv-source.html` | Doc-only | Page charge, layout present, pas d'erreurs console |
-| `gouv-query.html` | Doc-only | Idem |
-| `gouv-normalize.html` | Doc-only | Idem |
+| `dsfr-data-chart.html` | Donnees locales | 5 `dsfr-data-chart`, inner `bar-chart`/`line-chart`/`pie-chart`/`radar-chart` |
+| `dsfr-data-kpi.html` | Donnees locales | >=8 `dsfr-data-kpi`, >=3 `dsfr-data-kpi-group` |
+| `dsfr-data-list.html` | Donnees locales | >=4 `dsfr-data-list` |
+| `dsfr-data-display.html` | Donnees locales | >=3 `dsfr-data-display` |
+| `dsfr-data-a11y.html` | Donnees locales | >=2 `dsfr-data-a11y`, >=1 `dsfr-data-chart` |
+| `dsfr-data-facets.html` | API ODS | >=4 `dsfr-data-facets`, >=3 `dsfr-data-list`, >=1 `dsfr-data-chart`, >=2 `dsfr-data-kpi` |
+| `dsfr-data-search.html` | API ODS | >=3 `dsfr-data-search`, >=1 `dsfr-data-list` |
+| `dsfr-data-world-map.html` | API + topojson | >=1 `dsfr-data-world-map`, SVG rendu |
+| `dsfr-data-source.html` | Doc-only | Page charge, layout present, pas d'erreurs console |
+| `dsfr-data-query.html` | Doc-only | Idem |
+| `dsfr-data-normalize.html` | Doc-only | Idem |
 
 Timeouts : 60s (donnees locales), 120s (API externes). Screenshots dans `screenshots/specs/`.
 
@@ -75,17 +75,17 @@ Timeouts : 60s (donnees locales), 120s (API externes). Screenshots dans `screens
 | `guide-exemples-display.html` | >=4 |
 
 Strategie : scroll incremental (400px par pas, 3 passes) pour declencher tous les observers,
-puis verification que les `.example-container` ont ete crees avec un `gouv-source` chacun.
+puis verification que les `.example-container` ont ete crees avec un `dsfr-data-source` chacun.
 
 **Pages directes (5 tests)** — widgets directement dans le HTML :
 
 | Page | Widgets verifies |
 |------|-----------------|
-| `guide-exemples-chart-a11y.html` | `gouv-chart-a11y`, `gouv-dsfr-chart` |
-| `guide-exemples-ghibli.html` | `gouv-kpi`, `gouv-dsfr-chart` |
-| `guide-exemples-maires.html` | `gouv-kpi`, `gouv-dsfr-chart` |
-| `guide-exemples-world-map.html` | `gouv-world-map`, `gouv-dsfr-chart` |
-| `guide-exemples-insee-erfs.html` | `gouv-dsfr-chart`, `gouv-kpi` |
+| `guide-exemples-chart-a11y.html` | `dsfr-data-a11y`, `dsfr-data-chart` |
+| `guide-exemples-ghibli.html` | `dsfr-data-kpi`, `dsfr-data-chart` |
+| `guide-exemples-maires.html` | `dsfr-data-kpi`, `dsfr-data-chart` |
+| `guide-exemples-world-map.html` | `dsfr-data-world-map`, `dsfr-data-chart` |
+| `guide-exemples-insee-erfs.html` | `dsfr-data-chart`, `dsfr-data-kpi` |
 
 Timeout : 120s. Screenshots dans `screenshots/guide/`.
 
@@ -99,7 +99,7 @@ Timeout : 120s. Screenshots dans `screenshots/guide/`.
 1. Verifie que CodeMirror contient du code
 2. Clique "Executer"
 3. Accede a l'iframe `#preview-frame` via `page.frameLocator()`
-4. Verifie que `gouv-source` est present dans l'iframe
+4. Verifie que `dsfr-data-source` est present dans l'iframe
 5. Verifie que le widget visuel principal est present
 6. Screenshot viewport
 

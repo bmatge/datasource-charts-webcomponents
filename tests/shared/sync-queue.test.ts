@@ -298,7 +298,7 @@ describe('SyncQueue', () => {
 
       enqueueSync('POST', '/api/sources', { id: '1' });
 
-      const stored = localStorage.getItem('gouv-widgets-sync-queue');
+      const stored = localStorage.getItem('dsfr-data-sync-queue');
       // Queue may have already been processed, but it was persisted at enqueue time
       expect(stored === null || JSON.parse(stored).length >= 0).toBe(true);
     });
@@ -313,13 +313,13 @@ describe('SyncQueue', () => {
         expect(getSyncStatus().status).toBe('idle');
       });
 
-      const stored = localStorage.getItem('gouv-widgets-sync-queue');
+      const stored = localStorage.getItem('dsfr-data-sync-queue');
       expect(stored).toBeNull();
     });
 
     it('should restore persisted queue on setSyncBaseUrl', async () => {
       // Pre-persist a queue entry
-      localStorage.setItem('gouv-widgets-sync-queue', JSON.stringify([
+      localStorage.setItem('dsfr-data-sync-queue', JSON.stringify([
         { method: 'DELETE', url: 'http://test/api/sources/old-id', retries: 2 },
       ]));
 
@@ -339,7 +339,7 @@ describe('SyncQueue', () => {
     });
 
     it('should reset retries on restored operations', () => {
-      localStorage.setItem('gouv-widgets-sync-queue', JSON.stringify([
+      localStorage.setItem('dsfr-data-sync-queue', JSON.stringify([
         { method: 'POST', url: 'http://test/api/x', body: '{}', retries: 5 },
       ]));
 
@@ -355,7 +355,7 @@ describe('SyncQueue', () => {
     });
 
     it('should handle corrupt localStorage data gracefully', () => {
-      localStorage.setItem('gouv-widgets-sync-queue', 'not-valid-json{{{');
+      localStorage.setItem('dsfr-data-sync-queue', 'not-valid-json{{{');
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 200 }));
 
       // Should not throw
@@ -363,9 +363,9 @@ describe('SyncQueue', () => {
     });
 
     it('should clear localStorage on _resetSyncQueue', () => {
-      localStorage.setItem('gouv-widgets-sync-queue', '[{"method":"POST"}]');
+      localStorage.setItem('dsfr-data-sync-queue', '[{"method":"POST"}]');
       _resetSyncQueue();
-      expect(localStorage.getItem('gouv-widgets-sync-queue')).toBeNull();
+      expect(localStorage.getItem('dsfr-data-sync-queue')).toBeNull();
     });
   });
 });

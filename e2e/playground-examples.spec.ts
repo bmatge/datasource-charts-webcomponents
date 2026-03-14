@@ -4,7 +4,7 @@
  * Tests:
  * 1. Structural: select has 25 options, toolbar buttons present
  * 2. Per-example: for each of 25 examples, load via ?example=<key>,
- *    verify CodeMirror has code, iframe has gouv-source and main widget.
+ *    verify CodeMirror has code, iframe has dsfr-data-source and main widget.
  *
  * Examples using inline data (direct-worldmap) hard-fail.
  * Examples using external APIs soft-fail with warning.
@@ -52,39 +52,39 @@ test.describe('Playground — structure', () => {
 /** Map of example keys to their expected main visual widget tag */
 const EXAMPLES: Record<string, { widget: string; usesApi: boolean }> = {
   // Direct
-  'direct-bar':                { widget: 'gouv-dsfr-chart', usesApi: true },
-  'direct-kpi':                { widget: 'gouv-kpi',        usesApi: true },
-  'direct-datalist':           { widget: 'gouv-datalist',   usesApi: true },
+  'direct-bar':                { widget: 'dsfr-data-chart', usesApi: true },
+  'direct-kpi':                { widget: 'dsfr-data-kpi',        usesApi: true },
+  'direct-datalist':           { widget: 'dsfr-data-list',   usesApi: true },
   // Pagination serveur
-  'server-paginate-datalist':  { widget: 'gouv-datalist',   usesApi: true },
-  'server-paginate-display':   { widget: 'gouv-display',    usesApi: true },
-  'paginate-kpi-global':       { widget: 'gouv-datalist',   usesApi: true },
+  'server-paginate-datalist':  { widget: 'dsfr-data-list',   usesApi: true },
+  'server-paginate-display':   { widget: 'dsfr-data-display',    usesApi: true },
+  'paginate-kpi-global':       { widget: 'dsfr-data-list',   usesApi: true },
   // Query
-  'query-bar':                 { widget: 'gouv-dsfr-chart', usesApi: true },
-  'query-pie':                 { widget: 'gouv-dsfr-chart', usesApi: true },
-  'query-map':                 { widget: 'gouv-dsfr-chart', usesApi: true },
+  'query-bar':                 { widget: 'dsfr-data-chart', usesApi: true },
+  'query-pie':                 { widget: 'dsfr-data-chart', usesApi: true },
+  'query-map':                 { widget: 'dsfr-data-chart', usesApi: true },
   // Normalize
-  'normalize-bar':             { widget: 'gouv-dsfr-chart', usesApi: true },
-  'normalize-pie':             { widget: 'gouv-dsfr-chart', usesApi: true },
-  'normalize-datalist':        { widget: 'gouv-datalist',   usesApi: true },
+  'normalize-bar':             { widget: 'dsfr-data-chart', usesApi: true },
+  'normalize-pie':             { widget: 'dsfr-data-chart', usesApi: true },
+  'normalize-datalist':        { widget: 'dsfr-data-list',   usesApi: true },
   // Display
-  'direct-display':            { widget: 'gouv-display',    usesApi: true },
-  'query-display':             { widget: 'gouv-display',    usesApi: true },
-  'normalize-display':         { widget: 'gouv-display',    usesApi: true },
+  'direct-display':            { widget: 'dsfr-data-display',    usesApi: true },
+  'query-display':             { widget: 'dsfr-data-display',    usesApi: true },
+  'normalize-display':         { widget: 'dsfr-data-display',    usesApi: true },
   // Search
-  'search-datalist':           { widget: 'gouv-datalist',   usesApi: true },
-  'search-display':            { widget: 'gouv-display',    usesApi: true },
-  'search-kpi-chart':          { widget: 'gouv-dsfr-chart', usesApi: true },
+  'search-datalist':           { widget: 'dsfr-data-list',   usesApi: true },
+  'search-display':            { widget: 'dsfr-data-display',    usesApi: true },
+  'search-kpi-chart':          { widget: 'dsfr-data-chart', usesApi: true },
   // Facets
-  'facets-datalist':           { widget: 'gouv-datalist',   usesApi: true },
-  'facets-bar':                { widget: 'gouv-dsfr-chart', usesApi: true },
-  'facets-map':                { widget: 'gouv-dsfr-chart', usesApi: true },
+  'facets-datalist':           { widget: 'dsfr-data-list',   usesApi: true },
+  'facets-bar':                { widget: 'dsfr-data-chart', usesApi: true },
+  'facets-map':                { widget: 'dsfr-data-chart', usesApi: true },
   // Server-side
-  'server-side-ods':           { widget: 'gouv-display',    usesApi: true },
-  'server-side-tabular-tri':   { widget: 'gouv-datalist',   usesApi: true },
-  'server-facets-display':     { widget: 'gouv-display',    usesApi: true },
+  'server-side-ods':           { widget: 'dsfr-data-display',    usesApi: true },
+  'server-side-tabular-tri':   { widget: 'dsfr-data-list',   usesApi: true },
+  'server-facets-display':     { widget: 'dsfr-data-display',    usesApi: true },
   // World map (inline data)
-  'direct-worldmap':           { widget: 'gouv-world-map',  usesApi: false },
+  'direct-worldmap':           { widget: 'dsfr-data-world-map',  usesApi: false },
 };
 
 test.describe('Playground — examples', () => {
@@ -113,8 +113,8 @@ test.describe('Playground — examples', () => {
       // Access the iframe content
       const frame = page.frameLocator('#preview-frame');
 
-      // Verify gouv-source is present in the iframe
-      const sourceCount = await frame.locator('gouv-source').count();
+      // Verify dsfr-data-source is present in the iframe
+      const sourceCount = await frame.locator('dsfr-data-source').count();
 
       // Verify the main visual widget is present
       const widgetCount = await frame.locator(widget).count();
@@ -122,7 +122,7 @@ test.describe('Playground — examples', () => {
       if (usesApi) {
         // Soft-fail for API-dependent examples (network may be slow/unavailable)
         if (sourceCount === 0) {
-          console.warn(`[WARN] ${key}: gouv-source not found in iframe (API may be unavailable)`);
+          console.warn(`[WARN] ${key}: dsfr-data-source not found in iframe (API may be unavailable)`);
         }
         if (widgetCount === 0) {
           console.warn(`[WARN] ${key}: ${widget} not found in iframe (API may be unavailable)`);

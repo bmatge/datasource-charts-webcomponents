@@ -16,7 +16,7 @@ describe('builder state', () => {
   });
 
   it('should have FAVORITES_KEY constant', () => {
-    expect(FAVORITES_KEY).toBe('gouv-widgets-favorites');
+    expect(FAVORITES_KEY).toBe('dsfr-data-favorites');
   });
 
   it('should have expected initial state', () => {

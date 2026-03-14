@@ -30,7 +30,7 @@ export function getDb(): Database.Database {
  * @param dbPath - Path to the SQLite file. Use ':memory:' for tests.
  */
 export function initDatabase(dbPath?: string): Database.Database {
-  const resolvedPath = dbPath ?? process.env.DB_PATH ?? join(__dirname, '../../data/gouv-widgets.db');
+  const resolvedPath = dbPath ?? process.env.DB_PATH ?? join(__dirname, '../../data/dsfr-data.db');
 
   db = new Database(resolvedPath);
 

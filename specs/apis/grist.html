@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grist - API supportees - gouv-widgets</title>
+  <title>Grist - API supportees - dsfr-data</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/dsfr.min.css" integrity="sha384-VuzA/gYnk/ZqcT5a/ravR88otj71vNPl/h1JPrKoESV33DCX6SeXIxBcRr5qYPRj" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/utility/utility.min.css" integrity="sha384-YR4AxNhFVy1qsQ0Hp7Rosg06e4sj2m9dLxiYZrtqJ0boIOiDbD8XkIsIPMMkf0VL" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" integrity="sha384-6FSSi597BTd6QcnsBNoLclRKxTOyyYqkaucRjFgCNr8wHVCp0COLClSPY4Vy/bjh" crossorigin="anonymous">
-  <script type="module" src="/dist/gouv-widgets.esm.js"></script>
+  <script type="module" src="/dist/dsfr-data.esm.js"></script>
   <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
     .capability-yes { color: var(--text-default-success); font-weight: bold; }
@@ -45,7 +45,7 @@
           <p class="fr-callout__text">
             Les enregistrements Grist sont structures en <code>records[].fields</code>.
             L'adapter <strong>aplatit automatiquement</strong> les champs &mdash; pas besoin de
-            <code>gouv-normalize</code>.
+            <code>dsfr-data-normalize</code>.
           </p>
         </div>
 
@@ -198,7 +198,7 @@
                 <tr><td>Chemin des donnees</td><td><code>records</code></td></tr>
                 <tr><td>Chemin du total</td><td>Non disponible</td></tr>
                 <tr><td>Donnees imbriquees</td><td>Oui (<code>fields</code>)</td></tr>
-                <tr><td>Aplatissement</td><td><strong>Automatique</strong> (par l'adapter, sans gouv-normalize)</td></tr>
+                <tr><td>Aplatissement</td><td><strong>Automatique</strong> (par l'adapter, sans dsfr-data-normalize)</td></tr>
               </tbody>
             </table>
           </div>
@@ -332,7 +332,7 @@
         <section class="fr-mt-4w">
           <h2>Detection automatique</h2>
           <p>
-            gouv-widgets detecte automatiquement une source Grist si l'URL contient :
+            dsfr-data detecte automatiquement une source Grist si l'URL contient :
           </p>
           <ul>
             <li><code>/api/docs/{documentId}/tables/{tableId}</code></li>
@@ -357,53 +357,53 @@
           <h2>Exemples d'utilisation</h2>
 
           <h3>Graphique avec agregation serveur (SQL)</h3>
-          <pre><code>&lt;gouv-source id="src" api-type="grist"
+          <pre><code>&lt;dsfr-data-source id="src" api-type="grist"
   base-url="https://&lt;votre-proxy&gt;/grist-gouv-proxy/api/docs/DOC_ID/tables/Table1/records"
   headers='{"Authorization":"Bearer API_KEY"}'&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-query id="data" source="src"
+&lt;dsfr-data-query id="data" source="src"
   group-by="region"
   aggregate="population:sum:total"
   order-by="total:desc"&gt;
-&lt;/gouv-query&gt;
+&lt;/dsfr-data-query&gt;
 
-&lt;gouv-dsfr-chart source="data" type="bar"
+&lt;dsfr-data-chart source="data" type="bar"
   label-field="region" value-field="total"&gt;
-&lt;/gouv-dsfr-chart&gt;</code></pre>
+&lt;/dsfr-data-chart&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Datalist avec pagination serveur</h3>
-          <pre><code>&lt;gouv-source id="src" api-type="grist"
+          <pre><code>&lt;dsfr-data-source id="src" api-type="grist"
   base-url="https://&lt;votre-proxy&gt;/grist-gouv-proxy/api/docs/DOC_ID/tables/Table1/records"
   server-side page-size="20"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-datalist source="src"
+&lt;dsfr-data-list source="src"
   colonnes="nom,prenom,commune"
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</code></pre>
+&lt;/dsfr-data-list&gt;</code></pre>
 
           <h3 class="fr-mt-2w">Facettes serveur + recherche</h3>
-          <pre><code>&lt;gouv-source id="src" api-type="grist"
+          <pre><code>&lt;dsfr-data-source id="src" api-type="grist"
   base-url="https://&lt;votre-proxy&gt;/grist-gouv-proxy/api/docs/DOC_ID/tables/Table1/records"
   server-side page-size="20"&gt;
-&lt;/gouv-source&gt;
+&lt;/dsfr-data-source&gt;
 
-&lt;gouv-facets source="src"
+&lt;dsfr-data-facets source="src"
   fields="categorie,region"
   labels="categorie:Categorie | region:Region"
   server-facets&gt;
-&lt;/gouv-facets&gt;
+&lt;/dsfr-data-facets&gt;
 
-&lt;gouv-search source="src"
+&lt;dsfr-data-search source="src"
   search-template="nom:contains:{q}"
   placeholder="Rechercher par nom..."&gt;
-&lt;/gouv-search&gt;
+&lt;/dsfr-data-search&gt;
 
-&lt;gouv-datalist source="src"
+&lt;dsfr-data-list source="src"
   colonnes="nom,categorie,region"
   pagination="20"&gt;
-&lt;/gouv-datalist&gt;</code></pre>
+&lt;/dsfr-data-list&gt;</code></pre>
         </section>
     </div>
   </app-layout-demo>

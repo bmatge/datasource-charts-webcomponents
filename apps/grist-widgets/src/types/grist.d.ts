@@ -64,8 +64,8 @@ interface GristDocApi {
 declare const grist: GristApi;
 
 /**
- * Type declarations for the gouv-widgets UMD bundle.
- * Loaded via <script src="gouv-widgets.umd.js">, exposes GouvWidgets global.
+ * Type declarations for the dsfr-data UMD bundle.
+ * Loaded via <script src="dsfr-data.umd.js">, exposes GouvWidgets global.
  */
 interface GouvWidgetsApi {
   dispatchDataLoaded(sourceId: string, data: unknown): void;
@@ -78,9 +78,9 @@ interface GouvWidgetsApi {
     onLoading?: () => void;
   }): () => void;
   DATA_EVENTS: {
-    LOADED: 'gouv-data-loaded';
-    ERROR: 'gouv-data-error';
-    LOADING: 'gouv-data-loading';
+    LOADED: 'dsfr-data-loaded';
+    ERROR: 'dsfr-data-error';
+    LOADING: 'dsfr-data-loading';
   };
 }
 

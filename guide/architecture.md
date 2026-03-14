@@ -1,8 +1,8 @@
-# Architecture -- gouv-widgets
+# Architecture -- dsfr-data
 
 ## 1. Vue d'ensemble
 
-gouv-widgets est un monorepo TypeScript gere par npm workspaces. Il fournit une bibliotheque de Web Components de dataviz conformes au DSFR (Design System de l'Etat) ainsi que sept applications web autonomes pour la creation, la gestion et la visualisation de graphiques.
+dsfr-data est un monorepo TypeScript gere par npm workspaces. Il fournit une bibliotheque de Web Components de dataviz conformes au DSFR (Design System de l'Etat) ainsi que sept applications web autonomes pour la creation, la gestion et la visualisation de graphiques.
 
 Le monorepo se decompose en trois niveaux :
 
@@ -26,13 +26,13 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
 /
   src/                          Bibliotheque de Web Components (point d'entree: src/index.ts)
     components/
-      gouv-source.ts            Chargement de donnees (Grist, ODS, tabular-api)
-      gouv-normalize.ts         Normalisation des donnees (numerique, renommage, trim)
-      gouv-query.ts             Filtrage et aggregation de donnees
-      gouv-facets.ts            Filtres a facettes interactifs
-      gouv-kpi.ts               Indicateur chiffre cle
-      gouv-datalist.ts          Liste de donnees
-      gouv-dsfr-chart.ts        Graphique DSFR (@gouvfr/dsfr-chart)
+      dsfr-data-source.ts            Chargement de donnees (Grist, ODS, tabular-api)
+      dsfr-data-normalize.ts         Normalisation des donnees (numerique, renommage, trim)
+      dsfr-data-query.ts             Filtrage et aggregation de donnees
+      dsfr-data-facets.ts            Filtres a facettes interactifs
+      dsfr-data-kpi.ts               Indicateur chiffre cle
+      dsfr-data-list.ts          Liste de donnees
+      dsfr-data-chart.ts        Graphique DSFR (@gouvfr/dsfr-chart)
       layout/
         app-header.ts           En-tete DSFR
         app-footer.ts           Pied de page DSFR
@@ -50,7 +50,7 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
   dist/                         Build output (ESM + UMD)
 
   packages/
-    shared/                     @gouv-widgets/shared
+    shared/                     @dsfr-data/shared
       src/
         utils/
           escape-html.ts        Echappement HTML securise
@@ -68,13 +68,13 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
           modal.ts              openModal, closeModal, setupModalOverlayClose
 
   apps/
-    favorites/                  @gouv-widgets/app-favorites -- Gestion des favoris
-    playground/                 @gouv-widgets/app-playground -- Editeur de code interactif
-    sources/                    @gouv-widgets/app-sources -- Gestionnaire de sources de donnees
-    builder-ia/                 @gouv-widgets/app-builder-ia -- Generateur IA (Albert)
-    builder/                    @gouv-widgets/app-builder -- Generateur visuel de graphiques
-    dashboard/                  @gouv-widgets/app-dashboard -- Editeur visuel de tableaux de bord
-    monitoring/                 @gouv-widgets/app-monitoring -- Suivi des widgets deployes
+    favorites/                  @dsfr-data/app-favorites -- Gestion des favoris
+    playground/                 @dsfr-data/app-playground -- Editeur de code interactif
+    sources/                    @dsfr-data/app-sources -- Gestionnaire de sources de donnees
+    builder-ia/                 @dsfr-data/app-builder-ia -- Generateur IA (Albert)
+    builder/                    @dsfr-data/app-builder -- Generateur visuel de graphiques
+    dashboard/                  @dsfr-data/app-dashboard -- Editeur visuel de tableaux de bord
+    monitoring/                 @dsfr-data/app-monitoring -- Suivi des widgets deployes
 
   tests/                        Tests Vitest
   scripts/                      Scripts de build et monitoring
@@ -87,12 +87,12 @@ Toutes les dependances internes sont resolues via les workspaces npm declares da
   app-dist/                     Sortie assemblee pour Tauri
 ```
 
-Chaque application dans `apps/` est un workspace npm independant avec sa propre configuration Vite et TypeScript. Toutes dependent de `@gouv-widgets/shared` pour les utilitaires communs :
+Chaque application dans `apps/` est un workspace npm independant avec sa propre configuration Vite et TypeScript. Toutes dependent de `@dsfr-data/shared` pour les utilitaires communs :
 
 ```json
 {
   "dependencies": {
-    "@gouv-widgets/shared": "*"
+    "@dsfr-data/shared": "*"
   }
 }
 ```
@@ -118,7 +118,7 @@ localStorage
 Builder / Builder-IA
 ```
 
-L'application Sources permet de configurer et tester des connexions a des APIs externes (Grist, ODS, tabular-api). Les sources configurees sont stockees dans `localStorage` sous les cles `gouv_widgets_sources` et `gouv_widgets_connections`, puis consommees par les builders.
+L'application Sources permet de configurer et tester des connexions a des APIs externes (Grist, ODS, tabular-api). Les sources configurees sont stockees dans `localStorage` sous les cles `dsfr-data-sources` et `dsfr-data-connections`, puis consommees par les builders.
 
 ### 3.2 Generation de code
 
@@ -146,14 +146,14 @@ localStorage
 Favorites
 ```
 
-Les graphiques enregistres comme favoris sont serialises dans `localStorage` sous la cle `gouv-widgets-favorites`.
+Les graphiques enregistres comme favoris sont serialises dans `localStorage` sous la cle `dsfr-data-favorites`.
 
 ### 3.4 Monitoring des widgets deployes
 
 ```
 Sites tiers (gouv.fr, codepen, etc.)
     |
-    |-- sendWidgetBeacon('gouv-dsfr-chart', 'bar')   (fetch no-cors)
+    |-- sendWidgetBeacon('dsfr-data-chart', 'bar')   (fetch no-cors)
     v
 <proxy-domain>/beacon                                 (nginx return 204, log beacon.log)
     |
@@ -170,19 +170,19 @@ Les beacon logs sont persistes via un volume Docker (`beacon-logs:/var/log/nginx
 
 ### 3.5 Communication intra-composants
 
-A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<gouv-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<gouv-dsfr-chart>`, `<gouv-kpi>`, `<gouv-query>`, `<gouv-normalize>`, `<gouv-facets>`, `<gouv-datalist>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
+A l'interieur d'une meme page, les Web Components communiquent par un bus d'evenements custom (`data-bridge.ts`). Le composant `<dsfr-data-source>` emet des `CustomEvent` lorsque des donnees sont chargees. Les composants consommateurs (`<dsfr-data-chart>`, `<dsfr-data-kpi>`, `<dsfr-data-query>`, `<dsfr-data-normalize>`, `<dsfr-data-facets>`, `<dsfr-data-list>`) s'y abonnent via le mixin `SourceSubscriberMixin`.
 
 ```
-<gouv-source src="...">          Charge les donnees, emet DATA_EVENTS.LOADED
+<dsfr-data-source src="...">          Charge les donnees, emet DATA_EVENTS.LOADED
     |
     |-- CustomEvent sur document
     v
-<gouv-normalize source="...">    Ecoute via SourceSubscriberMixin, re-emet apres nettoyage
-<gouv-query source="...">        Ecoute via SourceSubscriberMixin, re-emet apres filtrage
-<gouv-facets source="...">       Ecoute via SourceSubscriberMixin, re-emet apres facettes
-<gouv-dsfr-chart source="...">   Ecoute via SourceSubscriberMixin
-<gouv-kpi source="...">          Ecoute via SourceSubscriberMixin
-<gouv-datalist source="...">     Ecoute via SourceSubscriberMixin
+<dsfr-data-normalize source="...">    Ecoute via SourceSubscriberMixin, re-emet apres nettoyage
+<dsfr-data-query source="...">        Ecoute via SourceSubscriberMixin, re-emet apres filtrage
+<dsfr-data-facets source="...">       Ecoute via SourceSubscriberMixin, re-emet apres facettes
+<dsfr-data-chart source="...">   Ecoute via SourceSubscriberMixin
+<dsfr-data-kpi source="...">          Ecoute via SourceSubscriberMixin
+<dsfr-data-list source="...">     Ecoute via SourceSubscriberMixin
 ```
 
 ---
@@ -246,16 +246,16 @@ Le script `scripts/build-lib.ts` produit trois bundles via Vite en mode `lib` :
 
 | Bundle | Contenu | Taille (gzip) |
 |--------|---------|---------------|
-| `gouv-widgets.core.{esm,umd}.js` | Tous les composants sauf `gouv-world-map` | ~52 Ko |
-| `gouv-widgets.world-map.{esm,umd}.js` | `gouv-world-map` (d3-geo, topojson) | ~30 Ko |
-| `gouv-widgets.{esm,umd}.js` | Tout-en-un (core + world-map) | ~70 Ko |
+| `dsfr-data.core.{esm,umd}.js` | Tous les composants sauf `dsfr-data-world-map` | ~52 Ko |
+| `dsfr-data.world-map.{esm,umd}.js` | `dsfr-data-world-map` (d3-geo, topojson) | ~30 Ko |
+| `dsfr-data.{esm,umd}.js` | Tout-en-un (core + world-map) | ~70 Ko |
 
 Le TopoJSON (`dist/data/world-countries-110m.json`) est charge par `fetch` a l'execution au lieu d'etre inline en base64.
 
 La source du JS dans le code genere est configurable via `VITE_LIB_URL` :
 - Non defini → self-hosted (`${PROXY_BASE_URL}/dist`)
-- `"unpkg"` → `https://unpkg.com/gouv-widgets/dist`
-- `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/gouv-widgets/dist`
+- `"unpkg"` → `https://unpkg.com/dsfr-data/dist`
+- `"jsdelivr"` → `https://cdn.jsdelivr.net/npm/dsfr-data/dist`
 - URL custom → utilisee telle quelle
 
 ### 5.3 Build des apps
@@ -271,7 +271,7 @@ Le script `build-app.js` assemble le dossier `app-dist/` qui sert de frontendDis
 ```
 app-dist/
   index.html              Page d'accueil (hub)
-  dist/                   Bibliotheque gouv-widgets (ESM + UMD)
+  dist/                   Bibliotheque dsfr-data (ESM + UMD)
   specs/                  Specifications des composants
   guide/                  Guide utilisateur et exemples
   apps/
@@ -346,14 +346,14 @@ tests/
   data-bridge.test.ts          Tests du bus d'evenements
   formatters.test.ts           Tests du formatage (src/utils)
   json-path.test.ts            Tests de l'acces par chemin JSON
-  gouv-source.test.ts          Tests du composant gouv-source
-  gouv-query.test.ts           Tests du composant gouv-query
-  gouv-normalize.test.ts       Tests du composant gouv-normalize
-  gouv-facets.test.ts          Tests du composant gouv-facets
-  gouv-datalist.test.ts        Tests du composant gouv-datalist
+  dsfr-data-source.test.ts          Tests du composant dsfr-data-source
+  dsfr-data-query.test.ts           Tests du composant dsfr-data-query
+  dsfr-data-normalize.test.ts       Tests du composant dsfr-data-normalize
+  dsfr-data-facets.test.ts          Tests du composant dsfr-data-facets
+  dsfr-data-list.test.ts        Tests du composant dsfr-data-list
   integration.test.ts          Tests d'integration inter-composants
   source-subscriber.test.ts    Tests du mixin SourceSubscriber
-  shared/                      Tests du package @gouv-widgets/shared
+  shared/                      Tests du package @dsfr-data/shared
     dept-codes.test.ts
     dsfr-palettes.test.ts
     escape-html.test.ts

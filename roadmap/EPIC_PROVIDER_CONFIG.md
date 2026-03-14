@@ -7,7 +7,7 @@ specificites API (ODS, Tabular, Grist, generic REST) est dispersee dans ~25
 fichiers avec des duplications, des incoherences et une logique provider
 repartie dans ~18 branches `if/else` a travers 4 fonctions du code generator.
 
-Le systeme d'adapters dans `gouv-query` (`src/adapters/`) est bien concu et
+Le systeme d'adapters dans `dsfr-data-query` (`src/adapters/`) est bien concu et
 doit servir de fondation. Mais cette architecture n'est pas partagee avec les
 code generators (builder + builder-IA), les apps (sources, grist-widgets), ni
 la definition des sources elle-meme.
@@ -24,7 +24,7 @@ la definition des sources elle-meme.
 ## Non-objectifs
 
 - Changer l'interface utilisateur des apps
-- Modifier le comportement runtime des composants gouv-*
+- Modifier le comportement runtime des composants dsfr-data-*
 - Remplacement complet des adapters existants (on les enrichit)
 
 ---
@@ -37,24 +37,24 @@ Le refactoring est **iso-fonctionnel** : aucun exemple existant ne doit casser.
 
 | Categorie | Exemples | Providers | Composants cles |
 |---|---|---|---|
-| Direct (10) | bar, line, pie, radar, gauge, scatter, barline, map, kpi, datalist | ODS, Tabular | gouv-source, gouv-query, gouv-dsfr-chart, gouv-kpi, gouv-datalist |
-| Server pagination (3) | paginate-datalist, paginate-display, paginate-kpi-global | Tabular | gouv-source (paginate), gouv-datalist, gouv-display |
-| Query (11) | query-bar, query-line, query-pie, query-radar, query-gauge, query-scatter, query-barline, query-map, query-kpi, query-datalist, query-tabular-pie | ODS, Tabular | gouv-query (api-type="opendatasoft" + "tabular") |
-| Normalize (4) | normalize-bar, normalize-pie, normalize-line, normalize-datalist | Tabular (LOVAC) | gouv-normalize (trim, numeric-auto, rename) |
-| Facets (3) | facets-datalist, facets-bar, facets-map | ODS, Tabular | gouv-facets (multiselect, select, radio) |
-| Display (3) | direct-display, query-display, normalize-display | ODS, Tabular | gouv-display (template, cols, pagination) |
-| Search/Advanced (7) | search-facets-display, search-kpi-chart, search-datalist, search-display, server-side-ods, server-side-tabular-tri, server-facets-display | ODS, Tabular | gouv-search, gouv-facets (server-facets) |
+| Direct (10) | bar, line, pie, radar, gauge, scatter, barline, map, kpi, datalist | ODS, Tabular | dsfr-data-source, dsfr-data-query, dsfr-data-chart, dsfr-data-kpi, dsfr-data-list |
+| Server pagination (3) | paginate-datalist, paginate-display, paginate-kpi-global | Tabular | dsfr-data-source (paginate), dsfr-data-list, dsfr-data-display |
+| Query (11) | query-bar, query-line, query-pie, query-radar, query-gauge, query-scatter, query-barline, query-map, query-kpi, query-datalist, query-tabular-pie | ODS, Tabular | dsfr-data-query (api-type="opendatasoft" + "tabular") |
+| Normalize (4) | normalize-bar, normalize-pie, normalize-line, normalize-datalist | Tabular (LOVAC) | dsfr-data-normalize (trim, numeric-auto, rename) |
+| Facets (3) | facets-datalist, facets-bar, facets-map | ODS, Tabular | dsfr-data-facets (multiselect, select, radio) |
+| Display (3) | direct-display, query-display, normalize-display | ODS, Tabular | dsfr-data-display (template, cols, pagination) |
+| Search/Advanced (7) | search-facets-display, search-kpi-chart, search-datalist, search-display, server-side-ods, server-side-tabular-tri, server-facets-display | ODS, Tabular | dsfr-data-search, dsfr-data-facets (server-facets) |
 
 ### Guide (8 pages HTML)
 
 | Page | Composants | Providers |
 |---|---|---|
-| guide-exemples-source.html | gouv-source, gouv-dsfr-chart, gouv-kpi, gouv-datalist | ODS, Tabular |
-| guide-exemples-normalize.html | gouv-normalize | ODS, Tabular |
-| guide-exemples-query.html | gouv-query (14 exemples dont server-side) | ODS, Tabular |
-| guide-exemples-search.html | gouv-search (client + server) | ODS, Tabular |
-| guide-exemples-facets.html | gouv-facets (client + server-facets) | ODS, Tabular |
-| guide-exemples-display.html | gouv-display | ODS, Tabular |
+| guide-exemples-source.html | dsfr-data-source, dsfr-data-chart, dsfr-data-kpi, dsfr-data-list | ODS, Tabular |
+| guide-exemples-normalize.html | dsfr-data-normalize | ODS, Tabular |
+| guide-exemples-query.html | dsfr-data-query (14 exemples dont server-side) | ODS, Tabular |
+| guide-exemples-search.html | dsfr-data-search (client + server) | ODS, Tabular |
+| guide-exemples-facets.html | dsfr-data-facets (client + server-facets) | ODS, Tabular |
+| guide-exemples-display.html | dsfr-data-display | ODS, Tabular |
 | guide-exemples-avances.html | Pipeline complet multizone | ODS (server-side) |
 
 ### Tests existants
@@ -137,7 +137,7 @@ export interface ProviderConfig {
     totalCountPath: string | null;
     /** Les donnees sont wrappees sous un sous-objet ? (ex: 'fields' pour Grist) */
     nestedDataKey: string | null;
-    /** Faut-il un gouv-normalize flatten automatique ? */
+    /** Faut-il un dsfr-data-normalize flatten automatique ? */
     requiresFlatten: boolean;
   };
 
@@ -205,13 +205,13 @@ export interface ProviderConfig {
 
   // --- Code generation ---
   codeGen: {
-    /** Le pipeline genere utilise gouv-source ? */
-    usesGouvSource: boolean;
-    /** Le pipeline genere utilise gouv-query ? */
-    usesGouvQuery: boolean;
-    /** Le pipeline genere utilise gouv-normalize ? */
-    usesGouvNormalize: boolean;
-    /** Valeur de api-type sur gouv-query */
+    /** Le pipeline genere utilise dsfr-data-source ? */
+    usesDsfrDataSource: boolean;
+    /** Le pipeline genere utilise dsfr-data-query ? */
+    usesDsfrDataQuery: boolean;
+    /** Le pipeline genere utilise dsfr-data-normalize ? */
+    usesDsfrDataNormalize: boolean;
+    /** Valeur de api-type sur dsfr-data-query */
     queryApiType: string | null;
     /** Prefixe de champ pour les paths nested (ex: 'fields.' pour Grist sans flatten) */
     fieldPrefix: string;
@@ -219,7 +219,7 @@ export interface ProviderConfig {
     dependencies: {
       dsfr: boolean;
       dsfrChart: boolean;
-      gouvWidgets: boolean;
+      dsfrData: boolean;
     };
   };
 }
@@ -281,12 +281,12 @@ export const ODS_CONFIG: ProviderConfig = {
     },
   },
   codeGen: {
-    usesGouvSource: false,
-    usesGouvQuery: true,
-    usesGouvNormalize: false,
+    usesDsfrDataSource: false,
+    usesDsfrDataQuery: true,
+    usesDsfrDataNormalize: false,
     queryApiType: 'opendatasoft',
     fieldPrefix: '',
-    dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
+    dependencies: { dsfr: true, dsfrChart: true, dsfrData: true },
   },
 };
 ```
@@ -314,7 +314,7 @@ Differences cles :
 - Toutes les capabilities serveur a `false`
 - `query.aggregationSyntax: 'client-only'`
 - `facets.defaultMode: 'client'`
-- `codeGen.usesGouvSource: true`, `codeGen.usesGouvNormalize: true`, `codeGen.queryApiType: null` (ou `'grist'` apres Phase 5)
+- `codeGen.usesDsfrDataSource: true`, `codeGen.usesDsfrDataNormalize: true`, `codeGen.queryApiType: null` (ou `'grist'` apres Phase 5)
 - `codeGen.fieldPrefix: 'fields.'`
 - `resource.idFields: ['documentId', 'tableId']`
 
@@ -324,7 +324,7 @@ Config minimale par defaut :
 - `urlPatterns: []` (fallback, matche tout ce que les autres n'ont pas matche)
 - `pagination.type: 'none'`
 - Toutes les capabilities serveur a `false`
-- `codeGen.usesGouvSource: true`, `codeGen.usesGouvQuery: true`
+- `codeGen.usesDsfrDataSource: true`, `codeGen.usesDsfrDataQuery: true`
 - `query.aggregationSyntax: 'client-only'`
 - `facets.defaultMode: 'client'`
 
@@ -561,7 +561,7 @@ Avant de centraliser, supprimer le code mort et les duplications evidentes.
 | Fichier | Code | Lignes | Raison |
 |---|---|---|---|
 | `builder/code-generator.ts` | `fetchOdsResults()` | ~45L | Duplique `OpenDataSoftAdapter.fetchAll()` ; remplace par adapter |
-| `builder/code-generator.ts` | `ODS_FETCH_HELPER` (template JS inline) | ~20L | Pagination inline dans le code genere ; remplace par `gouv-query` |
+| `builder/code-generator.ts` | `ODS_FETCH_HELPER` (template JS inline) | ~20L | Pagination inline dans le code genere ; remplace par `dsfr-data-query` |
 | `builder/code-generator.ts` | `parseOdsApiUrl()` | ~5L | Exportee mais jamais appelee dans le builder |
 | `builder/code-generator.ts` | `ODS_PAGE_SIZE`, `ODS_MAX_PAGES` | 2L | Duplique les constantes de `opendatasoft-adapter.ts` |
 
@@ -570,7 +570,7 @@ Avant de centraliser, supprimer le code mort et les duplications evidentes.
 | Duplication | Occurrences | Solution |
 |---|---|---|
 | `formatKPIValue()` inline dans le code genere | 3 copies (builder, builder-IA, + shared) | Supprimer les copies inline, la lib UMD exporte deja `formatKPIValue` |
-| `DSFR_TAG_MAP` (chart type → tag name) | 1 copie builder, 0 copie builder-IA | Deplacer dans `@gouv-widgets/shared` |
+| `DSFR_TAG_MAP` (chart type → tag name) | 1 copie builder, 0 copie builder-IA | Deplacer dans `@dsfr-data/shared` |
 | Normalisation des types (`horizontalBar`→`bar`, `doughnut`→`pie`) | Builder uniquement | Centraliser avec `DSFR_TAG_MAP` |
 | CSS KPI template | 2 copies (builder L~590-620, builder-IA L~187-201) | Extraire dans shared |
 
@@ -586,11 +586,11 @@ Remplacer toutes les constantes locales par un import unique :
 
 | Fichier | Actuel | Cible |
 |---|---|---|
-| `apps/builder/src/state.ts` L12 | `export const PROXY_BASE_URL = '...'` | `export { PROXY_BASE_URL } from '@gouv-widgets/shared'` |
-| `apps/builder-ia/src/ui/code-generator.ts` L9 | `const PROXY_BASE_URL = '...'` | `import { PROXY_BASE_URL } from '@gouv-widgets/shared'` |
-| `apps/sources/src/state.ts` L96 | `export const EXTERNAL_PROXY = '...'` | `import { PROXY_BASE_URL as EXTERNAL_PROXY } from '@gouv-widgets/shared'` |
+| `apps/builder/src/state.ts` L12 | `export const PROXY_BASE_URL = '...'` | `export { PROXY_BASE_URL } from '@dsfr-data/shared'` |
+| `apps/builder-ia/src/ui/code-generator.ts` L9 | `const PROXY_BASE_URL = '...'` | `import { PROXY_BASE_URL } from '@dsfr-data/shared'` |
+| `apps/sources/src/state.ts` L96 | `export const EXTERNAL_PROXY = '...'` | `import { PROXY_BASE_URL as EXTERNAL_PROXY } from '@dsfr-data/shared'` |
 | `packages/shared/src/api/proxy.ts` L7 | `const EXTERNAL_PROXY = '...'` | Utiliser `DEFAULT_PROXY_CONFIG.baseUrl` (deja dans proxy-config.ts) |
-| `src/utils/beacon.ts` L7 | `const BEACON_URL = '...beacon'` | `import { PROXY_BASE_URL } from '@gouv-widgets/shared'` + concat |
+| `src/utils/beacon.ts` L7 | `const BEACON_URL = '...beacon'` | `import { PROXY_BASE_URL } from '@dsfr-data/shared'` + concat |
 | `apps/grist-widgets/src/chart.ts` L277 | URL inline | Import shared |
 | `apps/grist-widgets/src/datalist.ts` L132 | URL inline | Import shared |
 | `apps/monitoring/src/monitoring-data.ts` L27-28 | URLs inline | Import shared |
@@ -648,7 +648,7 @@ remplacees par `detectProvider()` et `extractResourceIds()` de Phase 1.
 | Fichier | Supprimer | Remplacer par |
 |---|---|---|
 | `builder/code-generator.ts` L887-899 | `parseOdsApiUrl`, `parseTabularApiUrl` | `extractResourceIds(url, getProvider('opendatasoft'))` |
-| `builder-ia/code-generator.ts` L12-15 | `ODS_URL_RE`, `TABULAR_URL_RE` | `import { detectProvider } from '@gouv-widgets/shared'` |
+| `builder-ia/code-generator.ts` L12-15 | `ODS_URL_RE`, `TABULAR_URL_RE` | `import { detectProvider } from '@dsfr-data/shared'` |
 | `builder-ia/chat.ts` L178-179 | regexes inline | `detectProvider(url).id === 'opendatasoft'` |
 
 ### 2.5 Eliminer la duplication ODS pagination dans le builder
@@ -746,9 +746,9 @@ en **sub-PRs** pour limiter le blast radius :
 | `generateCodeForLocalData()` | 655-881 | Code embedded statique | KPI/gauge/datalist/scatter/map/chart |
 | `generateDynamicCode()` | 1149-1288 | Dynamic Grist | 100% Grist |
 | `generateDynamicCodeForApi()` | 1293-1542 | Dynamic API | Routage ODS/Tabular/Generic |
-| `generateOdsQueryCode()` | 907-994 | gouv-query ODS | 100% ODS |
-| `generateTabularQueryCode()` | 1001-1066 | gouv-query Tabular | 100% Tabular |
-| `generateGouvQueryCode()` | 1073-1144 | gouv-query Generic | 100% Generic |
+| `generateOdsQueryCode()` | 907-994 | dsfr-data-query ODS | 100% ODS |
+| `generateTabularQueryCode()` | 1001-1066 | dsfr-data-query Tabular | 100% Tabular |
+| `generateDsfrDataQueryCode()` | 1073-1144 | dsfr-data-query Generic | 100% Generic |
 | `generateCode()` | 1547-1861 | Code embedded fetch API | KPI/gauge/datalist/scatter/map/chart |
 | `generateMiddlewareElements()` | 313-350 | normalize + facets | Delegue via FacetsMode |
 | `generateFacetsElement()` | 221-285 | facets standalone | FacetsMode branching |
@@ -768,13 +768,13 @@ function generateDynamicPipeline(provider: ProviderConfig): string {
   parts.push(buildDependencies(provider.codeGen.dependencies));
 
   // 2. Source element (si le provider en a besoin)
-  if (provider.codeGen.usesGouvSource) {
-    parts.push(buildGouvSource(provider));
+  if (provider.codeGen.usesDsfrDataSource) {
+    parts.push(buildDsfrDataSource(provider));
   }
 
   // 3. Normalize (si le provider le requiert)
-  if (provider.codeGen.usesGouvNormalize && state.normalizeConfig.enabled) {
-    parts.push(buildGouvNormalize());
+  if (provider.codeGen.usesDsfrDataNormalize && state.normalizeConfig.enabled) {
+    parts.push(buildDsfrDataNormalize());
   }
 
   // 4. Facets (mode determine par le provider)
@@ -783,8 +783,8 @@ function generateDynamicPipeline(provider: ProviderConfig): string {
   }
 
   // 5. Query (si le provider en a besoin)
-  if (provider.codeGen.usesGouvQuery) {
-    parts.push(buildGouvQuery(provider));
+  if (provider.codeGen.usesDsfrDataQuery) {
+    parts.push(buildDsfrDataQuery(provider));
   }
 
   // 6. Visualization (chart, datalist, KPI...)
@@ -797,7 +797,7 @@ function generateDynamicPipeline(provider: ProviderConfig): string {
 Chaque fonction `build*()` lit le `ProviderConfig` au lieu de brancher :
 
 ```typescript
-function buildGouvQuery(provider: ProviderConfig): string {
+function buildDsfrDataQuery(provider: ProviderConfig): string {
   const attrs: string[] = [`id="query-data"`];
 
   if (provider.codeGen.queryApiType) {
@@ -925,7 +925,7 @@ operateurs) font la meme chose avec des noms differents et un support inegal.
 **Fichier :** `packages/shared/src/query/filter-translator.ts`
 
 ```typescript
-import type { FilterOperator } from '../../src/components/gouv-query.js';
+import type { FilterOperator } from '../../src/components/dsfr-data-query.js';
 
 /** Traduit un filtre colon-syntax en clause ODSQL */
 export function filterToOdsql(filter: string): string {
@@ -996,14 +996,14 @@ Duplications avec le builder :
 - Logique de routage ODS/Tabular/Generic (dans chaque fonction) -- dupliquee
 
 Manques par rapport au builder :
-- Pas de support `gouv-normalize`
-- Pas de support `gouv-facets`
+- Pas de support `dsfr-data-normalize`
+- Pas de support `dsfr-data-facets`
 - Pas de gestion Grist dynamique
 - Pas de `generateMiddlewareElements()`
 
 ### 4.2 Strategie : fusion des deux code generators (Option B retenue)
 
-Un seul code generator dans `@gouv-widgets/shared`, parametre par un
+Un seul code generator dans `@dsfr-data/shared`, parametre par un
 `CodeGenContext` qui encode les differences entre les deux builders :
 
 ```typescript
@@ -1020,7 +1020,7 @@ interface CodeGenContext {
   normalizeConfig?: NormalizeConfig;
   /** Configuration facets */
   facetsConfig?: FacetsConfig;
-  /** URL de base du proxy (pour le script gouv-widgets) */
+  /** URL de base du proxy (pour le script dsfr-data) */
   proxyBaseUrl: string;
 }
 ```
@@ -1037,12 +1037,12 @@ automatiquement aux deux.
 **Fichier :** `packages/shared/src/templates/`
 
 ```
-html-dependencies.ts   # buildDsfrDeps(), buildGouvWidgetsDep(), CDN_VERSIONS
+html-dependencies.ts   # buildDsfrDeps(), buildDsfrDataDep(), CDN_VERSIONS
 html-kpi.ts            # buildKpiHtml(), KPI_CSS
-html-chart.ts          # buildDsfrChartElement(), buildGouvQueryElement()
+html-chart.ts          # buildDsfrChartElement(), buildDsfrDataQueryElement()
 html-datalist.ts       # buildDatalistElement()
 html-map.ts            # buildMapTransformScript()
-html-source.ts         # buildGouvSourceElement()
+html-source.ts         # buildDsfrDataSourceElement()
 ```
 
 Note : `filterToOdsql()` est deja centralise dans `packages/shared/src/query/filter-translator.ts`
@@ -1052,12 +1052,12 @@ Les deux builders importent ces fonctions et les composent.
 
 ### 4.4 builder-IA : ajout middleware (normalize + facets)
 
-Le builder-IA n'a actuellement aucun support pour `gouv-normalize` ni `gouv-facets`.
+Le builder-IA n'a actuellement aucun support pour `dsfr-data-normalize` ni `dsfr-data-facets`.
 C'est un ecart fonctionnel, pas juste du code manquant : l'IA ne peut pas generer
 de pipeline Grist complet (flatten necessaire) ni de facettes.
 
 Une fois les templates factorises dans shared, ajouter le support est direct car
-les fonctions `buildGouvNormalize()` et `buildFacets()` existent deja.
+les fonctions `buildDsfrDataNormalize()` et `buildFacets()` existent deja.
 
 **Ajouts concrets :**
 
@@ -1079,7 +1079,7 @@ builder en supporte **12** dans `filterToOdsql()`. C'est un bug fonctionnel.
 - `isnull` (est vide)
 - `isnotnull` (n'est pas vide)
 
-**Solution :** Le builder-IA importe `filterToOdsql` depuis `@gouv-widgets/shared`
+**Solution :** Le builder-IA importe `filterToOdsql` depuis `@dsfr-data/shared`
 (centralise en Phase 3.7). Les 4 operateurs manquants sont automatiquement couverts.
 La fonction locale `whereToOdsql()` est supprimee.
 
@@ -1089,7 +1089,7 @@ Le builder-IA n'utilise pas `DSFR_TAG_MAP` -- il construit les tags DSFR en dur
 dans ses templates. Apres Phase 3.6, le builder-IA importe depuis shared :
 
 ```typescript
-import { DSFR_TAG_MAP, normalizeChartType } from '@gouv-widgets/shared';
+import { DSFR_TAG_MAP, normalizeChartType } from '@dsfr-data/shared';
 const tag = DSFR_TAG_MAP[normalizeChartType(chartType)];
 ```
 
@@ -1114,15 +1114,15 @@ const tag = DSFR_TAG_MAP[normalizeChartType(chartType)];
 
 ---
 
-## Phase 5 : Adapter Grist + alignement gouv-source
+## Phase 5 : Adapter Grist + alignement dsfr-data-source
 
 ### 5.1 Creer un GristAdapter
 
 Actuellement, Grist n'a pas d'adapter dans `src/adapters/`. Les donnees Grist
-transitent par `gouv-source` (generic fetch) + `gouv-normalize` (flatten) +
-`gouv-query` (generic client-side).
+transitent par `dsfr-data-source` (generic fetch) + `dsfr-data-normalize` (flatten) +
+`dsfr-data-query` (generic client-side).
 
-Un `GristAdapter` permettrait d'utiliser `gouv-query api-type="grist"` avec
+Un `GristAdapter` permettrait d'utiliser `dsfr-data-query api-type="grist"` avec
 pagination automatique et gestion native des `{fields: {...}}`.
 
 **Fichier :** `src/adapters/grist-adapter.ts`
@@ -1146,39 +1146,39 @@ export class GristAdapter implements ApiAdapter {
 }
 ```
 
-### 5.2 Aligner gouv-source pagination
+### 5.2 Aligner dsfr-data-source pagination
 
-Actuellement `gouv-source` hardcode `page` + `page_size` comme noms de
+Actuellement `dsfr-data-source` hardcode `page` + `page_size` comme noms de
 parametres URL (Tabular-specific). Avec le ProviderConfig, on peut lire
 `provider.pagination.params` pour construire l'URL correctement.
 
-Cependant, cela necessite que `gouv-source` connaisse le provider. Deux
+Cependant, cela necessite que `dsfr-data-source` connaisse le provider. Deux
 approches :
 
-**Approche retenue : Ajouter un attribut `api-type` a `gouv-source`** (comme `gouv-query`)
+**Approche retenue : Ajouter un attribut `api-type` a `dsfr-data-source`** (comme `dsfr-data-query`)
 
-Cela permet a `gouv-source` de lire `ProviderConfig.pagination.params` pour
+Cela permet a `dsfr-data-source` de lire `ProviderConfig.pagination.params` pour
 construire l'URL de pagination correctement au lieu de hardcoder les params
 Tabular (`page`, `page_size`).
 
 ```typescript
-// gouv-source.ts - ajout
+// dsfr-data-source.ts - ajout
 @property({ type: String, attribute: 'api-type' })
 apiType: string = 'generic';
 ```
 
-Quand `api-type` est specifie, `gouv-source` lit le ProviderConfig correspondant
+Quand `api-type` est specifie, `dsfr-data-source` lit le ProviderConfig correspondant
 pour determiner les noms de parametres de pagination et la structure de reponse.
 
 ### 5.3 Tests
 
 - Tests unitaires du GristAdapter (fetchAll, buildUrl, validate)
-- Tests d'integration : `gouv-query api-type="grist"` + gouv-dsfr-chart
+- Tests d'integration : `dsfr-data-query api-type="grist"` + dsfr-data-chart
 
 ### 5.4 Critere de validation
 
 - Le GristAdapter est enregistre dans ADAPTER_REGISTRY
-- Les tests d'alignement skills verifient que le skill gouvQuery documente
+- Les tests d'alignement skills verifient que le skill dsfrDataQuery documente
   le nouveau api-type "grist"
 - `npm run test:run` passe
 
@@ -1219,20 +1219,20 @@ Le provider est detecte automatiquement a partir de l'URL API :
 ### Pipelines par provider
 
 **ODS :**
-gouv-query api-type="opendatasoft" base-url="..." dataset-id="..."
-  → [gouv-facets server-facets] → gouv-dsfr-chart
+dsfr-data-query api-type="opendatasoft" base-url="..." dataset-id="..."
+  → [dsfr-data-facets server-facets] → dsfr-data-chart
 
 **Tabular :**
-gouv-query api-type="tabular" base-url="..." resource="..."
-  → [gouv-facets static-values="..."] → gouv-dsfr-chart
+dsfr-data-query api-type="tabular" base-url="..." resource="..."
+  → [dsfr-data-facets static-values="..."] → dsfr-data-chart
 
 **Grist :**
-gouv-source url="..." → gouv-normalize flatten="fields"
-  → [gouv-facets] → gouv-query → gouv-dsfr-chart
+dsfr-data-source url="..." → dsfr-data-normalize flatten="fields"
+  → [dsfr-data-facets] → dsfr-data-query → dsfr-data-chart
 
 **Generic REST :**
-gouv-source url="..." [transform="..."]
-  → [gouv-facets] → gouv-query → gouv-dsfr-chart
+dsfr-data-source url="..." [transform="..."]
+  → [dsfr-data-facets] → dsfr-data-query → dsfr-data-chart
 
 ### Proxy
 
@@ -1251,11 +1251,11 @@ provider de maniere coherente.
 
 | Skill | Modifications |
 |---|---|
-| **gouvSource** | Documenter la limitation pagination (1 page sauf Tabular paginate). Mentionner que pour ODS/Tabular, preferer gouv-query. Ajouter ref vers skill `apiProviders`. |
-| **gouvQuery** | Documenter les 3 api-type avec exemples complets (deja partiellement fait). Ajouter `api-type="grist"` si Phase 5 cree le GristAdapter. Documenter que la detection du provider est automatique dans le builder. |
-| **gouvNormalize** | Documenter quand `flatten` est necessaire par provider : Grist (`flatten="fields"`), ODS v1 (`flatten="fields"`), Airtable (`flatten="fields"`). Les API ODS v2.1 et Tabular ne necessitent PAS de flatten. |
-| **gouvFacets** | Documenter les 3 modes avec le provider correspondant : `server-facets` (ODS), `static-values` (Tabular/Grist), client-side (generic). Ajouter exemples par provider. |
-| **gouvSearch** | Documenter la disponibilite par provider : `server-search` pour ODS uniquement, `search-template` ODSQL par defaut. Client-side pour Tabular/Grist/generic. |
+| **dsfrDataSource** | Documenter la limitation pagination (1 page sauf Tabular paginate). Mentionner que pour ODS/Tabular, preferer dsfr-data-query. Ajouter ref vers skill `apiProviders`. |
+| **dsfrDataQuery** | Documenter les 3 api-type avec exemples complets (deja partiellement fait). Ajouter `api-type="grist"` si Phase 5 cree le GristAdapter. Documenter que la detection du provider est automatique dans le builder. |
+| **dsfrDataNormalize** | Documenter quand `flatten` est necessaire par provider : Grist (`flatten="fields"`), ODS v1 (`flatten="fields"`), Airtable (`flatten="fields"`). Les API ODS v2.1 et Tabular ne necessitent PAS de flatten. |
+| **dsfrDataFacets** | Documenter les 3 modes avec le provider correspondant : `server-facets` (ODS), `static-values` (Tabular/Grist), client-side (generic). Ajouter exemples par provider. |
+| **dsfrDataSearch** | Documenter la disponibilite par provider : `server-search` pour ODS uniquement, `search-template` ODSQL par defaut. Client-side pour Tabular/Grist/generic. |
 | **compositionPatterns** | **Ajout majeur** : documenter les 4 pipelines complets par provider (ODS, Tabular, Grist, Generic) avec exemples HTML copy-paste. Actuellement seuls 2 pipelines sur 4 sont documentes (generic + Grist/ODS v1). |
 | **troubleshooting** | Ajouter les diagnostics provider-specifiques manquants : authentification Grist (Bearer token), rate limits Tabular, pagination ODS (max 100/requete), erreurs CORS par provider. |
 
@@ -1267,7 +1267,7 @@ C'est le skill le plus impacte. Il doit montrer les 4 pipelines complets :
 ## Pipeline OpenDataSoft (server-side)
 
 \`\`\`html
-<gouv-query id="data"
+<dsfr-data-query id="data"
   api-type="opendatasoft"
   base-url="https://data.economie.gouv.fr"
   dataset-id="prix-des-carburants-en-france-flux-instantane-v2"
@@ -1275,60 +1275,60 @@ C'est le skill le plus impacte. Il doit montrer les 4 pipelines complets :
   group-by="departement"
   order-by="prix_moyen:desc"
   limit="20">
-  <gouv-facets source="data" fields="departement,region"
-    server-facets display="multiselect"></gouv-facets>
-  <gouv-dsfr-chart source="data" type="bar"
-    label-field="departement" value-field="prix_moyen"></gouv-dsfr-chart>
-</gouv-query>
+  <dsfr-data-facets source="data" fields="departement,region"
+    server-facets display="multiselect"></dsfr-data-facets>
+  <dsfr-data-chart source="data" type="bar"
+    label-field="departement" value-field="prix_moyen"></dsfr-data-chart>
+</dsfr-data-query>
 \`\`\`
 
 ## Pipeline Tabular (multi-page)
 
 \`\`\`html
-<gouv-query id="data"
+<dsfr-data-query id="data"
   api-type="tabular"
   base-url="https://tabular-api.data.gouv.fr"
   resource="d3643e41-..."
   group-by="libelle_categorie_juridique"
   aggregate="count">
-  <gouv-facets source="data" fields="libelle_categorie_juridique"
+  <dsfr-data-facets source="data" fields="libelle_categorie_juridique"
     static-values='{"libelle_categorie_juridique":["Commune","Departement"]}'
-    display="select"></gouv-facets>
-  <gouv-dsfr-chart source="data" type="pie"
-    label-field="libelle_categorie_juridique" value-field="count"></gouv-dsfr-chart>
-</gouv-query>
+    display="select"></dsfr-data-facets>
+  <dsfr-data-chart source="data" type="pie"
+    label-field="libelle_categorie_juridique" value-field="count"></dsfr-data-chart>
+</dsfr-data-query>
 \`\`\`
 
 ## Pipeline Grist (avec flatten)
 
 \`\`\`html
-<gouv-source id="src"
+<dsfr-data-source id="src"
   url="https://grist.numerique.gouv.fr/api/docs/DOC_ID/tables/TABLE/records"
   transform="records">
-  <gouv-normalize source="src" id="flat" flatten="fields">
-    <gouv-facets source="flat" fields="region,departement"
-      display="multiselect"></gouv-facets>
-    <gouv-query source="flat" id="data"
+  <dsfr-data-normalize source="src" id="flat" flatten="fields">
+    <dsfr-data-facets source="flat" fields="region,departement"
+      display="multiselect"></dsfr-data-facets>
+    <dsfr-data-query source="flat" id="data"
       group-by="region" aggregate="montant:sum">
-      <gouv-dsfr-chart source="data" type="bar"
-        label-field="region" value-field="montant"></gouv-dsfr-chart>
-    </gouv-query>
-  </gouv-normalize>
-</gouv-source>
+      <dsfr-data-chart source="data" type="bar"
+        label-field="region" value-field="montant"></dsfr-data-chart>
+    </dsfr-data-query>
+  </dsfr-data-normalize>
+</dsfr-data-source>
 \`\`\`
 
 ## Pipeline Generic REST
 
 \`\`\`html
-<gouv-source id="src"
+<dsfr-data-source id="src"
   url="https://api.example.com/data"
   transform="results">
-  <gouv-query source="src" id="data"
+  <dsfr-data-query source="src" id="data"
     group-by="categorie" aggregate="valeur:avg">
-    <gouv-dsfr-chart source="data" type="line"
-      label-field="categorie" value-field="valeur"></gouv-dsfr-chart>
-  </gouv-query>
-</gouv-source>
+    <dsfr-data-chart source="data" type="line"
+      label-field="categorie" value-field="valeur"></dsfr-data-chart>
+  </dsfr-data-query>
+</dsfr-data-source>
 \`\`\`
 ```
 
@@ -1374,9 +1374,9 @@ node mcp-server/dist/index.js --provider opendatasoft
 - Tests d'alignement existants (`skills.test.ts`) : ajouter le nouveau skill `apiProviders` dans la liste attendue (19 skills au lieu de 18)
 - Test que `apiProviders` documente les 4 providers
 - Test que `compositionPatterns` contient les 4 pipelines (ODS, Tabular, Grist, Generic)
-- Test que `gouvFacets` documente les 3 modes (server, static, client)
+- Test que `dsfrDataFacets` documente les 3 modes (server, static, client)
 - Test que `troubleshooting` mentionne chaque provider
-- Test que `gouvQuery` documente les valeurs api-type ("opendatasoft", "tabular", et "grist" si Phase 5 faite)
+- Test que `dsfrDataQuery` documente les valeurs api-type ("opendatasoft", "tabular", et "grist" si Phase 5 faite)
 - Verification que `dist/skills.json` contient le nouveau skill apres `npm run build`
 
 ### 6.6 Critere de validation
@@ -1398,7 +1398,7 @@ node mcp-server/dist/index.js --provider opendatasoft
 | 2 | Deduplication proxy, constantes + nettoyage legacy | ~15 fichiers | Faible | Moyen |
 | 3 | Refactoring code-generator builder + shared utils | 3 fichiers (code-gen + chart-types + filter-translator) + tests | **Eleve** | **Eleve** |
 | 4 | Refactoring code-generator builder-IA + alignement | 1 fichier (981L) + templates shared + ajout normalize/facets | Moyen | Moyen |
-| 5 | GristAdapter + alignement gouv-source | 2-3 fichiers | Moyen | Moyen |
+| 5 | GristAdapter + alignement dsfr-data-source | 2-3 fichiers | Moyen | Moyen |
 | 6 | Skills (1 nouveau + 7 enrichis) + MCP (4 tools) | skills.ts + mcp index.ts + tests | Faible | Moyen |
 
 ### Ordre d'execution recommande
@@ -1422,7 +1422,7 @@ refactoring. Les phases 5 et 6 peuvent etre faites en parallele de la phase 4.
 | **4 pipelines documentes dans compositionPatterns** | 6.3 | L'IA genere le bon pipeline selon le provider |
 | **Nettoyage : ~100 lignes de code mort supprimees** | 2.0 | Code generator plus lisible |
 | **DSFR_TAG_MAP + normalizeChartType centralises** | 3.6 | Les deux builders partagent le meme mapping |
-| **GristAdapter** | 5.1 | `gouv-query api-type="grist"` possible (pipeline simplifie) |
+| **GristAdapter** | 5.1 | `dsfr-data-query api-type="grist"` possible (pipeline simplifie) |
 
 ### Surface de compatibilite garantie
 

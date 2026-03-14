@@ -1,8 +1,8 @@
 /**
- * Grist Bridge - Pont entre l'API Grist et le data-bridge gouv-widgets
+ * Grist Bridge - Pont entre l'API Grist et le data-bridge dsfr-data
  *
  * Utilise le global GouvWidgets (UMD) pour dispatcher les evenements
- * compatibles avec le systeme gouv-data-loaded / gouv-data-error.
+ * compatibles avec le systeme dsfr-data-loaded / dsfr-data-error.
  */
 
 export const GRIST_SOURCE_ID = 'grist';

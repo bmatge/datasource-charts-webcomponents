@@ -5,7 +5,7 @@
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-const CONTAINER_ID = 'gouv-toast-container';
+const CONTAINER_ID = 'dsfr-data-toast-container';
 const DEFAULT_DURATION = 5000;
 
 function getOrCreateContainer(): HTMLElement {

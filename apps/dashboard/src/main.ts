@@ -2,7 +2,7 @@
  * Dashboard app - Main entry point
  */
 
-import { escapeHtml, loadFromStorage, STORAGE_KEYS, confirmDialog, initAuth } from '@gouv-widgets/shared';
+import { escapeHtml, loadFromStorage, STORAGE_KEYS, confirmDialog, initAuth } from '@dsfr-data/shared';
 import { state } from './state.js';
 import { createEmptyDashboard } from './state.js';
 import { initDragAndDrop, handleFavoriteDragStart } from './drag-drop.js';

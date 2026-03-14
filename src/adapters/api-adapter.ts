@@ -6,12 +6,12 @@
  * Les adapters sont stateless — tout l'etat est passe via AdapterParams.
  */
 
-import type { QueryAggregate } from '../components/gouv-query.js';
-import type { ProviderConfig } from '@gouv-widgets/shared';
+import type { QueryAggregate } from '../components/dsfr-data-query.js';
+import type { ProviderConfig } from '@dsfr-data/shared';
 
 /**
  * Declare ce qu'un adapter peut faire cote serveur.
- * Les composants en aval (gouv-facets, gouv-search, gouv-datalist)
+ * Les composants en aval (dsfr-data-facets, dsfr-data-search, dsfr-data-list)
  * peuvent consulter ces capacites pour adapter leur comportement.
  */
 export interface AdapterCapabilities {
@@ -30,7 +30,7 @@ export interface AdapterCapabilities {
 }
 
 /**
- * Parametres passes de gouv-query a l'adapter.
+ * Parametres passes de dsfr-data-query a l'adapter.
  * L'adapter ne lit jamais les attributs DOM directement.
  */
 export interface AdapterParams {
@@ -152,7 +152,7 @@ export interface ApiAdapter {
 
   /**
    * Construit un WHERE clause a partir de selections de facettes.
-   * Utilise par gouv-facets pour generer les filtres dans la syntaxe du provider.
+   * Utilise par dsfr-data-facets pour generer les filtres dans la syntaxe du provider.
    */
   buildFacetWhere?(
     selections: Record<string, Set<string>>,

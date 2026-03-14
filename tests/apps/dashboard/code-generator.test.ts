@@ -14,13 +14,13 @@ function makeWidget(overrides: Partial<Widget> & { type: Widget['type'] }): Widg
 
 describe('dashboard/code-generator', () => {
   describe('generateWidgetHTML', () => {
-    it('should generate KPI HTML with gouv-kpi tag', () => {
+    it('should generate KPI HTML with dsfr-data-kpi tag', () => {
       const widget = makeWidget({
         type: 'kpi',
         config: { valeur: '1234', label: 'Total', format: 'nombre', icone: '' },
       });
       const html = generateWidgetHTML(widget);
-      expect(html).toContain('<gouv-kpi');
+      expect(html).toContain('<dsfr-data-kpi');
       expect(html).toContain('valeur="1234"');
       expect(html).toContain('label="Total"');
       expect(html).toContain('format="nombre"');
@@ -44,13 +44,13 @@ describe('dashboard/code-generator', () => {
       expect(html).not.toContain('icone=');
     });
 
-    it('should generate chart HTML with gouv-dsfr-chart tag', () => {
+    it('should generate chart HTML with dsfr-data-chart tag', () => {
       const widget = makeWidget({
         type: 'chart',
         config: { chartType: 'line', labelField: 'date', valueField: 'count', palette: 'sequential' },
       });
       const html = generateWidgetHTML(widget);
-      expect(html).toContain('<gouv-dsfr-chart');
+      expect(html).toContain('<dsfr-data-chart');
       expect(html).toContain('type="line"');
       expect(html).toContain('label-field="date"');
       expect(html).toContain('value-field="count"');
@@ -61,20 +61,20 @@ describe('dashboard/code-generator', () => {
       const widget = makeWidget({
         type: 'chart',
         title: 'Fav Chart',
-        config: { fromFavorite: true, code: '<gouv-dsfr-chart type="bar"></gouv-dsfr-chart>' },
+        config: { fromFavorite: true, code: '<dsfr-data-chart type="bar"></dsfr-data-chart>' },
       });
       const html = generateWidgetHTML(widget);
       expect(html).toContain('<!-- Graphique: Fav Chart -->');
-      expect(html).toContain('<gouv-dsfr-chart type="bar"></gouv-dsfr-chart>');
+      expect(html).toContain('<dsfr-data-chart type="bar"></dsfr-data-chart>');
     });
 
-    it('should generate table HTML with gouv-datalist tag', () => {
+    it('should generate table HTML with dsfr-data-list tag', () => {
       const widget = makeWidget({
         type: 'table',
         config: { columns: ['col1', 'col2'], searchable: true, sortable: true },
       });
       const html = generateWidgetHTML(widget);
-      expect(html).toContain('<gouv-datalist');
+      expect(html).toContain('<dsfr-data-list');
       expect(html).toContain('searchable');
       expect(html).toContain('sortable');
     });
@@ -85,7 +85,7 @@ describe('dashboard/code-generator', () => {
         config: { columns: [], searchable: false, sortable: false },
       });
       const html = generateWidgetHTML(widget);
-      expect(html).toContain('<gouv-datalist');
+      expect(html).toContain('<dsfr-data-list');
       expect(html).not.toContain('searchable');
       expect(html).not.toContain('sortable');
     });

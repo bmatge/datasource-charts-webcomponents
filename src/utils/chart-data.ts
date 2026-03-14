@@ -2,7 +2,7 @@
  * chart-data - Utilitaires partagés de traitement de données pour les graphiques
  *
  * Factorise la logique d'extraction label/value et d'agrégation
- * commune à gouv-chart et gouv-dsfr-chart.
+ * commune à dsfr-data-chart.
  */
 import { getByPath } from './json-path.js';
 

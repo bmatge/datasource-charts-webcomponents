@@ -4,7 +4,7 @@
  * Used by the monitoring dashboard to track where widgets are deployed.
  */
 
-import { PROXY_BASE_URL } from '@gouv-widgets/shared';
+import { PROXY_BASE_URL } from '@dsfr-data/shared';
 
 const BEACON_URL = `${PROXY_BASE_URL}/beacon`;
 const sent = new Set<string>();

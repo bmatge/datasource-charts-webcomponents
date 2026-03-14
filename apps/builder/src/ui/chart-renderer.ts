@@ -10,7 +10,7 @@ import {
   isValidDeptCode,
   PALETTE_PRIMARY_COLOR,
   PALETTE_COLORS,
-} from '@gouv-widgets/shared';
+} from '@dsfr-data/shared';
 import { state } from '../state.js';
 
 // Chart.js loaded via CDN

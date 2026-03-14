@@ -1,4 +1,4 @@
-# Contribuer a gouv-widgets
+# Contribuer a dsfr-data
 
 ## Prerequis
 
@@ -27,18 +27,18 @@ npm run build        # Build lib (ESM + UMD)
 Chaque app peut etre developpee independamment :
 
 ```bash
-npm run dev --workspace=@gouv-widgets/app-builder
-npm run dev --workspace=@gouv-widgets/app-builder-ia
-npm run dev --workspace=@gouv-widgets/app-dashboard
-npm run dev --workspace=@gouv-widgets/app-sources
-npm run dev --workspace=@gouv-widgets/app-playground
-npm run dev --workspace=@gouv-widgets/app-favorites
-npm run dev --workspace=@gouv-widgets/app-monitoring
+npm run dev --workspace=@dsfr-data/app-builder
+npm run dev --workspace=@dsfr-data/app-builder-ia
+npm run dev --workspace=@dsfr-data/app-dashboard
+npm run dev --workspace=@dsfr-data/app-sources
+npm run dev --workspace=@dsfr-data/app-playground
+npm run dev --workspace=@dsfr-data/app-favorites
+npm run dev --workspace=@dsfr-data/app-monitoring
 ```
 
 ### MCP server
 
-Le serveur MCP (Model Context Protocol) expose les skills gouv-widgets aux outils IA :
+Le serveur MCP (Model Context Protocol) expose les skills dsfr-data aux outils IA :
 
 ```bash
 cd mcp-server
@@ -80,11 +80,11 @@ npm run test:e2e
 
 ```
 tests/
-  gouv-source.test.ts          Composant gouv-source
-  gouv-query.test.ts           Composant gouv-query
-  gouv-normalize.test.ts       Composant gouv-normalize
-  gouv-facets.test.ts          Composant gouv-facets
-  gouv-datalist.test.ts        Composant gouv-datalist
+  dsfr-data-source.test.ts          Composant dsfr-data-source
+  dsfr-data-query.test.ts           Composant dsfr-data-query
+  dsfr-data-normalize.test.ts       Composant dsfr-data-normalize
+  dsfr-data-facets.test.ts          Composant dsfr-data-facets
+  dsfr-data-list.test.ts        Composant dsfr-data-list
   aggregations.test.ts         Fonctions d'agregation
   chart-data.test.ts           Traitement des donnees graphiques
   data-bridge.test.ts          Bus d'evenements inter-composants
@@ -92,7 +92,7 @@ tests/
   json-path.test.ts            Acces par chemin JSON
   integration.test.ts          Tests d'integration inter-composants
   source-subscriber.test.ts    Mixin SourceSubscriber
-  shared/                      Tests @gouv-widgets/shared
+  shared/                      Tests @dsfr-data/shared
     dept-codes.test.ts
     dsfr-palettes.test.ts
     escape-html.test.ts
@@ -144,9 +144,9 @@ Chaque app dans `apps/` suit la meme structure :
 ```
 apps/{name}/
   index.html          # Point d'entree HTML
-  package.json         # Dependances (@gouv-widgets/shared)
+  package.json         # Dependances (@dsfr-data/shared)
   tsconfig.json        # Herite de tsconfig.base.json
-  vite.config.ts       # Config Vite avec alias @gouv-widgets/shared
+  vite.config.ts       # Config Vite avec alias @dsfr-data/shared
   src/
     main.ts            # Point d'entree JS
     state.ts           # Etat de l'app
@@ -156,14 +156,14 @@ apps/{name}/
 
 ### Imports partages
 
-Utiliser les imports depuis `@gouv-widgets/shared` pour le code partage :
+Utiliser les imports depuis `@dsfr-data/shared` pour le code partage :
 
 ```typescript
-import { escapeHtml, formatKPIValue, DSFR_COLORS } from '@gouv-widgets/shared';
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@gouv-widgets/shared';
-import { getProxiedUrl, isViteDevMode } from '@gouv-widgets/shared';
-import { toastSuccess, toastWarning } from '@gouv-widgets/shared';
-import { appHref, navigateTo } from '@gouv-widgets/shared';
+import { escapeHtml, formatKPIValue, DSFR_COLORS } from '@dsfr-data/shared';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '@dsfr-data/shared';
+import { getProxiedUrl, isViteDevMode } from '@dsfr-data/shared';
+import { toastSuccess, toastWarning } from '@dsfr-data/shared';
+import { appHref, navigateTo } from '@dsfr-data/shared';
 ```
 
 ### Tests

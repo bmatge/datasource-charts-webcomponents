@@ -2,7 +2,7 @@
  * Chart rendering - applies chart configuration to generate visual output
  */
 
-import { escapeHtml, DSFR_COLORS, PALETTE_COLORS, isValidDeptCode } from '@gouv-widgets/shared';
+import { escapeHtml, DSFR_COLORS, PALETTE_COLORS, isValidDeptCode } from '@dsfr-data/shared';
 import { state } from '../state.js';
 import type { ChartConfig, AggregatedResult } from '../state.js';
 import { addMessage } from '../chat/chat.js';
@@ -27,7 +27,7 @@ function resolvePalette(paletteName: string | undefined, count: number): string[
 }
 
 /**
- * Apply a where filter to data (same syntax as gouv-query: "field:op:value")
+ * Apply a where filter to data (same syntax as dsfr-data-query: "field:op:value")
  * Multiple filters separated by comma (AND logic).
  */
 function applyWhereFilter(data: Record<string, unknown>[], where: string): Record<string, unknown>[] {

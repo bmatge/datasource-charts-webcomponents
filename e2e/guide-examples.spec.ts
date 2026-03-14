@@ -91,8 +91,8 @@ test.describe('Guide — lazy-loaded example pages', () => {
       const containerCount = await page.locator('.example-container').count();
       expect(containerCount).toBeGreaterThanOrEqual(expectedExamples);
 
-      // Each container should have at least one gouv-source
-      const sourceCount = await page.locator('.example-container gouv-source').count();
+      // Each container should have at least one dsfr-data-source
+      const sourceCount = await page.locator('.example-container dsfr-data-source').count();
       expect(sourceCount).toBeGreaterThanOrEqual(expectedExamples);
 
       await page.screenshot({ path: join(SCREENSHOT_DIR, `${name}.png`), fullPage: true });
@@ -112,10 +112,10 @@ test.describe('Guide — direct widget pages', () => {
     await page.goto('/guide/guide-exemples-chart-a11y.html');
     await page.waitForTimeout(10_000);
 
-    const a11yCount = await page.locator('gouv-chart-a11y').count();
+    const a11yCount = await page.locator('dsfr-data-a11y').count();
     expect(a11yCount).toBeGreaterThanOrEqual(1);
 
-    const chartCount = await page.locator('gouv-dsfr-chart').count();
+    const chartCount = await page.locator('dsfr-data-chart').count();
     expect(chartCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: join(SCREENSHOT_DIR, 'guide-exemples-chart-a11y.png'), fullPage: true });
@@ -127,10 +127,10 @@ test.describe('Guide — direct widget pages', () => {
     await page.goto('/guide/guide-exemples-ghibli.html');
     await page.waitForTimeout(10_000);
 
-    const kpiCount = await page.locator('gouv-kpi').count();
+    const kpiCount = await page.locator('dsfr-data-kpi').count();
     expect(kpiCount).toBeGreaterThanOrEqual(1);
 
-    const chartCount = await page.locator('gouv-dsfr-chart').count();
+    const chartCount = await page.locator('dsfr-data-chart').count();
     expect(chartCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: join(SCREENSHOT_DIR, 'guide-exemples-ghibli.png'), fullPage: true });
@@ -142,10 +142,10 @@ test.describe('Guide — direct widget pages', () => {
     await page.goto('/guide/guide-exemples-maires.html');
     await page.waitForTimeout(15_000);
 
-    const kpiCount = await page.locator('gouv-kpi').count();
+    const kpiCount = await page.locator('dsfr-data-kpi').count();
     expect(kpiCount).toBeGreaterThanOrEqual(1);
 
-    const chartCount = await page.locator('gouv-dsfr-chart').count();
+    const chartCount = await page.locator('dsfr-data-chart').count();
     expect(chartCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: join(SCREENSHOT_DIR, 'guide-exemples-maires.png'), fullPage: true });
@@ -157,10 +157,10 @@ test.describe('Guide — direct widget pages', () => {
     await page.goto('/guide/guide-exemples-world-map.html');
     await page.waitForTimeout(15_000);
 
-    const worldMapCount = await page.locator('gouv-world-map').count();
+    const worldMapCount = await page.locator('dsfr-data-world-map').count();
     expect(worldMapCount).toBeGreaterThanOrEqual(1);
 
-    const chartCount = await page.locator('gouv-dsfr-chart').count();
+    const chartCount = await page.locator('dsfr-data-chart').count();
     expect(chartCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: join(SCREENSHOT_DIR, 'guide-exemples-world-map.png'), fullPage: true });
@@ -172,10 +172,10 @@ test.describe('Guide — direct widget pages', () => {
     await page.goto('/guide/guide-exemples-insee-erfs.html');
     await page.waitForTimeout(15_000);
 
-    const chartCount = await page.locator('gouv-dsfr-chart').count();
+    const chartCount = await page.locator('dsfr-data-chart').count();
     expect(chartCount).toBeGreaterThanOrEqual(1);
 
-    const kpiCount = await page.locator('gouv-kpi').count();
+    const kpiCount = await page.locator('dsfr-data-kpi').count();
     expect(kpiCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: join(SCREENSHOT_DIR, 'guide-exemples-insee-erfs.png'), fullPage: true });

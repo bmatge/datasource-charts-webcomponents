@@ -57,11 +57,11 @@ export const ODS_CONFIG: ProviderConfig = {
   },
 
   codeGen: {
-    usesGouvSource: true,
-    usesGouvQuery: true,
-    usesGouvNormalize: false,
+    usesDsfrDataSource: true,
+    usesDsfrDataQuery: true,
+    usesDsfrDataNormalize: false,
     sourceApiType: 'opendatasoft',
     fieldPrefix: '',
-    dependencies: { dsfr: true, dsfrChart: true, gouvWidgets: true },
+    dependencies: { dsfr: true, dsfrChart: true, dsfrData: true },
   },
 };

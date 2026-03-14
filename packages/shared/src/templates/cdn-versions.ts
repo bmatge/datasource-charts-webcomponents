@@ -22,12 +22,12 @@ export const CDN_URLS = {
  * Wrap a code snippet in a standalone HTML document with all CDN dependencies.
  * Used by playground, builder and favorites to render previews in iframes.
  *
- * - Strips any remote gouv-widgets `<script>` tags from the code
+ * - Strips any remote dsfr-data `<script>` tags from the code
  * - Injects the local ESM build from the current origin instead
  */
 export function getPreviewHTML(code: string): string {
   const origin = window.location.origin;
-  const cleanedCode = code.replace(/<script[^>]*gouv-widgets[^>]*><\/script>\s*/gi, '');
+  const cleanedCode = code.replace(/<script[^>]*dsfr-data[^>]*><\/script>\s*/gi, '');
   return `<!DOCTYPE html>
 <html lang="fr" data-fr-theme>
 <head>
@@ -38,7 +38,7 @@ export function getPreviewHTML(code: string): string {
   <script src="${CDN_URLS.chartJs}"><\/script>
   <link rel="stylesheet" href="${CDN_URLS.dsfrChartCss}">
   <script type="module" src="${CDN_URLS.dsfrChartJs}"><\/script>
-  <script type="module" src="${origin}/dist/gouv-widgets.esm.js"><\/script>
+  <script type="module" src="${origin}/dist/dsfr-data.esm.js"><\/script>
   <style>
     body { padding: 1rem; font-family: Marianne, arial, sans-serif; }
   </style>

@@ -1,6 +1,6 @@
-# gouv-widgets backend (server/)
+# dsfr-data backend (server/)
 
-Backend Express + SQLite pour le mode "database" de gouv-widgets.
+Backend Express + SQLite pour le mode "database" de dsfr-data.
 Ajoute authentification, RBAC, persistance en base, cache API et monitoring centralise.
 
 ## Demarrage rapide
@@ -17,7 +17,7 @@ npm run dev:all        # Demarre Vite + backend en parallele
 | Variable | Defaut | Description |
 |----------|--------|-------------|
 | `PORT` | `3002` | Port d'ecoute Express |
-| `DB_PATH` | `server/data/gouv-widgets.db` | Chemin du fichier SQLite |
+| `DB_PATH` | `server/data/dsfr-data.db` | Chemin du fichier SQLite |
 | `JWT_SECRET` | (obligatoire en production) | Secret pour signer les tokens JWT |
 | `CORS_ORIGIN` | `http://localhost:5173` | Origine autorisee pour CORS |
 
