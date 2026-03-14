@@ -1,7 +1,7 @@
 /**
  * Grist Bridge - Pont entre l'API Grist et le data-bridge dsfr-data
  *
- * Utilise le global GouvWidgets (UMD) pour dispatcher les evenements
+ * Utilise le global DsfrData (UMD) pour dispatcher les evenements
  * compatibles avec le systeme dsfr-data-loaded / dsfr-data-error.
  */
 
@@ -88,7 +88,7 @@ export function initGristBridge(
   });
 
   detectGristApi();
-  GouvWidgets.dispatchDataLoading(GRIST_SOURCE_ID);
+  DsfrData.dispatchDataLoading(GRIST_SOURCE_ID);
 
   grist.onRecords((records, mappings) => {
     if (mappings) {
@@ -96,12 +96,12 @@ export function initGristBridge(
     }
     const mapped = grist.mapColumnNames(records, mappings);
     if (!mapped) {
-      GouvWidgets.dispatchDataError(GRIST_SOURCE_ID, new Error(
+      DsfrData.dispatchDataError(GRIST_SOURCE_ID, new Error(
         'Colonnes non mappees. Configurez le mapping dans les options du widget Grist.'
       ));
       return;
     }
-    GouvWidgets.dispatchDataLoaded(GRIST_SOURCE_ID, mapped);
+    DsfrData.dispatchDataLoaded(GRIST_SOURCE_ID, mapped);
   });
 }
 

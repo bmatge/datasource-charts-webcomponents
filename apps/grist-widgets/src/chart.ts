@@ -7,7 +7,7 @@
  * - KPI : indicateur cle de performance
  *
  * L'utilisateur choisit le type dans les options et mappe les colonnes necessaires.
- * Les composants gouv-* sont charges via script tag UMD (GouvWidgets global).
+ * Les composants gouv-* sont charges via script tag UMD (DsfrData global).
  */
 
 import './styles/grist-widgets.css';
@@ -208,7 +208,7 @@ function applyOptions(opts: Record<string, unknown>) {
 let activeTab: 'fixed' | 'dynamic' = 'fixed';
 
 function generateFixedHtml(): string {
-  const data = GouvWidgets.getDataCache('grist') as Record<string, unknown>[] | undefined;
+  const data = DsfrData.getDataCache('grist') as Record<string, unknown>[] | undefined;
   if (!data || data.length === 0) return '';
 
   const type = currentType;
@@ -238,7 +238,7 @@ function generateFixedHtml(): string {
 <dsfr-data-kpi source="export" valeur="${agg}:Value" format="${format}" label="${label}"${icone}${couleur}></dsfr-data-kpi>
 <script>
   customElements.whenDefined('dsfr-data-kpi').then(function() {
-    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+    DsfrData.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
   }
@@ -262,7 +262,7 @@ function generateFixedHtml(): string {
 <dsfr-data-chart source="export" type="${type}" label-field="Label" value-field="Value"${codeField}${palette}${horizontal}${stacked}${unitTooltip}${valueField2}></dsfr-data-chart>
 <script>
   customElements.whenDefined('dsfr-data-chart').then(function() {
-    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+    DsfrData.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
 }
@@ -400,7 +400,7 @@ function showOptionsPanel() {
     panel.classList.remove('visible');
     content.style.display = 'block';
     // Re-afficher la toolbar si des donnees sont presentes
-    const hasData = GouvWidgets.getDataCache('grist');
+    const hasData = DsfrData.getDataCache('grist');
     if (toolbar && hasData) toolbar.style.display = 'flex';
     if (codePanel && codeVisible && hasData) {
       updateCodePanel();

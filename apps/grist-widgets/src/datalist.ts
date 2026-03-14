@@ -5,7 +5,7 @@
  * triable avec export CSV. Toutes les colonnes de la table sont
  * affichees automatiquement.
  *
- * Les composants gouv-* sont charges via script tag UMD (GouvWidgets global).
+ * Les composants gouv-* sont charges via script tag UMD (DsfrData global).
  */
 
 import './styles/grist-widgets.css';
@@ -90,7 +90,7 @@ let activeTab: 'fixed' | 'dynamic' = 'fixed';
 let dataColumnKeys: string[] = [];
 
 function generateFixedHtml(): string {
-  const data = GouvWidgets.getDataCache(GRIST_SOURCE_ID) as Record<string, unknown>[] | undefined;
+  const data = DsfrData.getDataCache(GRIST_SOURCE_ID) as Record<string, unknown>[] | undefined;
   if (!data || data.length === 0) return '';
 
   const datalist = document.querySelector('dsfr-data-list');
@@ -117,7 +117,7 @@ function generateFixedHtml(): string {
 <dsfr-data-list source="export" colonnes="${colonnes}" pagination="${pagination}"${recherche}${exportPart}></dsfr-data-list>
 <script>
   customElements.whenDefined('dsfr-data-list').then(function() {
-    GouvWidgets.dispatchDataLoaded('export', ${jsonData});
+    DsfrData.dispatchDataLoaded('export', ${jsonData});
   });
 <\/script>`;
 }
@@ -223,7 +223,7 @@ function showOptionsPanel() {
     // Fermer le panneau apres sauvegarde
     panel.classList.remove('visible');
     content.style.display = 'block';
-    const hasData = GouvWidgets.getDataCache(GRIST_SOURCE_ID);
+    const hasData = DsfrData.getDataCache(GRIST_SOURCE_ID);
     if (toolbar && hasData) toolbar.style.display = 'flex';
     if (codePanel && codeVisible && hasData) {
       updateCodePanel();
@@ -257,7 +257,7 @@ grist.ready({
 });
 
 detectGristApi();
-GouvWidgets.dispatchDataLoading(GRIST_SOURCE_ID);
+DsfrData.dispatchDataLoading(GRIST_SOURCE_ID);
 
 grist.onRecords((records) => {
   // Filtrer les metadonnees Grist (id, manualSort...)
@@ -276,7 +276,7 @@ grist.onRecords((records) => {
   }
 
   autoConfigureColumns(cleaned);
-  GouvWidgets.dispatchDataLoaded(GRIST_SOURCE_ID, cleaned);
+  DsfrData.dispatchDataLoaded(GRIST_SOURCE_ID, cleaned);
 });
 
 onGristOptions((opts) => {

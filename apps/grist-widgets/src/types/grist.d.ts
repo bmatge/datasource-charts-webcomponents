@@ -65,9 +65,9 @@ declare const grist: GristApi;
 
 /**
  * Type declarations for the dsfr-data UMD bundle.
- * Loaded via <script src="dsfr-data.umd.js">, exposes GouvWidgets global.
+ * Loaded via <script src="dsfr-data.umd.js">, exposes DsfrData global.
  */
-interface GouvWidgetsApi {
+interface DsfrDataApi {
   dispatchDataLoaded(sourceId: string, data: unknown): void;
   dispatchDataError(sourceId: string, error: Error): void;
   dispatchDataLoading(sourceId: string): void;
@@ -84,4 +84,4 @@ interface GouvWidgetsApi {
   };
 }
 
-declare const GouvWidgets: GouvWidgetsApi;
+declare const DsfrData: DsfrDataApi;
