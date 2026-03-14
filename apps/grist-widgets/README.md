@@ -12,8 +12,8 @@ Utilisez ces URLs dans Grist (Menu widget → Custom → URL) :
 
 | Widget | URL | Description |
 |--------|-----|-------------|
-| **Graphique / Carte / KPI** | `https://bmatge.github.io/datasource-charts-webcomponents/chart/` | Widget polyvalent : graphiques, cartes France, KPI. Choisissez le type dans les options. |
-| **Tableau** | `https://bmatge.github.io/datasource-charts-webcomponents/datalist/` | Tableau avec recherche, tri, pagination, export CSV |
+| **Graphique / Carte / KPI** | `https://bmatge.github.io/dsfr-data/chart/` | Widget polyvalent : graphiques, cartes France, KPI. Choisissez le type dans les options. |
+| **Tableau** | `https://bmatge.github.io/dsfr-data/datalist/` | Tableau avec recherche, tri, pagination, export CSV |
 
 ### Widget Graphique / Carte / KPI
 

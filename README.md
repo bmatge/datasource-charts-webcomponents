@@ -6,7 +6,7 @@ dsfr-data s'appuie sur [DSFR Chart](https://github.com/GouvernementFR/dsfr-chart
 
 ## Demo
 
-L'ensemble des composants et leurs options sont documentes sur la page de [specifications](https://bmatge.github.io/datasource-charts-webcomponents/specs/).
+L'ensemble des composants et leurs options sont documentes sur la page de [specifications](https://bmatge.github.io/dsfr-data/specs/).
 
 ## Installation
 
@@ -338,8 +338,8 @@ Le projet inclut des applications web permettant de generer le code HTML des com
 ## Installation
 
 ```bash
-git clone https://github.com/bmatge/datasource-charts-webcomponents.git
-cd datasource-charts-webcomponents
+git clone https://github.com/bmatge/dsfr-data.git
+cd dsfr-data
 npm install
 ```
 
@@ -358,7 +358,7 @@ npm install
 
 ## Documentation
 
-- [Specifications des composants](https://bmatge.github.io/datasource-charts-webcomponents/specs/) -- Demo interactive et reference des parametres
+- [Specifications des composants](https://bmatge.github.io/dsfr-data/specs/) -- Demo interactive et reference des parametres
 - [Guide utilisateur](guide/USER-GUIDE.md) -- Parcours pas-a-pas
 - [Architecture](ARCHITECTURE.md) -- Architecture technique detaillee
 - [Fiche produit](DATASHEET.md) -- Positionnement, comparatif, cibles

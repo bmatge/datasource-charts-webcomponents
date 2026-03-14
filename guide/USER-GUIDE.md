@@ -643,7 +643,7 @@ Les donnees passent par `dsfr-data-query` qui les filtre, regroupe et/ou agrege 
 
 ## Ressources
 
-- **Code source** : [github.com/bmatge/datasource-charts-webcomponents](https://github.com/bmatge/datasource-charts-webcomponents)
+- **Code source** : [github.com/bmatge/dsfr-data](https://github.com/bmatge/dsfr-data)
 - **Demo composants** : section Composants de l'application
 - **Documentation DSFR Chart** : [github.com/GouvernementFR/dsfr-chart](https://github.com/GouvernementFR/dsfr-chart)
 - **API Albert** : [albert.api.etalab.gouv.fr](https://albert.api.etalab.gouv.fr)

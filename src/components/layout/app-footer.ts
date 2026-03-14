@@ -52,7 +52,7 @@ export class AppFooter extends LitElement {
                   </a>
                 </li>
                 <li class="fr-footer__content-item">
-                  <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/datasource-charts-webcomponents">
+                  <a class="fr-footer__content-link" target="_blank" rel="noopener" href="https://github.com/bmatge/dsfr-data">
                     GitHub
                   </a>
                 </li>

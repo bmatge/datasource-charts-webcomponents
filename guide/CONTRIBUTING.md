@@ -8,8 +8,8 @@
 ## Installation
 
 ```bash
-git clone https://github.com/bmatge/datasource-charts-webcomponents.git
-cd datasource-charts-webcomponents
+git clone https://github.com/bmatge/dsfr-data.git
+cd dsfr-data
 npm install
 ```
 
